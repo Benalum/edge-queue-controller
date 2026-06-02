@@ -49,6 +49,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now edge-queue-controller.service
 sudo systemctl enable --now edge-queue-remediation-tick.timer
 sudo systemctl enable --now edge-queue-power-idle-tick.timer
+sudo systemctl enable --now edge-queue-power-auto-tick.timer
 
 echo "[6/6] Status"
 systemctl --no-pager status edge-queue-controller.service || true
