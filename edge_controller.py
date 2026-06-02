@@ -2492,3 +2492,152 @@ async def power_execute_stop_plan(confirm: str = ""):
         "note": "This endpoint only stops eligible auto-managed CT/VM targets. It does not shut down the Proxmox host.",
     }
 
+
+# ---------------------------------------------------------------------
+# Host wake plan and guarded execution endpoints
+# ---------------------------------------------------------------------
+@app.post("/power/wake-plan")
+async def power_wake_plan():
+    """
+    Build a dry-run Wake-on-LAN plan for the Proxmox host.
+
+    This endpoint does not send a magic packet.
+    """
+    import os
+    import re
+    from datetime import datetime, timezone
+
+    host_id = os.getenv("EDGE_PROXMOX_HOST_ID", "pveso").strip() or "pveso"
+    ssh_target = os.getenv("EDGE_PROXMOX_SSH_TARGET", "").strip()
+    mac = os.getenv("EDGE_PROXMOX_WAKE_MAC", "").strip()
+    broadcast = os.getenv("EDGE_PROXMOX_WAKE_BROADCAST", "192.168.0.255").strip()
+    port = int(os.getenv("EDGE_PROXMOX_WAKE_PORT", "9"))
+
+    clean_mac = re.sub(r"[^0-9A-Fa-f]", "", mac)
+    mac_valid = len(clean_mac) == 12 and all(c in "0123456789abcdefABCDEF" for c in clean_mac)
+
+    eligible = bool(mac_valid and broadcast and port > 0)
+
+    blocked_reason = None
+    if not mac:
+        blocked_reason = "EDGE_PROXMOX_WAKE_MAC is not configured."
+    elif not mac_valid:
+        blocked_reason = "EDGE_PROXMOX_WAKE_MAC is not a valid MAC address."
+    elif not broadcast:
+        blocked_reason = "EDGE_PROXMOX_WAKE_BROADCAST is not configured."
+    elif port <= 0:
+        blocked_reason = "EDGE_PROXMOX_WAKE_PORT must be greater than zero."
+
+    return {
+        "ok": True,
+        "dry_run": True,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "host_id": host_id,
+        "ssh_target": ssh_target,
+        "wake": {
+            "mac": mac,
+            "broadcast": broadcast,
+            "port": port,
+            "eligible": eligible,
+            "blocked_reason": blocked_reason,
+            "would_send": (
+                f"Wake-on-LAN magic packet to {mac} via UDP {broadcast}:{port}"
+                if eligible
+                else None
+            ),
+        },
+        "note": (
+            "Wake-on-LAN works only if the controller is on a network path that can deliver "
+            "the broadcast packet to the Proxmox host NIC."
+        ),
+    }
+
+
+@app.post("/power/execute-wake")
+async def power_execute_wake(confirm: str = ""):
+    """
+    Manually send a Wake-on-LAN magic packet.
+
+    Safety gates:
+      1. EDGE_POWER_EXECUTE_WAKE must be enabled.
+      2. confirm must equal WAKE_PROXMOX_HOST.
+      3. /power/wake-plan must be eligible.
+    """
+    import os
+    import re
+    import socket
+    from datetime import datetime, timezone
+
+    def parse_bool(value, default=False):
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    required_confirmation = "WAKE_PROXMOX_HOST"
+    execute_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_WAKE"), False)
+
+    plan = await power_wake_plan()
+    wake = plan.get("wake", {})
+
+    if confirm != required_confirmation:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Missing confirmation phrase.",
+            "required_confirm": required_confirmation,
+            "example": "/power/execute-wake?confirm=WAKE_PROXMOX_HOST",
+            "plan": plan,
+        }
+
+    if not execute_enabled:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "EDGE_POWER_EXECUTE_WAKE is not enabled.",
+            "how_to_enable": "Set Environment=EDGE_POWER_EXECUTE_WAKE=1, then restart the controller.",
+            "plan": plan,
+        }
+
+    if not wake.get("eligible"):
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": wake.get("blocked_reason") or "Wake plan is not eligible.",
+            "plan": plan,
+        }
+
+    mac = wake["mac"]
+    broadcast = wake["broadcast"]
+    port = int(wake["port"])
+
+    clean_mac = re.sub(r"[^0-9A-Fa-f]", "", mac)
+    mac_bytes = bytes.fromhex(clean_mac)
+
+    magic_packet = b"\xff" * 6 + mac_bytes * 16
+
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.settimeout(3)
+        sent = sock.sendto(magic_packet, (broadcast, port))
+        sock.close()
+    except Exception as e:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": f"Failed to send Wake-on-LAN packet: {e}",
+            "plan": plan,
+        }
+
+    return {
+        "ok": True,
+        "executed": True,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "host_id": plan.get("host_id"),
+        "mac": mac,
+        "broadcast": broadcast,
+        "port": port,
+        "bytes_sent": sent,
+        "note": "Magic packet sent. If the host is already on, this usually has no visible effect.",
+    }
+
