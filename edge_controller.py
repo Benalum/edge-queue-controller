@@ -2866,6 +2866,32 @@ async def power_auto_tick():
     auto_stop_workers = parse_bool(os.getenv("EDGE_POWER_AUTO_STOP_WORKERS"), False)
     auto_shutdown_host = parse_bool(os.getenv("EDGE_POWER_AUTO_SHUTDOWN_HOST"), False)
 
+    auto_status = await power_auto_status()
+    if auto_status.get("paused"):
+        return {
+            "ok": True,
+            "time": datetime.now(timezone.utc).isoformat(),
+            "automation": {
+                "auto_stop_workers": auto_stop_workers,
+                "auto_shutdown_host": auto_shutdown_host,
+                "paused": True,
+                "pause_reason": auto_status.get("pause_reason"),
+                "pause_until": auto_status.get("pause_until"),
+                "pause_remaining_seconds": auto_status.get("pause_remaining_seconds"),
+            },
+            "actions": [
+                {
+                    "area": "automation",
+                    "action": "automation_paused",
+                    "executed": False,
+                    "reason": auto_status.get("pause_reason"),
+                    "pause_until": auto_status.get("pause_until"),
+                    "pause_remaining_seconds": auto_status.get("pause_remaining_seconds"),
+                }
+            ],
+            "note": "Power automation is paused. No worker stop or host shutdown action was evaluated.",
+        }
+
     execute_stops_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_STOPS"), False)
     execute_host_shutdown_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_HOST_SHUTDOWN"), False)
     execute_wake_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_WAKE"), False)
@@ -3006,5 +3032,272 @@ async def power_auto_tick():
         },
         "actions": actions,
         "note": "Automation flags are separate from execution flags. Keep both disabled until intentionally testing automation.",
+    }
+
+
+# ---------------------------------------------------------------------
+# Power automation pause/resume endpoints
+# ---------------------------------------------------------------------
+def _power_auto_find_db_path():
+    from pathlib import Path
+    from fastapi import HTTPException
+
+    candidates = []
+
+    for name, value in globals().items():
+        upper = name.upper()
+
+        if "DB" in upper and ("PATH" in upper or "FILE" in upper or "DATABASE" in upper):
+            if isinstance(value, (str, Path)):
+                text = str(value)
+
+                if text.startswith("sqlite:///"):
+                    text = text.replace("sqlite:///", "", 1)
+
+                if text and not text.startswith("postgres"):
+                    candidates.append(Path(text))
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    fallback_names = [
+        "edge_queue.sqlite3",
+        "edge_queue.sqlite",
+        "edge_queue.db",
+        "edge_controller.db",
+        "edge_controller.sqlite",
+        "edge_controller.sqlite3",
+        "queue_controller.db",
+        "queue_controller.sqlite",
+        "queue_controller.sqlite3",
+    ]
+
+    here = Path(__file__).resolve().parent
+    for name in fallback_names:
+        candidate = here / name
+        if candidate.exists():
+            return candidate
+
+    raise HTTPException(
+        status_code=500,
+        detail="Could not locate SQLite database path for power automation state.",
+    )
+
+
+def _power_auto_init_state(conn):
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS power_auto_state (
+            key TEXT PRIMARY KEY,
+            value TEXT,
+            updated_at TEXT NOT NULL
+        )
+        """
+    )
+
+
+@app.post("/power/auto/status")
+async def power_auto_status():
+    """
+    Show whether power automation is paused.
+
+    Pause sources:
+      1. EDGE_POWER_AUTO_PAUSED=1 environment variable
+      2. /power/auto/pause database pause_until timestamp
+    """
+    import os
+    import sqlite3
+    from datetime import datetime, timezone
+
+    def parse_bool(value, default=False):
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    now = datetime.now(timezone.utc)
+    env_paused = parse_bool(os.getenv("EDGE_POWER_AUTO_PAUSED"), False)
+
+    db_path = _power_auto_find_db_path()
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    try:
+        _power_auto_init_state(conn)
+
+        row = conn.execute(
+            "SELECT value FROM power_auto_state WHERE key = ?",
+            ("pause_until",),
+        ).fetchone()
+
+        pause_until = row["value"] if row else None
+        pause_remaining_seconds = 0
+        db_paused = False
+
+        if pause_until:
+            try:
+                pause_dt = datetime.fromisoformat(pause_until)
+                if pause_dt.tzinfo is None:
+                    pause_dt = pause_dt.replace(tzinfo=timezone.utc)
+
+                pause_remaining_seconds = int((pause_dt - now).total_seconds())
+
+                if pause_remaining_seconds > 0:
+                    db_paused = True
+                else:
+                    conn.execute(
+                        "DELETE FROM power_auto_state WHERE key = ?",
+                        ("pause_until",),
+                    )
+                    conn.commit()
+                    pause_until = None
+                    pause_remaining_seconds = 0
+
+            except Exception:
+                # Bad stored value should not permanently break automation status.
+                conn.execute(
+                    "DELETE FROM power_auto_state WHERE key = ?",
+                    ("pause_until",),
+                )
+                conn.commit()
+                pause_until = None
+                pause_remaining_seconds = 0
+
+        paused = env_paused or db_paused
+
+        if env_paused:
+            pause_reason = "EDGE_POWER_AUTO_PAUSED=1"
+        elif db_paused:
+            pause_reason = "manual temporary pause"
+        else:
+            pause_reason = None
+
+        return {
+            "ok": True,
+            "time": now.isoformat(),
+            "paused": paused,
+            "pause_reason": pause_reason,
+            "env_paused": env_paused,
+            "db_paused": db_paused,
+            "pause_until": pause_until,
+            "pause_remaining_seconds": max(0, pause_remaining_seconds),
+            "db_path": str(db_path),
+        }
+
+    finally:
+        conn.close()
+
+
+@app.post("/power/auto/pause")
+async def power_auto_pause(minutes: int = 30, reason: str = "manual"):
+    """
+    Temporarily pause automatic power actions.
+
+    This is intentionally easy to call because it only makes the system safer.
+    """
+    import sqlite3
+    from datetime import datetime, timezone, timedelta
+
+    if minutes < 1:
+        minutes = 1
+
+    if minutes > 1440:
+        minutes = 1440
+
+    now = datetime.now(timezone.utc)
+    pause_until = now + timedelta(minutes=minutes)
+
+    db_path = _power_auto_find_db_path()
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    try:
+        _power_auto_init_state(conn)
+
+        conn.execute(
+            """
+            INSERT INTO power_auto_state (key, value, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET
+                value = excluded.value,
+                updated_at = excluded.updated_at
+            """,
+            ("pause_until", pause_until.isoformat(), now.isoformat()),
+        )
+
+        conn.execute(
+            """
+            INSERT INTO power_auto_state (key, value, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET
+                value = excluded.value,
+                updated_at = excluded.updated_at
+            """,
+            ("pause_reason", reason, now.isoformat()),
+        )
+
+        conn.commit()
+
+    finally:
+        conn.close()
+
+    return {
+        "ok": True,
+        "paused": True,
+        "minutes": minutes,
+        "reason": reason,
+        "pause_until": pause_until.isoformat(),
+        "note": "Automatic worker stop and host shutdown actions will be skipped while paused.",
+    }
+
+
+@app.post("/power/auto/resume")
+async def power_auto_resume(confirm: str = ""):
+    """
+    Resume automatic power actions by clearing temporary pause.
+
+    This requires confirmation because resuming could allow auto-stop if automation
+    flags are enabled.
+    """
+    import sqlite3
+    from datetime import datetime, timezone
+
+    required_confirmation = "RESUME_POWER_AUTOMATION"
+
+    if confirm != required_confirmation:
+        return {
+            "ok": False,
+            "resumed": False,
+            "blocked_reason": "Missing confirmation phrase.",
+            "required_confirm": required_confirmation,
+            "example": "/power/auto/resume?confirm=RESUME_POWER_AUTOMATION",
+        }
+
+    now = datetime.now(timezone.utc)
+    db_path = _power_auto_find_db_path()
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    try:
+        _power_auto_init_state(conn)
+
+        conn.execute(
+            "DELETE FROM power_auto_state WHERE key IN (?, ?)",
+            ("pause_until", "pause_reason"),
+        )
+
+        conn.commit()
+
+    finally:
+        conn.close()
+
+    return {
+        "ok": True,
+        "resumed": True,
+        "time": now.isoformat(),
+        "note": "Temporary DB pause cleared. Environment pause EDGE_POWER_AUTO_PAUSED=1, if set, still takes priority.",
     }
 
