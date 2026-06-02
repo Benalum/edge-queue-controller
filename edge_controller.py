@@ -3753,8 +3753,10 @@ async def power_execute_wake_and_start_worker(
     confirm: str = "",
     wait_host_seconds: int = 180,
     wait_worker_seconds: int = 180,
+    wait_registry_seconds: int = 180,
     pause_after_start_minutes: int = 10,
     health_url: str = "http://100.88.245.33:11434/api/tags",
+    registry_url: str = "http://127.0.0.1:7070/workers/registry",
 ):
     """
     Guarded wake-and-start workflow.
@@ -3771,6 +3773,7 @@ async def power_execute_wake_and_start_worker(
     import socket
     import subprocess
     import time
+    import json
     import urllib.request
     from datetime import datetime, timezone
 
@@ -4064,6 +4067,65 @@ async def power_execute_wake_and_start_worker(
             "plan": plan,
         }
 
+    registry_ready = False
+    registry_error = None
+    registry_worker = None
+    registry_wait_started = time.time()
+
+    while time.time() - registry_wait_started <= max(1, wait_registry_seconds):
+        try:
+            with urllib.request.urlopen(registry_url, timeout=5) as response:
+                raw = response.read().decode("utf-8", errors="replace")
+                data = json.loads(raw)
+
+            for worker in data.get("workers", []):
+                if (
+                    worker.get("target_name") == target_name
+                    or worker.get("worker_id") == target_name
+                    or worker.get("name") == target_name
+                ):
+                    registry_worker = worker
+
+                    if worker.get("computed_health") == "available":
+                        registry_ready = True
+                    break
+
+            if registry_ready:
+                events.append(
+                    {
+                        "step": "wait_for_worker_registry",
+                        "ready": True,
+                        "registry_url": registry_url,
+                        "waited_seconds": int(time.time() - registry_wait_started),
+                        "worker": registry_worker,
+                    }
+                )
+                break
+
+            registry_error = (
+                f"Worker found but not available: {registry_worker.get('computed_health')}"
+                if registry_worker
+                else f"No registry worker matched target_name={target_name}"
+            )
+
+        except Exception as e:
+            registry_error = str(e)
+
+        time.sleep(5)
+
+    if not registry_ready:
+        return {
+            "ok": False,
+            "executed": start_executed or start_already_running,
+            "blocked_reason": "Timed out waiting for worker registry availability.",
+            "registry_url": registry_url,
+            "last_registry_error": registry_error,
+            "registry_worker": registry_worker,
+            "events": events,
+            "pause_result": pause_result,
+            "plan": plan,
+        }
+
     return {
         "ok": True,
         "executed": True,
@@ -4071,10 +4133,12 @@ async def power_execute_wake_and_start_worker(
         "target_name": target_name,
         "host_ready": host_ready,
         "worker_ready": worker_ready,
+        "registry_ready": registry_ready,
+        "registry_worker": registry_worker,
         "start_executed": start_executed,
         "start_already_running": start_already_running,
         "pause_result": pause_result,
         "events": events,
-        "note": "Host is online, worker target is started/running, and health URL is reachable.",
+        "note": "Host is online, worker target is started/running, health URL is reachable, and registry shows worker available.",
     }
 
