@@ -53,6 +53,9 @@ sudo cp ops/systemd/edge-queue-controller-worker-start-override.conf \
 sudo cp ops/systemd/edge-queue-controller-wake-and-start-override.conf \
   /etc/systemd/system/edge-queue-controller.service.d/100-wake-and-start.conf
 
+sudo cp ops/systemd/edge-queue-controller-power-auto-start-override.conf \
+  /etc/systemd/system/edge-queue-controller.service.d/110-power-auto-start.conf
+
 echo "[5/6] Reloading systemd and enabling services/timers"
 sudo systemctl daemon-reload
 sudo systemctl enable --now edge-queue-controller.service

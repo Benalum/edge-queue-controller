@@ -2865,6 +2865,7 @@ async def power_auto_tick():
 
     auto_stop_workers = parse_bool(os.getenv("EDGE_POWER_AUTO_STOP_WORKERS"), False)
     auto_shutdown_host = parse_bool(os.getenv("EDGE_POWER_AUTO_SHUTDOWN_HOST"), False)
+    auto_start_workers = parse_bool(os.getenv("EDGE_POWER_AUTO_START_WORKERS"), False)
 
     auto_status = await power_auto_status()
     if auto_status.get("paused"):
@@ -2874,6 +2875,7 @@ async def power_auto_tick():
             "automation": {
                 "auto_stop_workers": auto_stop_workers,
                 "auto_shutdown_host": auto_shutdown_host,
+                "auto_start_workers": auto_start_workers,
                 "paused": True,
                 "pause_reason": auto_status.get("pause_reason"),
                 "pause_until": auto_status.get("pause_until"),
@@ -2895,6 +2897,11 @@ async def power_auto_tick():
     execute_stops_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_STOPS"), False)
     execute_host_shutdown_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_HOST_SHUTDOWN"), False)
     execute_wake_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_WAKE"), False)
+    execute_wake_and_start_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_WAKE_AND_START"), False)
+
+    queue_demand = _power_auto_queue_demand_state()
+    worker_registry_state = _power_lookup_worker_registry_state("llms_ollama")
+    worker_start_plan = await power_start_worker_plan(target_name="llms_ollama")
 
     stop_plan = await power_stop_plan()
     host_plan = await power_host_shutdown_plan()
@@ -2909,9 +2916,154 @@ async def power_auto_tick():
     actions = []
 
     # ------------------------------------------------------------
+    # Worker/CT start automation decision
+    # ------------------------------------------------------------
+    if queue_demand.get("has_start_demand"):
+        start_plan_blocked_reason = worker_start_plan.get("blocked_reason") or ""
+
+        if worker_start_plan.get("eligible"):
+            if not auto_start_workers:
+                actions.append(
+                    {
+                        "area": "worker_start",
+                        "action": "would_auto_start_worker",
+                        "executed": False,
+                        "reason": "Queued jobs exist and worker target is stopped/eligible, but EDGE_POWER_AUTO_START_WORKERS=0.",
+                        "queue_demand": queue_demand,
+                        "worker_registry_state": worker_registry_state,
+                        "worker_start_plan": worker_start_plan,
+                    }
+                )
+            elif not execute_wake_and_start_enabled:
+                actions.append(
+                    {
+                        "area": "worker_start",
+                        "action": "blocked_auto_start_execution_disabled",
+                        "executed": False,
+                        "reason": "Queued jobs exist and worker target is stopped/eligible, but EDGE_POWER_EXECUTE_WAKE_AND_START=0.",
+                        "queue_demand": queue_demand,
+                        "worker_registry_state": worker_registry_state,
+                        "worker_start_plan": worker_start_plan,
+                    }
+                )
+            else:
+                start_result = await power_execute_wake_and_start_worker(
+                    target_name="llms_ollama",
+                    confirm="WAKE_AND_START_WORKER",
+                    pause_after_start_minutes=10,
+                    wait_worker_seconds=180,
+                    wait_registry_seconds=180,
+                )
+                actions.append(
+                    {
+                        "area": "worker_start",
+                        "action": "auto_wake_and_start_worker_executed",
+                        "executed": bool(start_result.get("executed")),
+                        "reason": "Queued jobs exist, worker target is stopped/eligible, and guarded wake-and-start execution was called.",
+                        "queue_demand": queue_demand,
+                        "worker_registry_state": worker_registry_state,
+                        "worker_start_plan": worker_start_plan,
+                        "result": start_result,
+                    }
+                )
+
+        elif "already running" in start_plan_blocked_reason and worker_registry_state.get("computed_health") == "available":
+            actions.append(
+                {
+                    "area": "worker_start",
+                    "action": "no_worker_start_needed",
+                    "executed": False,
+                    "reason": "Queued jobs exist, worker target is already running, and worker registry shows available.",
+                    "queue_demand": queue_demand,
+                    "worker_registry_state": worker_registry_state,
+                    "worker_start_plan": worker_start_plan,
+                }
+            )
+
+        elif "already running" in start_plan_blocked_reason:
+            if not auto_start_workers:
+                actions.append(
+                    {
+                        "area": "worker_start",
+                        "action": "would_recover_running_worker",
+                        "executed": False,
+                        "reason": "Worker target is running but registry is not available; EDGE_POWER_AUTO_START_WORKERS=0.",
+                        "queue_demand": queue_demand,
+                        "worker_registry_state": worker_registry_state,
+                        "worker_start_plan": worker_start_plan,
+                    }
+                )
+            elif not execute_wake_and_start_enabled:
+                actions.append(
+                    {
+                        "area": "worker_start",
+                        "action": "blocked_recover_running_worker_execution_disabled",
+                        "executed": False,
+                        "reason": "Worker target is running but registry is not available; EDGE_POWER_EXECUTE_WAKE_AND_START=0.",
+                        "queue_demand": queue_demand,
+                        "worker_registry_state": worker_registry_state,
+                        "worker_start_plan": worker_start_plan,
+                    }
+                )
+            else:
+                start_result = await power_execute_wake_and_start_worker(
+                    target_name="llms_ollama",
+                    confirm="WAKE_AND_START_WORKER",
+                    pause_after_start_minutes=10,
+                    wait_worker_seconds=180,
+                    wait_registry_seconds=180,
+                )
+                actions.append(
+                    {
+                        "area": "worker_start",
+                        "action": "auto_recover_running_worker_executed",
+                        "executed": bool(start_result.get("executed")),
+                        "reason": "Worker target is running but registry was not available, so guarded wake-and-start recovery was called.",
+                        "queue_demand": queue_demand,
+                        "worker_registry_state": worker_registry_state,
+                        "worker_start_plan": worker_start_plan,
+                        "result": start_result,
+                    }
+                )
+
+        else:
+            actions.append(
+                {
+                    "area": "worker_start",
+                    "action": "worker_start_blocked_by_plan",
+                    "executed": False,
+                    "reason": worker_start_plan.get("blocked_reason") or "Worker start plan is not eligible.",
+                    "queue_demand": queue_demand,
+                    "worker_registry_state": worker_registry_state,
+                    "worker_start_plan": worker_start_plan,
+                }
+            )
+    else:
+        actions.append(
+            {
+                "area": "worker_start",
+                "action": "no_start_demand",
+                "executed": False,
+                "reason": "No queued jobs require a worker start.",
+                "queue_demand": queue_demand,
+                "worker_registry_state": worker_registry_state,
+            }
+        )
+
+    # ------------------------------------------------------------
     # Worker/CT stop automation decision
     # ------------------------------------------------------------
-    if eligible_container_plans:
+    if queue_demand.get("has_start_demand"):
+        actions.append(
+            {
+                "area": "worker_stop",
+                "action": "skip_worker_stop_due_to_queue_demand",
+                "executed": False,
+                "reason": "Queued jobs exist, so auto-stop is skipped.",
+                "queue_demand": queue_demand,
+            }
+        )
+    elif eligible_container_plans:
         if not auto_stop_workers:
             actions.append(
                 {
@@ -3012,9 +3164,11 @@ async def power_auto_tick():
         "automation": {
             "auto_stop_workers": auto_stop_workers,
             "auto_shutdown_host": auto_shutdown_host,
+            "auto_start_workers": auto_start_workers,
             "execute_stops_enabled": execute_stops_enabled,
             "execute_host_shutdown_enabled": execute_host_shutdown_enabled,
             "execute_wake_enabled": execute_wake_enabled,
+            "execute_wake_and_start_enabled": execute_wake_and_start_enabled,
         },
         "stop_plan_summary": {
             "eligible_container_stop_count": len(eligible_container_plans),
@@ -4067,6 +4221,15 @@ async def power_execute_wake_and_start_worker(
             "plan": plan,
         }
 
+    registry_refresh_result = _power_mark_worker_available_from_controller_check(target_name)
+    events.append(
+        {
+            "step": "refresh_worker_registry_from_health_check",
+            "executed": bool(registry_refresh_result.get("updated")),
+            "result": registry_refresh_result,
+        }
+    )
+
     registry_ready = False
     registry_error = None
     registry_worker = None
@@ -4215,6 +4378,172 @@ def _power_lookup_worker_registry_state(target_name: str):
             "computed_health": computed_health,
             "worker": worker,
             "reason": None,
+            "db_path": str(db_path),
+        }
+
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------
+# Power auto-start queue demand helper
+# ---------------------------------------------------------------------
+def _power_auto_queue_demand_state():
+    """
+    Read queued job demand directly from SQLite.
+
+    This intentionally avoids self-HTTP calls from inside the controller.
+    """
+    import sqlite3
+
+    db_path = _power_auto_find_db_path()
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    try:
+        tables = [
+            row["name"]
+            for row in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        ]
+
+        if "jobs" not in tables:
+            return {
+                "ok": True,
+                "db_path": str(db_path),
+                "has_jobs_table": False,
+                "queued_job_count": 0,
+                "active_job_count": 0,
+                "status_counts": {},
+                "has_start_demand": False,
+                "reason": "No jobs table exists.",
+            }
+
+        status_counts = {
+            row["status"]: int(row["count"])
+            for row in conn.execute(
+                """
+                SELECT status, COUNT(*) AS count
+                FROM jobs
+                GROUP BY status
+                """
+            ).fetchall()
+        }
+
+        start_statuses = {
+            "queued",
+            "pending",
+            "ready",
+            "retry",
+            "retrying",
+        }
+
+        active_statuses = start_statuses | {
+            "running",
+            "processing",
+            "forwarding",
+            "in_progress",
+        }
+
+        queued_job_count = sum(
+            count
+            for status, count in status_counts.items()
+            if str(status).lower() in start_statuses
+        )
+
+        active_job_count = sum(
+            count
+            for status, count in status_counts.items()
+            if str(status).lower() in active_statuses
+        )
+
+        return {
+            "ok": True,
+            "db_path": str(db_path),
+            "has_jobs_table": True,
+            "queued_job_count": queued_job_count,
+            "active_job_count": active_job_count,
+            "status_counts": status_counts,
+            "has_start_demand": queued_job_count > 0,
+            "reason": None,
+        }
+
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------
+# Direct worker registry refresh helper
+# ---------------------------------------------------------------------
+def _power_mark_worker_available_from_controller_check(target_name: str):
+    """
+    Mark a worker fresh/available after the controller has independently verified
+    the backing service health URL.
+
+    This avoids waiting for a heartbeat POST while the controller is already inside
+    a long-running wake/start request.
+    """
+    import sqlite3
+    from datetime import datetime, timezone
+
+    db_path = _power_auto_find_db_path()
+    now = datetime.now(timezone.utc).isoformat()
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    try:
+        row = conn.execute(
+            """
+            SELECT worker_id, name, target_name
+            FROM workers
+            WHERE worker_id = ?
+               OR name = ?
+               OR target_name = ?
+            LIMIT 1
+            """,
+            (target_name, target_name, target_name),
+        ).fetchone()
+
+        if not row:
+            return {
+                "ok": False,
+                "updated": False,
+                "target_name": target_name,
+                "reason": f"No worker matched {target_name}.",
+                "db_path": str(db_path),
+            }
+
+        worker_id = row["worker_id"]
+
+        conn.execute(
+            """
+            UPDATE workers
+            SET
+                status = 'online',
+                current_jobs = 0,
+                queue_depth = 0,
+                last_error = NULL,
+                last_heartbeat_at = ?,
+                updated_at = ?
+            WHERE worker_id = ?
+            """,
+            (now, now, worker_id),
+        )
+
+        conn.commit()
+
+        refreshed = _power_lookup_worker_registry_state(target_name)
+
+        return {
+            "ok": True,
+            "updated": True,
+            "target_name": target_name,
+            "worker_id": worker_id,
+            "updated_at": now,
+            "refreshed_state": refreshed,
             "db_path": str(db_path),
         }
 
