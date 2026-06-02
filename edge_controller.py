@@ -1244,3 +1244,187 @@ def workers_events(limit: int = 50):
         "events": [dict(row) for row in rows],
     }
 
+
+
+# ---------------------------------------------------------------------
+# Manual remediation reset endpoint
+# ---------------------------------------------------------------------
+@app.post("/workers/{worker_id}/remediation/reset")
+async def reset_worker_remediation(worker_id: str):
+    """
+    Reset remediation counters for a worker after a successful/manual recovery.
+
+    This clears:
+      - consecutive_failures
+      - restart_attempts
+      - last_error
+
+    It also writes a worker event when the event table is available.
+    """
+    import sqlite3
+    from pathlib import Path
+    from datetime import datetime, timezone
+    from fastapi import HTTPException
+
+    def find_db_path():
+        candidates = []
+
+        for name, value in globals().items():
+            upper = name.upper()
+
+            if "DB" in upper and ("PATH" in upper or "FILE" in upper or "DATABASE" in upper):
+                if isinstance(value, (str, Path)):
+                    text = str(value)
+
+                    if text.startswith("sqlite:///"):
+                        text = text.replace("sqlite:///", "", 1)
+
+                    if text and not text.startswith("postgres"):
+                        candidates.append(Path(text))
+
+        for p in candidates:
+            if p.exists():
+                return p
+
+        fallback_names = [
+            "edge_controller.db",
+            "edge_controller.sqlite",
+            "edge_controller.sqlite3",
+            "queue_controller.db",
+            "queue_controller.sqlite",
+            "queue_controller.sqlite3",
+        ]
+
+        here = Path(__file__).resolve().parent
+        for name in fallback_names:
+            p = here / name
+            if p.exists():
+                return p
+
+        raise HTTPException(
+            status_code=500,
+            detail="Could not locate SQLite database path from controller globals or known fallback names.",
+        )
+
+    db_path = find_db_path()
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    try:
+        worker_cols = {
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(workers)").fetchall()
+        }
+
+        if not worker_cols:
+            raise HTTPException(status_code=500, detail="workers table not found or has no columns")
+
+        if "worker_id" in worker_cols:
+            worker_key_col = "worker_id"
+        elif "id" in worker_cols:
+            worker_key_col = "id"
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail="workers table does not contain worker_id or id column",
+            )
+
+        updates = []
+        params = []
+
+        if "consecutive_failures" in worker_cols:
+            updates.append("consecutive_failures = ?")
+            params.append(0)
+
+        if "restart_attempts" in worker_cols:
+            updates.append("restart_attempts = ?")
+            params.append(0)
+
+        if "last_error" in worker_cols:
+            updates.append("last_error = ?")
+            params.append(None)
+
+        now = datetime.now(timezone.utc).isoformat()
+
+        if "updated_at" in worker_cols:
+            updates.append("updated_at = ?")
+            params.append(now)
+
+        if not updates:
+            raise HTTPException(
+                status_code=500,
+                detail="No remediation columns found to reset",
+            )
+
+        params.append(worker_id)
+
+        cur = conn.execute(
+            f"""
+            UPDATE workers
+            SET {", ".join(updates)}
+            WHERE {worker_key_col} = ?
+            """,
+            params,
+        )
+
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail=f"Worker not found: {worker_id}")
+
+        event_table = None
+        for row in conn.execute(
+            """
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table'
+            ORDER BY name
+            """
+        ).fetchall():
+            table = row["name"]
+            cols = {
+                c["name"]
+                for c in conn.execute(f"PRAGMA table_info({table})").fetchall()
+            }
+
+            if {"worker_id", "event_type", "message"}.issubset(cols):
+                event_table = table
+                event_cols = cols
+                break
+
+        if event_table:
+            cols = ["worker_id", "event_type", "message"]
+            values = [
+                worker_id,
+                "remediation_reset",
+                "Manual remediation counters reset.",
+            ]
+
+            if "created_at" in event_cols:
+                cols.append("created_at")
+                values.append(now)
+
+            placeholders = ", ".join(["?"] * len(cols))
+
+            conn.execute(
+                f"""
+                INSERT INTO {event_table} ({", ".join(cols)})
+                VALUES ({placeholders})
+                """,
+                values,
+            )
+
+        conn.commit()
+
+        return {
+            "ok": True,
+            "worker_id": worker_id,
+            "reset": {
+                "consecutive_failures": "consecutive_failures" in worker_cols,
+                "restart_attempts": "restart_attempts" in worker_cols,
+                "last_error": "last_error" in worker_cols,
+            },
+            "event_logged": bool(event_table),
+        }
+
+    finally:
+        conn.close()
