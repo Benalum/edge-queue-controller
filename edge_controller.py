@@ -17,13 +17,13 @@ load_dotenv()
 DB_PATH = Path("edge_queue.sqlite3")
 
 EDGE_DRY_RUN = os.getenv("EDGE_DRY_RUN", "true").lower() == "true"
-HOST_CHECK_URL = os.getenv("HOST_CHECK_URL", "http://100.88.245.33:3010")
+HOST_CHECK_URL = os.getenv("HOST_CHECK_URL", "http://127.0.0.1:3010")
 
 PROXMOX_WAKE_MAC = os.getenv("PROXMOX_WAKE_MAC", "")
 PROXMOX_WAKE_BROADCAST = os.getenv("PROXMOX_WAKE_BROADCAST", "192.168.0.255")
 PROXMOX_WAKE_PORT = int(os.getenv("PROXMOX_WAKE_PORT", "9"))
 
-AI_PLATFORM_BASE_URL = os.getenv("AI_PLATFORM_BASE_URL", "http://100.88.245.33:3010")
+AI_PLATFORM_BASE_URL = os.getenv("AI_PLATFORM_BASE_URL", "http://127.0.0.1:3010")
 AI_PLATFORM_EDGE_INGEST_URL = os.getenv(
     "AI_PLATFORM_EDGE_INGEST_URL",
     f"{AI_PLATFORM_BASE_URL.rstrip()}/api/backend/internal/edge/jobs",
