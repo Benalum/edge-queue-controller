@@ -3468,6 +3468,7 @@ async def power_start_worker_plan(target_name: str = "llms_ollama"):
 async def power_execute_start_worker(
     target_name: str = "llms_ollama",
     confirm: str = "",
+    pause_after_start_minutes: int = 10,
 ):
     """
     Manually start an eligible auto-managed worker CT/VM.
@@ -3555,6 +3556,14 @@ async def power_execute_start_worker(
             "plan": plan,
         }
 
+    pause_result = None
+
+    if result.returncode == 0 and pause_after_start_minutes > 0:
+        pause_result = await power_auto_pause(
+            minutes=pause_after_start_minutes,
+            reason=f"worker-start-{target_name}",
+        )
+
     return {
         "ok": True,
         "executed": result.returncode == 0,
@@ -3564,7 +3573,9 @@ async def power_execute_start_worker(
         "returncode": result.returncode,
         "stdout": result.stdout[-2000:],
         "stderr": result.stderr[-2000:],
+        "pause_after_start_minutes": pause_after_start_minutes,
+        "pause_result": pause_result,
         "plan": plan,
-        "note": "If successful, wait for the worker heartbeat/Ollama health before dispatching jobs.",
+        "note": "If successful, power automation is temporarily paused so the worker can finish booting.",
     }
 
