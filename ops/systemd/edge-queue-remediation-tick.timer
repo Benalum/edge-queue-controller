@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Edge Queue worker remediation tick every minute
+
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=60
+AccuracySec=5
+Unit=edge-queue-remediation-tick.service
+
+[Install]
+WantedBy=timers.target

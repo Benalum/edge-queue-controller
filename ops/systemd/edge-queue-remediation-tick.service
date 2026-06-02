@@ -1,0 +1,8 @@
+[Unit]
+Description=Run Edge Queue worker remediation tick
+Requires=edge-queue-controller.service
+After=edge-queue-controller.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/curl -fsS -X POST http://127.0.0.1:7070/workers/remediation/tick

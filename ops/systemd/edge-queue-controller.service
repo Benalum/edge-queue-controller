@@ -1,0 +1,16 @@
+[Unit]
+Description=Edge Queue Controller API
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=alex
+WorkingDirectory=/home/alex/Desktop/edge-queue-controller
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/alex/Desktop/edge-queue-controller/.venv/bin/python -m uvicorn edge_controller:app --host 0.0.0.0 --port 7070
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
