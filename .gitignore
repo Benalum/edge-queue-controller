@@ -1,0 +1,40 @@
+# Secrets / local config
+.env
+.env.*
+!.env.example
+edge_inventory.json
+
+# SSH keys / private keys
+*.key
+*.pem
+id_rsa
+id_ed25519
+edge_queue_llms
+edge_queue_pveso
+edge_queue_*
+
+# Local database/state
+*.sqlite
+*.sqlite3
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Logs/cache/temp
+*.log
+logs/
+tmp/
+cache/
+
+# Backups
+*.bak
+*.bak-*
+*.backup
+*.old

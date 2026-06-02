@@ -1,0 +1,55 @@
+{
+  "default_target": "llms_ollama",
+
+  "routes": {
+    "ollama_chat": "llms_ollama",
+    "companion_chat": "llms_ollama",
+    "tts": "llms_ollama",
+    "stt": "llms_ollama",
+    "comfy_image": "comfyui_local",
+    "comfy_video": "comfyui_local"
+  },
+
+  "hosts": {
+    "pveso": {
+      "label": "Main Proxmox host",
+      "wake_mac": "CHANGE_ME",
+      "wake_broadcast": "192.168.0.255",
+      "wake_port": 9,
+
+      "proxmox_ssh_host": "CHANGE_ME_PROXMOX_TAILSCALE_IP",
+      "proxmox_ssh_user": "root",
+      "proxmox_ssh_key": "/home/alex/.ssh/edge_queue_pveso"
+    }
+  },
+
+  "targets": {
+    "llms_ollama": {
+      "label": "LLMs / AI Platform / Ollama",
+      "host": "pveso",
+      "required_ctids": [101],
+
+      "health_url": "http://CHANGE_ME_CT101_IP:3010",
+      "edge_ingest_url": "http://CHANGE_ME_CT101_IP:3010/api/backend/internal/edge/jobs",
+
+      "worker_start_ssh_host": "CHANGE_ME_CT101_IP",
+      "worker_start_ssh_user": "root",
+      "worker_start_ssh_key": "/home/alex/.ssh/edge_queue_llms",
+      "worker_start_command": "/usr/local/sbin/ai-platform-start-worker"
+    },
+
+    "comfyui_local": {
+      "label": "ComfyUI image/video worker",
+      "host": "pveso",
+      "required_ctids": [108],
+
+      "health_url": "http://CHANGE_ME_CT108_IP:8188",
+      "edge_ingest_url": "",
+
+      "worker_start_ssh_host": "",
+      "worker_start_ssh_user": "root",
+      "worker_start_ssh_key": "",
+      "worker_start_command": ""
+    }
+  }
+}
