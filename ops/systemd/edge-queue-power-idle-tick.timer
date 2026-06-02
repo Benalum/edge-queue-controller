@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Edge Queue idle power dry-run tick every minute
+
+[Timer]
+OnBootSec=45
+OnUnitActiveSec=60
+AccuracySec=5
+Unit=edge-queue-power-idle-tick.service
+
+[Install]
+WantedBy=timers.target

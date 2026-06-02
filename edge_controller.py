@@ -1428,3 +1428,422 @@ async def reset_worker_remediation(worker_id: str):
 
     finally:
         conn.close()
+
+
+# ---------------------------------------------------------------------
+# Power idle dry-run endpoint
+# ---------------------------------------------------------------------
+@app.post("/power/idle/tick")
+async def power_idle_tick():
+    """
+    Dry-run idle power management.
+
+    Policy goal:
+      1. If the queue has been empty for EDGE_IDLE_CONTAINER_SECONDS,
+         report which worker targets would be stopped.
+      2. If all worker targets have been idle/off for EDGE_IDLE_HOST_SECONDS,
+         report whether the host would be eligible for shutdown.
+
+    This endpoint is intentionally dry-run by default. It does not stop
+    containers or shut down hosts yet.
+    """
+    import json
+    import os
+    import sqlite3
+    from pathlib import Path
+    from datetime import datetime, timezone
+    from fastapi import HTTPException
+
+    now = datetime.now(timezone.utc)
+
+    def now_iso():
+        return datetime.now(timezone.utc).isoformat()
+
+    def parse_bool(value, default=True):
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    def parse_csv(value):
+        if not value:
+            return set()
+        return {
+            item.strip()
+            for item in str(value).split(",")
+            if item.strip()
+        }
+
+    dry_run = parse_bool(os.getenv("EDGE_POWER_DRY_RUN"), True)
+    container_idle_seconds_required = int(os.getenv("EDGE_IDLE_CONTAINER_SECONDS", "300"))
+    host_idle_seconds_required = int(os.getenv("EDGE_IDLE_HOST_SECONDS", "300"))
+
+    # Safety rule:
+    # Even in the future, real stopping should only be allowed for explicit targets.
+    allowed_stop_targets = parse_csv(os.getenv("EDGE_POWER_ALLOWED_STOP_TARGETS", ""))
+
+    protected_targets = parse_csv(
+        os.getenv(
+            "EDGE_POWER_PROTECTED_TARGETS",
+            "controller,router,dns,cloudflare,cloudflared,tailscale,network",
+        )
+    )
+
+    def find_db_path():
+        candidates = []
+
+        for name, value in globals().items():
+            upper = name.upper()
+
+            if "DB" in upper and ("PATH" in upper or "FILE" in upper or "DATABASE" in upper):
+                if isinstance(value, (str, Path)):
+                    text = str(value)
+
+                    if text.startswith("sqlite:///"):
+                        text = text.replace("sqlite:///", "", 1)
+
+                    if text and not text.startswith("postgres"):
+                        candidates.append(Path(text))
+
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate
+
+        fallback_names = [
+            "edge_queue.sqlite3",
+            "edge_queue.sqlite",
+            "edge_queue.db",
+            "edge_controller.db",
+            "edge_controller.sqlite",
+            "edge_controller.sqlite3",
+            "queue_controller.db",
+            "queue_controller.sqlite",
+            "queue_controller.sqlite3",
+        ]
+
+        here = Path(__file__).resolve().parent
+        for name in fallback_names:
+            candidate = here / name
+            if candidate.exists():
+                return candidate
+
+        raise HTTPException(
+            status_code=500,
+            detail="Could not locate SQLite database path.",
+        )
+
+    db_path = find_db_path()
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS power_idle_state (
+                key TEXT PRIMARY KEY,
+                value TEXT,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS power_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_type TEXT NOT NULL,
+                message TEXT NOT NULL,
+                payload_json TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
+        def get_state(key):
+            row = conn.execute(
+                "SELECT value FROM power_idle_state WHERE key = ?",
+                (key,),
+            ).fetchone()
+            return row["value"] if row else None
+
+        def set_state(key, value):
+            conn.execute(
+                """
+                INSERT INTO power_idle_state (key, value, updated_at)
+                VALUES (?, ?, ?)
+                ON CONFLICT(key) DO UPDATE SET
+                    value = excluded.value,
+                    updated_at = excluded.updated_at
+                """,
+                (key, value, now_iso()),
+            )
+
+        def clear_state(key):
+            conn.execute(
+                "DELETE FROM power_idle_state WHERE key = ?",
+                (key,),
+            )
+
+        def seconds_since(iso_value):
+            if not iso_value:
+                return 0
+            try:
+                dt = datetime.fromisoformat(iso_value)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return max(0, int((now - dt).total_seconds()))
+            except Exception:
+                return 0
+
+        tables = {
+            row["name"]
+            for row in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            ).fetchall()
+        }
+
+        workers = []
+        if "workers" in tables:
+            worker_rows = conn.execute("SELECT * FROM workers").fetchall()
+            for row in worker_rows:
+                item = dict(row)
+                workers.append(item)
+
+        jobs_known = "jobs" in tables
+        active_jobs_count = None
+        job_status_column = None
+
+        terminal_statuses = {
+            "done",
+            "complete",
+            "completed",
+            "success",
+            "succeeded",
+            "failed",
+            "error",
+            "errored",
+            "cancelled",
+            "canceled",
+        }
+
+        if jobs_known:
+            job_cols = {
+                row["name"]
+                for row in conn.execute("PRAGMA table_info(jobs)").fetchall()
+            }
+
+            for candidate in ("status", "state", "job_status"):
+                if candidate in job_cols:
+                    job_status_column = candidate
+                    break
+
+            if job_status_column:
+                rows = conn.execute(
+                    f"SELECT {job_status_column} AS status_value FROM jobs"
+                ).fetchall()
+
+                active_jobs_count = 0
+                for row in rows:
+                    status = str(row["status_value"] or "").strip().lower()
+
+                    # Empty/unknown status is treated as active for safety.
+                    if not status or status not in terminal_statuses:
+                        active_jobs_count += 1
+            else:
+                # If we cannot identify job status safely, block shutdown decisions.
+                active_jobs_count = None
+
+        worker_busy_count = 0
+        worker_queue_depth_total = 0
+
+        for worker in workers:
+            try:
+                worker_busy_count += int(worker.get("current_jobs") or 0)
+            except Exception:
+                worker_busy_count += 0
+
+            try:
+                worker_queue_depth_total += int(worker.get("queue_depth") or 0)
+            except Exception:
+                worker_queue_depth_total += 0
+
+        jobs_safe_to_evaluate = active_jobs_count is not None
+
+        queue_now_empty = (
+            jobs_safe_to_evaluate
+            and active_jobs_count == 0
+            and worker_busy_count == 0
+            and worker_queue_depth_total == 0
+        )
+
+        previous_queue_empty_since = get_state("queue_empty_since")
+
+        if queue_now_empty:
+            if not previous_queue_empty_since:
+                previous_queue_empty_since = now.isoformat()
+                set_state("queue_empty_since", previous_queue_empty_since)
+        else:
+            clear_state("queue_empty_since")
+            previous_queue_empty_since = None
+
+        queue_empty_for_seconds = seconds_since(previous_queue_empty_since)
+
+        container_actions = []
+
+        for worker in workers:
+            worker_id = worker.get("worker_id") or worker.get("name") or "unknown-worker"
+            target_name = worker.get("target_name") or worker_id
+            host_id = worker.get("host_id") or "unknown-host"
+
+            try:
+                current_jobs = int(worker.get("current_jobs") or 0)
+            except Exception:
+                current_jobs = 0
+
+            try:
+                queue_depth = int(worker.get("queue_depth") or 0)
+            except Exception:
+                queue_depth = 0
+
+            target_is_protected = target_name in protected_targets or worker_id in protected_targets
+            target_is_allowlisted = target_name in allowed_stop_targets or worker_id in allowed_stop_targets
+
+            if not queue_now_empty:
+                action = "no_action_queue_not_empty_or_unknown"
+                reason = "Queue is not empty, jobs table could not be evaluated, or worker still has work."
+            elif queue_empty_for_seconds < container_idle_seconds_required:
+                action = "no_action_idle_grace_period"
+                reason = f"Queue empty for {queue_empty_for_seconds}s; waiting for {container_idle_seconds_required}s."
+            elif current_jobs != 0 or queue_depth != 0:
+                action = "no_action_worker_busy"
+                reason = "Worker still reports current jobs or queue depth."
+            elif target_is_protected:
+                action = "blocked_protected_target"
+                reason = "Target is protected from auto-stop."
+            elif not target_is_allowlisted:
+                action = "blocked_not_allowlisted"
+                reason = "Target is not in EDGE_POWER_ALLOWED_STOP_TARGETS."
+            elif dry_run:
+                action = "would_stop_worker_target"
+                reason = "Queue has been empty long enough and target is allowlisted, but dry-run is enabled."
+            else:
+                # Real stop is intentionally not implemented yet.
+                action = "real_stop_not_implemented"
+                reason = "Dry-run is disabled, but real stop code has not been implemented yet."
+
+            container_actions.append(
+                {
+                    "worker_id": worker_id,
+                    "host_id": host_id,
+                    "target_name": target_name,
+                    "current_jobs": current_jobs,
+                    "queue_depth": queue_depth,
+                    "protected": target_is_protected,
+                    "allowlisted": target_is_allowlisted,
+                    "action": action,
+                    "reason": reason,
+                }
+            )
+
+        all_container_actions_idle_or_blocked = all(
+            action["action"] in {
+                "would_stop_worker_target",
+                "blocked_protected_target",
+                "blocked_not_allowlisted",
+                "real_stop_not_implemented",
+            }
+            for action in container_actions
+        ) if container_actions else False
+
+        previous_host_empty_since = get_state("host_empty_since")
+
+        # Host shutdown is not truly safe until we can query Proxmox CT/VM inventory.
+        # For now, host logic only tracks the dry-run grace window and reports blocked.
+        host_candidate_now = (
+            queue_now_empty
+            and queue_empty_for_seconds >= container_idle_seconds_required
+            and all_container_actions_idle_or_blocked
+        )
+
+        if host_candidate_now:
+            if not previous_host_empty_since:
+                previous_host_empty_since = now.isoformat()
+                set_state("host_empty_since", previous_host_empty_since)
+        else:
+            clear_state("host_empty_since")
+            previous_host_empty_since = None
+
+        host_empty_for_seconds = seconds_since(previous_host_empty_since)
+
+        host_actions = []
+
+        hosts = sorted({
+            worker.get("host_id") or "unknown-host"
+            for worker in workers
+        })
+
+        for host in hosts:
+            if not host_candidate_now:
+                host_action = "no_action_host_not_idle_candidate"
+                host_reason = "Queue/container idle requirements are not satisfied yet."
+            elif host_empty_for_seconds < host_idle_seconds_required:
+                host_action = "no_action_host_idle_grace_period"
+                host_reason = f"Host idle candidate for {host_empty_for_seconds}s; waiting for {host_idle_seconds_required}s."
+            else:
+                host_action = "blocked_need_proxmox_inventory_check"
+                host_reason = "Need CT/VM inventory check before host shutdown can be considered safe."
+
+            host_actions.append(
+                {
+                    "host_id": host,
+                    "idle_candidate_for_seconds": host_empty_for_seconds,
+                    "action": host_action,
+                    "reason": host_reason,
+                }
+            )
+
+        payload = {
+            "ok": True,
+            "dry_run": dry_run,
+            "db_path": str(db_path),
+            "policy": {
+                "container_idle_seconds_required": container_idle_seconds_required,
+                "host_idle_seconds_required": host_idle_seconds_required,
+                "allowed_stop_targets": sorted(allowed_stop_targets),
+                "protected_targets": sorted(protected_targets),
+            },
+            "queue": {
+                "jobs_known": jobs_known,
+                "jobs_safe_to_evaluate": jobs_safe_to_evaluate,
+                "job_status_column": job_status_column,
+                "active_jobs_count": active_jobs_count,
+                "worker_busy_count": worker_busy_count,
+                "worker_queue_depth_total": worker_queue_depth_total,
+                "queue_now_empty": queue_now_empty,
+                "queue_empty_since": previous_queue_empty_since,
+                "queue_empty_for_seconds": queue_empty_for_seconds,
+            },
+            "container_actions": container_actions,
+            "host_actions": host_actions,
+        }
+
+        conn.execute(
+            """
+            INSERT INTO power_events (event_type, message, payload_json, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                "power_idle_tick",
+                "Power idle dry-run tick evaluated.",
+                json.dumps(payload, sort_keys=True),
+                now_iso(),
+            ),
+        )
+
+        conn.commit()
+
+        return payload
+
+    finally:
+        conn.close()
+
