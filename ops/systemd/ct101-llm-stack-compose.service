@@ -1,0 +1,15 @@
+[Unit]
+Description=Bring up LLM Docker Compose stack
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/llm-stack
+ExecStart=/usr/bin/docker compose up -d
+RemainAfterExit=yes
+TimeoutStartSec=180
+
+[Install]
+WantedBy=multi-user.target
