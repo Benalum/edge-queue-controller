@@ -2120,3 +2120,213 @@ async def proxmox_inventory():
         },
     }
 
+
+# ---------------------------------------------------------------------
+# Power stop command plan dry-run endpoint
+# ---------------------------------------------------------------------
+@app.post("/power/stop-plan")
+async def power_stop_plan():
+    """
+    Build an explicit dry-run command plan for idle power management.
+
+    This endpoint does not execute stop/shutdown commands.
+    It only reports what commands would be eligible to run later.
+    """
+    import os
+    from datetime import datetime, timezone
+    from fastapi import HTTPException
+
+    def parse_bool(value, default=True):
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    def parse_target_map(value):
+        result = {}
+
+        if not value:
+            return result
+
+        for item in str(value).split(","):
+            item = item.strip()
+            if not item:
+                continue
+
+            if "=" not in item:
+                continue
+
+            key, target = item.split("=", 1)
+            key = key.strip()
+            target = target.strip()
+
+            if not key or not target:
+                continue
+
+            if ":" not in target:
+                continue
+
+            kind, vmid = target.split(":", 1)
+            kind = kind.strip().lower()
+            vmid = vmid.strip()
+
+            if kind not in {"ct", "vm"}:
+                continue
+
+            if not vmid:
+                continue
+
+            result[key] = {
+                "kind": kind,
+                "vmid": vmid,
+            }
+
+        return result
+
+    dry_run = parse_bool(os.getenv("EDGE_POWER_DRY_RUN"), True)
+    ssh_target = os.getenv("EDGE_PROXMOX_SSH_TARGET", "").strip()
+    shutdown_timeout = int(os.getenv("EDGE_POWER_CONTAINER_SHUTDOWN_TIMEOUT", "60"))
+    target_map = parse_target_map(os.getenv("EDGE_POWER_TARGET_MAP", ""))
+
+    if not ssh_target:
+        raise HTTPException(
+            status_code=500,
+            detail="EDGE_PROXMOX_SSH_TARGET is not configured.",
+        )
+
+    idle_result = await power_idle_tick()
+    inventory_result = await proxmox_inventory()
+
+    containers = inventory_result.get("containers", [])
+    vms = inventory_result.get("vms", [])
+
+    inventory_lookup = {}
+
+    for item in containers:
+        inventory_lookup[("ct", str(item.get("vmid")))] = item
+        inventory_lookup[("name", str(item.get("name")))] = item
+
+    for item in vms:
+        inventory_lookup[("vm", str(item.get("vmid")))] = item
+        inventory_lookup[("name", str(item.get("name")))] = item
+
+    container_stop_plans = []
+
+    for action in idle_result.get("container_actions", []):
+        worker_id = action.get("worker_id")
+        target_name = action.get("target_name")
+        idle_action = action.get("action")
+
+        lookup_keys = [
+            target_name,
+            worker_id,
+        ]
+
+        mapped = None
+        mapped_from = None
+
+        for key in lookup_keys:
+            if key in target_map:
+                mapped = target_map[key]
+                mapped_from = key
+                break
+
+        base_plan = {
+            "worker_id": worker_id,
+            "target_name": target_name,
+            "idle_action": idle_action,
+            "mapped_from": mapped_from,
+            "mapped_target": mapped,
+            "eligible": False,
+            "blocked_reason": None,
+            "would_run": None,
+            "item": None,
+        }
+
+        if idle_action != "would_stop_worker_target":
+            base_plan["blocked_reason"] = f"Idle action is {idle_action}, not would_stop_worker_target."
+            container_stop_plans.append(base_plan)
+            continue
+
+        if not mapped:
+            base_plan["blocked_reason"] = "No EDGE_POWER_TARGET_MAP entry matched this worker/target."
+            container_stop_plans.append(base_plan)
+            continue
+
+        kind = mapped["kind"]
+        vmid = mapped["vmid"]
+
+        item = inventory_lookup.get((kind, vmid))
+        base_plan["item"] = item
+
+        if not item:
+            base_plan["blocked_reason"] = f"Mapped target {kind}:{vmid} was not found in Proxmox inventory."
+            container_stop_plans.append(base_plan)
+            continue
+
+        if item.get("protected"):
+            base_plan["blocked_reason"] = f"Mapped target {kind}:{vmid} is protected."
+            container_stop_plans.append(base_plan)
+            continue
+
+        if not item.get("auto_managed"):
+            base_plan["blocked_reason"] = f"Mapped target {kind}:{vmid} is not auto-managed."
+            container_stop_plans.append(base_plan)
+            continue
+
+        if not item.get("running"):
+            base_plan["blocked_reason"] = f"Mapped target {kind}:{vmid} is already stopped."
+            container_stop_plans.append(base_plan)
+            continue
+
+        if kind == "ct":
+            remote_command = f"pct shutdown {vmid} --timeout {shutdown_timeout}"
+        else:
+            remote_command = f"qm shutdown {vmid} --timeout {shutdown_timeout}"
+
+        base_plan["eligible"] = True
+        base_plan["blocked_reason"] = None
+        base_plan["would_run"] = f"ssh {ssh_target!r} {remote_command!r}"
+
+        container_stop_plans.append(base_plan)
+
+    inventory_summary = inventory_result.get("summary", {})
+    idle_host_actions = idle_result.get("host_actions", [])
+
+    host_shutdown_plan = {
+        "eligible": False,
+        "blocked_reason": None,
+        "would_run": None,
+        "inventory_summary": inventory_summary,
+        "idle_host_actions": idle_host_actions,
+    }
+
+    if inventory_summary.get("host_shutdown_safe_now"):
+        host_shutdown_plan["eligible"] = True
+        host_shutdown_plan["would_run"] = f"ssh {ssh_target!r} 'shutdown -h now'"
+    elif inventory_summary.get("host_shutdown_safe_if_auto_managed_stopped"):
+        host_shutdown_plan["blocked_reason"] = (
+            "Host shutdown is blocked until auto-managed running CTs/VMs are stopped "
+            "and inventory confirms zero running workloads."
+        )
+    else:
+        host_shutdown_plan["blocked_reason"] = (
+            "Host shutdown is blocked because protected or manual/unknown workloads may be running."
+        )
+
+    return {
+        "ok": True,
+        "dry_run": dry_run,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "ssh_target": ssh_target,
+        "target_map": target_map,
+        "idle_summary": {
+            "queue": idle_result.get("queue"),
+            "container_actions": idle_result.get("container_actions"),
+            "host_actions": idle_result.get("host_actions"),
+        },
+        "inventory_summary": inventory_summary,
+        "container_stop_plans": container_stop_plans,
+        "host_shutdown_plan": host_shutdown_plan,
+        "note": "This endpoint is dry-run only and does not execute commands.",
+    }
+

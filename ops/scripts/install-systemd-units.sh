@@ -24,6 +24,8 @@ sudo cp ops/systemd/edge-queue-controller-power-idle-override.conf \
   /etc/systemd/system/edge-queue-controller.service.d/10-power-idle.conf
 sudo cp ops/systemd/edge-queue-controller-proxmox-inventory-override.conf \
   /etc/systemd/system/edge-queue-controller.service.d/20-proxmox-inventory.conf
+sudo cp ops/systemd/edge-queue-controller-power-stop-plan-override.conf \
+  /etc/systemd/system/edge-queue-controller.service.d/30-power-stop-plan.conf
 
 echo "[5/6] Reloading systemd and enabling services/timers"
 sudo systemctl daemon-reload
