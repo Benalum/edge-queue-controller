@@ -8,7 +8,7 @@ from typing import Any
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 from wakeonlan import send_magic_packet
 
@@ -32,6 +32,7 @@ AI_PLATFORM_EDGE_INGEST_URL = os.getenv(
 EDGE_SHARED_SECRET = os.getenv("EDGE_SHARED_SECRET", "")
 EDGE_FORWARD_JOBS = os.getenv("EDGE_FORWARD_JOBS", "false").lower() == "true"
 EDGE_WAKE_ENABLED = os.getenv("EDGE_WAKE_ENABLED", "false").lower() == "true"
+HEARTBEAT_SHARED_SECRET = os.getenv("HEARTBEAT_SHARED_SECRET", "")
 
 WORKER_START_ENABLED = os.getenv("WORKER_START_ENABLED", "false").lower() == "true"
 WORKER_START_DRY_RUN = os.getenv("WORKER_START_DRY_RUN", "true").lower() == "true"
@@ -646,7 +647,16 @@ def score_worker_for_job(worker: dict[str, Any], requirements: dict[str, Any]) -
 
 
 @app.post("/workers/heartbeat")
-def worker_heartbeat(payload: WorkerHeartbeatRequest):
+def worker_heartbeat(
+    payload: WorkerHeartbeatRequest,
+    x_heartbeat_token: str | None = Header(default=None, alias="X-Heartbeat-Token"),
+):
+    if not HEARTBEAT_SHARED_SECRET:
+        raise HTTPException(status_code=500, detail="HEARTBEAT_SHARED_SECRET is not configured.")
+
+    if not x_heartbeat_token or x_heartbeat_token != HEARTBEAT_SHARED_SECRET:
+        raise HTTPException(status_code=401, detail="Invalid heartbeat token.")
+
     init_worker_registry_db()
 
     now = utc_now()
