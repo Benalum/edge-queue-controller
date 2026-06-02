@@ -384,6 +384,59 @@ async def forward_edge_job(job: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+
+
+def select_best_worker_for_job(job: dict[str, Any]) -> dict[str, Any]:
+    """
+    Scheduler gate used by /tick.
+
+    If no healthy/capable worker exists, the edge job stays queued.
+    This is the first safety gate before true multi-worker routing.
+    """
+    init_worker_registry_db()
+
+    requirements = estimate_job_requirements(job)
+
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM workers
+            ORDER BY worker_id ASC
+            """
+        ).fetchall()
+
+    workers = [worker_row_to_dict(row) for row in rows]
+
+    candidates = []
+    rejected = []
+
+    for worker in workers:
+        ok, score, reasons = score_worker_for_job(worker, requirements)
+
+        item = {
+            "worker_id": worker.get("worker_id"),
+            "name": worker.get("name"),
+            "target_name": worker.get("target_name"),
+            "computed_health": worker.get("computed_health"),
+            "score": score,
+            "reasons": reasons,
+        }
+
+        if ok:
+            candidates.append(item)
+        else:
+            rejected.append(item)
+
+    candidates.sort(key=lambda item: item["score"])
+
+    return {
+        "requirements": requirements,
+        "selected_worker": candidates[0] if candidates else None,
+        "candidates": candidates,
+        "rejected": rejected,
+    }
+
 @app.post("/tick")
 async def tick():
     online, detail = await host_is_online()
@@ -437,6 +490,31 @@ async def tick():
 
     for row in queued_jobs:
         job = row_to_dict(row)
+
+        scheduler = select_best_worker_for_job(job)
+        selected_worker = scheduler.get("selected_worker")
+
+        actions.append(
+            {
+                "job_id": job["id"],
+                "action": "scheduler_decision",
+                "job_type": job["job_type"],
+                "requirements": scheduler.get("requirements"),
+                "selected_worker": selected_worker,
+                "rejected": scheduler.get("rejected", []),
+            }
+        )
+
+        if not selected_worker:
+            actions.append(
+                {
+                    "job_id": job["id"],
+                    "action": "kept_queued",
+                    "reason": "No healthy capable worker is currently available.",
+                }
+            )
+            continue
+
         result = await forward_edge_job(job)
         actions.append(result)
 
