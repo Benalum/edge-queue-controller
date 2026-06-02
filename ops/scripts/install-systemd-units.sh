@@ -17,6 +17,8 @@ sudo cp ops/systemd/edge-queue-remediation-tick.service /etc/systemd/system/
 sudo cp ops/systemd/edge-queue-remediation-tick.timer /etc/systemd/system/
 sudo cp ops/systemd/edge-queue-power-idle-tick.service /etc/systemd/system/
 sudo cp ops/systemd/edge-queue-power-idle-tick.timer /etc/systemd/system/
+sudo cp ops/systemd/edge-queue-power-auto-tick.service /etc/systemd/system/
+sudo cp ops/systemd/edge-queue-power-auto-tick.timer /etc/systemd/system/
 
 echo "[4/6] Installing controller drop-ins"
 sudo mkdir -p /etc/systemd/system/edge-queue-controller.service.d
@@ -38,6 +40,9 @@ sudo cp ops/systemd/edge-queue-controller-host-wake-override.conf \
 
 sudo cp ops/systemd/edge-queue-controller-host-shutdown-override.conf \
   /etc/systemd/system/edge-queue-controller.service.d/60-host-shutdown.conf
+
+sudo cp ops/systemd/edge-queue-controller-power-auto-override.conf \
+  /etc/systemd/system/edge-queue-controller.service.d/70-power-auto.conf
 
 echo "[5/6] Reloading systemd and enabling services/timers"
 sudo systemctl daemon-reload

@@ -2838,3 +2838,173 @@ async def power_execute_host_shutdown(confirm: str = ""):
         "note": "If successful, the Proxmox host should power off shortly.",
     }
 
+
+# ---------------------------------------------------------------------
+# Power automation tick endpoint
+# ---------------------------------------------------------------------
+@app.post("/power/auto/tick")
+async def power_auto_tick():
+    """
+    Combined idle power automation tick.
+
+    Safety model:
+      - This endpoint can be called every minute by a timer.
+      - It only executes CT/VM stops if EDGE_POWER_AUTO_STOP_WORKERS=1
+        and the existing guarded execution endpoint allows it.
+      - It only executes host shutdown if EDGE_POWER_AUTO_SHUTDOWN_HOST=1
+        and the existing guarded host shutdown endpoint allows it.
+      - By default, both automation flags are disabled.
+    """
+    import os
+    from datetime import datetime, timezone
+
+    def parse_bool(value, default=False):
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    auto_stop_workers = parse_bool(os.getenv("EDGE_POWER_AUTO_STOP_WORKERS"), False)
+    auto_shutdown_host = parse_bool(os.getenv("EDGE_POWER_AUTO_SHUTDOWN_HOST"), False)
+
+    execute_stops_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_STOPS"), False)
+    execute_host_shutdown_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_HOST_SHUTDOWN"), False)
+    execute_wake_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_WAKE"), False)
+
+    stop_plan = await power_stop_plan()
+    host_plan = await power_host_shutdown_plan()
+    wake_plan = await power_wake_plan()
+
+    container_plans = stop_plan.get("container_stop_plans", [])
+    eligible_container_plans = [
+        plan for plan in container_plans
+        if plan.get("eligible")
+    ]
+
+    actions = []
+
+    # ------------------------------------------------------------
+    # Worker/CT stop automation decision
+    # ------------------------------------------------------------
+    if eligible_container_plans:
+        if not auto_stop_workers:
+            actions.append(
+                {
+                    "area": "worker_stop",
+                    "action": "would_auto_stop_worker_targets",
+                    "executed": False,
+                    "reason": "Eligible worker targets exist, but EDGE_POWER_AUTO_STOP_WORKERS=0.",
+                    "eligible_count": len(eligible_container_plans),
+                    "plans": eligible_container_plans,
+                }
+            )
+        elif not execute_stops_enabled:
+            actions.append(
+                {
+                    "area": "worker_stop",
+                    "action": "blocked_auto_stop_execution_disabled",
+                    "executed": False,
+                    "reason": "EDGE_POWER_AUTO_STOP_WORKERS=1, but EDGE_POWER_EXECUTE_STOPS=0.",
+                    "eligible_count": len(eligible_container_plans),
+                    "plans": eligible_container_plans,
+                }
+            )
+        else:
+            execution_result = await power_execute_stop_plan(
+                confirm="STOP_AUTO_MANAGED_TARGETS"
+            )
+            actions.append(
+                {
+                    "area": "worker_stop",
+                    "action": "auto_stop_worker_targets_executed",
+                    "executed": bool(execution_result.get("executed")),
+                    "reason": "Auto stop was enabled and guarded stop execution was called.",
+                    "result": execution_result,
+                }
+            )
+    else:
+        actions.append(
+            {
+                "area": "worker_stop",
+                "action": "no_worker_stop_needed",
+                "executed": False,
+                "reason": "No eligible worker stop plans.",
+                "plans": container_plans,
+            }
+        )
+
+    # ------------------------------------------------------------
+    # Host shutdown automation decision
+    # ------------------------------------------------------------
+    if host_plan.get("eligible"):
+        if not auto_shutdown_host:
+            actions.append(
+                {
+                    "area": "host_shutdown",
+                    "action": "would_auto_shutdown_host",
+                    "executed": False,
+                    "reason": "Host shutdown plan is eligible, but EDGE_POWER_AUTO_SHUTDOWN_HOST=0.",
+                    "would_run": host_plan.get("would_run"),
+                }
+            )
+        elif not execute_host_shutdown_enabled:
+            actions.append(
+                {
+                    "area": "host_shutdown",
+                    "action": "blocked_auto_host_shutdown_execution_disabled",
+                    "executed": False,
+                    "reason": "EDGE_POWER_AUTO_SHUTDOWN_HOST=1, but EDGE_POWER_EXECUTE_HOST_SHUTDOWN=0.",
+                    "would_run": host_plan.get("would_run"),
+                }
+            )
+        else:
+            shutdown_result = await power_execute_host_shutdown(
+                confirm="SHUTDOWN_PROXMOX_HOST"
+            )
+            actions.append(
+                {
+                    "area": "host_shutdown",
+                    "action": "auto_host_shutdown_executed",
+                    "executed": bool(shutdown_result.get("executed")),
+                    "reason": "Auto host shutdown was enabled and guarded host shutdown execution was called.",
+                    "result": shutdown_result,
+                }
+            )
+    else:
+        actions.append(
+            {
+                "area": "host_shutdown",
+                "action": "no_host_shutdown",
+                "executed": False,
+                "reason": "Host shutdown plan is not eligible.",
+                "blocked_reasons": host_plan.get("blocked_reasons", []),
+            }
+        )
+
+    return {
+        "ok": True,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "automation": {
+            "auto_stop_workers": auto_stop_workers,
+            "auto_shutdown_host": auto_shutdown_host,
+            "execute_stops_enabled": execute_stops_enabled,
+            "execute_host_shutdown_enabled": execute_host_shutdown_enabled,
+            "execute_wake_enabled": execute_wake_enabled,
+        },
+        "stop_plan_summary": {
+            "eligible_container_stop_count": len(eligible_container_plans),
+            "container_stop_plans": container_plans,
+        },
+        "host_plan_summary": {
+            "eligible": host_plan.get("eligible"),
+            "blocked_reasons": host_plan.get("blocked_reasons", []),
+            "would_run": host_plan.get("would_run"),
+            "inventory_summary": host_plan.get("inventory_summary"),
+        },
+        "wake_plan_summary": {
+            "eligible": (wake_plan.get("wake") or {}).get("eligible"),
+            "would_send": (wake_plan.get("wake") or {}).get("would_send"),
+        },
+        "actions": actions,
+        "note": "Automation flags are separate from execution flags. Keep both disabled until intentionally testing automation.",
+    }
+

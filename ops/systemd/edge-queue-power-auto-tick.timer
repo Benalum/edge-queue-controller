@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Edge Queue automatic power policy tick every minute
+
+[Timer]
+OnBootSec=75
+OnUnitActiveSec=60
+AccuracySec=5
+Unit=edge-queue-power-auto-tick.service
+
+[Install]
+WantedBy=timers.target
