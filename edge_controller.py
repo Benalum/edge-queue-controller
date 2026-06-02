@@ -972,3 +972,279 @@ def scheduler_preview():
         "plans": plans,
     }
 
+
+
+
+
+# ============================================================
+# Inventory/remediation compatibility helpers
+# ============================================================
+
+def load_inventory() -> dict[str, Any]:
+    """
+    Load edge_inventory.json when present. If it is not present, fall back to
+    the existing single-worker SSH settings from .env.
+    """
+    inventory_path = Path(os.getenv("EDGE_INVENTORY_FILE", "edge_inventory.json"))
+
+    if inventory_path.exists():
+        with inventory_path.open("r", encoding="utf-8") as f:
+            return json.load(f)
+
+    return {
+        "targets": {
+            "llms_ollama": {
+                "label": "LLMs / AI Platform / Ollama",
+                "worker_start_ssh_host": WORKER_START_SSH_HOST,
+                "worker_start_ssh_user": WORKER_START_SSH_USER,
+                "worker_start_ssh_key": WORKER_START_SSH_KEY,
+                "worker_start_command": WORKER_START_COMMAND,
+            }
+        }
+    }
+
+
+def start_target_worker(target: dict[str, Any], dry_run: bool = False) -> dict[str, Any]:
+    """
+    Start a target worker over SSH. This is used by remediation.
+    """
+    ssh_host = target.get("worker_start_ssh_host") or WORKER_START_SSH_HOST
+    ssh_user = target.get("worker_start_ssh_user") or WORKER_START_SSH_USER
+    ssh_key = target.get("worker_start_ssh_key") or WORKER_START_SSH_KEY
+    command = target.get("worker_start_command") or WORKER_START_COMMAND
+
+    if not ssh_host:
+        return {
+            "action": "worker_start_failed",
+            "reason": "No worker_start_ssh_host configured.",
+        }
+
+    if not command:
+        return {
+            "action": "worker_start_failed",
+            "reason": "No worker_start_command configured.",
+        }
+
+    ssh_target = f"{ssh_user}@{ssh_host}"
+
+    cmd = [
+        "ssh",
+        "-o", "BatchMode=yes",
+        "-o", "ConnectTimeout=10",
+    ]
+
+    if ssh_key:
+        cmd.extend(["-i", ssh_key])
+
+    cmd.extend([ssh_target, command])
+
+    if dry_run:
+        return {
+            "action": "would_start_worker_over_ssh",
+            "dry_run": True,
+            "ssh_target": ssh_target,
+            "command": command,
+        }
+
+    try:
+        completed = subprocess.run(
+            cmd,
+            text=True,
+            capture_output=True,
+            timeout=120,
+            check=False,
+        )
+    except Exception as exc:
+        return {
+            "action": "worker_start_failed",
+            "ssh_target": ssh_target,
+            "command": command,
+            "error": repr(exc),
+        }
+
+    return {
+        "action": "worker_start_attempted",
+        "ssh_target": ssh_target,
+        "command": command,
+        "returncode": completed.returncode,
+        "stdout": completed.stdout[-2000:],
+        "stderr": completed.stderr[-2000:],
+    }
+
+
+# ============================================================
+# Worker remediation
+# ============================================================
+
+class RemediationTickRequest(BaseModel):
+    dry_run: bool = True
+    max_restart_attempts: int = 3
+
+
+@app.post("/workers/remediation/tick")
+def workers_remediation_tick(payload: RemediationTickRequest | None = None):
+    """
+    Controlled remediation pass.
+
+    This does not run automatically yet. It checks worker health and,
+    when allowed, calls the target worker start command. This is the
+    safe foundation for future automatic repair loops.
+    """
+    init_worker_registry_db()
+
+    payload = payload or RemediationTickRequest()
+    inventory = load_inventory()
+    targets = inventory.get("targets", {})
+
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM workers
+            ORDER BY worker_id ASC
+            """
+        ).fetchall()
+
+    workers = [worker_row_to_dict(row) for row in rows]
+    actions: list[dict[str, Any]] = []
+
+    for worker in workers:
+        worker_id = worker.get("worker_id")
+        health = worker.get("computed_health")
+        restart_attempts = int(worker.get("restart_attempts") or 0)
+        target_name = worker.get("target_name")
+
+        if health not in ("unhealthy", "stale"):
+            actions.append(
+                {
+                    "worker_id": worker_id,
+                    "action": "no_remediation_needed",
+                    "health": health,
+                }
+            )
+            continue
+
+        if restart_attempts >= payload.max_restart_attempts:
+            now = utc_now()
+            with db() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO worker_events (worker_id, event_type, message, created_at)
+                    VALUES (?, 'manual_check_required', ?, ?)
+                    """,
+                    (
+                        worker_id,
+                        f"Worker reached restart_attempts={restart_attempts}; health={health}.",
+                        now,
+                    ),
+                )
+                conn.commit()
+
+            actions.append(
+                {
+                    "worker_id": worker_id,
+                    "action": "manual_check_required",
+                    "health": health,
+                    "restart_attempts": restart_attempts,
+                    "max_restart_attempts": payload.max_restart_attempts,
+                    "last_error": worker.get("last_error"),
+                }
+            )
+            continue
+
+        target = targets.get(target_name or "")
+
+        if not target:
+            actions.append(
+                {
+                    "worker_id": worker_id,
+                    "action": "remediation_failed",
+                    "reason": f"No target found for target_name={target_name!r}.",
+                }
+            )
+            continue
+
+        if payload.dry_run:
+            actions.append(
+                {
+                    "worker_id": worker_id,
+                    "action": "would_attempt_worker_restart",
+                    "dry_run": True,
+                    "health": health,
+                    "target_name": target_name,
+                    "restart_attempts": restart_attempts,
+                    "last_error": worker.get("last_error"),
+                }
+            )
+            continue
+
+        result = start_target_worker(target, dry_run=False)
+        now = utc_now()
+
+        with db() as conn:
+            conn.execute(
+                """
+                UPDATE workers
+                SET
+                    restart_attempts = restart_attempts + 1,
+                    updated_at = ?
+                WHERE worker_id = ?
+                """,
+                (now, worker_id),
+            )
+
+            conn.execute(
+                """
+                INSERT INTO worker_events (worker_id, event_type, message, created_at)
+                VALUES (?, 'restart_attempt', ?, ?)
+                """,
+                (
+                    worker_id,
+                    f"Remediation attempted for health={health}; result={result.get('action')}.",
+                    now,
+                ),
+            )
+
+            conn.commit()
+
+        actions.append(
+            {
+                "worker_id": worker_id,
+                "action": "worker_restart_attempted",
+                "health": health,
+                "target_name": target_name,
+                "restart_attempts_before": restart_attempts,
+                "result": result,
+            }
+        )
+
+    return {
+        "ok": True,
+        "dry_run": payload.dry_run,
+        "worker_count": len(workers),
+        "actions": actions,
+    }
+
+
+@app.get("/workers/events")
+def workers_events(limit: int = 50):
+    init_worker_registry_db()
+
+    limit = max(1, min(limit, 200))
+
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM worker_events
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+    return {
+        "ok": True,
+        "events": [dict(row) for row in rows],
+    }
+
