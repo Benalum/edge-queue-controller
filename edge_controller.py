@@ -2641,3 +2641,200 @@ async def power_execute_wake(confirm: str = ""):
         "note": "Magic packet sent. If the host is already on, this usually has no visible effect.",
     }
 
+
+# ---------------------------------------------------------------------
+# Host shutdown plan and guarded execution endpoints
+# ---------------------------------------------------------------------
+@app.post("/power/host-shutdown-plan")
+async def power_host_shutdown_plan():
+    """
+    Build a dry-run Proxmox host shutdown plan.
+
+    This endpoint does not shut down the host.
+    """
+    import os
+    from datetime import datetime, timezone
+
+    host_id = os.getenv("EDGE_PROXMOX_HOST_ID", "pveso").strip() or "pveso"
+    ssh_target = os.getenv("EDGE_PROXMOX_SSH_TARGET", "").strip()
+
+    idle_result = await power_idle_tick()
+    inventory_result = await proxmox_inventory()
+    wake_result = await power_wake_plan()
+
+    queue = idle_result.get("queue", {})
+    inventory_summary = inventory_result.get("summary", {})
+    wake = wake_result.get("wake", {})
+
+    queue_now_empty = bool(queue.get("queue_now_empty"))
+    active_jobs_count = queue.get("active_jobs_count")
+    worker_busy_count = queue.get("worker_busy_count")
+    worker_queue_depth_total = queue.get("worker_queue_depth_total")
+
+    host_shutdown_safe_now = bool(inventory_summary.get("host_shutdown_safe_now"))
+    running_total = int(inventory_summary.get("running_total") or 0)
+    running_protected = int(inventory_summary.get("running_protected") or 0)
+    running_manual_or_unknown = int(inventory_summary.get("running_manual_or_unknown") or 0)
+    wake_eligible = bool(wake.get("eligible"))
+
+    eligible = (
+        bool(ssh_target)
+        and queue_now_empty
+        and host_shutdown_safe_now
+        and running_total == 0
+        and running_protected == 0
+        and running_manual_or_unknown == 0
+        and wake_eligible
+    )
+
+    blocked_reasons = []
+
+    if not ssh_target:
+        blocked_reasons.append("EDGE_PROXMOX_SSH_TARGET is not configured.")
+
+    if not queue_now_empty:
+        blocked_reasons.append("Queue is not empty or could not be safely evaluated.")
+
+    if active_jobs_count not in (0, None):
+        blocked_reasons.append(f"active_jobs_count is {active_jobs_count}, not 0.")
+
+    if worker_busy_count not in (0, None):
+        blocked_reasons.append(f"worker_busy_count is {worker_busy_count}, not 0.")
+
+    if worker_queue_depth_total not in (0, None):
+        blocked_reasons.append(f"worker_queue_depth_total is {worker_queue_depth_total}, not 0.")
+
+    if not host_shutdown_safe_now:
+        blocked_reasons.append("Proxmox inventory does not say host_shutdown_safe_now=true.")
+
+    if running_total != 0:
+        blocked_reasons.append(f"running_total is {running_total}, not 0.")
+
+    if running_protected != 0:
+        blocked_reasons.append(f"running_protected is {running_protected}, not 0.")
+
+    if running_manual_or_unknown != 0:
+        blocked_reasons.append(f"running_manual_or_unknown is {running_manual_or_unknown}, not 0.")
+
+    if not wake_eligible:
+        blocked_reasons.append("Wake plan is not eligible; refusing to plan host shutdown without a recovery path.")
+
+    return {
+        "ok": True,
+        "dry_run": True,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "host_id": host_id,
+        "ssh_target": ssh_target,
+        "eligible": eligible,
+        "blocked_reasons": blocked_reasons,
+        "would_run": f"ssh {ssh_target!r} 'shutdown -h now'" if eligible else None,
+        "queue": queue,
+        "inventory_summary": inventory_summary,
+        "wake": wake,
+        "note": "This endpoint is dry-run only. It does not shut down the Proxmox host.",
+    }
+
+
+@app.post("/power/execute-host-shutdown")
+async def power_execute_host_shutdown(confirm: str = ""):
+    """
+    Manually execute guarded Proxmox host shutdown.
+
+    Safety gates:
+      1. EDGE_POWER_EXECUTE_HOST_SHUTDOWN must be enabled.
+      2. confirm must equal SHUTDOWN_PROXMOX_HOST.
+      3. /power/host-shutdown-plan must be eligible.
+      4. Wake plan must be eligible before shutdown is allowed.
+    """
+    import os
+    import subprocess
+    from datetime import datetime, timezone
+
+    def parse_bool(value, default=False):
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    required_confirmation = "SHUTDOWN_PROXMOX_HOST"
+    execute_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_HOST_SHUTDOWN"), False)
+
+    plan = await power_host_shutdown_plan()
+
+    if confirm != required_confirmation:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Missing confirmation phrase.",
+            "required_confirm": required_confirmation,
+            "example": "/power/execute-host-shutdown?confirm=SHUTDOWN_PROXMOX_HOST",
+            "plan": plan,
+        }
+
+    if not execute_enabled:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "EDGE_POWER_EXECUTE_HOST_SHUTDOWN is not enabled.",
+            "how_to_enable": "Set Environment=EDGE_POWER_EXECUTE_HOST_SHUTDOWN=1, then restart the controller.",
+            "plan": plan,
+        }
+
+    if not plan.get("eligible"):
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Host shutdown plan is not eligible.",
+            "blocked_reasons": plan.get("blocked_reasons", []),
+            "plan": plan,
+        }
+
+    ssh_target = plan.get("ssh_target")
+    remote_command = "shutdown -h now"
+
+    cmd = [
+        "ssh",
+        "-o", "BatchMode=yes",
+        "-o", "ConnectTimeout=5",
+        "-o", "StrictHostKeyChecking=accept-new",
+        ssh_target,
+        remote_command,
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            text=True,
+            capture_output=True,
+            timeout=10,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Timed out while sending host shutdown command.",
+            "remote_command": remote_command,
+            "plan": plan,
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": f"Failed to send host shutdown command: {e}",
+            "remote_command": remote_command,
+            "plan": plan,
+        }
+
+    return {
+        "ok": True,
+        "executed": result.returncode == 0,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "host_id": plan.get("host_id"),
+        "ssh_target": ssh_target,
+        "remote_command": remote_command,
+        "returncode": result.returncode,
+        "stdout": result.stdout[-2000:],
+        "stderr": result.stderr[-2000:],
+        "note": "If successful, the Proxmox host should power off shortly.",
+    }
+

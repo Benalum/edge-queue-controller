@@ -36,6 +36,9 @@ sudo cp ops/systemd/edge-queue-controller-power-execute-override.conf \
 sudo cp ops/systemd/edge-queue-controller-host-wake-override.conf \
   /etc/systemd/system/edge-queue-controller.service.d/50-host-wake.conf
 
+sudo cp ops/systemd/edge-queue-controller-host-shutdown-override.conf \
+  /etc/systemd/system/edge-queue-controller.service.d/60-host-shutdown.conf
+
 echo "[5/6] Reloading systemd and enabling services/timers"
 sudo systemctl daemon-reload
 sudo systemctl enable --now edge-queue-controller.service
