@@ -3301,3 +3301,270 @@ async def power_auto_resume(confirm: str = ""):
         "note": "Temporary DB pause cleared. Environment pause EDGE_POWER_AUTO_PAUSED=1, if set, still takes priority.",
     }
 
+
+# ---------------------------------------------------------------------
+# Worker start plan and guarded execution endpoints
+# ---------------------------------------------------------------------
+@app.post("/power/start-worker-plan")
+async def power_start_worker_plan(target_name: str = "llms_ollama"):
+    """
+    Build a dry-run plan to start an auto-managed worker CT/VM.
+
+    This endpoint does not start anything.
+    """
+    import os
+    from datetime import datetime, timezone
+    from fastapi import HTTPException
+
+    def parse_target_map(value):
+        result = {}
+
+        if not value:
+            return result
+
+        for item in str(value).split(","):
+            item = item.strip()
+            if not item or "=" not in item:
+                continue
+
+            key, target = item.split("=", 1)
+            key = key.strip()
+            target = target.strip()
+
+            if not key or ":" not in target:
+                continue
+
+            kind, vmid = target.split(":", 1)
+            kind = kind.strip().lower()
+            vmid = vmid.strip()
+
+            if kind not in {"ct", "vm"}:
+                continue
+
+            if not vmid:
+                continue
+
+            result[key] = {"kind": kind, "vmid": vmid}
+
+        return result
+
+    ssh_target = os.getenv("EDGE_PROXMOX_SSH_TARGET", "").strip()
+    target_map = parse_target_map(os.getenv("EDGE_POWER_TARGET_MAP", ""))
+
+    if not ssh_target:
+        raise HTTPException(
+            status_code=500,
+            detail="EDGE_PROXMOX_SSH_TARGET is not configured.",
+        )
+
+    mapped = target_map.get(target_name)
+
+    if not mapped:
+        return {
+            "ok": True,
+            "dry_run": True,
+            "time": datetime.now(timezone.utc).isoformat(),
+            "target_name": target_name,
+            "eligible": False,
+            "blocked_reason": "target_name is not present in EDGE_POWER_TARGET_MAP.",
+            "target_map": target_map,
+            "would_run": None,
+        }
+
+    inventory_result = await proxmox_inventory()
+
+    inventory_lookup = {}
+
+    for item in inventory_result.get("containers", []):
+        inventory_lookup[("ct", str(item.get("vmid")))] = item
+        inventory_lookup[("name", str(item.get("name")))] = item
+
+    for item in inventory_result.get("vms", []):
+        inventory_lookup[("vm", str(item.get("vmid")))] = item
+        inventory_lookup[("name", str(item.get("name")))] = item
+
+    kind = mapped["kind"]
+    vmid = mapped["vmid"]
+
+    item = inventory_lookup.get((kind, vmid))
+
+    if not item:
+        return {
+            "ok": True,
+            "dry_run": True,
+            "time": datetime.now(timezone.utc).isoformat(),
+            "target_name": target_name,
+            "mapped_target": mapped,
+            "eligible": False,
+            "blocked_reason": f"Mapped target {kind}:{vmid} was not found in Proxmox inventory.",
+            "would_run": None,
+            "inventory_summary": inventory_result.get("summary"),
+        }
+
+    if item.get("protected"):
+        return {
+            "ok": True,
+            "dry_run": True,
+            "time": datetime.now(timezone.utc).isoformat(),
+            "target_name": target_name,
+            "mapped_target": mapped,
+            "item": item,
+            "eligible": False,
+            "blocked_reason": f"Mapped target {kind}:{vmid} is protected.",
+            "would_run": None,
+            "inventory_summary": inventory_result.get("summary"),
+        }
+
+    if not item.get("auto_managed"):
+        return {
+            "ok": True,
+            "dry_run": True,
+            "time": datetime.now(timezone.utc).isoformat(),
+            "target_name": target_name,
+            "mapped_target": mapped,
+            "item": item,
+            "eligible": False,
+            "blocked_reason": f"Mapped target {kind}:{vmid} is not auto-managed.",
+            "would_run": None,
+            "inventory_summary": inventory_result.get("summary"),
+        }
+
+    if item.get("running"):
+        return {
+            "ok": True,
+            "dry_run": True,
+            "time": datetime.now(timezone.utc).isoformat(),
+            "target_name": target_name,
+            "mapped_target": mapped,
+            "item": item,
+            "eligible": False,
+            "blocked_reason": f"Mapped target {kind}:{vmid} is already running.",
+            "would_run": None,
+            "inventory_summary": inventory_result.get("summary"),
+        }
+
+    if kind == "ct":
+        remote_command = f"pct start {vmid}"
+    else:
+        remote_command = f"qm start {vmid}"
+
+    return {
+        "ok": True,
+        "dry_run": True,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "target_name": target_name,
+        "mapped_target": mapped,
+        "item": item,
+        "eligible": True,
+        "blocked_reason": None,
+        "would_run": f"ssh {ssh_target!r} {remote_command!r}",
+        "remote_command": remote_command,
+        "inventory_summary": inventory_result.get("summary"),
+        "note": "This endpoint is dry-run only. It does not start the worker.",
+    }
+
+
+@app.post("/power/execute-start-worker")
+async def power_execute_start_worker(
+    target_name: str = "llms_ollama",
+    confirm: str = "",
+):
+    """
+    Manually start an eligible auto-managed worker CT/VM.
+
+    Safety gates:
+      1. EDGE_POWER_EXECUTE_START_WORKERS must be enabled.
+      2. confirm must equal START_AUTO_MANAGED_TARGETS.
+      3. /power/start-worker-plan must be eligible.
+    """
+    import os
+    import subprocess
+    from datetime import datetime, timezone
+
+    def parse_bool(value, default=False):
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    required_confirmation = "START_AUTO_MANAGED_TARGETS"
+    execute_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_START_WORKERS"), False)
+    ssh_target = os.getenv("EDGE_PROXMOX_SSH_TARGET", "").strip()
+
+    plan = await power_start_worker_plan(target_name=target_name)
+
+    if confirm != required_confirmation:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Missing confirmation phrase.",
+            "required_confirm": required_confirmation,
+            "example": "/power/execute-start-worker?target_name=llms_ollama&confirm=START_AUTO_MANAGED_TARGETS",
+            "plan": plan,
+        }
+
+    if not execute_enabled:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "EDGE_POWER_EXECUTE_START_WORKERS is not enabled.",
+            "how_to_enable": "Set Environment=EDGE_POWER_EXECUTE_START_WORKERS=1, then restart the controller.",
+            "plan": plan,
+        }
+
+    if not plan.get("eligible"):
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Worker start plan is not eligible.",
+            "plan": plan,
+        }
+
+    remote_command = plan.get("remote_command")
+
+    cmd = [
+        "ssh",
+        "-o", "BatchMode=yes",
+        "-o", "ConnectTimeout=5",
+        "-o", "StrictHostKeyChecking=accept-new",
+        ssh_target,
+        remote_command,
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            text=True,
+            capture_output=True,
+            timeout=30,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Timed out while starting worker target.",
+            "remote_command": remote_command,
+            "plan": plan,
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": f"Failed to start worker target: {e}",
+            "remote_command": remote_command,
+            "plan": plan,
+        }
+
+    return {
+        "ok": True,
+        "executed": result.returncode == 0,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "target_name": target_name,
+        "remote_command": remote_command,
+        "returncode": result.returncode,
+        "stdout": result.stdout[-2000:],
+        "stderr": result.stderr[-2000:],
+        "plan": plan,
+        "note": "If successful, wait for the worker heartbeat/Ollama health before dispatching jobs.",
+    }
+
