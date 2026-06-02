@@ -1848,3 +1848,228 @@ async def power_idle_tick():
     finally:
         conn.close()
 
+
+# ---------------------------------------------------------------------
+# Proxmox inventory dry-run endpoint
+# ---------------------------------------------------------------------
+@app.post("/power/proxmox/inventory")
+async def proxmox_inventory():
+    """
+    Dry-run Proxmox CT/VM inventory check.
+
+    This endpoint only reads:
+      - pct list
+      - qm list
+
+    It does not stop containers.
+    It does not shut down the host.
+    """
+    import os
+    import subprocess
+    from datetime import datetime, timezone
+    from fastapi import HTTPException
+
+    ssh_target = os.getenv("EDGE_PROXMOX_SSH_TARGET", "").strip()
+    host_id = os.getenv("EDGE_PROXMOX_HOST_ID", "pveso").strip() or "pveso"
+
+    if not ssh_target:
+        raise HTTPException(
+            status_code=500,
+            detail="EDGE_PROXMOX_SSH_TARGET is not configured.",
+        )
+
+    def parse_csv(value):
+        if not value:
+            return set()
+        return {
+            item.strip()
+            for item in str(value).split(",")
+            if item.strip()
+        }
+
+    auto_managed = parse_csv(os.getenv("EDGE_PROXMOX_AUTO_MANAGED", ""))
+    protected = parse_csv(os.getenv("EDGE_PROXMOX_PROTECTED", ""))
+
+    remote_cmd = (
+        "hostname; "
+        "echo __PCT_BEGIN__; pct list; echo __PCT_END__; "
+        "echo __QM_BEGIN__; qm list; echo __QM_END__"
+    )
+
+    cmd = [
+        "ssh",
+        "-o", "BatchMode=yes",
+        "-o", "ConnectTimeout=5",
+        "-o", "StrictHostKeyChecking=accept-new",
+        ssh_target,
+        remote_cmd,
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            text=True,
+            capture_output=True,
+            timeout=12,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        raise HTTPException(
+            status_code=504,
+            detail="Timed out while querying Proxmox inventory over SSH.",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to run SSH inventory command: {e}",
+        )
+
+    if result.returncode != 0:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": "SSH inventory command failed.",
+                "returncode": result.returncode,
+                "stdout": result.stdout[-2000:],
+                "stderr": result.stderr[-2000:],
+            },
+        )
+
+    stdout = result.stdout
+
+    def section(text, start_marker, end_marker):
+        if start_marker not in text or end_marker not in text:
+            return ""
+        return text.split(start_marker, 1)[1].split(end_marker, 1)[0].strip()
+
+    hostname = stdout.splitlines()[0].strip() if stdout.splitlines() else host_id
+    pct_text = section(stdout, "__PCT_BEGIN__", "__PCT_END__")
+    qm_text = section(stdout, "__QM_BEGIN__", "__QM_END__")
+
+    def classify(vmid, name):
+        keys = {str(vmid), str(name)}
+        return {
+            "protected": bool(keys & protected),
+            "auto_managed": bool(keys & auto_managed),
+        }
+
+    containers = []
+    for line in pct_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+
+        # Skip header line:
+        # VMID       Status     Lock         Name
+        if line.lower().startswith("vmid"):
+            continue
+
+        parts = line.split()
+        if len(parts) < 3:
+            continue
+
+        vmid = parts[0]
+        status = parts[1]
+        name = parts[-1]
+
+        flags = classify(vmid, name)
+
+        containers.append(
+            {
+                "kind": "ct",
+                "vmid": vmid,
+                "name": name,
+                "status": status,
+                "running": status.lower() == "running",
+                **flags,
+            }
+        )
+
+    vms = []
+    for line in qm_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+
+        # Skip header line:
+        # VMID NAME STATUS MEM(MB) BOOTDISK(GB) PID
+        if line.lower().startswith("vmid"):
+            continue
+
+        parts = line.split()
+        if len(parts) < 3:
+            continue
+
+        vmid = parts[0]
+        name = parts[1]
+        status = parts[2]
+
+        flags = classify(vmid, name)
+
+        vms.append(
+            {
+                "kind": "vm",
+                "vmid": vmid,
+                "name": name,
+                "status": status,
+                "running": status.lower() == "running",
+                **flags,
+            }
+        )
+
+    all_items = containers + vms
+
+    running_items = [item for item in all_items if item["running"]]
+    running_auto_managed = [
+        item for item in running_items
+        if item["auto_managed"] and not item["protected"]
+    ]
+    running_protected = [
+        item for item in running_items
+        if item["protected"]
+    ]
+    running_manual_or_unknown = [
+        item for item in running_items
+        if not item["auto_managed"] and not item["protected"]
+    ]
+
+    host_shutdown_safe_now = len(running_items) == 0
+
+    # Useful for the future:
+    # This means host shutdown would become safe after auto-managed workers stop.
+    host_shutdown_safe_if_auto_managed_stopped = (
+        len(running_protected) == 0
+        and len(running_manual_or_unknown) == 0
+    )
+
+    return {
+        "ok": True,
+        "dry_run": True,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "host_id": host_id,
+        "ssh_target": ssh_target,
+        "hostname": hostname,
+        "policy": {
+            "auto_managed": sorted(auto_managed),
+            "protected": sorted(protected),
+        },
+        "containers": containers,
+        "vms": vms,
+        "summary": {
+            "running_total": len(running_items),
+            "running_auto_managed": len(running_auto_managed),
+            "running_protected": len(running_protected),
+            "running_manual_or_unknown": len(running_manual_or_unknown),
+            "host_shutdown_safe_now": host_shutdown_safe_now,
+            "host_shutdown_safe_if_auto_managed_stopped": host_shutdown_safe_if_auto_managed_stopped,
+        },
+        "decision": {
+            "host_shutdown_safe_now": host_shutdown_safe_now,
+            "reason": (
+                "No CTs/VMs are running."
+                if host_shutdown_safe_now
+                else "One or more CTs/VMs are still running."
+            ),
+        },
+    }
+
