@@ -1,4 +1,5 @@
 import os
+import json
 import sqlite3
 import subprocess
 from datetime import datetime, timezone
@@ -456,3 +457,430 @@ async def tick():
 @app.post("/wake-test")
 def wake_test():
     return wake_host()
+
+
+
+# ============================================================
+# Worker registry + scheduler preview
+# ============================================================
+
+def init_worker_registry_db() -> None:
+    with db() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS workers (
+                worker_id TEXT PRIMARY KEY,
+                name TEXT,
+                host_id TEXT,
+                target_name TEXT,
+                status TEXT NOT NULL DEFAULT 'online',
+                capabilities_json TEXT NOT NULL DEFAULT '[]',
+                current_jobs INTEGER NOT NULL DEFAULT 0,
+                max_concurrent_jobs INTEGER NOT NULL DEFAULT 1,
+                queue_depth INTEGER NOT NULL DEFAULT 0,
+                cpu_percent REAL,
+                ram_total_mb INTEGER,
+                ram_free_mb INTEGER,
+                gpu_name TEXT,
+                vram_total_mb INTEGER,
+                vram_free_mb INTEGER,
+                consecutive_failures INTEGER NOT NULL DEFAULT 0,
+                restart_attempts INTEGER NOT NULL DEFAULT 0,
+                last_error TEXT,
+                first_seen_at TEXT NOT NULL,
+                last_heartbeat_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS worker_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                worker_id TEXT NOT NULL,
+                event_type TEXT NOT NULL,
+                message TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
+        conn.commit()
+
+
+class WorkerHeartbeatRequest(BaseModel):
+    worker_id: str = Field(..., min_length=1, max_length=160)
+    name: str | None = Field(default=None, max_length=160)
+    host_id: str | None = Field(default=None, max_length=160)
+    target_name: str | None = Field(default=None, max_length=160)
+    status: str = Field(default="online", max_length=60)
+    capabilities: list[str] = Field(default_factory=list)
+
+    current_jobs: int = 0
+    max_concurrent_jobs: int = 1
+    queue_depth: int = 0
+
+    cpu_percent: float | None = None
+    ram_total_mb: int | None = None
+    ram_free_mb: int | None = None
+
+    gpu_name: str | None = None
+    vram_total_mb: int | None = None
+    vram_free_mb: int | None = None
+
+    consecutive_failures: int = 0
+    restart_attempts: int = 0
+    last_error: str | None = None
+
+
+def parse_iso_time(value: str | None):
+    if not value:
+        return None
+
+    try:
+        return datetime.fromisoformat(value)
+    except Exception:
+        return None
+
+
+def worker_row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
+    data = dict(row)
+
+    try:
+        data["capabilities"] = json.loads(data.pop("capabilities_json") or "[]")
+    except Exception:
+        data["capabilities"] = []
+
+    last_heartbeat = parse_iso_time(data.get("last_heartbeat_at"))
+    if last_heartbeat:
+        age = datetime.now(timezone.utc) - last_heartbeat
+        data["heartbeat_age_seconds"] = int(age.total_seconds())
+    else:
+        data["heartbeat_age_seconds"] = None
+
+    heartbeat_age = data.get("heartbeat_age_seconds")
+    if heartbeat_age is not None and heartbeat_age > 45:
+        data["computed_health"] = "stale"
+    elif data.get("status") in ("unhealthy", "disabled", "offline"):
+        data["computed_health"] = data.get("status")
+    elif data.get("current_jobs", 0) >= data.get("max_concurrent_jobs", 1):
+        data["computed_health"] = "busy"
+    else:
+        data["computed_health"] = "available"
+
+    return data
+
+
+def estimate_job_requirements(job: dict[str, Any]) -> dict[str, Any]:
+    job_type = job.get("job_type") or ""
+
+    if job_type in ("ollama_chat", "companion_chat", "tts", "stt"):
+        return {
+            "required_capability": job_type if job_type != "companion_chat" else "ollama_chat",
+            "required_cpu_cores": 1,
+            "required_ram_mb": 512,
+            "required_gpu": False,
+            "required_vram_mb": 0,
+        }
+
+    if job_type in ("comfy_image", "comfy_video"):
+        return {
+            "required_capability": job_type,
+            "required_cpu_cores": 2,
+            "required_ram_mb": 4096,
+            "required_gpu": True,
+            "required_vram_mb": 8192 if job_type == "comfy_image" else 12288,
+        }
+
+    return {
+        "required_capability": job_type,
+        "required_cpu_cores": 1,
+        "required_ram_mb": 512,
+        "required_gpu": False,
+        "required_vram_mb": 0,
+    }
+
+
+def score_worker_for_job(worker: dict[str, Any], requirements: dict[str, Any]) -> tuple[bool, int, list[str]]:
+    reasons: list[str] = []
+
+    capability = requirements["required_capability"]
+    capabilities = worker.get("capabilities") or []
+
+    if capability and capability not in capabilities:
+        reasons.append(f"missing capability {capability!r}")
+
+    if worker.get("computed_health") not in ("available", "busy"):
+        reasons.append(f"worker health is {worker.get('computed_health')}")
+
+    if worker.get("current_jobs", 0) >= worker.get("max_concurrent_jobs", 1):
+        reasons.append("worker at max concurrency")
+
+    ram_free = worker.get("ram_free_mb")
+    if ram_free is not None and ram_free < requirements["required_ram_mb"]:
+        reasons.append("not enough free RAM")
+
+    if requirements["required_gpu"]:
+        if not worker.get("gpu_name"):
+            reasons.append("GPU required but worker has no GPU")
+        elif worker.get("vram_free_mb") is not None and worker.get("vram_free_mb") < requirements["required_vram_mb"]:
+            reasons.append("not enough free VRAM")
+
+    if reasons:
+        return False, 999999, reasons
+
+    score = 0
+    score += int(worker.get("queue_depth") or 0) * 100
+    score += int(worker.get("current_jobs") or 0) * 50
+    score += int(worker.get("consecutive_failures") or 0) * 200
+    score += int(worker.get("restart_attempts") or 0) * 25
+
+    ram_free = worker.get("ram_free_mb") or 0
+    vram_free = worker.get("vram_free_mb") or 0
+
+    score -= int(ram_free / 1000)
+    score -= int(vram_free / 1000)
+
+    return True, score, ["candidate"]
+
+
+@app.post("/workers/heartbeat")
+def worker_heartbeat(payload: WorkerHeartbeatRequest):
+    init_worker_registry_db()
+
+    now = utc_now()
+    capabilities_json = json.dumps(payload.capabilities)
+
+    with db() as conn:
+        existing = conn.execute(
+            "SELECT worker_id FROM workers WHERE worker_id = ?",
+            (payload.worker_id,),
+        ).fetchone()
+
+        if existing:
+            conn.execute(
+                """
+                UPDATE workers
+                SET
+                    name = ?,
+                    host_id = ?,
+                    target_name = ?,
+                    status = ?,
+                    capabilities_json = ?,
+                    current_jobs = ?,
+                    max_concurrent_jobs = ?,
+                    queue_depth = ?,
+                    cpu_percent = ?,
+                    ram_total_mb = ?,
+                    ram_free_mb = ?,
+                    gpu_name = ?,
+                    vram_total_mb = ?,
+                    vram_free_mb = ?,
+                    consecutive_failures = ?,
+                    restart_attempts = ?,
+                    last_error = ?,
+                    last_heartbeat_at = ?,
+                    updated_at = ?
+                WHERE worker_id = ?
+                """,
+                (
+                    payload.name,
+                    payload.host_id,
+                    payload.target_name,
+                    payload.status,
+                    capabilities_json,
+                    payload.current_jobs,
+                    payload.max_concurrent_jobs,
+                    payload.queue_depth,
+                    payload.cpu_percent,
+                    payload.ram_total_mb,
+                    payload.ram_free_mb,
+                    payload.gpu_name,
+                    payload.vram_total_mb,
+                    payload.vram_free_mb,
+                    payload.consecutive_failures,
+                    payload.restart_attempts,
+                    payload.last_error,
+                    now,
+                    now,
+                    payload.worker_id,
+                ),
+            )
+        else:
+            conn.execute(
+                """
+                INSERT INTO workers (
+                    worker_id,
+                    name,
+                    host_id,
+                    target_name,
+                    status,
+                    capabilities_json,
+                    current_jobs,
+                    max_concurrent_jobs,
+                    queue_depth,
+                    cpu_percent,
+                    ram_total_mb,
+                    ram_free_mb,
+                    gpu_name,
+                    vram_total_mb,
+                    vram_free_mb,
+                    consecutive_failures,
+                    restart_attempts,
+                    last_error,
+                    first_seen_at,
+                    last_heartbeat_at,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    payload.worker_id,
+                    payload.name,
+                    payload.host_id,
+                    payload.target_name,
+                    payload.status,
+                    capabilities_json,
+                    payload.current_jobs,
+                    payload.max_concurrent_jobs,
+                    payload.queue_depth,
+                    payload.cpu_percent,
+                    payload.ram_total_mb,
+                    payload.ram_free_mb,
+                    payload.gpu_name,
+                    payload.vram_total_mb,
+                    payload.vram_free_mb,
+                    payload.consecutive_failures,
+                    payload.restart_attempts,
+                    payload.last_error,
+                    now,
+                    now,
+                    now,
+                ),
+            )
+
+            conn.execute(
+                """
+                INSERT INTO worker_events (worker_id, event_type, message, created_at)
+                VALUES (?, 'first_seen', 'Worker registered by heartbeat.', ?)
+                """,
+                (payload.worker_id, now),
+            )
+
+        conn.commit()
+
+        row = conn.execute(
+            "SELECT * FROM workers WHERE worker_id = ?",
+            (payload.worker_id,),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "worker": worker_row_to_dict(row),
+    }
+
+
+@app.get("/workers/registry")
+def workers_registry():
+    init_worker_registry_db()
+
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM workers
+            ORDER BY target_name, worker_id
+            """
+        ).fetchall()
+
+    workers = [worker_row_to_dict(row) for row in rows]
+
+    summary = {
+        "total": len(workers),
+        "available": sum(1 for w in workers if w.get("computed_health") == "available"),
+        "busy": sum(1 for w in workers if w.get("computed_health") == "busy"),
+        "stale": sum(1 for w in workers if w.get("computed_health") == "stale"),
+        "unhealthy": sum(1 for w in workers if w.get("computed_health") == "unhealthy"),
+        "disabled": sum(1 for w in workers if w.get("computed_health") == "disabled"),
+    }
+
+    return {
+        "ok": True,
+        "summary": summary,
+        "workers": workers,
+    }
+
+
+@app.get("/scheduler/preview")
+def scheduler_preview():
+    init_worker_registry_db()
+
+    with db() as conn:
+        job_rows = conn.execute(
+            """
+            SELECT *
+            FROM jobs
+            WHERE status = 'queued'
+            ORDER BY id ASC
+            LIMIT 25
+            """
+        ).fetchall()
+
+        worker_rows = conn.execute(
+            """
+            SELECT *
+            FROM workers
+            ORDER BY worker_id ASC
+            """
+        ).fetchall()
+
+    workers = [worker_row_to_dict(row) for row in worker_rows]
+
+    plans = []
+
+    for job_row in job_rows:
+        job = row_to_dict(job_row)
+        requirements = estimate_job_requirements(job)
+
+        candidates = []
+        rejected = []
+
+        for worker in workers:
+            ok, score, reasons = score_worker_for_job(worker, requirements)
+
+            candidate_info = {
+                "worker_id": worker.get("worker_id"),
+                "name": worker.get("name"),
+                "target_name": worker.get("target_name"),
+                "computed_health": worker.get("computed_health"),
+                "score": score,
+                "reasons": reasons,
+            }
+
+            if ok:
+                candidates.append(candidate_info)
+            else:
+                rejected.append(candidate_info)
+
+        candidates.sort(key=lambda item: item["score"])
+
+        plans.append(
+            {
+                "job_id": job["id"],
+                "job_type": job["job_type"],
+                "requested_model": job.get("requested_model"),
+                "requirements": requirements,
+                "selected_worker": candidates[0] if candidates else None,
+                "candidates": candidates,
+                "rejected": rejected,
+            }
+        )
+
+    return {
+        "ok": True,
+        "queued_jobs": len(plans),
+        "worker_count": len(workers),
+        "plans": plans,
+    }
+
