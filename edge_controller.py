@@ -3579,3 +3579,502 @@ async def power_execute_start_worker(
         "note": "If successful, power automation is temporarily paused so the worker can finish booting.",
     }
 
+
+# ---------------------------------------------------------------------
+# Wake and start worker guarded endpoint
+# ---------------------------------------------------------------------
+@app.post("/power/wake-and-start-worker-plan")
+async def power_wake_and_start_worker_plan(target_name: str = "llms_ollama"):
+    """
+    Dry-run plan for waking the Proxmox host if needed and starting a worker CT/VM.
+
+    This endpoint does not send Wake-on-LAN packets.
+    This endpoint does not start CTs/VMs.
+    """
+    import os
+    import subprocess
+    from datetime import datetime, timezone
+
+    ssh_target = os.getenv("EDGE_PROXMOX_SSH_TARGET", "").strip()
+    host_id = os.getenv("EDGE_PROXMOX_HOST_ID", "pveso").strip() or "pveso"
+
+    wake_plan = await power_wake_plan()
+
+    host_online = False
+    host_probe = {
+        "attempted": False,
+        "returncode": None,
+        "stdout": "",
+        "stderr": "",
+    }
+
+    if ssh_target:
+        cmd = [
+            "ssh",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=5",
+            "-o", "StrictHostKeyChecking=accept-new",
+            ssh_target,
+            "hostname",
+        ]
+
+        host_probe["attempted"] = True
+
+        try:
+            result = subprocess.run(
+                cmd,
+                text=True,
+                capture_output=True,
+                timeout=8,
+                check=False,
+            )
+            host_probe["returncode"] = result.returncode
+            host_probe["stdout"] = result.stdout[-1000:]
+            host_probe["stderr"] = result.stderr[-1000:]
+            host_online = result.returncode == 0
+        except Exception as e:
+            host_probe["stderr"] = str(e)
+
+    start_plan = None
+    start_plan_error = None
+
+    if host_online:
+        try:
+            start_plan = await power_start_worker_plan(target_name=target_name)
+        except Exception as e:
+            start_plan_error = str(e)
+
+    wake_eligible = bool((wake_plan.get("wake") or {}).get("eligible"))
+
+    steps = []
+
+    if not ssh_target:
+        steps.append(
+            {
+                "step": "ssh_probe",
+                "action": "blocked",
+                "reason": "EDGE_PROXMOX_SSH_TARGET is not configured.",
+            }
+        )
+    elif not host_online:
+        steps.append(
+            {
+                "step": "wake_host",
+                "action": "would_send_wake_packet" if wake_eligible else "blocked",
+                "reason": (
+                    "Host is offline or SSH is unreachable; Wake-on-LAN is eligible."
+                    if wake_eligible
+                    else "Host is offline or SSH is unreachable, but wake plan is not eligible."
+                ),
+                "wake": wake_plan.get("wake"),
+            }
+        )
+        steps.append(
+            {
+                "step": "wait_for_host_ssh",
+                "action": "would_wait",
+                "reason": "Would wait for Proxmox host SSH to return.",
+            }
+        )
+        steps.append(
+            {
+                "step": "start_worker",
+                "action": "would_recheck_after_host_online",
+                "reason": "Worker start plan requires Proxmox inventory, so it will be checked after the host is online.",
+            }
+        )
+    elif start_plan_error:
+        steps.append(
+            {
+                "step": "start_worker",
+                "action": "blocked",
+                "reason": f"Could not build worker start plan: {start_plan_error}",
+            }
+        )
+    elif start_plan and start_plan.get("eligible"):
+        steps.append(
+            {
+                "step": "start_worker",
+                "action": "would_start_worker",
+                "reason": "Worker target is stopped and eligible to start.",
+                "start_plan": start_plan,
+            }
+        )
+    elif start_plan:
+        blocked_reason = start_plan.get("blocked_reason")
+        if blocked_reason and "already running" in blocked_reason:
+            steps.append(
+                {
+                    "step": "start_worker",
+                    "action": "already_running",
+                    "reason": blocked_reason,
+                    "start_plan": start_plan,
+                }
+            )
+        else:
+            steps.append(
+                {
+                    "step": "start_worker",
+                    "action": "blocked",
+                    "reason": blocked_reason or "Worker start plan is not eligible.",
+                    "start_plan": start_plan,
+                }
+            )
+
+    eligible = bool(
+        ssh_target
+        and (
+            host_online
+            or wake_eligible
+        )
+    )
+
+    return {
+        "ok": True,
+        "dry_run": True,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "host_id": host_id,
+        "ssh_target": ssh_target,
+        "target_name": target_name,
+        "host_online": host_online,
+        "host_probe": host_probe,
+        "eligible": eligible,
+        "wake_plan": wake_plan,
+        "start_plan": start_plan,
+        "start_plan_error": start_plan_error,
+        "steps": steps,
+        "note": "This endpoint is dry-run only. It does not wake or start anything.",
+    }
+
+
+@app.post("/power/execute-wake-and-start-worker")
+async def power_execute_wake_and_start_worker(
+    target_name: str = "llms_ollama",
+    confirm: str = "",
+    wait_host_seconds: int = 180,
+    wait_worker_seconds: int = 180,
+    pause_after_start_minutes: int = 10,
+    health_url: str = "http://100.88.245.33:11434/api/tags",
+):
+    """
+    Guarded wake-and-start workflow.
+
+    Safety gates:
+      1. EDGE_POWER_EXECUTE_WAKE_AND_START must be enabled.
+      2. confirm must equal WAKE_AND_START_WORKER.
+      3. Wake plan must be eligible if host is offline.
+      4. Start plan must be eligible if worker is stopped.
+      5. Power automation is paused after successful start.
+    """
+    import os
+    import re
+    import socket
+    import subprocess
+    import time
+    import urllib.request
+    from datetime import datetime, timezone
+
+    def parse_bool(value, default=False):
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    required_confirmation = "WAKE_AND_START_WORKER"
+    execute_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_WAKE_AND_START"), False)
+    ssh_target = os.getenv("EDGE_PROXMOX_SSH_TARGET", "").strip()
+
+    plan = await power_wake_and_start_worker_plan(target_name=target_name)
+
+    if confirm != required_confirmation:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Missing confirmation phrase.",
+            "required_confirm": required_confirmation,
+            "example": "/power/execute-wake-and-start-worker?target_name=llms_ollama&confirm=WAKE_AND_START_WORKER",
+            "plan": plan,
+        }
+
+    if not execute_enabled:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "EDGE_POWER_EXECUTE_WAKE_AND_START is not enabled.",
+            "how_to_enable": "Set Environment=EDGE_POWER_EXECUTE_WAKE_AND_START=1, then restart the controller.",
+            "plan": plan,
+        }
+
+    if not ssh_target:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "EDGE_PROXMOX_SSH_TARGET is not configured.",
+            "plan": plan,
+        }
+
+    events = []
+
+    def ssh_hostname():
+        cmd = [
+            "ssh",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=5",
+            "-o", "StrictHostKeyChecking=accept-new",
+            ssh_target,
+            "hostname",
+        ]
+
+        try:
+            result = subprocess.run(
+                cmd,
+                text=True,
+                capture_output=True,
+                timeout=8,
+                check=False,
+            )
+            return result.returncode == 0, result
+        except Exception as e:
+            return False, e
+
+    host_online, host_probe = ssh_hostname()
+
+    if not host_online:
+        wake_plan = await power_wake_plan()
+        wake = wake_plan.get("wake") or {}
+
+        if not wake.get("eligible"):
+            return {
+                "ok": False,
+                "executed": False,
+                "blocked_reason": wake.get("blocked_reason") or "Wake plan is not eligible.",
+                "wake_plan": wake_plan,
+                "plan": plan,
+            }
+
+        mac = wake["mac"]
+        broadcast = wake["broadcast"]
+        port = int(wake["port"])
+
+        clean_mac = re.sub(r"[^0-9A-Fa-f]", "", mac)
+        mac_bytes = bytes.fromhex(clean_mac)
+        magic_packet = b"\xff" * 6 + mac_bytes * 16
+
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            sock.settimeout(3)
+            sent = sock.sendto(magic_packet, (broadcast, port))
+            sock.close()
+
+            events.append(
+                {
+                    "step": "wake_host",
+                    "executed": True,
+                    "bytes_sent": sent,
+                    "mac": mac,
+                    "broadcast": broadcast,
+                    "port": port,
+                }
+            )
+        except Exception as e:
+            return {
+                "ok": False,
+                "executed": False,
+                "blocked_reason": f"Failed to send Wake-on-LAN packet: {e}",
+                "wake_plan": wake_plan,
+                "plan": plan,
+            }
+
+    else:
+        events.append(
+            {
+                "step": "wake_host",
+                "executed": False,
+                "reason": "Host SSH is already online.",
+            }
+        )
+
+    host_ready = False
+    host_wait_started = time.time()
+
+    while time.time() - host_wait_started <= max(1, wait_host_seconds):
+        host_online, probe = ssh_hostname()
+        if host_online:
+            host_ready = True
+            events.append(
+                {
+                    "step": "wait_for_host_ssh",
+                    "ready": True,
+                    "waited_seconds": int(time.time() - host_wait_started),
+                }
+            )
+            break
+
+        time.sleep(5)
+
+    if not host_ready:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Timed out waiting for Proxmox SSH.",
+            "events": events,
+            "plan": plan,
+        }
+
+    start_plan = await power_start_worker_plan(target_name=target_name)
+
+    start_executed = False
+    start_already_running = False
+    start_result_payload = None
+
+    if start_plan.get("eligible"):
+        remote_command = start_plan.get("remote_command")
+
+        cmd = [
+            "ssh",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=5",
+            "-o", "StrictHostKeyChecking=accept-new",
+            ssh_target,
+            remote_command,
+        ]
+
+        try:
+            result = subprocess.run(
+                cmd,
+                text=True,
+                capture_output=True,
+                timeout=30,
+                check=False,
+            )
+
+            start_executed = result.returncode == 0
+            start_result_payload = {
+                "step": "start_worker",
+                "executed": start_executed,
+                "remote_command": remote_command,
+                "returncode": result.returncode,
+                "stdout": result.stdout[-2000:],
+                "stderr": result.stderr[-2000:],
+                "start_plan": start_plan,
+            }
+            events.append(start_result_payload)
+
+            if result.returncode != 0:
+                return {
+                    "ok": False,
+                    "executed": False,
+                    "blocked_reason": "Worker start command failed.",
+                    "events": events,
+                    "start_plan": start_plan,
+                    "plan": plan,
+                }
+
+        except subprocess.TimeoutExpired:
+            return {
+                "ok": False,
+                "executed": False,
+                "blocked_reason": "Timed out while starting worker target.",
+                "events": events,
+                "start_plan": start_plan,
+                "plan": plan,
+            }
+        except Exception as e:
+            return {
+                "ok": False,
+                "executed": False,
+                "blocked_reason": f"Failed to start worker target: {e}",
+                "events": events,
+                "start_plan": start_plan,
+                "plan": plan,
+            }
+
+    else:
+        blocked_reason = start_plan.get("blocked_reason") or "Worker start plan is not eligible."
+
+        if "already running" in blocked_reason:
+            start_already_running = True
+            events.append(
+                {
+                    "step": "start_worker",
+                    "executed": False,
+                    "already_running": True,
+                    "reason": blocked_reason,
+                    "start_plan": start_plan,
+                }
+            )
+        else:
+            return {
+                "ok": False,
+                "executed": False,
+                "blocked_reason": blocked_reason,
+                "events": events,
+                "start_plan": start_plan,
+                "plan": plan,
+            }
+
+    pause_result = None
+
+    if pause_after_start_minutes > 0:
+        pause_result = await power_auto_pause(
+            minutes=pause_after_start_minutes,
+            reason=f"wake-and-start-{target_name}",
+        )
+        events.append(
+            {
+                "step": "pause_automation",
+                "executed": True,
+                "pause_result": pause_result,
+            }
+        )
+
+    worker_ready = False
+    health_error = None
+    health_wait_started = time.time()
+
+    while time.time() - health_wait_started <= max(1, wait_worker_seconds):
+        try:
+            with urllib.request.urlopen(health_url, timeout=5) as response:
+                if 200 <= response.status < 300:
+                    worker_ready = True
+                    events.append(
+                        {
+                            "step": "wait_for_worker_health",
+                            "ready": True,
+                            "health_url": health_url,
+                            "status": response.status,
+                            "waited_seconds": int(time.time() - health_wait_started),
+                        }
+                    )
+                    break
+        except Exception as e:
+            health_error = str(e)
+
+        time.sleep(5)
+
+    if not worker_ready:
+        return {
+            "ok": False,
+            "executed": start_executed or start_already_running,
+            "blocked_reason": "Timed out waiting for worker health URL.",
+            "health_url": health_url,
+            "last_health_error": health_error,
+            "events": events,
+            "pause_result": pause_result,
+            "plan": plan,
+        }
+
+    return {
+        "ok": True,
+        "executed": True,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "target_name": target_name,
+        "host_ready": host_ready,
+        "worker_ready": worker_ready,
+        "start_executed": start_executed,
+        "start_already_running": start_already_running,
+        "pause_result": pause_result,
+        "events": events,
+        "note": "Host is online, worker target is started/running, and health URL is reachable.",
+    }
+
