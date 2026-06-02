@@ -1777,22 +1777,67 @@ async def power_idle_tick():
         host_empty_for_seconds = seconds_since(previous_host_empty_since)
 
         host_actions = []
+        proxmox_inventory_result = None
+        proxmox_inventory_error = None
 
         hosts = sorted({
             worker.get("host_id") or "unknown-host"
             for worker in workers
         })
 
+        # Only query Proxmox inventory after the queue/container idle grace period
+        # has already passed. This keeps normal ticks cheap and only performs SSH
+        # when host shutdown would otherwise be considered.
+        if host_candidate_now and host_empty_for_seconds >= host_idle_seconds_required:
+            try:
+                proxmox_inventory_result = await proxmox_inventory()
+            except Exception as e:
+                proxmox_inventory_error = str(e)
+
         for host in hosts:
+            inventory_summary = None
+
+            if isinstance(proxmox_inventory_result, dict):
+                inventory_summary = proxmox_inventory_result.get("summary")
+
             if not host_candidate_now:
                 host_action = "no_action_host_not_idle_candidate"
                 host_reason = "Queue/container idle requirements are not satisfied yet."
+
             elif host_empty_for_seconds < host_idle_seconds_required:
                 host_action = "no_action_host_idle_grace_period"
                 host_reason = f"Host idle candidate for {host_empty_for_seconds}s; waiting for {host_idle_seconds_required}s."
+
+            elif proxmox_inventory_error:
+                host_action = "blocked_proxmox_inventory_error"
+                host_reason = f"Could not query Proxmox inventory safely: {proxmox_inventory_error}"
+
+            elif not inventory_summary:
+                host_action = "blocked_missing_proxmox_inventory"
+                host_reason = "Proxmox inventory result was unavailable or malformed."
+
+            elif inventory_summary.get("host_shutdown_safe_now"):
+                if dry_run:
+                    host_action = "would_shutdown_host"
+                    host_reason = "Proxmox inventory says no CTs/VMs are running, but dry-run is enabled."
+                else:
+                    # Real host shutdown is intentionally not implemented yet.
+                    host_action = "real_host_shutdown_not_implemented"
+                    host_reason = "Dry-run is disabled, but real host shutdown code has not been implemented yet."
+
+            elif inventory_summary.get("host_shutdown_safe_if_auto_managed_stopped"):
+                host_action = "would_shutdown_host_after_auto_managed_targets_stop"
+                host_reason = (
+                    "Only auto-managed CTs/VMs are running. Host shutdown would become safe "
+                    "after those targets are stopped and the host idle grace period passes."
+                )
+
             else:
-                host_action = "blocked_need_proxmox_inventory_check"
-                host_reason = "Need CT/VM inventory check before host shutdown can be considered safe."
+                host_action = "blocked_running_protected_or_unknown_workloads"
+                host_reason = (
+                    "Proxmox inventory shows protected or manual/unknown CTs/VMs running. "
+                    "Host shutdown is blocked."
+                )
 
             host_actions.append(
                 {
@@ -1800,6 +1845,8 @@ async def power_idle_tick():
                     "idle_candidate_for_seconds": host_empty_for_seconds,
                     "action": host_action,
                     "reason": host_reason,
+                    "proxmox_inventory_error": proxmox_inventory_error,
+                    "proxmox_inventory_summary": inventory_summary,
                 }
             )
 

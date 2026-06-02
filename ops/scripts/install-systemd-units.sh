@@ -22,6 +22,8 @@ echo "[4/6] Installing controller drop-ins"
 sudo mkdir -p /etc/systemd/system/edge-queue-controller.service.d
 sudo cp ops/systemd/edge-queue-controller-power-idle-override.conf \
   /etc/systemd/system/edge-queue-controller.service.d/10-power-idle.conf
+sudo cp ops/systemd/edge-queue-controller-proxmox-inventory-override.conf \
+  /etc/systemd/system/edge-queue-controller.service.d/20-proxmox-inventory.conf
 
 echo "[5/6] Reloading systemd and enabling services/timers"
 sudo systemctl daemon-reload
