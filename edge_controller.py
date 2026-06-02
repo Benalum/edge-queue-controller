@@ -4074,38 +4074,24 @@ async def power_execute_wake_and_start_worker(
 
     while time.time() - registry_wait_started <= max(1, wait_registry_seconds):
         try:
-            with urllib.request.urlopen(registry_url, timeout=5) as response:
-                raw = response.read().decode("utf-8", errors="replace")
-                data = json.loads(raw)
+            registry_state = _power_lookup_worker_registry_state(target_name)
+            registry_worker = registry_state.get("worker")
 
-            for worker in data.get("workers", []):
-                if (
-                    worker.get("target_name") == target_name
-                    or worker.get("worker_id") == target_name
-                    or worker.get("name") == target_name
-                ):
-                    registry_worker = worker
-
-                    if worker.get("computed_health") == "available":
-                        registry_ready = True
-                    break
-
-            if registry_ready:
+            if registry_state.get("computed_health") == "available":
+                registry_ready = True
                 events.append(
                     {
                         "step": "wait_for_worker_registry",
                         "ready": True,
-                        "registry_url": registry_url,
+                        "source": "sqlite",
                         "waited_seconds": int(time.time() - registry_wait_started),
                         "worker": registry_worker,
                     }
                 )
                 break
 
-            registry_error = (
-                f"Worker found but not available: {registry_worker.get('computed_health')}"
-                if registry_worker
-                else f"No registry worker matched target_name={target_name}"
+            registry_error = registry_state.get("reason") or (
+                f"Worker found but not available: {registry_state.get('computed_health')}"
             )
 
         except Exception as e:
@@ -4118,6 +4104,7 @@ async def power_execute_wake_and_start_worker(
             "ok": False,
             "executed": start_executed or start_already_running,
             "blocked_reason": "Timed out waiting for worker registry availability.",
+            "registry_source": "sqlite",
             "registry_url": registry_url,
             "last_registry_error": registry_error,
             "registry_worker": registry_worker,
@@ -4141,4 +4128,96 @@ async def power_execute_wake_and_start_worker(
         "events": events,
         "note": "Host is online, worker target is started/running, health URL is reachable, and registry shows worker available.",
     }
+
+
+# ---------------------------------------------------------------------
+# Direct worker registry lookup helper
+# ---------------------------------------------------------------------
+def _power_lookup_worker_registry_state(target_name: str):
+    """
+    Read worker state directly from SQLite.
+
+    This avoids calling http://127.0.0.1:7070/workers/registry from inside
+    a controller request, which can deadlock/time out with a single Uvicorn worker.
+    """
+    import sqlite3
+    from datetime import datetime, timezone
+
+    db_path = _power_auto_find_db_path()
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    try:
+        row = conn.execute(
+            """
+            SELECT *
+            FROM workers
+            WHERE worker_id = ?
+               OR name = ?
+               OR target_name = ?
+            LIMIT 1
+            """,
+            (target_name, target_name, target_name),
+        ).fetchone()
+
+        if not row:
+            return {
+                "ok": True,
+                "found": False,
+                "target_name": target_name,
+                "computed_health": "missing",
+                "worker": None,
+                "reason": f"No worker matched {target_name}.",
+            }
+
+        worker = dict(row)
+
+        now = datetime.now(timezone.utc)
+        last_heartbeat_at = worker.get("last_heartbeat_at")
+        heartbeat_age_seconds = None
+
+        if last_heartbeat_at:
+            try:
+                heartbeat_dt = datetime.fromisoformat(str(last_heartbeat_at))
+                if heartbeat_dt.tzinfo is None:
+                    heartbeat_dt = heartbeat_dt.replace(tzinfo=timezone.utc)
+                heartbeat_age_seconds = int((now - heartbeat_dt).total_seconds())
+            except Exception:
+                heartbeat_age_seconds = None
+
+        status = str(worker.get("status") or "").lower()
+        last_error = worker.get("last_error")
+        current_jobs = int(worker.get("current_jobs") or 0)
+        max_concurrent_jobs = int(worker.get("max_concurrent_jobs") or 1)
+        queue_depth = int(worker.get("queue_depth") or 0)
+
+        stale_after_seconds = 75
+
+        if status == "disabled":
+            computed_health = "disabled"
+        elif heartbeat_age_seconds is None or heartbeat_age_seconds > stale_after_seconds:
+            computed_health = "stale"
+        elif last_error:
+            computed_health = "unhealthy"
+        elif current_jobs >= max_concurrent_jobs or queue_depth > 0:
+            computed_health = "busy"
+        else:
+            computed_health = "available"
+
+        worker["heartbeat_age_seconds"] = heartbeat_age_seconds
+        worker["computed_health"] = computed_health
+
+        return {
+            "ok": True,
+            "found": True,
+            "target_name": target_name,
+            "computed_health": computed_health,
+            "worker": worker,
+            "reason": None,
+            "db_path": str(db_path),
+        }
+
+    finally:
+        conn.close()
 
