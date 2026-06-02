@@ -2330,3 +2330,165 @@ async def power_stop_plan():
         "note": "This endpoint is dry-run only and does not execute commands.",
     }
 
+
+# ---------------------------------------------------------------------
+# Manual power stop execution endpoint
+# ---------------------------------------------------------------------
+@app.post("/power/execute-stop-plan")
+async def power_execute_stop_plan(confirm: str = ""):
+    """
+    Manually execute eligible auto-managed stop commands.
+
+    Safety gates:
+      1. EDGE_POWER_EXECUTE_STOPS must be enabled.
+      2. confirm must equal STOP_AUTO_MANAGED_TARGETS.
+      3. /power/stop-plan must say the target is eligible.
+      4. Only auto-managed, non-protected, running targets can be stopped.
+      5. Host shutdown is not executed here.
+    """
+    import os
+    import subprocess
+    from datetime import datetime, timezone
+    from fastapi import HTTPException
+
+    def parse_bool(value, default=False):
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    execute_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_STOPS"), False)
+    ssh_target = os.getenv("EDGE_PROXMOX_SSH_TARGET", "").strip()
+    shutdown_timeout = int(os.getenv("EDGE_POWER_CONTAINER_SHUTDOWN_TIMEOUT", "60"))
+
+    required_confirmation = "STOP_AUTO_MANAGED_TARGETS"
+
+    plan = await power_stop_plan()
+
+    if confirm != required_confirmation:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "Missing confirmation phrase.",
+            "required_confirm": required_confirmation,
+            "example": "/power/execute-stop-plan?confirm=STOP_AUTO_MANAGED_TARGETS",
+            "plan": plan,
+        }
+
+    if not execute_enabled:
+        return {
+            "ok": False,
+            "executed": False,
+            "blocked_reason": "EDGE_POWER_EXECUTE_STOPS is not enabled.",
+            "how_to_enable": "Set Environment=EDGE_POWER_EXECUTE_STOPS=1 in the controller systemd drop-in, then restart the controller.",
+            "plan": plan,
+        }
+
+    if not ssh_target:
+        raise HTTPException(
+            status_code=500,
+            detail="EDGE_PROXMOX_SSH_TARGET is not configured.",
+        )
+
+    executions = []
+
+    for stop_plan in plan.get("container_stop_plans", []):
+        if not stop_plan.get("eligible"):
+            executions.append(
+                {
+                    "worker_id": stop_plan.get("worker_id"),
+                    "target_name": stop_plan.get("target_name"),
+                    "executed": False,
+                    "blocked_reason": stop_plan.get("blocked_reason") or "Stop plan was not eligible.",
+                }
+            )
+            continue
+
+        mapped = stop_plan.get("mapped_target") or {}
+        kind = str(mapped.get("kind") or "").strip().lower()
+        vmid = str(mapped.get("vmid") or "").strip()
+
+        if kind not in {"ct", "vm"} or not vmid:
+            executions.append(
+                {
+                    "worker_id": stop_plan.get("worker_id"),
+                    "target_name": stop_plan.get("target_name"),
+                    "executed": False,
+                    "blocked_reason": "Mapped target was missing or invalid.",
+                    "mapped_target": mapped,
+                }
+            )
+            continue
+
+        if kind == "ct":
+            remote_command = f"pct shutdown {vmid} --timeout {shutdown_timeout}"
+        else:
+            remote_command = f"qm shutdown {vmid} --timeout {shutdown_timeout}"
+
+        cmd = [
+            "ssh",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=5",
+            "-o", "StrictHostKeyChecking=accept-new",
+            ssh_target,
+            remote_command,
+        ]
+
+        try:
+            result = subprocess.run(
+                cmd,
+                text=True,
+                capture_output=True,
+                timeout=shutdown_timeout + 15,
+                check=False,
+            )
+        except subprocess.TimeoutExpired:
+            executions.append(
+                {
+                    "worker_id": stop_plan.get("worker_id"),
+                    "target_name": stop_plan.get("target_name"),
+                    "kind": kind,
+                    "vmid": vmid,
+                    "executed": False,
+                    "blocked_reason": "Timed out while executing shutdown command.",
+                    "remote_command": remote_command,
+                }
+            )
+            continue
+        except Exception as e:
+            executions.append(
+                {
+                    "worker_id": stop_plan.get("worker_id"),
+                    "target_name": stop_plan.get("target_name"),
+                    "kind": kind,
+                    "vmid": vmid,
+                    "executed": False,
+                    "blocked_reason": f"Failed to execute shutdown command: {e}",
+                    "remote_command": remote_command,
+                }
+            )
+            continue
+
+        executions.append(
+            {
+                "worker_id": stop_plan.get("worker_id"),
+                "target_name": stop_plan.get("target_name"),
+                "kind": kind,
+                "vmid": vmid,
+                "executed": result.returncode == 0,
+                "returncode": result.returncode,
+                "remote_command": remote_command,
+                "stdout": result.stdout[-2000:],
+                "stderr": result.stderr[-2000:],
+            }
+        )
+
+    return {
+        "ok": True,
+        "executed": any(item.get("executed") for item in executions),
+        "time": datetime.now(timezone.utc).isoformat(),
+        "execute_enabled": execute_enabled,
+        "confirm": confirm,
+        "executions": executions,
+        "note": "This endpoint only stops eligible auto-managed CT/VM targets. It does not shut down the Proxmox host.",
+    }
+
