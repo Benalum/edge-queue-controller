@@ -1624,6 +1624,7 @@ async def power_idle_tick():
             "errored",
             "cancelled",
             "canceled",
+            "forwarded",
         }
 
         if jobs_known:
