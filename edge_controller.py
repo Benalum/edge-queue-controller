@@ -4782,9 +4782,18 @@ async def _forward_ollama_chat_job_direct(job: dict[str, Any], ollama_base_url: 
         message = data.get("message") if isinstance(data, dict) else None
         content = message.get("content") if isinstance(message, dict) else None
 
+        public_result_store = _public_store_job_result(
+            job_id=int(job["id"]),
+            model=model,
+            response_text=content or raw_text,
+            response_json=data,
+            error=None,
+        )
+
         return {
             "job_id": job["id"],
             "action": "ollama_direct_forwarded",
+            "public_result_store": public_result_store,
             "ok": True,
             "url": url,
             "status_code": response.status_code,
@@ -5017,3 +5026,320 @@ def _power_mark_worker_offline_after_stop(target_name: str, reason: str = "worke
     finally:
         conn.close()
 
+
+
+# ---------------------------------------------------------------------
+# Public API layer for website/Cloudflare
+# ---------------------------------------------------------------------
+from fastapi import Request, HTTPException
+import hmac
+
+
+def _public_max_prompt_chars() -> int:
+    try:
+        return int(os.getenv("EDGE_PUBLIC_MAX_PROMPT_CHARS", "4000"))
+    except Exception:
+        return 4000
+
+
+def _public_default_model() -> str:
+    return os.getenv("EDGE_PUBLIC_DEFAULT_MODEL", os.getenv("EDGE_OLLAMA_DEFAULT_MODEL", "qwen2.5:0.5b"))
+
+
+async def _require_public_api_key(request: Request):
+    expected = os.getenv("EDGE_PUBLIC_API_KEY", "").strip()
+
+    if not expected:
+        raise HTTPException(
+            status_code=503,
+            detail="Public API is not configured. EDGE_PUBLIC_API_KEY is missing.",
+        )
+
+    supplied = request.headers.get("x-edge-api-key", "").strip()
+
+    if not supplied or not hmac.compare_digest(supplied, expected):
+        raise HTTPException(status_code=401, detail="Invalid or missing public API key.")
+
+    return True
+
+
+def _public_init_job_results_table():
+    with db() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS job_results (
+                job_id INTEGER PRIMARY KEY,
+                model TEXT,
+                response_text TEXT,
+                response_json TEXT,
+                error TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                FOREIGN KEY(job_id) REFERENCES jobs(id)
+            )
+            """
+        )
+
+
+def _public_store_job_result(job_id: int, model: str | None, response_text: str | None, response_json: object | None = None, error: str | None = None):
+    _public_init_job_results_table()
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    try:
+        response_json_text = json.dumps(response_json, ensure_ascii=False) if response_json is not None else None
+    except Exception:
+        response_json_text = None
+
+    with db() as conn:
+        conn.execute(
+            """
+            INSERT INTO job_results (
+                job_id,
+                model,
+                response_text,
+                response_json,
+                error,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(job_id) DO UPDATE SET
+                model = excluded.model,
+                response_text = excluded.response_text,
+                response_json = excluded.response_json,
+                error = excluded.error,
+                updated_at = excluded.updated_at
+            """,
+            (
+                int(job_id),
+                model,
+                response_text,
+                response_json_text,
+                error,
+                now,
+                now,
+            ),
+        )
+
+    return {
+        "job_id": int(job_id),
+        "stored": True,
+        "updated_at": now,
+        "has_response_text": bool(response_text),
+        "has_error": bool(error),
+    }
+
+
+def _public_get_job_with_result(job_id: int):
+    _public_init_job_results_table()
+
+    with db() as conn:
+        job = conn.execute(
+            """
+            SELECT *
+            FROM jobs
+            WHERE id = ?
+            LIMIT 1
+            """,
+            (int(job_id),),
+        ).fetchone()
+
+        if not job:
+            return None
+
+        result = conn.execute(
+            """
+            SELECT *
+            FROM job_results
+            WHERE job_id = ?
+            LIMIT 1
+            """,
+            (int(job_id),),
+        ).fetchone()
+
+    job_data = row_to_dict(job)
+
+    result_data = None
+    if result:
+        result_data = row_to_dict(result)
+
+        raw_json = result_data.get("response_json")
+        if raw_json:
+            try:
+                result_data["response_json"] = json.loads(raw_json)
+            except Exception:
+                result_data["response_json"] = None
+
+    return {
+        "job": job_data,
+        "result": result_data,
+    }
+
+
+def _public_create_ollama_job(prompt: str, requested_model: str | None = None):
+    now = datetime.now(timezone.utc).isoformat()
+    model = requested_model or _public_default_model()
+
+    with db() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO jobs (
+                job_type,
+                prompt,
+                requested_model,
+                status,
+                attempts,
+                last_error,
+                created_at,
+                updated_at,
+                forwarded_at
+            )
+            VALUES (?, ?, ?, 'queued', 0, NULL, ?, ?, NULL)
+            """,
+            (
+                "ollama_chat",
+                prompt,
+                model,
+                now,
+                now,
+            ),
+        )
+
+        job_id = cur.lastrowid
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM jobs
+            WHERE id = ?
+            """,
+            (job_id,),
+        ).fetchone()
+
+    return row_to_dict(row)
+
+
+@app.post("/public/jobs")
+async def public_create_job(request: Request):
+    await _require_public_api_key(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    prompt = payload.get("prompt") if isinstance(payload, dict) else None
+    requested_model = payload.get("requested_model") if isinstance(payload, dict) else None
+
+    if not isinstance(prompt, str) or not prompt.strip():
+        raise HTTPException(status_code=400, detail="prompt is required.")
+
+    prompt = prompt.strip()
+    max_chars = _public_max_prompt_chars()
+
+    if len(prompt) > max_chars:
+        raise HTTPException(
+            status_code=400,
+            detail=f"prompt is too long. Max characters: {max_chars}.",
+        )
+
+    if requested_model is not None and not isinstance(requested_model, str):
+        raise HTTPException(status_code=400, detail="requested_model must be a string when provided.")
+
+    requested_model = (requested_model or _public_default_model()).strip()
+
+    job = _public_create_ollama_job(prompt=prompt, requested_model=requested_model)
+
+    return {
+        "ok": True,
+        "job_id": job["id"],
+        "status": job["status"],
+        "requested_model": job["requested_model"],
+        "poll_url": f"/public/jobs/{job['id']}",
+        "message": "Job queued. Poll the job URL for status and result.",
+    }
+
+
+@app.get("/public/jobs/{job_id}")
+async def public_get_job(job_id: int, request: Request):
+    await _require_public_api_key(request)
+
+    data = _public_get_job_with_result(job_id)
+
+    if not data:
+        raise HTTPException(status_code=404, detail="Job not found.")
+
+    job = data["job"]
+    result = data["result"]
+
+    return {
+        "ok": True,
+        "job_id": job["id"],
+        "status": job["status"],
+        "attempts": job.get("attempts"),
+        "last_error": job.get("last_error"),
+        "created_at": job.get("created_at"),
+        "updated_at": job.get("updated_at"),
+        "forwarded_at": job.get("forwarded_at"),
+        "requested_model": job.get("requested_model"),
+        "result": result,
+    }
+
+
+@app.get("/public/status")
+async def public_status(request: Request):
+    await _require_public_api_key(request)
+
+    with db() as conn:
+        job_counts = {
+            row["status"]: row["count"]
+            for row in conn.execute(
+                """
+                SELECT status, COUNT(*) AS count
+                FROM jobs
+                GROUP BY status
+                """
+            ).fetchall()
+        }
+
+        latest_job = conn.execute(
+            """
+            SELECT id, job_type, status, created_at, updated_at, forwarded_at, last_error
+            FROM jobs
+            ORDER BY id DESC
+            LIMIT 1
+            """
+        ).fetchone()
+
+        workers = [
+            worker_row_to_dict(row)
+            for row in conn.execute(
+                """
+                SELECT *
+                FROM workers
+                ORDER BY worker_id
+                """
+            ).fetchall()
+        ]
+
+    worker_summary = {
+        "total": len(workers),
+        "available": sum(1 for w in workers if w.get("computed_health") == "available"),
+        "busy": sum(1 for w in workers if w.get("computed_health") == "busy"),
+        "offline": sum(1 for w in workers if w.get("computed_health") == "offline"),
+        "stale": sum(1 for w in workers if w.get("computed_health") == "stale"),
+        "unhealthy": sum(1 for w in workers if w.get("computed_health") == "unhealthy"),
+        "disabled": sum(1 for w in workers if w.get("computed_health") == "disabled"),
+    }
+
+    return {
+        "ok": True,
+        "queue": {
+            "status_counts": job_counts,
+            "queued": job_counts.get("queued", 0),
+            "forwarded": job_counts.get("forwarded", 0),
+        },
+        "workers": worker_summary,
+        "latest_job": row_to_dict(latest_job) if latest_job else None,
+    }
