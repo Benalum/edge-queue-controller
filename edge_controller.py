@@ -5864,3 +5864,628 @@ async def public_auth_logout(request: Request):
         "ok": True,
         "message": "Logged out.",
     }
+
+
+
+# ---------------------------------------------------------------------
+# Public study decks/cards/progress foundation
+# ---------------------------------------------------------------------
+def _study_init_tables():
+    _auth_init_tables()
+
+    with db() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS study_decks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                archived_at TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS study_cards (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                deck_id INTEGER NOT NULL,
+                question TEXT NOT NULL,
+                answer TEXT NOT NULL,
+                explanation TEXT,
+                difficulty TEXT,
+                tags_json TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                archived_at TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id),
+                FOREIGN KEY(deck_id) REFERENCES study_decks(id)
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS study_reviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                deck_id INTEGER NOT NULL,
+                card_id INTEGER NOT NULL,
+                was_correct INTEGER NOT NULL,
+                confidence INTEGER,
+                response_time_ms INTEGER,
+                reviewed_at TEXT NOT NULL,
+                notes TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id),
+                FOREIGN KEY(deck_id) REFERENCES study_decks(id),
+                FOREIGN KEY(card_id) REFERENCES study_cards(id)
+            )
+            """
+        )
+
+
+def _study_current_user_id(request: Request) -> int:
+    user_row = _auth_current_user_from_request(request)
+    return int(user_row["id"])
+
+
+def _study_parse_tags(value):
+    if value is None:
+        return []
+
+    if isinstance(value, list):
+        tags = value
+    elif isinstance(value, str):
+        tags = [part.strip() for part in value.split(",")]
+    else:
+        tags = []
+
+    cleaned = []
+    for tag in tags:
+        tag = str(tag).strip()
+        if tag and tag not in cleaned:
+            cleaned.append(tag[:60])
+
+    return cleaned[:20]
+
+
+def _study_deck_for_user(deck_id: int, user_id: int):
+    _study_init_tables()
+
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT *
+            FROM study_decks
+            WHERE id = ?
+              AND user_id = ?
+              AND archived_at IS NULL
+            LIMIT 1
+            """,
+            (int(deck_id), int(user_id)),
+        ).fetchone()
+
+    return row
+
+
+def _study_card_for_user(card_id: int, user_id: int):
+    _study_init_tables()
+
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT *
+            FROM study_cards
+            WHERE id = ?
+              AND user_id = ?
+              AND archived_at IS NULL
+            LIMIT 1
+            """,
+            (int(card_id), int(user_id)),
+        ).fetchone()
+
+    return row
+
+
+def _study_card_to_public(row):
+    data = row_to_dict(row)
+
+    raw_tags = data.get("tags_json")
+    if raw_tags:
+        try:
+            data["tags"] = json.loads(raw_tags)
+        except Exception:
+            data["tags"] = []
+    else:
+        data["tags"] = []
+
+    data.pop("tags_json", None)
+
+    return data
+
+
+@app.post("/public/study/decks")
+async def public_study_create_deck(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    _study_init_tables()
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    title = payload.get("title") if isinstance(payload, dict) else None
+    description = payload.get("description") if isinstance(payload, dict) else None
+
+    if not isinstance(title, str) or not title.strip():
+        raise HTTPException(status_code=400, detail="title is required.")
+
+    title = title.strip()[:200]
+    description = str(description).strip()[:2000] if description is not None else None
+    if description == "":
+        description = None
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    with db() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO study_decks (
+                user_id,
+                title,
+                description,
+                created_at,
+                updated_at,
+                archived_at
+            )
+            VALUES (?, ?, ?, ?, ?, NULL)
+            """,
+            (
+                user_id,
+                title,
+                description,
+                now,
+                now,
+            ),
+        )
+
+        deck_id = cur.lastrowid
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM study_decks
+            WHERE id = ?
+            """,
+            (deck_id,),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "deck": row_to_dict(row),
+    }
+
+
+@app.get("/public/study/decks")
+async def public_study_list_decks(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    _study_init_tables()
+
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                d.*,
+                COUNT(c.id) AS card_count,
+                COALESCE(SUM(CASE WHEN r.was_correct = 1 THEN 1 ELSE 0 END), 0) AS correct_reviews,
+                COUNT(r.id) AS total_reviews
+            FROM study_decks d
+            LEFT JOIN study_cards c
+                ON c.deck_id = d.id
+               AND c.archived_at IS NULL
+            LEFT JOIN study_reviews r
+                ON r.deck_id = d.id
+            WHERE d.user_id = ?
+              AND d.archived_at IS NULL
+            GROUP BY d.id
+            ORDER BY d.updated_at DESC, d.id DESC
+            """,
+            (user_id,),
+        ).fetchall()
+
+    decks = []
+    for row in rows:
+        item = row_to_dict(row)
+        total_reviews = int(item.get("total_reviews") or 0)
+        correct_reviews = int(item.get("correct_reviews") or 0)
+        item["accuracy"] = round(correct_reviews / total_reviews, 4) if total_reviews else None
+        decks.append(item)
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "count": len(decks),
+        "decks": decks,
+    }
+
+
+@app.post("/public/study/decks/{deck_id}/cards")
+async def public_study_create_card(deck_id: int, request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    _study_init_tables()
+
+    deck = _study_deck_for_user(deck_id, user_id)
+    if not deck:
+        raise HTTPException(status_code=404, detail="Deck not found.")
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    question = payload.get("question") if isinstance(payload, dict) else None
+    answer = payload.get("answer") if isinstance(payload, dict) else None
+    explanation = payload.get("explanation") if isinstance(payload, dict) else None
+    difficulty = payload.get("difficulty") if isinstance(payload, dict) else None
+    tags = _study_parse_tags(payload.get("tags") if isinstance(payload, dict) else None)
+
+    if not isinstance(question, str) or not question.strip():
+        raise HTTPException(status_code=400, detail="question is required.")
+
+    if not isinstance(answer, str) or not answer.strip():
+        raise HTTPException(status_code=400, detail="answer is required.")
+
+    question = question.strip()[:4000]
+    answer = answer.strip()[:4000]
+    explanation = str(explanation).strip()[:4000] if explanation is not None else None
+    if explanation == "":
+        explanation = None
+
+    difficulty = str(difficulty).strip().lower()[:40] if difficulty is not None else None
+    if difficulty == "":
+        difficulty = None
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    with db() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO study_cards (
+                user_id,
+                deck_id,
+                question,
+                answer,
+                explanation,
+                difficulty,
+                tags_json,
+                created_at,
+                updated_at,
+                archived_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)
+            """,
+            (
+                user_id,
+                int(deck_id),
+                question,
+                answer,
+                explanation,
+                difficulty,
+                json.dumps(tags, ensure_ascii=False),
+                now,
+                now,
+            ),
+        )
+
+        card_id = cur.lastrowid
+
+        conn.execute(
+            """
+            UPDATE study_decks
+            SET updated_at = ?
+            WHERE id = ?
+              AND user_id = ?
+            """,
+            (
+                now,
+                int(deck_id),
+                user_id,
+            ),
+        )
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM study_cards
+            WHERE id = ?
+            """,
+            (card_id,),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "card": _study_card_to_public(row),
+    }
+
+
+@app.get("/public/study/decks/{deck_id}/cards")
+async def public_study_list_cards(deck_id: int, request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    _study_init_tables()
+
+    deck = _study_deck_for_user(deck_id, user_id)
+    if not deck:
+        raise HTTPException(status_code=404, detail="Deck not found.")
+
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                c.*,
+                COUNT(r.id) AS review_count,
+                COALESCE(SUM(CASE WHEN r.was_correct = 1 THEN 1 ELSE 0 END), 0) AS correct_count,
+                MAX(r.reviewed_at) AS last_reviewed_at
+            FROM study_cards c
+            LEFT JOIN study_reviews r
+                ON r.card_id = c.id
+            WHERE c.user_id = ?
+              AND c.deck_id = ?
+              AND c.archived_at IS NULL
+            GROUP BY c.id
+            ORDER BY c.created_at ASC, c.id ASC
+            """,
+            (
+                user_id,
+                int(deck_id),
+            ),
+        ).fetchall()
+
+    cards = []
+    for row in rows:
+        item = _study_card_to_public(row)
+        review_count = int(item.get("review_count") or 0)
+        correct_count = int(item.get("correct_count") or 0)
+        item["accuracy"] = round(correct_count / review_count, 4) if review_count else None
+        cards.append(item)
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "deck": row_to_dict(deck),
+        "count": len(cards),
+        "cards": cards,
+    }
+
+
+@app.post("/public/study/cards/{card_id}/reviews")
+async def public_study_review_card(card_id: int, request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    _study_init_tables()
+
+    card = _study_card_for_user(card_id, user_id)
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found.")
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    was_correct = payload.get("was_correct") if isinstance(payload, dict) else None
+    confidence = payload.get("confidence") if isinstance(payload, dict) else None
+    response_time_ms = payload.get("response_time_ms") if isinstance(payload, dict) else None
+    notes = payload.get("notes") if isinstance(payload, dict) else None
+
+    if isinstance(was_correct, bool):
+        was_correct_int = 1 if was_correct else 0
+    elif was_correct in (0, 1, "0", "1"):
+        was_correct_int = int(was_correct)
+    else:
+        raise HTTPException(status_code=400, detail="was_correct must be true or false.")
+
+    try:
+        confidence_int = int(confidence) if confidence is not None else None
+    except Exception:
+        raise HTTPException(status_code=400, detail="confidence must be an integer 1-5.")
+
+    if confidence_int is not None and not (1 <= confidence_int <= 5):
+        raise HTTPException(status_code=400, detail="confidence must be between 1 and 5.")
+
+    try:
+        response_time_int = int(response_time_ms) if response_time_ms is not None else None
+    except Exception:
+        raise HTTPException(status_code=400, detail="response_time_ms must be an integer.")
+
+    if response_time_int is not None and response_time_int < 0:
+        response_time_int = None
+
+    notes = str(notes).strip()[:2000] if notes is not None else None
+    if notes == "":
+        notes = None
+
+    reviewed_at = datetime.now(timezone.utc).isoformat()
+    deck_id = int(card["deck_id"])
+
+    with db() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO study_reviews (
+                user_id,
+                deck_id,
+                card_id,
+                was_correct,
+                confidence,
+                response_time_ms,
+                reviewed_at,
+                notes
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                deck_id,
+                int(card_id),
+                was_correct_int,
+                confidence_int,
+                response_time_int,
+                reviewed_at,
+                notes,
+            ),
+        )
+
+        review_id = cur.lastrowid
+
+        conn.execute(
+            """
+            UPDATE study_decks
+            SET updated_at = ?
+            WHERE id = ?
+              AND user_id = ?
+            """,
+            (
+                reviewed_at,
+                deck_id,
+                user_id,
+            ),
+        )
+
+        review = conn.execute(
+            """
+            SELECT *
+            FROM study_reviews
+            WHERE id = ?
+            """,
+            (review_id,),
+        ).fetchone()
+
+        stats = conn.execute(
+            """
+            SELECT
+                COUNT(*) AS total_reviews,
+                COALESCE(SUM(CASE WHEN was_correct = 1 THEN 1 ELSE 0 END), 0) AS correct_reviews
+            FROM study_reviews
+            WHERE user_id = ?
+              AND card_id = ?
+            """,
+            (
+                user_id,
+                int(card_id),
+            ),
+        ).fetchone()
+
+    total_reviews = int(stats["total_reviews"] or 0)
+    correct_reviews = int(stats["correct_reviews"] or 0)
+
+    return {
+        "ok": True,
+        "review": row_to_dict(review),
+        "card_stats": {
+            "card_id": int(card_id),
+            "total_reviews": total_reviews,
+            "correct_reviews": correct_reviews,
+            "accuracy": round(correct_reviews / total_reviews, 4) if total_reviews else None,
+        },
+    }
+
+
+@app.get("/public/study/progress")
+async def public_study_progress(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    _study_init_tables()
+
+    with db() as conn:
+        overall = conn.execute(
+            """
+            SELECT
+                COUNT(DISTINCT d.id) AS deck_count,
+                COUNT(DISTINCT c.id) AS card_count,
+                COUNT(r.id) AS review_count,
+                COALESCE(SUM(CASE WHEN r.was_correct = 1 THEN 1 ELSE 0 END), 0) AS correct_reviews
+            FROM study_decks d
+            LEFT JOIN study_cards c
+                ON c.deck_id = d.id
+               AND c.archived_at IS NULL
+            LEFT JOIN study_reviews r
+                ON r.deck_id = d.id
+            WHERE d.user_id = ?
+              AND d.archived_at IS NULL
+            """,
+            (user_id,),
+        ).fetchone()
+
+        by_deck_rows = conn.execute(
+            """
+            SELECT
+                d.id AS deck_id,
+                d.title,
+                COUNT(DISTINCT c.id) AS card_count,
+                COUNT(r.id) AS review_count,
+                COALESCE(SUM(CASE WHEN r.was_correct = 1 THEN 1 ELSE 0 END), 0) AS correct_reviews,
+                MAX(r.reviewed_at) AS last_reviewed_at
+            FROM study_decks d
+            LEFT JOIN study_cards c
+                ON c.deck_id = d.id
+               AND c.archived_at IS NULL
+            LEFT JOIN study_reviews r
+                ON r.deck_id = d.id
+            WHERE d.user_id = ?
+              AND d.archived_at IS NULL
+            GROUP BY d.id
+            ORDER BY d.updated_at DESC, d.id DESC
+            """,
+            (user_id,),
+        ).fetchall()
+
+        recent_rows = conn.execute(
+            """
+            SELECT
+                r.id,
+                r.deck_id,
+                d.title AS deck_title,
+                r.card_id,
+                c.question,
+                r.was_correct,
+                r.confidence,
+                r.response_time_ms,
+                r.reviewed_at
+            FROM study_reviews r
+            JOIN study_decks d ON d.id = r.deck_id
+            JOIN study_cards c ON c.id = r.card_id
+            WHERE r.user_id = ?
+            ORDER BY r.reviewed_at DESC, r.id DESC
+            LIMIT 20
+            """,
+            (user_id,),
+        ).fetchall()
+
+    overall_data = row_to_dict(overall)
+    total_reviews = int(overall_data.get("review_count") or 0)
+    correct_reviews = int(overall_data.get("correct_reviews") or 0)
+    overall_data["accuracy"] = round(correct_reviews / total_reviews, 4) if total_reviews else None
+
+    by_deck = []
+    for row in by_deck_rows:
+        item = row_to_dict(row)
+        review_count = int(item.get("review_count") or 0)
+        correct_count = int(item.get("correct_reviews") or 0)
+        item["accuracy"] = round(correct_count / review_count, 4) if review_count else None
+        by_deck.append(item)
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "overall": overall_data,
+        "by_deck": by_deck,
+        "recent_reviews": [row_to_dict(row) for row in recent_rows],
+    }
