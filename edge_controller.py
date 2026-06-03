@@ -5389,3 +5389,396 @@ async def public_status(request: Request):
         "workers": worker_summary,
         "latest_job": row_to_dict(latest_job) if latest_job else None,
     }
+
+
+# ---------------------------------------------------------------------
+# Public user auth foundation
+# ---------------------------------------------------------------------
+import base64 as _auth_base64
+import hashlib as _auth_hashlib
+import secrets as _auth_secrets
+from datetime import timedelta as _auth_timedelta
+
+
+def _auth_now_iso():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _auth_init_tables():
+    with db() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS app_users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL UNIQUE,
+                display_name TEXT,
+                password_hash TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'active',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                last_login_at TEXT
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS user_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                token_hash TEXT NOT NULL UNIQUE,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                revoked_at TEXT,
+                last_seen_at TEXT,
+                user_agent TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+
+        # Future-proof jobs so later every AI job can belong to a user.
+        cols = {
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(jobs)").fetchall()
+        }
+        if "user_id" not in cols:
+            conn.execute("ALTER TABLE jobs ADD COLUMN user_id INTEGER")
+
+
+def _auth_normalize_email(email: str) -> str:
+    return str(email or "").strip().lower()
+
+
+def _auth_hash_password(password: str) -> str:
+    iterations = 310000
+    salt = _auth_secrets.token_bytes(16)
+    digest = _auth_hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt,
+        iterations,
+    )
+
+    salt_b64 = _auth_base64.urlsafe_b64encode(salt).decode("ascii")
+    digest_b64 = _auth_base64.urlsafe_b64encode(digest).decode("ascii")
+
+    return f"pbkdf2_sha256${iterations}${salt_b64}${digest_b64}"
+
+
+def _auth_verify_password(password: str, stored: str) -> bool:
+    try:
+        algo, iterations_text, salt_b64, digest_b64 = stored.split("$", 3)
+        if algo != "pbkdf2_sha256":
+            return False
+
+        iterations = int(iterations_text)
+        salt = _auth_base64.urlsafe_b64decode(salt_b64.encode("ascii"))
+        expected = _auth_base64.urlsafe_b64decode(digest_b64.encode("ascii"))
+
+        actual = _auth_hashlib.pbkdf2_hmac(
+            "sha256",
+            password.encode("utf-8"),
+            salt,
+            iterations,
+        )
+
+        return hmac.compare_digest(actual, expected)
+    except Exception:
+        return False
+
+
+def _auth_hash_token(token: str) -> str:
+    return _auth_hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _auth_public_user(row):
+    data = row_to_dict(row)
+    return {
+        "id": data.get("id"),
+        "email": data.get("email"),
+        "display_name": data.get("display_name"),
+        "status": data.get("status"),
+        "created_at": data.get("created_at"),
+        "updated_at": data.get("updated_at"),
+        "last_login_at": data.get("last_login_at"),
+    }
+
+
+def _auth_create_session(user_id: int, request: Request):
+    _auth_init_tables()
+
+    token = _auth_secrets.token_urlsafe(48)
+    token_hash = _auth_hash_token(token)
+
+    now = datetime.now(timezone.utc)
+    expires = now + _auth_timedelta(days=int(os.getenv("EDGE_PUBLIC_SESSION_DAYS", "30")))
+
+    user_agent = request.headers.get("user-agent")
+
+    with db() as conn:
+        conn.execute(
+            """
+            INSERT INTO user_sessions (
+                user_id,
+                token_hash,
+                created_at,
+                expires_at,
+                revoked_at,
+                last_seen_at,
+                user_agent
+            )
+            VALUES (?, ?, ?, ?, NULL, ?, ?)
+            """,
+            (
+                int(user_id),
+                token_hash,
+                now.isoformat(),
+                expires.isoformat(),
+                now.isoformat(),
+                user_agent,
+            ),
+        )
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_at": expires.isoformat(),
+    }
+
+
+def _auth_get_bearer_token(request: Request) -> str | None:
+    header = request.headers.get("authorization", "")
+    if not header.lower().startswith("bearer "):
+        return None
+    return header.split(" ", 1)[1].strip()
+
+
+def _auth_current_user_from_request(request: Request):
+    _auth_init_tables()
+
+    token = _auth_get_bearer_token(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing bearer token.")
+
+    token_hash = _auth_hash_token(token)
+    now = datetime.now(timezone.utc)
+
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT
+                u.*
+            FROM user_sessions s
+            JOIN app_users u ON u.id = s.user_id
+            WHERE s.token_hash = ?
+              AND s.revoked_at IS NULL
+              AND s.expires_at > ?
+              AND u.status = 'active'
+            LIMIT 1
+            """,
+            (
+                token_hash,
+                now.isoformat(),
+            ),
+        ).fetchone()
+
+        if not row:
+            raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+        conn.execute(
+            """
+            UPDATE user_sessions
+            SET last_seen_at = ?
+            WHERE token_hash = ?
+            """,
+            (
+                now.isoformat(),
+                token_hash,
+            ),
+        )
+
+    return row
+
+
+@app.post("/public/auth/register")
+async def public_auth_register(request: Request):
+    await _require_public_api_key(request)
+    _auth_init_tables()
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    email = _auth_normalize_email(payload.get("email") if isinstance(payload, dict) else "")
+    password = payload.get("password") if isinstance(payload, dict) else None
+    display_name = payload.get("display_name") if isinstance(payload, dict) else None
+
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Valid email is required.")
+
+    if not isinstance(password, str) or len(password) < 10:
+        raise HTTPException(status_code=400, detail="Password must be at least 10 characters.")
+
+    if display_name is not None:
+        display_name = str(display_name).strip()[:120] or None
+
+    now = _auth_now_iso()
+    password_hash = _auth_hash_password(password)
+
+    try:
+        with db() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO app_users (
+                    email,
+                    display_name,
+                    password_hash,
+                    status,
+                    created_at,
+                    updated_at,
+                    last_login_at
+                )
+                VALUES (?, ?, ?, 'active', ?, ?, ?)
+                """,
+                (
+                    email,
+                    display_name,
+                    password_hash,
+                    now,
+                    now,
+                    now,
+                ),
+            )
+
+            user_id = cur.lastrowid
+
+            row = conn.execute(
+                """
+                SELECT *
+                FROM app_users
+                WHERE id = ?
+                """,
+                (user_id,),
+            ).fetchone()
+    except Exception as e:
+        if "UNIQUE" in str(e).upper():
+            raise HTTPException(status_code=409, detail="An account with that email already exists.")
+        raise
+
+    session = _auth_create_session(user_id=int(user_id), request=request)
+
+    return {
+        "ok": True,
+        "user": _auth_public_user(row),
+        "session": session,
+    }
+
+
+@app.post("/public/auth/login")
+async def public_auth_login(request: Request):
+    await _require_public_api_key(request)
+    _auth_init_tables()
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    email = _auth_normalize_email(payload.get("email") if isinstance(payload, dict) else "")
+    password = payload.get("password") if isinstance(payload, dict) else None
+
+    if not email or not isinstance(password, str):
+        raise HTTPException(status_code=400, detail="Email and password are required.")
+
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE email = ?
+              AND status = 'active'
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+
+    if not row or not _auth_verify_password(password, row["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+
+    now = _auth_now_iso()
+
+    with db() as conn:
+        conn.execute(
+            """
+            UPDATE app_users
+            SET last_login_at = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                now,
+                now,
+                row["id"],
+            ),
+        )
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (row["id"],),
+        ).fetchone()
+
+    session = _auth_create_session(user_id=int(row["id"]), request=request)
+
+    return {
+        "ok": True,
+        "user": _auth_public_user(row),
+        "session": session,
+    }
+
+
+@app.get("/public/me")
+async def public_me(request: Request):
+    await _require_public_api_key(request)
+
+    row = _auth_current_user_from_request(request)
+
+    return {
+        "ok": True,
+        "user": _auth_public_user(row),
+    }
+
+
+@app.post("/public/auth/logout")
+async def public_auth_logout(request: Request):
+    await _require_public_api_key(request)
+
+    token = _auth_get_bearer_token(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing bearer token.")
+
+    token_hash = _auth_hash_token(token)
+    now = _auth_now_iso()
+
+    with db() as conn:
+        conn.execute(
+            """
+            UPDATE user_sessions
+            SET revoked_at = ?
+            WHERE token_hash = ?
+              AND revoked_at IS NULL
+            """,
+            (
+                now,
+                token_hash,
+            ),
+        )
+
+    return {
+        "ok": True,
+        "message": "Logged out.",
+    }

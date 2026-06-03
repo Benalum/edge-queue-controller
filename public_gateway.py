@@ -24,6 +24,12 @@ def is_allowed_public_route(method: str, path: str) -> bool:
     if method == "GET" and re.fullmatch(r"/public/jobs/[0-9]+", path):
         return True
 
+    if method == "POST" and path in {"/public/auth/register", "/public/auth/login", "/public/auth/logout"}:
+        return True
+
+    if method == "GET" and path == "/public/me":
+        return True
+
     return False
 
 
@@ -62,6 +68,7 @@ async def gateway_proxy(path: str, request: Request):
         "content-type",
         "accept",
         "x-edge-api-key",
+        "authorization",
     ]:
         value = request.headers.get(header_name)
         if value:
