@@ -2580,6 +2580,14 @@ async def power_execute_stop_plan(confirm: str = ""):
             )
             continue
 
+        postprocess_offline_marker_after_successful_stop = None
+
+        if result.returncode == 0:
+            postprocess_offline_marker_after_successful_stop = _power_mark_worker_offline_after_stop(
+                stop_plan.get("target_name") or stop_plan.get("worker_id") or "",
+                reason=f"Intentional auto-managed stop executed for {kind}:{vmid}.",
+            )
+
         executions.append(
             {
                 "worker_id": stop_plan.get("worker_id"),
@@ -2587,6 +2595,7 @@ async def power_execute_stop_plan(confirm: str = ""):
                 "kind": kind,
                 "vmid": vmid,
                 "executed": result.returncode == 0,
+                "offline_marker_result": postprocess_offline_marker_after_successful_stop,
                 "returncode": result.returncode,
                 "remote_command": remote_command,
                 "stdout": result.stdout[-2000:],
