@@ -17,9 +17,16 @@ echo "=== existing tunnels ==="
 cloudflared tunnel list || true
 
 echo
-echo "=== deleting existing $TUNNEL_NAME tunnel if present ==="
-if cloudflared tunnel list | awk '{print $2}' | grep -qx "$TUNNEL_NAME"; then
-  cloudflared tunnel delete --force "$TUNNEL_NAME" || true
+echo "=== deleting existing $TUNNEL_NAME tunnel(s) if present ==="
+mapfile -t OLD_TUNNEL_UUIDS < <(cloudflared tunnel list | awk -v name="$TUNNEL_NAME" '$2==name{print $1}')
+
+if [ "${#OLD_TUNNEL_UUIDS[@]}" -gt 0 ]; then
+  for old_uuid in "${OLD_TUNNEL_UUIDS[@]}"; do
+    echo "Deleting old tunnel UUID: $old_uuid"
+    cloudflared tunnel delete -f "$old_uuid" || true
+  done
+else
+  echo "No existing $TUNNEL_NAME tunnels found."
 fi
 
 echo
