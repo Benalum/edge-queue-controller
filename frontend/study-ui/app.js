@@ -70,8 +70,6 @@ function showAuthedUI() {
   $("reviewPanel").classList.remove("hidden");
   $("cardsPanel").classList.remove("hidden");
 
-  $("welcomeTitle").textContent = `Welcome${state.user?.display_name ? `, ${state.user.display_name}` : ""}`;
-  $("userEmail").textContent = state.user?.email || "";
 }
 
 function showLoggedOutUI() {
@@ -479,7 +477,10 @@ document.querySelectorAll("[data-auth-tab]").forEach((button) => {
 });
 
 $("authForm").addEventListener("submit", handleAuthSubmit);
-$("logoutBtn").addEventListener("click", logout);
+const logoutBtn = $("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", logout);
+}
 $("deckForm").addEventListener("submit", createDeck);
 $("cardForm").addEventListener("submit", createCard);
 $("deckSelect").addEventListener("change", async (event) => {
@@ -491,3 +492,56 @@ $("loadQueueBtn").addEventListener("click", loadReviewQueue);
 
 checkApiStatus();
 loadMe();
+
+/* =========================
+   App navigation
+   ========================= */
+
+function showPage(page) {
+  document.querySelectorAll("[data-page-link]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.pageLink === page);
+  });
+
+  document.querySelectorAll("[data-page]").forEach((el) => {
+    el.classList.toggle("hidden", el.dataset.page !== page);
+  });
+
+  if (page === "study" && !state.token) {
+    showPage("auth");
+    return;
+  }
+
+  if (page === "auth") {
+    $("authPanel").classList.remove("hidden");
+  }
+}
+
+function syncNavAuth() {
+  const loggedIn = Boolean(state.token && state.user);
+  $("navAuthBtn").classList.toggle("hidden", loggedIn);
+  $("navLogoutBtn").classList.toggle("hidden", !loggedIn);
+}
+
+document.querySelectorAll("[data-page-link]").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    showPage(button.dataset.pageLink);
+  });
+});
+
+$("navAuthBtn").addEventListener("click", () => showPage("auth"));
+$("navLogoutBtn").addEventListener("click", logout);
+
+const originalShowAuthedUI = showAuthedUI;
+showAuthedUI = function patchedShowAuthedUI() {
+  originalShowAuthedUI();
+  syncNavAuth();
+  showPage("study");
+};
+
+const originalShowLoggedOutUI = showLoggedOutUI;
+showLoggedOutUI = function patchedShowLoggedOutUI() {
+  originalShowLoggedOutUI();
+  syncNavAuth();
+  showPage("home");
+};

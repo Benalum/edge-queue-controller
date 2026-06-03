@@ -8,7 +8,26 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="hero">
+    <nav class="site-nav">
+      <a class="brand" href="#" data-page-link="home">
+        <span class="brand-mark">AI</span>
+        <span>AI Platform</span>
+      </a>
+
+      <div class="nav-links">
+        <button class="nav-link active" data-page-link="home">Home</button>
+        <button class="nav-link" data-page-link="companion">Companion</button>
+        <button class="nav-link" data-page-link="study">Study</button>
+        <button class="nav-link" data-page-link="calendar">Calendar</button>
+      </div>
+
+      <div class="nav-auth">
+        <button class="secondary" id="navAuthBtn">Login / Register</button>
+        <button class="secondary hidden" id="navLogoutBtn">Logout</button>
+      </div>
+    </nav>
+
+    <header class="hero page-block" data-page="home">
       <div>
         <p class="eyebrow">AI Platform Control</p>
         <h1>Study Dashboard</h1>
@@ -27,7 +46,57 @@
     </header>
 
     <main>
-      <section class="panel" id="authPanel">
+      <section class="panel page-block" data-page="home" id="homePanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Welcome</p>
+            <h2>Your personal AI learning platform</h2>
+          </div>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3>Study smarter</h3>
+            <p>Create decks, add cards, review by difficulty, and track progress over time.</p>
+          </div>
+          <div class="feature-card">
+            <h3>AI companion</h3>
+            <p>Coming next: chat, voice mode, mood check-ins, and personalized memory.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Calendar & reminders</h3>
+            <p>Coming next: study sessions, medication reminders, schedule tracking, and daily check-ins.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel page-block hidden" data-page="companion" id="companionPanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Companion</p>
+            <h2>AI Companion</h2>
+          </div>
+        </div>
+        <p class="muted">
+          This page will become the AI companion area. We will add chat, voice auto-listen,
+          mood tracking, memory, and personalized check-ins here.
+        </p>
+      </section>
+
+      <section class="panel page-block hidden" data-page="calendar" id="calendarPanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Calendar</p>
+            <h2>Calendar & Reminders</h2>
+          </div>
+        </div>
+        <p class="muted">
+          This page will become the schedule system for study sessions, reminders,
+          medication check-ins, mood logs, and recurring tasks.
+        </p>
+      </section>
+
+      <section class="panel page-block hidden" data-page="auth" id="authPanel">
         <div class="panel-header">
           <div>
             <p class="eyebrow">Account</p>
@@ -62,14 +131,12 @@
         <p class="message" id="authMessage"></p>
       </section>
 
-      <section class="panel hidden" id="dashboardPanel">
-        <div class="panel-header spread">
+      <section class="panel hidden" data-page="study" id="dashboardPanel">
+        <div class="panel-header">
           <div>
-            <p class="eyebrow">Signed in</p>
-            <h2 id="welcomeTitle">Dashboard</h2>
-            <p class="muted" id="userEmail"></p>
+            <p class="eyebrow">Study</p>
+            <h2>Progress Overview</h2>
           </div>
-          <button class="secondary" id="logoutBtn">Logout</button>
         </div>
 
         <div class="stats-grid">
@@ -92,7 +159,7 @@
         </div>
       </section>
 
-      <div class="grid-2 hidden" id="studyGrid">
+      <div class="grid-2 hidden" data-page="study" id="studyGrid">
         <section class="panel">
           <div class="panel-header">
             <div>
@@ -169,7 +236,7 @@
         </section>
       </div>
 
-      <section class="panel hidden" id="reviewPanel">
+      <section class="panel hidden" data-page="study" id="reviewPanel">
         <div class="panel-header spread">
           <div>
             <p class="eyebrow">Adaptive Review</p>
@@ -199,7 +266,7 @@
         </div>
       </section>
 
-      <section class="panel hidden" id="cardsPanel">
+      <section class="panel hidden" data-page="study" id="cardsPanel">
         <div class="panel-header">
           <div>
             <p class="eyebrow">Selected Deck</p>
