@@ -4550,3 +4550,275 @@ def _power_mark_worker_available_from_controller_check(target_name: str):
     finally:
         conn.close()
 
+
+
+# ---------------------------------------------------------------------
+# Direct Ollama tick path
+# ---------------------------------------------------------------------
+def _parse_bool_env(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+
+    if value is None:
+        return default
+
+    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _mark_edge_job_forwarded(job_id: int):
+    now = datetime.now(timezone.utc).isoformat()
+
+    with db() as conn:
+        conn.execute(
+            """
+            UPDATE jobs
+            SET
+                status = 'forwarded',
+                attempts = attempts + 1,
+                last_error = NULL,
+                updated_at = ?,
+                forwarded_at = ?
+            WHERE id = ?
+            """,
+            (now, now, job_id),
+        )
+
+    return {
+        "job_id": job_id,
+        "status": "forwarded",
+        "updated_at": now,
+        "forwarded_at": now,
+    }
+
+
+def _mark_edge_job_forward_error(job_id: int, error: str):
+    now = datetime.now(timezone.utc).isoformat()
+
+    with db() as conn:
+        conn.execute(
+            """
+            UPDATE jobs
+            SET
+                attempts = attempts + 1,
+                last_error = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (error[:2000], now, job_id),
+        )
+
+    return {
+        "job_id": job_id,
+        "status": "queued",
+        "updated_at": now,
+        "last_error": error[:2000],
+    }
+
+
+async def _forward_ollama_chat_job_direct(job: dict[str, Any], ollama_base_url: str):
+    model = job.get("requested_model") or os.getenv("EDGE_OLLAMA_DEFAULT_MODEL", "qwen2.5:0.5b")
+    prompt = job.get("prompt") or ""
+
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        "stream": False,
+    }
+
+    url = ollama_base_url.rstrip("/") + "/api/chat"
+
+    try:
+        async with httpx.AsyncClient(timeout=180.0) as client:
+            response = await client.post(url, json=payload)
+
+        raw_text = response.text
+
+        if response.status_code < 200 or response.status_code >= 300:
+            update = _mark_edge_job_forward_error(
+                int(job["id"]),
+                f"Ollama HTTP {response.status_code}: {raw_text[:1000]}",
+            )
+
+            return {
+                "job_id": job["id"],
+                "action": "ollama_direct_forward_failed",
+                "ok": False,
+                "url": url,
+                "status_code": response.status_code,
+                "error": raw_text[:1000],
+                "job_update": update,
+            }
+
+        try:
+            data = response.json()
+        except Exception:
+            data = {"raw": raw_text[:2000]}
+
+        update = _mark_edge_job_forwarded(int(job["id"]))
+
+        message = data.get("message") if isinstance(data, dict) else None
+        content = message.get("content") if isinstance(message, dict) else None
+
+        return {
+            "job_id": job["id"],
+            "action": "ollama_direct_forwarded",
+            "ok": True,
+            "url": url,
+            "status_code": response.status_code,
+            "model": model,
+            "response_preview": (content or raw_text)[:1000],
+            "job_update": update,
+        }
+
+    except Exception as e:
+        update = _mark_edge_job_forward_error(int(job["id"]), str(e))
+
+        return {
+            "job_id": job["id"],
+            "action": "ollama_direct_forward_exception",
+            "ok": False,
+            "url": url,
+            "error": str(e),
+            "job_update": update,
+        }
+
+
+@app.post("/tick/ollama-direct")
+async def tick_ollama_direct(
+    confirm: str = "",
+    limit: int = 5,
+    target_name: str = "llms_ollama",
+    ollama_base_url: str = "",
+):
+    """
+    Directly forward queued ollama_chat jobs to Ollama.
+
+    This bypasses the legacy HOST_CHECK_URL / 3010 path and uses:
+      - worker registry readiness
+      - direct Ollama /api/chat
+
+    Safety gates:
+      1. EDGE_DIRECT_OLLAMA_FORWARD=1
+      2. confirm=DIRECT_OLLAMA_FORWARD
+      3. worker registry computed_health must be available
+    """
+    execute_enabled = _parse_bool_env("EDGE_DIRECT_OLLAMA_FORWARD", False)
+    required_confirm = "DIRECT_OLLAMA_FORWARD"
+
+    if limit < 1:
+        limit = 1
+    if limit > 25:
+        limit = 25
+
+    if not ollama_base_url:
+        ollama_base_url = os.getenv("EDGE_OLLAMA_BASE_URL", "http://100.88.245.33:11434")
+
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM jobs
+            WHERE status = 'queued'
+            ORDER BY id ASC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+    queued_jobs = [row_to_dict(row) for row in rows]
+    ollama_jobs = [job for job in queued_jobs if job.get("job_type") == "ollama_chat"]
+
+    worker_state = _power_lookup_worker_registry_state(target_name)
+
+    actions: list[dict[str, Any]] = []
+
+    if not queued_jobs:
+        return {
+            "ok": True,
+            "executed": False,
+            "action": "nothing_to_do",
+            "reason": "No queued jobs.",
+            "worker_state": worker_state,
+            "ollama_base_url": ollama_base_url,
+            "actions": actions,
+        }
+
+    if not ollama_jobs:
+        return {
+            "ok": True,
+            "executed": False,
+            "action": "nothing_forwarded",
+            "reason": "Queued jobs exist, but none are ollama_chat jobs.",
+            "queued_job_count": len(queued_jobs),
+            "worker_state": worker_state,
+            "ollama_base_url": ollama_base_url,
+            "actions": actions,
+        }
+
+    if worker_state.get("computed_health") != "available":
+        return {
+            "ok": False,
+            "executed": False,
+            "action": "worker_not_available",
+            "reason": "Worker registry does not show the target worker as available.",
+            "worker_state": worker_state,
+            "queued_job_count": len(queued_jobs),
+            "ollama_job_count": len(ollama_jobs),
+            "ollama_base_url": ollama_base_url,
+            "actions": actions,
+        }
+
+    if confirm != required_confirm:
+        return {
+            "ok": False,
+            "executed": False,
+            "action": "blocked_missing_confirmation",
+            "required_confirm": required_confirm,
+            "example": "/tick/ollama-direct?confirm=DIRECT_OLLAMA_FORWARD",
+            "worker_state": worker_state,
+            "queued_job_count": len(queued_jobs),
+            "ollama_job_count": len(ollama_jobs),
+            "would_forward_job_ids": [job["id"] for job in ollama_jobs],
+            "ollama_base_url": ollama_base_url,
+            "actions": actions,
+        }
+
+    if not execute_enabled:
+        return {
+            "ok": False,
+            "executed": False,
+            "action": "blocked_execution_disabled",
+            "reason": "EDGE_DIRECT_OLLAMA_FORWARD is not enabled.",
+            "how_to_enable": "Set Environment=EDGE_DIRECT_OLLAMA_FORWARD=1, then restart the controller.",
+            "worker_state": worker_state,
+            "queued_job_count": len(queued_jobs),
+            "ollama_job_count": len(ollama_jobs),
+            "would_forward_job_ids": [job["id"] for job in ollama_jobs],
+            "ollama_base_url": ollama_base_url,
+            "actions": actions,
+        }
+
+    forwarded_count = 0
+
+    for job in ollama_jobs:
+        result = await _forward_ollama_chat_job_direct(job, ollama_base_url)
+        actions.append(result)
+
+        if result.get("ok"):
+            forwarded_count += 1
+
+    return {
+        "ok": True,
+        "executed": forwarded_count > 0,
+        "action": "ollama_direct_tick_complete",
+        "queued_job_count": len(queued_jobs),
+        "ollama_job_count": len(ollama_jobs),
+        "forwarded_count": forwarded_count,
+        "worker_state": worker_state,
+        "ollama_base_url": ollama_base_url,
+        "actions": actions,
+    }
