@@ -21,6 +21,9 @@ def is_allowed_public_route(method: str, path: str) -> bool:
     if method == "POST" and path == "/public/jobs":
         return True
 
+    if method == "GET" and path == "/public/jobs":
+        return True
+
     if method == "GET" and re.fullmatch(r"/public/jobs/[0-9]+", path):
         return True
 

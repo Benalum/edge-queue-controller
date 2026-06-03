@@ -5177,19 +5177,33 @@ def _public_store_job_result(job_id: int, model: str | None, response_text: str 
     }
 
 
-def _public_get_job_with_result(job_id: int):
+
+def _public_get_job_with_result(job_id: int, user_id: int | None = None):
     _public_init_job_results_table()
+    _auth_init_tables()
 
     with db() as conn:
-        job = conn.execute(
-            """
-            SELECT *
-            FROM jobs
-            WHERE id = ?
-            LIMIT 1
-            """,
-            (int(job_id),),
-        ).fetchone()
+        if user_id is None:
+            job = conn.execute(
+                """
+                SELECT *
+                FROM jobs
+                WHERE id = ?
+                LIMIT 1
+                """,
+                (int(job_id),),
+            ).fetchone()
+        else:
+            job = conn.execute(
+                """
+                SELECT *
+                FROM jobs
+                WHERE id = ?
+                  AND user_id = ?
+                LIMIT 1
+                """,
+                (int(job_id), int(user_id)),
+            ).fetchone()
 
         if not job:
             return None
@@ -5222,8 +5236,9 @@ def _public_get_job_with_result(job_id: int):
         "result": result_data,
     }
 
+def _public_create_ollama_job(prompt: str, requested_model: str | None = None, user_id: int | None = None):
+    _auth_init_tables()
 
-def _public_create_ollama_job(prompt: str, requested_model: str | None = None):
     now = datetime.now(timezone.utc).isoformat()
     model = requested_model or _public_default_model()
 
@@ -5231,6 +5246,7 @@ def _public_create_ollama_job(prompt: str, requested_model: str | None = None):
         cur = conn.execute(
             """
             INSERT INTO jobs (
+                user_id,
                 job_type,
                 prompt,
                 requested_model,
@@ -5241,9 +5257,10 @@ def _public_create_ollama_job(prompt: str, requested_model: str | None = None):
                 updated_at,
                 forwarded_at
             )
-            VALUES (?, ?, ?, 'queued', 0, NULL, ?, ?, NULL)
+            VALUES (?, ?, ?, ?, 'queued', 0, NULL, ?, ?, NULL)
             """,
             (
+                user_id,
                 "ollama_chat",
                 prompt,
                 model,
@@ -5265,10 +5282,13 @@ def _public_create_ollama_job(prompt: str, requested_model: str | None = None):
 
     return row_to_dict(row)
 
-
+@app.post("/public/jobs")
+async 
 @app.post("/public/jobs")
 async def public_create_job(request: Request):
     await _require_public_api_key(request)
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
 
     try:
         payload = await request.json()
@@ -5295,23 +5315,31 @@ async def public_create_job(request: Request):
 
     requested_model = (requested_model or _public_default_model()).strip()
 
-    job = _public_create_ollama_job(prompt=prompt, requested_model=requested_model)
+    job = _public_create_ollama_job(
+        prompt=prompt,
+        requested_model=requested_model,
+        user_id=user_id,
+    )
 
     return {
         "ok": True,
         "job_id": job["id"],
+        "user_id": user_id,
         "status": job["status"],
         "requested_model": job["requested_model"],
         "poll_url": f"/public/jobs/{job['id']}",
         "message": "Job queued. Poll the job URL for status and result.",
     }
 
-
+@app.get("/public/jobs/{job_id}")
+async 
 @app.get("/public/jobs/{job_id}")
 async def public_get_job(job_id: int, request: Request):
     await _require_public_api_key(request)
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
 
-    data = _public_get_job_with_result(job_id)
+    data = _public_get_job_with_result(job_id, user_id=user_id)
 
     if not data:
         raise HTTPException(status_code=404, detail="Job not found.")
@@ -5322,6 +5350,7 @@ async def public_get_job(job_id: int, request: Request):
     return {
         "ok": True,
         "job_id": job["id"],
+        "user_id": job.get("user_id"),
         "status": job["status"],
         "attempts": job.get("attempts"),
         "last_error": job.get("last_error"),
@@ -5330,6 +5359,63 @@ async def public_get_job(job_id: int, request: Request):
         "forwarded_at": job.get("forwarded_at"),
         "requested_model": job.get("requested_model"),
         "result": result,
+    }
+
+
+
+def _public_list_jobs_for_user(user_id: int, limit: int = 50):
+    _auth_init_tables()
+    _public_init_job_results_table()
+
+    if limit < 1:
+        limit = 1
+    if limit > 100:
+        limit = 100
+
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                j.id,
+                j.user_id,
+                j.job_type,
+                j.prompt,
+                j.requested_model,
+                j.status,
+                j.attempts,
+                j.last_error,
+                j.created_at,
+                j.updated_at,
+                j.forwarded_at,
+                CASE WHEN r.job_id IS NULL THEN 0 ELSE 1 END AS has_result
+            FROM jobs j
+            LEFT JOIN job_results r ON r.job_id = j.id
+            WHERE j.user_id = ?
+            ORDER BY j.id DESC
+            LIMIT ?
+            """,
+            (
+                int(user_id),
+                int(limit),
+            ),
+        ).fetchall()
+
+    return [row_to_dict(row) for row in rows]
+
+
+@app.get("/public/jobs")
+async def public_list_jobs(request: Request, limit: int = 50):
+    await _require_public_api_key(request)
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
+
+    jobs = _public_list_jobs_for_user(user_id=user_id, limit=limit)
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "count": len(jobs),
+        "jobs": jobs,
     }
 
 
