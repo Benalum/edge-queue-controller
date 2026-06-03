@@ -2545,13 +2545,6 @@ async def power_execute_stop_plan(confirm: str = ""):
                 timeout=shutdown_timeout + 15,
                 check=False,
             )
-            offline_marker_result = None
-
-            if result.returncode == 0:
-                offline_marker_result = _power_mark_worker_offline_after_stop(
-                    stop_plan.get("target_name") or stop_plan.get("worker_id") or "",
-                    reason=f"Intentional auto-managed stop executed for {kind}:{vmid}.",
-                )
         except subprocess.TimeoutExpired:
             executions.append(
                 {
@@ -2562,7 +2555,6 @@ async def power_execute_stop_plan(confirm: str = ""):
                     "executed": False,
                     "blocked_reason": "Timed out while executing shutdown command.",
                     "remote_command": remote_command,
-                    "offline_marker_result": offline_marker_result,
                 }
             )
             continue
