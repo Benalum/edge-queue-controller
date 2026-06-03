@@ -6083,9 +6083,9 @@ async def public_study_list_decks(request: Request):
             """
             SELECT
                 d.*,
-                COUNT(c.id) AS card_count,
-                COALESCE(SUM(CASE WHEN r.was_correct = 1 THEN 1 ELSE 0 END), 0) AS correct_reviews,
-                COUNT(r.id) AS total_reviews
+                COUNT(DISTINCT c.id) AS card_count,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 1 THEN r.id END), 0) AS correct_reviews,
+                COUNT(DISTINCT r.id) AS total_reviews
             FROM study_decks d
             LEFT JOIN study_cards c
                 ON c.deck_id = d.id
@@ -6430,8 +6430,8 @@ async def public_study_progress(request: Request):
                 d.id AS deck_id,
                 d.title,
                 COUNT(DISTINCT c.id) AS card_count,
-                COUNT(r.id) AS review_count,
-                COALESCE(SUM(CASE WHEN r.was_correct = 1 THEN 1 ELSE 0 END), 0) AS correct_reviews,
+                COUNT(DISTINCT r.id) AS review_count,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 1 THEN r.id END), 0) AS correct_reviews,
                 MAX(r.reviewed_at) AS last_reviewed_at
             FROM study_decks d
             LEFT JOIN study_cards c
