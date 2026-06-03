@@ -1,8 +1,10 @@
 [Unit]
 Description=Run Edge Queue automatic power policy tick
-Requires=edge-queue-controller.service
-After=edge-queue-controller.service
+Wants=edge-queue-controller.service
+After=edge-queue-controller.service network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/curl -fsS -X POST http://127.0.0.1:7070/power/auto/tick
+User=alex
+WorkingDirectory=/home/alex/Desktop/edge-queue-controller
+ExecStart=/usr/bin/bash -lc 'curl -sS --max-time 300 -X POST http://127.0.0.1:7070/power/auto/tick || true'
