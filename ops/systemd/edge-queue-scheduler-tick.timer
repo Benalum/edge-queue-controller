@@ -3,6 +3,7 @@ Description=Run Edge Queue scheduler tick every 60 seconds
 
 [Timer]
 OnBootSec=45s
+OnActiveSec=30s
 OnUnitActiveSec=60s
 AccuracySec=5s
 Unit=edge-queue-scheduler-tick.service
