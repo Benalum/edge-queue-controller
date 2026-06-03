@@ -439,8 +439,17 @@ def select_best_worker_for_job(job: dict[str, Any]) -> dict[str, Any]:
 
 @app.post("/tick")
 async def tick():
-    online, detail = await host_is_online()
+    """
+    Main edge scheduler tick.
 
+    Legacy behavior:
+      - Uses HOST_CHECK_URL / legacy 3010 path.
+
+    Direct Ollama behavior, disabled by default:
+      - EDGE_TICK_USE_DIRECT_OLLAMA=1 makes /tick use /tick/ollama-direct.
+      - EDGE_TICK_AUTO_READY_WORKER=1 lets /tick call the guarded wake/start readiness path first.
+      - Actual Ollama forwarding still requires EDGE_DIRECT_OLLAMA_FORWARD=1.
+    """
     with db() as conn:
         queued_jobs = conn.execute(
             """
@@ -454,11 +463,14 @@ async def tick():
     actions: list[dict[str, Any]] = []
 
     if not queued_jobs:
+        online, detail = await host_is_online()
+
         return {
             "ok": True,
             "edge_dry_run": EDGE_DRY_RUN,
             "host_online": online,
             "host_detail": detail,
+            "mode": "nothing_to_do",
             "actions": [
                 {
                     "action": "nothing_to_do",
@@ -466,6 +478,96 @@ async def tick():
                 }
             ],
         }
+
+    use_direct_ollama = _parse_bool_env("EDGE_TICK_USE_DIRECT_OLLAMA", False)
+    auto_ready_worker = _parse_bool_env("EDGE_TICK_AUTO_READY_WORKER", False)
+
+    if use_direct_ollama:
+        target_name = "llms_ollama"
+        readiness_result = None
+        worker_state = _power_lookup_worker_registry_state(target_name)
+
+        actions.append(
+            {
+                "action": "direct_ollama_mode_selected",
+                "queued_jobs": len(queued_jobs),
+                "worker_state": worker_state,
+                "auto_ready_worker": auto_ready_worker,
+            }
+        )
+
+        if worker_state.get("computed_health") != "available":
+            if auto_ready_worker:
+                readiness_result = await power_execute_wake_and_start_worker(
+                    target_name=target_name,
+                    confirm="WAKE_AND_START_WORKER",
+                    pause_after_start_minutes=10,
+                    wait_worker_seconds=180,
+                    wait_registry_seconds=180,
+                )
+
+                actions.append(
+                    {
+                        "action": "wake_and_start_before_direct_forward",
+                        "ok": bool(readiness_result.get("ok")),
+                        "executed": bool(readiness_result.get("executed")),
+                        "result": readiness_result,
+                    }
+                )
+
+                if not readiness_result.get("ok"):
+                    return {
+                        "ok": False,
+                        "edge_dry_run": EDGE_DRY_RUN,
+                        "mode": "direct_ollama",
+                        "reason": "Worker was not ready and wake/start readiness failed.",
+                        "actions": actions,
+                    }
+            else:
+                actions.append(
+                    {
+                        "action": "kept_queued_worker_not_ready",
+                        "reason": "EDGE_TICK_USE_DIRECT_OLLAMA=1, but worker is not available and EDGE_TICK_AUTO_READY_WORKER=0.",
+                        "worker_state": worker_state,
+                    }
+                )
+
+                return {
+                    "ok": True,
+                    "edge_dry_run": EDGE_DRY_RUN,
+                    "mode": "direct_ollama",
+                    "executed": False,
+                    "actions": actions,
+                }
+
+        direct_result = await tick_ollama_direct(
+            confirm="DIRECT_OLLAMA_FORWARD",
+            limit=25,
+            target_name=target_name,
+        )
+
+        actions.append(
+            {
+                "action": "direct_ollama_tick_result",
+                "ok": bool(direct_result.get("ok")),
+                "executed": bool(direct_result.get("executed")),
+                "result": direct_result,
+            }
+        )
+
+        return {
+            "ok": bool(direct_result.get("ok")),
+            "edge_dry_run": EDGE_DRY_RUN,
+            "mode": "direct_ollama",
+            "direct_forward_enabled": _parse_bool_env("EDGE_DIRECT_OLLAMA_FORWARD", False),
+            "readiness_result": readiness_result,
+            "actions": actions,
+        }
+
+    # -----------------------------------------------------------------
+    # Legacy path. Kept for compatibility until direct mode fully replaces it.
+    # -----------------------------------------------------------------
+    online, detail = await host_is_online()
 
     if not online:
         wake_result = wake_host()
@@ -483,6 +585,7 @@ async def tick():
             "edge_dry_run": EDGE_DRY_RUN,
             "host_online": online,
             "host_detail": detail,
+            "mode": "legacy_host_check",
             "actions": actions,
         }
 
@@ -529,6 +632,7 @@ async def tick():
         "edge_dry_run": EDGE_DRY_RUN,
         "host_online": online,
         "host_detail": detail,
+        "mode": "legacy_host_check",
         "actions": actions,
     }
 
