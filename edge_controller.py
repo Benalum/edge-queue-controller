@@ -730,56 +730,76 @@ def parse_iso_time(value: str | None):
 def worker_row_to_dict(row):
     """
     Convert a workers table row into API-safe JSON and compute health.
-
-    Health order is intentional:
-      offline/disabled wins first,
-      then explicit unhealthy,
-      then stale heartbeat,
-      then busy,
-      otherwise available.
+    Defensive version used by registry, remediation, and public status.
     """
     import json as _json
+    import os as _os
     from datetime import datetime as _datetime, timezone as _timezone
 
     data = row_to_dict(row)
 
-    raw_caps = data.pop("capabilities_json", None)
-    if raw_caps:
-        try:
-            data["capabilities"] = _json.loads(raw_caps)
-        except Exception:
+    raw_caps = data.get("capabilities_json")
+    try:
+        data["capabilities"] = _json.loads(raw_caps) if raw_caps else []
+        if not isinstance(data["capabilities"], list):
             data["capabilities"] = []
-    else:
+    except Exception:
         data["capabilities"] = []
+
+    data.pop("capabilities_json", None)
 
     heartbeat_age_seconds = None
     last_heartbeat_at = data.get("last_heartbeat_at")
 
     if last_heartbeat_at:
         try:
-            parsed = _datetime.fromisoformat(str(last_heartbeat_at).replace("Z", "+00:00"))
+            text = str(last_heartbeat_at).replace("Z", "+00:00")
+            parsed = _datetime.fromisoformat(text)
             if parsed.tzinfo is None:
                 parsed = parsed.replace(tzinfo=_timezone.utc)
-            heartbeat_age_seconds = int((_datetime.now(_timezone.utc) - parsed).total_seconds())
+            heartbeat_age_seconds = max(0, int((_datetime.now(_timezone.utc) - parsed).total_seconds()))
         except Exception:
             heartbeat_age_seconds = None
 
     data["heartbeat_age_seconds"] = heartbeat_age_seconds
 
-    status = data.get("status")
-    current_jobs = int(data.get("current_jobs") or 0)
-    max_concurrent_jobs = int(data.get("max_concurrent_jobs") or 1)
+    status = str(data.get("status") or "").strip().lower()
+
+    try:
+        stale_after_seconds = int(
+            globals().get(
+                "WORKER_HEARTBEAT_STALE_SECONDS",
+                _os.getenv("EDGE_WORKER_HEARTBEAT_STALE_SECONDS", "120"),
+            )
+        )
+    except Exception:
+        stale_after_seconds = 120
+
+    try:
+        current_jobs = int(data.get("current_jobs") or 0)
+    except Exception:
+        current_jobs = 0
+
+    try:
+        max_concurrent_jobs = int(data.get("max_concurrent_jobs") or 1)
+    except Exception:
+        max_concurrent_jobs = 1
+
+    if max_concurrent_jobs < 1:
+        max_concurrent_jobs = 1
 
     if status in ("disabled", "offline"):
-        data["computed_health"] = status
+        computed_health = status
     elif status == "unhealthy":
-        data["computed_health"] = "unhealthy"
-    elif heartbeat_age_seconds is None or heartbeat_age_seconds > WORKER_HEARTBEAT_STALE_SECONDS:
-        data["computed_health"] = "stale"
+        computed_health = "unhealthy"
+    elif heartbeat_age_seconds is None or heartbeat_age_seconds > stale_after_seconds:
+        computed_health = "stale"
     elif current_jobs >= max_concurrent_jobs:
-        data["computed_health"] = "busy"
+        computed_health = "busy"
     else:
-        data["computed_health"] = "available"
+        computed_health = "available"
+
+    data["computed_health"] = computed_health
 
     return data
 
