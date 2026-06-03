@@ -743,15 +743,18 @@ def worker_row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
         data["heartbeat_age_seconds"] = None
 
     heartbeat_age = data.get("heartbeat_age_seconds")
-    if heartbeat_age is not None and heartbeat_age > 45:
+    status = data.get("status")
+    
+    if status in ("disabled", "offline"):
+        data["computed_health"] = status
+    elif status == "unhealthy":
+        data["computed_health"] = "unhealthy"
+    elif heartbeat_age_seconds is None or heartbeat_age_seconds > WORKER_HEARTBEAT_STALE_SECONDS:
         data["computed_health"] = "stale"
-    elif data.get("status") in ("unhealthy", "disabled", "offline"):
-        data["computed_health"] = data.get("status")
     elif data.get("current_jobs", 0) >= data.get("max_concurrent_jobs", 1):
         data["computed_health"] = "busy"
     else:
         data["computed_health"] = "available"
-
     return data
 
 
