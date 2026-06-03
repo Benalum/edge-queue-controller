@@ -6489,3 +6489,291 @@ async def public_study_progress(request: Request):
         "by_deck": by_deck,
         "recent_reviews": [row_to_dict(row) for row in recent_rows],
     }
+
+
+
+# ---------------------------------------------------------------------
+# Public study per-card stats and review queue selection
+# ---------------------------------------------------------------------
+def _study_bucket_for_card(card):
+    total_reviews = int(card.get("total_reviews") or 0)
+    accuracy = card.get("accuracy")
+    avg_confidence = card.get("avg_confidence")
+    recent_wrong_streak = int(card.get("recent_wrong_streak") or 0)
+    manual_difficulty = str(card.get("difficulty") or "").strip().lower()
+
+    if total_reviews == 0:
+        if manual_difficulty in {"hard", "medium", "easy"}:
+            return manual_difficulty
+        return "new"
+
+    if recent_wrong_streak >= 2:
+        return "hard"
+
+    if accuracy is not None and accuracy < 0.60:
+        return "hard"
+
+    if avg_confidence is not None and avg_confidence <= 2.5:
+        return "hard"
+
+    if accuracy is not None and accuracy >= 0.85:
+        if avg_confidence is None or avg_confidence >= 4:
+            return "easy"
+
+    return "medium"
+
+
+def _study_sort_key_for_review(card):
+    # Prefer never-reviewed cards, then oldest reviewed, then lower accuracy.
+    last_reviewed = card.get("last_reviewed_at")
+    never_reviewed_rank = 0 if not last_reviewed else 1
+    accuracy = card.get("accuracy")
+    accuracy_rank = accuracy if accuracy is not None else -1
+    return (
+        never_reviewed_rank,
+        last_reviewed or "",
+        accuracy_rank,
+        int(card.get("id") or 0),
+    )
+
+
+def _study_card_stats_for_deck(user_id: int, deck_id: int):
+    _study_init_tables()
+
+    deck = _study_deck_for_user(deck_id, user_id)
+    if not deck:
+        raise HTTPException(status_code=404, detail="Deck not found.")
+
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                c.*,
+                COUNT(DISTINCT r.id) AS total_reviews,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 1 THEN r.id END), 0) AS correct_reviews,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 0 THEN r.id END), 0) AS incorrect_reviews,
+                AVG(CASE WHEN r.confidence IS NOT NULL THEN r.confidence END) AS avg_confidence,
+                AVG(CASE WHEN r.response_time_ms IS NOT NULL THEN r.response_time_ms END) AS avg_response_time_ms,
+                MAX(r.reviewed_at) AS last_reviewed_at,
+                (
+                    SELECT r2.was_correct
+                    FROM study_reviews r2
+                    WHERE r2.card_id = c.id
+                      AND r2.user_id = c.user_id
+                    ORDER BY r2.reviewed_at DESC, r2.id DESC
+                    LIMIT 1
+                ) AS last_was_correct
+            FROM study_cards c
+            LEFT JOIN study_reviews r
+                ON r.card_id = c.id
+               AND r.user_id = c.user_id
+            WHERE c.user_id = ?
+              AND c.deck_id = ?
+              AND c.archived_at IS NULL
+            GROUP BY c.id
+            ORDER BY c.created_at ASC, c.id ASC
+            """,
+            (
+                int(user_id),
+                int(deck_id),
+            ),
+        ).fetchall()
+
+        review_history_rows = conn.execute(
+            """
+            SELECT
+                card_id,
+                was_correct,
+                reviewed_at,
+                id
+            FROM study_reviews
+            WHERE user_id = ?
+              AND deck_id = ?
+            ORDER BY card_id ASC, reviewed_at DESC, id DESC
+            """,
+            (
+                int(user_id),
+                int(deck_id),
+            ),
+        ).fetchall()
+
+    recent_by_card = {}
+    for row in review_history_rows:
+        card_id = int(row["card_id"])
+        recent_by_card.setdefault(card_id, [])
+        if len(recent_by_card[card_id]) < 10:
+            recent_by_card[card_id].append(int(row["was_correct"] or 0))
+
+    cards = []
+    for row in rows:
+        item = _study_card_to_public(row)
+
+        total_reviews = int(item.get("total_reviews") or 0)
+        correct_reviews = int(item.get("correct_reviews") or 0)
+        incorrect_reviews = int(item.get("incorrect_reviews") or 0)
+
+        item["total_reviews"] = total_reviews
+        item["correct_reviews"] = correct_reviews
+        item["incorrect_reviews"] = incorrect_reviews
+        item["accuracy"] = round(correct_reviews / total_reviews, 4) if total_reviews else None
+
+        avg_confidence = item.get("avg_confidence")
+        item["avg_confidence"] = round(float(avg_confidence), 2) if avg_confidence is not None else None
+
+        avg_response_time = item.get("avg_response_time_ms")
+        item["avg_response_time_ms"] = round(float(avg_response_time), 2) if avg_response_time is not None else None
+
+        last_was_correct = item.get("last_was_correct")
+        if last_was_correct is not None:
+            item["last_was_correct"] = bool(last_was_correct)
+
+        recent = recent_by_card.get(int(item["id"]), [])
+        wrong_streak = 0
+        for value in recent:
+            if value == 0:
+                wrong_streak += 1
+            else:
+                break
+
+        correct_streak = 0
+        for value in recent:
+            if value == 1:
+                correct_streak += 1
+            else:
+                break
+
+        item["recent_wrong_streak"] = wrong_streak
+        item["recent_correct_streak"] = correct_streak
+        item["performance_bucket"] = _study_bucket_for_card(item)
+
+        cards.append(item)
+
+    bucket_counts = {
+        "new": sum(1 for c in cards if c.get("performance_bucket") == "new"),
+        "hard": sum(1 for c in cards if c.get("performance_bucket") == "hard"),
+        "medium": sum(1 for c in cards if c.get("performance_bucket") == "medium"),
+        "easy": sum(1 for c in cards if c.get("performance_bucket") == "easy"),
+    }
+
+    return {
+        "deck": row_to_dict(deck),
+        "cards": cards,
+        "bucket_counts": bucket_counts,
+    }
+
+
+def _study_select_review_queue(cards, mode: str, limit: int):
+    mode = str(mode or "balanced").strip().lower()
+    if mode not in {"balanced", "hard", "medium", "easy"}:
+        raise HTTPException(status_code=400, detail="mode must be balanced, hard, medium, or easy.")
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 10
+
+    if limit < 1:
+        limit = 1
+    if limit > 50:
+        limit = 50
+
+    groups = {
+        "new": [],
+        "hard": [],
+        "medium": [],
+        "easy": [],
+    }
+
+    for card in cards:
+        bucket = card.get("performance_bucket") or "new"
+        groups.setdefault(bucket, []).append(card)
+
+    for bucket in groups:
+        groups[bucket].sort(key=_study_sort_key_for_review)
+
+    selected = []
+
+    def add_from(bucket, count):
+        nonlocal selected
+        for card in groups.get(bucket, []):
+            if len(selected) >= limit:
+                return
+            if len([c for c in selected if c["id"] == card["id"]]) == 0:
+                selected.append(card)
+                count -= 1
+                if count <= 0:
+                    return
+
+    if mode == "balanced":
+        # Balanced learning favors weak/new cards, but keeps some medium/easy practice.
+        hard_target = max(1, round(limit * 0.40))
+        medium_target = max(1, round(limit * 0.35))
+        easy_target = max(0, limit - hard_target - medium_target)
+
+        add_from("hard", hard_target)
+        add_from("new", hard_target)
+        add_from("medium", medium_target)
+        add_from("easy", easy_target)
+
+        # Fill leftovers with weakest/oldest cards.
+        for bucket in ["hard", "new", "medium", "easy"]:
+            add_from(bucket, limit)
+
+        explanation = "Balanced mode mixes hard/new, medium, and easy cards so the user gets challenge plus reinforcement."
+
+    elif mode == "hard":
+        for bucket in ["hard", "new", "medium", "easy"]:
+            add_from(bucket, limit)
+        explanation = "Hard mode prioritizes cards with low accuracy, low confidence, or recent wrong streaks."
+
+    elif mode == "medium":
+        for bucket in ["medium", "new", "hard", "easy"]:
+            add_from(bucket, limit)
+        explanation = "Medium mode prioritizes cards that are partially learned but not yet easy."
+
+    else:
+        for bucket in ["easy", "medium", "new", "hard"]:
+            add_from(bucket, limit)
+        explanation = "Easy mode prioritizes cards the user usually gets right for confidence and reinforcement."
+
+    return {
+        "mode": mode,
+        "limit": limit,
+        "selection_explanation": explanation,
+        "count": len(selected),
+        "cards": selected[:limit],
+    }
+
+
+@app.get("/public/study/decks/{deck_id}/card-stats")
+async def public_study_card_stats(deck_id: int, request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+
+    data = _study_card_stats_for_deck(user_id=user_id, deck_id=deck_id)
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "deck": data["deck"],
+        "bucket_counts": data["bucket_counts"],
+        "count": len(data["cards"]),
+        "cards": data["cards"],
+    }
+
+
+@app.get("/public/study/decks/{deck_id}/review-queue")
+async def public_study_review_queue(deck_id: int, request: Request, mode: str = "balanced", limit: int = 10):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+
+    data = _study_card_stats_for_deck(user_id=user_id, deck_id=deck_id)
+    queue = _study_select_review_queue(data["cards"], mode=mode, limit=limit)
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "deck": data["deck"],
+        "bucket_counts": data["bucket_counts"],
+        **queue,
+    }
