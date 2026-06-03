@@ -1,0 +1,17 @@
+[Unit]
+Description=Edge Queue Public Gateway
+Wants=edge-queue-controller.service network-online.target
+After=edge-queue-controller.service network-online.target
+
+[Service]
+Type=simple
+User=alex
+WorkingDirectory=/home/alex/Desktop/edge-queue-controller
+Environment=EDGE_PUBLIC_GATEWAY_BACKEND=http://127.0.0.1:7070
+Environment=EDGE_PUBLIC_GATEWAY_TIMEOUT_SECONDS=300
+ExecStart=/home/alex/Desktop/edge-queue-controller/.venv/bin/python -m uvicorn public_gateway:app --host 127.0.0.1 --port 7071
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
