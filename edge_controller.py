@@ -6988,3 +6988,423 @@ async def public_companion_study_grade(request: Request):
         "review": review_data,
         "needs_user_confirmation": grade["verdict"] == "unsure",
     }
+
+
+# ---------------------------------------------------------------------
+# Public generic companion chat with user context
+# ---------------------------------------------------------------------
+def _companion_build_study_context(user_id: int):
+    """
+    Build a compact study context summary for the companion.
+    This is read-only context. It does not modify study data.
+    """
+    _study_init_tables()
+
+    with db() as conn:
+        decks = conn.execute(
+            """
+            SELECT
+                d.id,
+                d.title,
+                d.description,
+                COUNT(DISTINCT c.id) AS card_count,
+                COUNT(DISTINCT r.id) AS review_count,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 1 THEN r.id END), 0) AS correct_reviews,
+                MAX(r.reviewed_at) AS last_reviewed_at
+            FROM study_decks d
+            LEFT JOIN study_cards c
+                ON c.deck_id = d.id
+               AND c.archived_at IS NULL
+            LEFT JOIN study_reviews r
+                ON r.deck_id = d.id
+            WHERE d.user_id = ?
+              AND d.archived_at IS NULL
+            GROUP BY d.id
+            ORDER BY d.updated_at DESC, d.id DESC
+            LIMIT 12
+            """,
+            (int(user_id),),
+        ).fetchall()
+
+        recent_reviews = conn.execute(
+            """
+            SELECT
+                r.id,
+                r.deck_id,
+                d.title AS deck_title,
+                r.card_id,
+                c.question,
+                c.answer,
+                r.was_correct,
+                r.confidence,
+                r.reviewed_at
+            FROM study_reviews r
+            JOIN study_decks d ON d.id = r.deck_id
+            JOIN study_cards c ON c.id = r.card_id
+            WHERE r.user_id = ?
+            ORDER BY r.reviewed_at DESC, r.id DESC
+            LIMIT 12
+            """,
+            (int(user_id),),
+        ).fetchall()
+
+        hard_cards = conn.execute(
+            """
+            SELECT
+                c.id,
+                c.deck_id,
+                d.title AS deck_title,
+                c.question,
+                c.answer,
+                c.difficulty,
+                COUNT(DISTINCT r.id) AS total_reviews,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 1 THEN r.id END), 0) AS correct_reviews,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 0 THEN r.id END), 0) AS incorrect_reviews,
+                MAX(r.reviewed_at) AS last_reviewed_at
+            FROM study_cards c
+            JOIN study_decks d ON d.id = c.deck_id
+            LEFT JOIN study_reviews r
+                ON r.card_id = c.id
+               AND r.user_id = c.user_id
+            WHERE c.user_id = ?
+              AND c.archived_at IS NULL
+              AND d.archived_at IS NULL
+            GROUP BY c.id
+            HAVING total_reviews = 0
+                OR incorrect_reviews > correct_reviews
+            ORDER BY incorrect_reviews DESC, total_reviews ASC, c.updated_at DESC
+            LIMIT 12
+            """,
+            (int(user_id),),
+        ).fetchall()
+
+    deck_items = []
+    for row in decks:
+        item = row_to_dict(row)
+        reviews = int(item.get("review_count") or 0)
+        correct = int(item.get("correct_reviews") or 0)
+        item["accuracy"] = round(correct / reviews, 4) if reviews else None
+        deck_items.append(item)
+
+    hard_items = []
+    for row in hard_cards:
+        item = row_to_dict(row)
+        reviews = int(item.get("total_reviews") or 0)
+        correct = int(item.get("correct_reviews") or 0)
+        item["accuracy"] = round(correct / reviews, 4) if reviews else None
+        hard_items.append(item)
+
+    return {
+        "decks": deck_items,
+        "recent_reviews": [row_to_dict(row) for row in recent_reviews],
+        "needs_attention_cards": hard_items,
+    }
+
+
+def _companion_build_calendar_context(user_id: int):
+    """
+    Placeholder for future calendar/mood/medication context.
+    Keep this shape stable so the companion prompt can grow later.
+    """
+    return {
+        "status": "calendar_not_enabled_yet",
+        "events": [],
+        "reminders": [],
+        "mood_checkins": [],
+        "medication_checkins": [],
+    }
+
+
+def _companion_build_context(user_id: int):
+    return {
+        "study": _companion_build_study_context(user_id),
+        "calendar": _companion_build_calendar_context(user_id),
+    }
+
+
+def _companion_prompt_from_context(user_message: str, context: dict):
+    context_json = json.dumps(context, ensure_ascii=False, indent=2)
+
+    return f"""You are a helpful personal AI companion.
+
+You can use the user's private app context below to help them.
+The context may include study decks, cards, recent reviews, hard cards, and future calendar/reminder data.
+
+Rules:
+- Be friendly, concise, and useful.
+- Do not claim calendar/reminder features are available unless context says they are enabled.
+- If the user asks to study, use their study context to suggest what to review.
+- If the user asks about progress, summarize their study progress.
+- If the user asks to create or modify data, explain what you would do, but do not claim it was saved unless a backend action actually saved it.
+- If unsure, ask a short follow-up question.
+
+USER_CONTEXT_JSON:
+{context_json}
+
+USER_MESSAGE:
+{user_message}
+"""
+
+
+@app.get("/public/companion/context")
+async def public_companion_context(request: Request):
+    await _require_public_api_key(request)
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "context": _companion_build_context(user_id),
+    }
+
+
+@app.post("/public/companion/chat")
+async def public_companion_chat(request: Request):
+    await _require_public_api_key(request)
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    message = payload.get("message") if isinstance(payload, dict) else None
+    requested_model = payload.get("requested_model") if isinstance(payload, dict) else None
+
+    if not isinstance(message, str) or not message.strip():
+        raise HTTPException(status_code=400, detail="message is required.")
+
+    message = message.strip()
+
+    if len(message) > 4000:
+        raise HTTPException(status_code=400, detail="message is too long. Max characters: 4000.")
+
+    context = _companion_build_context(user_id)
+    prompt = _companion_prompt_from_context(message, context)
+
+    job = _public_create_ollama_job(
+        prompt=prompt,
+        requested_model=requested_model or _public_default_model(),
+        user_id=user_id,
+    )
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "job_id": job["id"],
+        "status": job["status"],
+        "poll_url": f"/public/jobs/{job['id']}",
+        "message": "Companion response queued. Poll the job URL for the result.",
+    }
+
+
+# ---------------------------------------------------------------------
+# Public generic companion chat with user context
+# ---------------------------------------------------------------------
+def _companion_build_study_context(user_id: int):
+    """
+    Build a compact study context summary for the companion.
+    This is read-only context. It does not modify study data.
+    """
+    _study_init_tables()
+
+    with db() as conn:
+        decks = conn.execute(
+            """
+            SELECT
+                d.id,
+                d.title,
+                d.description,
+                COUNT(DISTINCT c.id) AS card_count,
+                COUNT(DISTINCT r.id) AS review_count,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 1 THEN r.id END), 0) AS correct_reviews,
+                MAX(r.reviewed_at) AS last_reviewed_at
+            FROM study_decks d
+            LEFT JOIN study_cards c
+                ON c.deck_id = d.id
+               AND c.archived_at IS NULL
+            LEFT JOIN study_reviews r
+                ON r.deck_id = d.id
+            WHERE d.user_id = ?
+              AND d.archived_at IS NULL
+            GROUP BY d.id
+            ORDER BY d.updated_at DESC, d.id DESC
+            LIMIT 12
+            """,
+            (int(user_id),),
+        ).fetchall()
+
+        recent_reviews = conn.execute(
+            """
+            SELECT
+                r.id,
+                r.deck_id,
+                d.title AS deck_title,
+                r.card_id,
+                c.question,
+                c.answer,
+                r.was_correct,
+                r.confidence,
+                r.reviewed_at
+            FROM study_reviews r
+            JOIN study_decks d ON d.id = r.deck_id
+            JOIN study_cards c ON c.id = r.card_id
+            WHERE r.user_id = ?
+            ORDER BY r.reviewed_at DESC, r.id DESC
+            LIMIT 12
+            """,
+            (int(user_id),),
+        ).fetchall()
+
+        hard_cards = conn.execute(
+            """
+            SELECT
+                c.id,
+                c.deck_id,
+                d.title AS deck_title,
+                c.question,
+                c.answer,
+                c.difficulty,
+                COUNT(DISTINCT r.id) AS total_reviews,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 1 THEN r.id END), 0) AS correct_reviews,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 0 THEN r.id END), 0) AS incorrect_reviews,
+                MAX(r.reviewed_at) AS last_reviewed_at
+            FROM study_cards c
+            JOIN study_decks d ON d.id = c.deck_id
+            LEFT JOIN study_reviews r
+                ON r.card_id = c.id
+               AND r.user_id = c.user_id
+            WHERE c.user_id = ?
+              AND c.archived_at IS NULL
+              AND d.archived_at IS NULL
+            GROUP BY c.id
+            HAVING total_reviews = 0
+                OR incorrect_reviews > correct_reviews
+            ORDER BY incorrect_reviews DESC, total_reviews ASC, c.updated_at DESC
+            LIMIT 12
+            """,
+            (int(user_id),),
+        ).fetchall()
+
+    deck_items = []
+    for row in decks:
+        item = row_to_dict(row)
+        reviews = int(item.get("review_count") or 0)
+        correct = int(item.get("correct_reviews") or 0)
+        item["accuracy"] = round(correct / reviews, 4) if reviews else None
+        deck_items.append(item)
+
+    hard_items = []
+    for row in hard_cards:
+        item = row_to_dict(row)
+        reviews = int(item.get("total_reviews") or 0)
+        correct = int(item.get("correct_reviews") or 0)
+        item["accuracy"] = round(correct / reviews, 4) if reviews else None
+        hard_items.append(item)
+
+    return {
+        "decks": deck_items,
+        "recent_reviews": [row_to_dict(row) for row in recent_reviews],
+        "needs_attention_cards": hard_items,
+    }
+
+
+def _companion_build_calendar_context(user_id: int):
+    """
+    Placeholder for future calendar/mood/medication context.
+    Keep this shape stable so the companion prompt can grow later.
+    """
+    return {
+        "status": "calendar_not_enabled_yet",
+        "events": [],
+        "reminders": [],
+        "mood_checkins": [],
+        "medication_checkins": [],
+    }
+
+
+def _companion_build_context(user_id: int):
+    return {
+        "study": _companion_build_study_context(user_id),
+        "calendar": _companion_build_calendar_context(user_id),
+    }
+
+
+def _companion_prompt_from_context(user_message: str, context: dict):
+    context_json = json.dumps(context, ensure_ascii=False, indent=2)
+
+    return f"""You are a helpful personal AI companion.
+
+You can use the user's private app context below to help them.
+The context may include study decks, cards, recent reviews, hard cards, and future calendar/reminder data.
+
+Rules:
+- Be friendly, concise, and useful.
+- Do not claim calendar/reminder features are available unless context says they are enabled.
+- If the user asks to study, use their study context to suggest what to review.
+- If the user asks about progress, summarize their study progress.
+- If the user asks to create or modify data, explain what you would do, but do not claim it was saved unless a backend action actually saved it.
+- If unsure, ask a short follow-up question.
+
+USER_CONTEXT_JSON:
+{context_json}
+
+USER_MESSAGE:
+{user_message}
+"""
+
+
+@app.get("/public/companion/context")
+async def public_companion_context(request: Request):
+    await _require_public_api_key(request)
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "context": _companion_build_context(user_id),
+    }
+
+
+@app.post("/public/companion/chat")
+async def public_companion_chat(request: Request):
+    await _require_public_api_key(request)
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    message = payload.get("message") if isinstance(payload, dict) else None
+    requested_model = payload.get("requested_model") if isinstance(payload, dict) else None
+
+    if not isinstance(message, str) or not message.strip():
+        raise HTTPException(status_code=400, detail="message is required.")
+
+    message = message.strip()
+
+    if len(message) > 4000:
+        raise HTTPException(status_code=400, detail="message is too long. Max characters: 4000.")
+
+    context = _companion_build_context(user_id)
+    prompt = _companion_prompt_from_context(message, context)
+
+    job = _public_create_ollama_job(
+        prompt=prompt,
+        requested_model=requested_model or _public_default_model(),
+        user_id=user_id,
+    )
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "job_id": job["id"],
+        "status": job["status"],
+        "poll_url": f"/public/jobs/{job['id']}",
+        "message": "Companion response queued. Poll the job URL for the result.",
+    }

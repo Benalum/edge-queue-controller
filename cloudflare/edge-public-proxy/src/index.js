@@ -19,7 +19,9 @@ const ALLOWED_ROUTES = [
   { method: "GET",  pattern: /^\/api\/study\/decks\/[0-9]+\/card-stats$/ },
   { method: "GET",  pattern: /^\/api\/study\/decks\/[0-9]+\/review-queue$/ },
 
-  { method: "POST", pattern: /^\/api\/companion\/study\/grade$/ }
+  { method: "POST", pattern: /^\/api\/companion\/study\/grade$/ },
+  { method: "GET",  pattern: /^\/api\/companion\/context$/ },
+  { method: "POST", pattern: /^\/api\/companion\/chat$/ }
 ];
 
 function corsHeaders(origin) {

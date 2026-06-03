@@ -54,6 +54,12 @@ def is_allowed_public_route(method: str, path: str) -> bool:
     if method == "POST" and path == "/public/companion/study/grade":
         return True
 
+    if method == "GET" and path == "/public/companion/context":
+        return True
+
+    if method == "POST" and path == "/public/companion/chat":
+        return True
+
 
 
     return False
