@@ -6803,3 +6803,188 @@ async def public_study_review_queue(deck_id: int, request: Request, mode: str = 
         "bucket_counts": data["bucket_counts"],
         **queue,
     }
+
+
+# ---------------------------------------------------------------------
+# Public companion study grading foundation
+# ---------------------------------------------------------------------
+import re as _companion_re
+import difflib as _companion_difflib
+
+
+def _companion_normalize_answer(value):
+    text = str(value or "").strip().lower()
+    text = text.replace("^", "")
+    text = text.replace("{", "").replace("}", "")
+    text = text.replace(" ", "")
+    text = text.replace("\\", "")
+    text = text.replace("−", "-")
+    text = text.replace("∞", "infinity")
+    text = _companion_re.sub(r"[^a-z0-9./+\-*=()]", "", text)
+    return text
+
+
+def _companion_tokenize_answer(value):
+    text = str(value or "").strip().lower()
+    return set(_companion_re.findall(r"[a-z0-9]+", text))
+
+
+def _companion_grade_answer(stored_answer, user_answer):
+    stored_norm = _companion_normalize_answer(stored_answer)
+    user_norm = _companion_normalize_answer(user_answer)
+
+    if not user_norm:
+        return {
+            "verdict": "incorrect",
+            "confidence": 1.0,
+            "feedback": "No answer was provided.",
+        }
+
+    if stored_norm and user_norm == stored_norm:
+        return {
+            "verdict": "correct",
+            "confidence": 1.0,
+            "feedback": "Your answer exactly matches the stored answer.",
+        }
+
+    ratio = _companion_difflib.SequenceMatcher(None, user_norm, stored_norm).ratio()
+
+    stored_tokens = _companion_tokenize_answer(stored_answer)
+    user_tokens = _companion_tokenize_answer(user_answer)
+
+    token_overlap = 0.0
+    if stored_tokens:
+        token_overlap = len(stored_tokens & user_tokens) / len(stored_tokens)
+
+    # High similarity: record as correct.
+    if ratio >= 0.88 or token_overlap >= 0.90:
+        return {
+            "verdict": "correct",
+            "confidence": round(max(ratio, token_overlap), 4),
+            "feedback": "Your answer is close enough to the stored answer to count as correct.",
+        }
+
+    # Low similarity: record as incorrect.
+    if ratio <= 0.35 and token_overlap <= 0.30:
+        return {
+            "verdict": "incorrect",
+            "confidence": round(1.0 - max(ratio, token_overlap), 4),
+            "feedback": "Your answer does not appear to match the stored answer.",
+        }
+
+    # Middle area: do not write review automatically.
+    return {
+        "verdict": "unsure",
+        "confidence": round(max(ratio, token_overlap), 4),
+        "feedback": "I am not fully sure whether this should count as correct. Please confirm.",
+    }
+
+
+@app.post("/public/companion/study/grade")
+async def public_companion_study_grade(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    _study_init_tables()
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    card_id = payload.get("card_id") if isinstance(payload, dict) else None
+    user_answer = payload.get("user_answer") if isinstance(payload, dict) else None
+    response_time_ms = payload.get("response_time_ms") if isinstance(payload, dict) else None
+
+    if card_id is None:
+        raise HTTPException(status_code=400, detail="card_id is required.")
+
+    if not isinstance(user_answer, str):
+        raise HTTPException(status_code=400, detail="user_answer must be a string.")
+
+    card = _study_card_for_user(int(card_id), user_id)
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found.")
+
+    grade = _companion_grade_answer(card["answer"], user_answer)
+
+    saved_review = False
+    review_data = None
+
+    # Only auto-save when the grader is confident enough to choose correct/incorrect.
+    if grade["verdict"] in {"correct", "incorrect"}:
+        was_correct_int = 1 if grade["verdict"] == "correct" else 0
+
+        try:
+            response_time_int = int(response_time_ms) if response_time_ms is not None else None
+        except Exception:
+            response_time_int = None
+
+        reviewed_at = datetime.now(timezone.utc).isoformat()
+
+        with db() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO study_reviews (
+                    user_id,
+                    deck_id,
+                    card_id,
+                    was_correct,
+                    confidence,
+                    response_time_ms,
+                    reviewed_at,
+                    notes
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    user_id,
+                    int(card["deck_id"]),
+                    int(card["id"]),
+                    was_correct_int,
+                    5 if was_correct_int else 2,
+                    response_time_int,
+                    reviewed_at,
+                    f"Companion auto-grade: {grade['feedback']}",
+                ),
+            )
+
+            review_id = cur.lastrowid
+
+            conn.execute(
+                """
+                UPDATE study_decks
+                SET updated_at = ?
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (
+                    reviewed_at,
+                    int(card["deck_id"]),
+                    user_id,
+                ),
+            )
+
+            review = conn.execute(
+                """
+                SELECT *
+                FROM study_reviews
+                WHERE id = ?
+                """,
+                (review_id,),
+            ).fetchone()
+
+        saved_review = True
+        review_data = row_to_dict(review)
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "card": _study_card_to_public(card),
+        "user_answer": user_answer,
+        "verdict": grade["verdict"],
+        "confidence": grade["confidence"],
+        "feedback": grade["feedback"],
+        "saved_review": saved_review,
+        "review": review_data,
+        "needs_user_confirmation": grade["verdict"] == "unsure",
+    }

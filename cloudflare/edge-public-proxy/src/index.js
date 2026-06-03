@@ -17,7 +17,9 @@ const ALLOWED_ROUTES = [
   { method: "POST", pattern: /^\/api\/study\/cards\/[0-9]+\/reviews$/ },
   { method: "GET",  pattern: /^\/api\/study\/progress$/ },
   { method: "GET",  pattern: /^\/api\/study\/decks\/[0-9]+\/card-stats$/ },
-  { method: "GET",  pattern: /^\/api\/study\/decks\/[0-9]+\/review-queue$/ }
+  { method: "GET",  pattern: /^\/api\/study\/decks\/[0-9]+\/review-queue$/ },
+
+  { method: "POST", pattern: /^\/api\/companion\/study\/grade$/ }
 ];
 
 function corsHeaders(origin) {
@@ -50,6 +52,10 @@ function mapApiPathToBackend(path) {
 
   if (path.startsWith("/api/study/")) {
     return path.replace("/api/study/", "/public/study/");
+  }
+
+  if (path.startsWith("/api/companion/")) {
+    return path.replace("/api/companion/", "/public/companion/");
   }
 
   return null;

@@ -51,6 +51,9 @@ def is_allowed_public_route(method: str, path: str) -> bool:
     if method == "GET" and re.fullmatch(r"/public/study/decks/[0-9]+/review-queue", path):
         return True
 
+    if method == "POST" and path == "/public/companion/study/grade":
+        return True
+
 
 
     return False
