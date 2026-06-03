@@ -6410,8 +6410,8 @@ async def public_study_progress(request: Request):
             SELECT
                 COUNT(DISTINCT d.id) AS deck_count,
                 COUNT(DISTINCT c.id) AS card_count,
-                COUNT(r.id) AS review_count,
-                COALESCE(SUM(CASE WHEN r.was_correct = 1 THEN 1 ELSE 0 END), 0) AS correct_reviews
+                COUNT(DISTINCT r.id) AS review_count,
+                COALESCE(COUNT(DISTINCT CASE WHEN r.was_correct = 1 THEN r.id END), 0) AS correct_reviews
             FROM study_decks d
             LEFT JOIN study_cards c
                 ON c.deck_id = d.id
