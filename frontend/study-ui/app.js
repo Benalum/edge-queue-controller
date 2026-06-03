@@ -545,3 +545,238 @@ showLoggedOutUI = function patchedShowLoggedOutUI() {
   syncNavAuth();
   showPage("home");
 };
+
+/* =========================
+   Companion study mode
+   ========================= */
+
+state.companionQueue = [];
+state.companionIndex = 0;
+state.companionCurrentCard = null;
+state.companionPendingUnsure = null;
+
+function companionAddMessage(role, text) {
+  const chat = $("companionChat");
+  if (!chat) return;
+
+  const bubble = document.createElement("div");
+  bubble.className = `chat-bubble ${role}`;
+  bubble.textContent = text;
+  chat.appendChild(bubble);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function companionClearChat() {
+  const chat = $("companionChat");
+  if (!chat) return;
+  chat.innerHTML = "";
+}
+
+function syncCompanionDeckSelect() {
+  const select = $("companionDeckSelect");
+  if (!select) return;
+
+  const previous = select.value;
+  select.innerHTML = `<option value="">No deck selected</option>`;
+
+  for (const deck of state.decks || []) {
+    const option = document.createElement("option");
+    option.value = String(deck.id);
+    option.textContent = `${deck.title} (${deck.card_count || 0} cards)`;
+    select.appendChild(option);
+  }
+
+  if (previous && state.decks.some((deck) => String(deck.id) === String(previous))) {
+    select.value = previous;
+  } else if (state.selectedDeckId) {
+    select.value = state.selectedDeckId;
+  }
+}
+
+const originalLoadDecksForCompanion = loadDecks;
+loadDecks = async function patchedLoadDecksForCompanion() {
+  await originalLoadDecksForCompanion();
+  syncCompanionDeckSelect();
+};
+
+async function companionStartQueue() {
+  if (!state.token) {
+    showPage("auth");
+    return;
+  }
+
+  const deckId = $("companionDeckSelect").value;
+  const mode = $("companionReviewMode").value;
+
+  if (!deckId) {
+    companionClearChat();
+    companionAddMessage("assistant", "Please select a deck first.");
+    return;
+  }
+
+  try {
+    companionClearChat();
+    companionAddMessage("assistant", "Loading your review queue...");
+
+    const data = await api(`/study/decks/${deckId}/review-queue?mode=${encodeURIComponent(mode)}&limit=10`, {
+      headers: authHeaders()
+    });
+
+    state.companionQueue = data.cards || [];
+    state.companionIndex = 0;
+    state.companionPendingUnsure = null;
+
+    companionClearChat();
+
+    if (!state.companionQueue.length) {
+      companionAddMessage("assistant", "This deck does not have cards yet. Add cards on the Study page first.");
+      return;
+    }
+
+    companionAddMessage(
+      "system",
+      `Mode: ${data.mode}. ${data.selection_explanation}`
+    );
+
+    companionAskCurrentCard();
+  } catch (err) {
+    companionClearChat();
+    companionAddMessage("assistant", `I could not load the queue: ${err.message}`);
+  }
+}
+
+function companionAskCurrentCard() {
+  const card = state.companionQueue[state.companionIndex];
+  state.companionCurrentCard = card || null;
+  state.companionPendingUnsure = null;
+
+  $("companionConfirmActions")?.classList.add("hidden");
+
+  if (!card) {
+    companionAddMessage("assistant", "Review complete. Load another queue when you are ready.");
+    return;
+  }
+
+  const bucket = card.performance_bucket || "new";
+  const count = `${state.companionIndex + 1}/${state.companionQueue.length}`;
+
+  companionAddMessage(
+    "assistant",
+    `Card ${count} · ${bucket.toUpperCase()}\n\n${card.question}`
+  );
+
+  $("companionAnswerInput").value = "";
+  $("companionAnswerInput").focus();
+}
+
+async function companionSubmitAnswer(event) {
+  event.preventDefault();
+
+  const card = state.companionCurrentCard;
+  if (!card) {
+    companionAddMessage("assistant", "Load a review queue first.");
+    return;
+  }
+
+  const answer = $("companionAnswerInput").value.trim();
+  if (!answer) return;
+
+  companionAddMessage("user", answer);
+  $("companionAnswerInput").value = "";
+
+  try {
+    const data = await api("/companion/study/grade", {
+      method: "POST",
+      headers: authHeaders(true),
+      body: JSON.stringify({
+        card_id: card.id,
+        user_answer: answer
+      })
+    });
+
+    if (data.verdict === "correct") {
+      companionAddMessage("assistant", `Correct. ${data.feedback}`);
+      await companionAfterRecordedReview();
+      return;
+    }
+
+    if (data.verdict === "incorrect") {
+      companionAddMessage(
+        "assistant",
+        `Not quite. ${data.feedback}\n\nStored answer: ${data.card.answer}`
+      );
+      await companionAfterRecordedReview();
+      return;
+    }
+
+    state.companionPendingUnsure = {
+      card,
+      userAnswer: answer,
+      feedback: data.feedback
+    };
+
+    companionAddMessage(
+      "assistant",
+      `${data.feedback}\n\nStored answer: ${data.card.answer}\n\nShould I mark your answer correct or wrong?`
+    );
+
+    $("companionConfirmActions")?.classList.remove("hidden");
+  } catch (err) {
+    companionAddMessage("assistant", `I could not grade that answer: ${err.message}`);
+  }
+}
+
+async function companionRecordManualReview(wasCorrect) {
+  const pending = state.companionPendingUnsure;
+  const card = pending?.card || state.companionCurrentCard;
+
+  if (!card) return;
+
+  await api(`/study/cards/${card.id}/reviews`, {
+    method: "POST",
+    headers: authHeaders(true),
+    body: JSON.stringify({
+      was_correct: Boolean(wasCorrect),
+      confidence: wasCorrect ? 4 : 2,
+      notes: "Companion user-confirmed review."
+    })
+  });
+
+  companionAddMessage("assistant", wasCorrect ? "Marked correct." : "Marked wrong.");
+  $("companionConfirmActions")?.classList.add("hidden");
+
+  await companionAfterRecordedReview();
+}
+
+async function companionAfterRecordedReview() {
+  await loadProgress();
+
+  if (state.selectedDeckId) {
+    await loadCardsAndStats();
+  }
+
+  state.companionIndex += 1;
+  state.companionPendingUnsure = null;
+
+  setTimeout(() => companionAskCurrentCard(), 350);
+}
+
+const companionLoadQueueBtn = $("companionLoadQueueBtn");
+if (companionLoadQueueBtn) {
+  companionLoadQueueBtn.addEventListener("click", companionStartQueue);
+}
+
+const companionAnswerForm = $("companionAnswerForm");
+if (companionAnswerForm) {
+  companionAnswerForm.addEventListener("submit", companionSubmitAnswer);
+}
+
+const companionConfirmCorrectBtn = $("companionConfirmCorrectBtn");
+if (companionConfirmCorrectBtn) {
+  companionConfirmCorrectBtn.addEventListener("click", () => companionRecordManualReview(true));
+}
+
+const companionConfirmWrongBtn = $("companionConfirmWrongBtn");
+if (companionConfirmWrongBtn) {
+  companionConfirmWrongBtn.addEventListener("click", () => companionRecordManualReview(false));
+}
