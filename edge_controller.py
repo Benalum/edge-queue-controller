@@ -6496,6 +6496,15 @@ async def public_study_progress(request: Request):
 # Public study per-card stats and review queue selection
 # ---------------------------------------------------------------------
 def _study_bucket_for_card(card):
+    """
+    Classify a card for adaptive review.
+
+    Buckets:
+      new    = not reviewed yet, unless user manually marked difficulty
+      hard   = clearly struggling
+      medium = partially learned / needs reinforcement
+      easy   = consistently correct with high confidence
+    """
     total_reviews = int(card.get("total_reviews") or 0)
     accuracy = card.get("accuracy")
     avg_confidence = card.get("avg_confidence")
@@ -6507,21 +6516,38 @@ def _study_bucket_for_card(card):
             return manual_difficulty
         return "new"
 
+    try:
+        accuracy_value = float(accuracy) if accuracy is not None else None
+    except Exception:
+        accuracy_value = None
+
+    try:
+        confidence_value = float(avg_confidence) if avg_confidence is not None else None
+    except Exception:
+        confidence_value = None
+
+    # Truly struggling cards.
     if recent_wrong_streak >= 2:
         return "hard"
 
-    if accuracy is not None and accuracy < 0.60:
+    if accuracy_value is not None and accuracy_value < 0.50:
         return "hard"
 
-    if avg_confidence is not None and avg_confidence <= 2.5:
+    if confidence_value is not None and confidence_value <= 2.0:
         return "hard"
 
-    if accuracy is not None and accuracy >= 0.85:
-        if avg_confidence is None or avg_confidence >= 4:
-            return "easy"
+    # Mastered / confidence-building cards.
+    if (
+        total_reviews >= 2
+        and recent_wrong_streak == 0
+        and accuracy_value is not None
+        and accuracy_value >= 0.85
+        and (confidence_value is None or confidence_value >= 4.0)
+    ):
+        return "easy"
 
+    # Everything else is partially learned.
     return "medium"
-
 
 def _study_sort_key_for_review(card):
     # Prefer never-reviewed cards, then oldest reviewed, then lower accuracy.
