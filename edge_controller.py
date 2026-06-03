@@ -743,6 +743,7 @@ def worker_row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
         data["heartbeat_age_seconds"] = None
 
     heartbeat_age = data.get("heartbeat_age_seconds")
+    heartbeat_age_seconds = data.get("heartbeat_age_seconds")
     status = data.get("status")
     
     if status in ("disabled", "offline"):
