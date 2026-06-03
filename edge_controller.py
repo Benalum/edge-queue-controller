@@ -991,6 +991,7 @@ def workers_registry():
         "stale": sum(1 for w in workers if w.get("computed_health") == "stale"),
         "unhealthy": sum(1 for w in workers if w.get("computed_health") == "unhealthy"),
         "disabled": sum(1 for w in workers if w.get("computed_health") == "disabled"),
+        "offline": sum(1 for w in workers if w.get("computed_health") == "offline"),
     }
 
     return {
@@ -4470,8 +4471,10 @@ def _power_lookup_worker_registry_state(target_name: str):
 
         stale_after_seconds = 75
 
-        if status == "disabled":
-            computed_health = "disabled"
+        if status in {"disabled", "offline"}:
+            computed_health = status
+        elif status == "unhealthy":
+            computed_health = "unhealthy"
         elif heartbeat_age_seconds is None or heartbeat_age_seconds > stale_after_seconds:
             computed_health = "stale"
         elif last_error:
