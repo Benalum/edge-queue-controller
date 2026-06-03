@@ -2545,6 +2545,13 @@ async def power_execute_stop_plan(confirm: str = ""):
                 timeout=shutdown_timeout + 15,
                 check=False,
             )
+            offline_marker_result = None
+
+            if result.returncode == 0:
+                offline_marker_result = _power_mark_worker_offline_after_stop(
+                    stop_plan.get("target_name") or stop_plan.get("worker_id") or "",
+                    reason=f"Intentional auto-managed stop executed for {kind}:{vmid}.",
+                )
         except subprocess.TimeoutExpired:
             executions.append(
                 {
@@ -2555,6 +2562,7 @@ async def power_execute_stop_plan(confirm: str = ""):
                     "executed": False,
                     "blocked_reason": "Timed out while executing shutdown command.",
                     "remote_command": remote_command,
+                    "offline_marker_result": offline_marker_result,
                 }
             )
             continue
@@ -4926,3 +4934,79 @@ async def tick_ollama_direct(
         "ollama_base_url": ollama_base_url,
         "actions": actions,
     }
+
+
+# ---------------------------------------------------------------------
+# Direct worker offline marker helper
+# ---------------------------------------------------------------------
+def _power_mark_worker_offline_after_stop(target_name: str, reason: str = "worker target stopped"):
+    """
+    Mark a worker offline after its mapped CT/VM has been stopped intentionally.
+
+    This keeps the registry from showing an intentionally stopped worker as
+    online/stale and prevents confusing remediation decisions.
+    """
+    import sqlite3
+    from datetime import datetime, timezone
+
+    db_path = _power_auto_find_db_path()
+    now = datetime.now(timezone.utc).isoformat()
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    try:
+        row = conn.execute(
+            """
+            SELECT worker_id, name, target_name
+            FROM workers
+            WHERE worker_id = ?
+               OR name = ?
+               OR target_name = ?
+            LIMIT 1
+            """,
+            (target_name, target_name, target_name),
+        ).fetchone()
+
+        if not row:
+            return {
+                "ok": False,
+                "updated": False,
+                "target_name": target_name,
+                "reason": f"No worker matched {target_name}.",
+                "db_path": str(db_path),
+            }
+
+        worker_id = row["worker_id"]
+
+        conn.execute(
+            """
+            UPDATE workers
+            SET
+                status = 'offline',
+                current_jobs = 0,
+                queue_depth = 0,
+                last_error = ?,
+                updated_at = ?
+            WHERE worker_id = ?
+            """,
+            (reason, now, worker_id),
+        )
+
+        conn.commit()
+
+        refreshed = _power_lookup_worker_registry_state(target_name)
+
+        return {
+            "ok": True,
+            "updated": True,
+            "target_name": target_name,
+            "worker_id": worker_id,
+            "updated_at": now,
+            "refreshed_state": refreshed,
+            "db_path": str(db_path),
+        }
+
+    finally:
+        conn.close()
+
