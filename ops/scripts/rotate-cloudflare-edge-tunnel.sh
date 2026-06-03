@@ -59,7 +59,19 @@ chmod 600 "$CLOUDFLARED_DIR/config.yml"
 
 echo
 echo "=== routing DNS ==="
-cloudflared tunnel route dns "$TUNNEL_NAME" "$HOSTNAME"
+if ! cloudflared tunnel route dns "$TUNNEL_NAME" "$HOSTNAME"; then
+  echo
+  echo "ERROR: DNS route could not be created."
+  echo "Most likely, $HOSTNAME already has an A, AAAA, or CNAME record."
+  echo
+  echo "Fix:"
+  echo "  Cloudflare Dashboard -> alexhartel.com -> DNS -> Records"
+  echo "  Delete the existing record for: $HOSTNAME"
+  echo "  Then rerun this script."
+  echo
+  echo "The new tunnel was created, but the service was not installed because DNS routing failed."
+  exit 1
+fi
 
 echo
 echo "=== installing system service config ==="
