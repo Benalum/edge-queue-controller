@@ -75,3 +75,13 @@ systemctl list-timers --all | grep edge-queue || true
 
 echo
 echo "Done."
+
+# Scheduler tick: runs normal /tick so queued jobs are processed automatically.
+sudo cp ops/systemd/edge-queue-scheduler-tick.service \
+  /etc/systemd/system/edge-queue-scheduler-tick.service
+
+sudo cp ops/systemd/edge-queue-scheduler-tick.timer \
+  /etc/systemd/system/edge-queue-scheduler-tick.timer
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now edge-queue-scheduler-tick.timer
