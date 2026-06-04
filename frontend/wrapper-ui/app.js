@@ -555,10 +555,14 @@ function renderApiCards(items) {
   `;
 }
 
-async function loadGpuCatalog() {
-  gpuCatalog = null;
-
+async function loadGpuCatalog({ force = false } = {}) {
   if (!authState.token) {
+    gpuCatalog = null;
+    return;
+  }
+
+  // GPU catalog is static in the mock provider, so do not refetch it on every status tick.
+  if (!force && gpuCatalog?.items?.length) {
     return;
   }
 
@@ -2046,33 +2050,46 @@ async function claimMockAdReward() {
   }
 }
 
-async function loadAccountCredits() {
-  accountCredits = null;
-  gpuSessions = null;
-
+async function loadAccountCredits({ deep = false } = {}) {
   if (!authState.token) {
+    accountCredits = null;
+    gpuSessions = null;
+    adRewardStatus = null;
     return;
   }
 
-  await loadAdRewardStatus();
-  await loadGpuCatalog();
+  const shouldLoadCreditPageData = deep || location.pathname === "/credits";
 
   try {
-    accountCredits = await api("/account/credit-pools", {
-      method: "GET",
-    });
+    const tasks = [
+      api("/account/credit-pools", { method: "GET" }),
+    ];
+
+    if (shouldLoadCreditPageData) {
+      tasks.push(loadAdRewardStatus().then(() => null));
+      tasks.push(loadGpuCatalog().then(() => null));
+      tasks.push(loadGpuSessions().then(() => null));
+    }
+
+    const [creditsResult] = await Promise.all(tasks);
+    accountCredits = creditsResult;
 
     if (accountCredits?.user) {
       authState.user = accountCredits.user;
     }
-
-    await loadGpuSessions();
   } catch {
     accountCredits = null;
   }
 }
 
+let systemStatusLoadInFlight = null;
+
 async function loadSystemStatus() {
+  if (systemStatusLoadInFlight) {
+    return systemStatusLoadInFlight;
+  }
+
+  systemStatusLoadInFlight = (async () => {
   try {
     const data = await api("/system/public-status", {
       method: "GET",
@@ -2089,22 +2106,21 @@ async function loadSystemStatus() {
     };
   }
 
-  await loadAccountCredits();
+  await loadAccountCredits({ deep: location.pathname === "/credits" });
 
+  // Admin infrastructure now loads only inside the Admin page via cleanLoadAdminData().
+  // Avoid polling admin-status on every normal page/status tick.
   adminStatus = null;
-
-  if (authState.token) {
-    try {
-      adminStatus = await api("/system/admin-status", {
-        method: "GET",
-      });
-    } catch {
-      adminStatus = null;
-    }
-  }
 
   renderPage();
   renderSystemDrawer();
+  })();
+
+  try {
+    return await systemStatusLoadInFlight;
+  } finally {
+    systemStatusLoadInFlight = null;
+  }
 }
 
 function setAuthMode(mode) {
@@ -2254,42 +2270,7 @@ setInterval(loadSystemStatus, 30000);
 
 
 // ============================================================
-// OLD_HEADER_ADMIN_SUPPORT_NAV_PATCH_V1
-// Keeps the old header. Only shows/hides Admin link.
-// Support remains visible for all users.
-// ============================================================
 
-function oldHeaderSyncAdminSupportNav() {
-  const supportLink = document.querySelector('[data-route="/support"]');
-  if (supportLink) {
-    supportLink.classList.remove("hidden");
-  }
-
-  const adminLink = document.getElementById("adminNavLink");
-  if (adminLink) {
-    const isAdmin = Boolean(window.authState?.user?.is_admin || authState?.user?.is_admin);
-    adminLink.classList.toggle("hidden", !isAdmin);
-  }
-}
-
-try {
-  const oldHeaderOriginalRenderPage = renderPage;
-  renderPage = function(...args) {
-    const result = oldHeaderOriginalRenderPage.apply(this, args);
-    oldHeaderSyncAdminSupportNav();
-    return result;
-  };
-} catch (err) {
-  console.warn("Old-header nav patch could not wrap renderPage:", err);
-}
-
-setInterval(oldHeaderSyncAdminSupportNav, 1000);
-setTimeout(oldHeaderSyncAdminSupportNav, 100);
-setTimeout(oldHeaderSyncAdminSupportNav, 1000);
-
-
-
-// ============================================================
 // CLEAN_ADMIN_SUPPORT_PAGES_V4
 // Keeps old header. Adds working /admin and /support pages.
 // Moves admin-only infrastructure from /system to /admin.
@@ -2365,23 +2346,23 @@ async function cleanLoadAdminData() {
 
   await cleanHeartbeat();
 
-  try {
-    cleanAdminUsers = await api("/admin/users", { method: "GET" });
-  } catch (err) {
-    cleanAdminUsers = { ok: false, users: [], detail: err.message };
-  }
+  const [users, tickets, system] = await Promise.allSettled([
+    api("/admin/users", { method: "GET" }),
+    api("/admin/support/tickets", { method: "GET" }),
+    api("/system/admin-status", { method: "GET" }),
+  ]);
 
-  try {
-    cleanAdminTickets = await api("/admin/support/tickets", { method: "GET" });
-  } catch (err) {
-    cleanAdminTickets = { ok: false, tickets: [], detail: err.message };
-  }
+  cleanAdminUsers = users.status === "fulfilled"
+    ? users.value
+    : { ok: false, users: [], detail: users.reason?.message || "Failed to load users." };
 
-  try {
-    cleanAdminSystem = await api("/system/admin-status", { method: "GET" });
-  } catch (err) {
-    cleanAdminSystem = { ok: false, nodes: [], services: [], detail: err.message };
-  }
+  cleanAdminTickets = tickets.status === "fulfilled"
+    ? tickets.value
+    : { ok: false, tickets: [], detail: tickets.reason?.message || "Failed to load tickets." };
+
+  cleanAdminSystem = system.status === "fulfilled"
+    ? system.value
+    : { ok: false, nodes: [], services: [], detail: system.reason?.message || "Failed to load system status." };
 }
 
 async function cleanLoadRouteData() {
