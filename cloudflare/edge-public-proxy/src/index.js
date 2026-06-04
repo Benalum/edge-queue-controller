@@ -21,7 +21,11 @@ const ALLOWED_ROUTES = [
 
   { method: "POST", pattern: /^\/api\/companion\/study\/grade$/ },
   { method: "GET",  pattern: /^\/api\/companion\/context$/ },
-  { method: "POST", pattern: /^\/api\/companion\/chat$/ }
+  { method: "POST", pattern: /^\/api\/companion\/chat$/ },
+
+  // System status / power control routes
+  { method: "GET",  pattern: /^\/api\/system\/status$/ },
+  { method: "POST", pattern: /^\/api\/system\/pveso\/boot$/ }
 ];
 
 function corsHeaders(origin) {
@@ -58,6 +62,10 @@ function mapApiPathToBackend(path) {
 
   if (path.startsWith("/api/companion/")) {
     return path.replace("/api/companion/", "/public/companion/");
+  }
+
+  if (path.startsWith("/api/system/")) {
+    return path.replace("/api/system/", "/system/");
   }
 
   return null;

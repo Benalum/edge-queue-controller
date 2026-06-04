@@ -8,22 +8,19 @@
 </head>
 <body>
   <div class="app-shell">
-    <nav class="site-nav">
-      <a class="brand" href="#" data-page-link="home">
-        <span class="brand-mark">AI</span>
+    <nav class="app-shell-nav" aria-label="Main navigation">
+      <a class="app-shell-brand" href="https://alexhartel.com">
+        <span class="app-shell-brand-mark">AI</span>
         <span>AI Platform</span>
       </a>
 
-      <div class="nav-links">
-        <button class="nav-link active" data-page-link="home">Home</button>
-        <button class="nav-link" data-page-link="companion">Companion</button>
-        <button class="nav-link" data-page-link="study">Study</button>
-        <button class="nav-link" data-page-link="calendar">Calendar</button>
-      </div>
-
-      <div class="nav-auth">
-        <button class="secondary" id="navAuthBtn">Login / Register</button>
-        <button class="secondary hidden" id="navLogoutBtn">Logout</button>
+      <div class="app-shell-links">
+        <a class="app-shell-link nav-link" href="https://alexhartel.com">Home</a>
+        <a class="app-shell-link nav-link" href="https://alexhartel.com/study">Study</a>
+        <a class="app-shell-link nav-link" href="https://alexhartel.com/companion">Companion</a>
+        <a class="app-shell-link nav-link" href="https://alexhartel.com/calendar">Calendar</a>
+        <a class="app-shell-link nav-link" href="https://alexhartel.com/profile">Profile</a>
+        <a class="app-shell-link nav-link" id="sharedAuthLink" href="https://alexhartel.com/login">Login / Register</a>
       </div>
     </nav>
 
@@ -61,65 +58,42 @@
           </div>
           <div class="feature-card">
             <h3>AI companion</h3>
-            <p>Coming next: chat, voice mode, mood check-ins, and personalized memory.</p>
+            <p>Chat with your companion, ask what to study, and get help based on your study cards.</p>
+            <button class="secondary" type="button" data-page-link="companion">Open Companion</button>
           </div>
           <div class="feature-card">
             <h3>Calendar & reminders</h3>
-            <p>Coming next: study sessions, medication reminders, schedule tracking, and daily check-ins.</p>
+            <p>Create simple local study reminders while we connect the full backend calendar system.</p>
+            <button class="secondary" type="button" data-page-link="calendar">Open Calendar</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3>Current setup</h3>
+            <p>Study cards are active. Companion now uses the worker proxy and Gemma E4B queue path when available.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Recommended next step</h3>
+            <p>Use the Companion tab and ask: “What should I study right now based on my cards?”</p>
           </div>
         </div>
       </section>
 
       <section class="panel page-block hidden" data-page="companion" id="companionPanel">
-        <div class="panel-header spread">
+        <div class="panel-header">
           <div>
             <p class="eyebrow">Companion</p>
-            <h2>Study Companion</h2>
-            <p class="muted">
-              Practice your study cards conversationally. The companion can grade confident answers
-              and ask you to confirm uncertain ones.
-            </p>
+            <h2>AI Companion</h2>
           </div>
         </div>
-
-        <div class="companion-layout">
-          <div class="companion-controls">
-            <label>
-              Deck
-              <select id="companionDeckSelect">
-                <option value="">No deck selected</option>
-              </select>
-            </label>
-
-            <label>
-              Review mode
-              <select id="companionReviewMode">
-                <option value="balanced">Balanced</option>
-                <option value="hard">Focus hard</option>
-                <option value="medium">Focus medium</option>
-                <option value="easy">Focus easy</option>
-              </select>
-            </label>
-
-            <button class="primary" id="companionLoadQueueBtn">Start Companion Review</button>
-          </div>
-
-          <div class="companion-chat" id="companionChat">
-            <div class="chat-bubble assistant">
-              Choose a deck and review mode, then start a Companion review.
-            </div>
-          </div>
-
-          <form id="companionAnswerForm" class="companion-answer">
-            <input id="companionAnswerInput" type="text" placeholder="Type your answer..." autocomplete="off" />
-            <button class="primary" type="submit">Submit Answer</button>
-          </form>
-
-          <div class="companion-actions hidden" id="companionConfirmActions">
-            <button class="secondary" id="companionConfirmWrongBtn" type="button">Mark Wrong</button>
-            <button class="primary" id="companionConfirmCorrectBtn" type="button">Mark Correct</button>
-          </div>
-        </div>
+        <p class="muted">
+          The full companion runs in the AI Platform app. It is designed for conversation,
+          emotional support, study help, calendar/reminder help, and safety-aware responses.
+        </p>
+        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
       </section>
 
       <section class="panel page-block hidden" data-page="calendar" id="calendarPanel">
@@ -130,44 +104,27 @@
           </div>
         </div>
         <p class="muted">
-          This page will become the schedule system for study sessions, reminders,
-          medication check-ins, mood logs, and recurring tasks.
+          The full calendar/reminder system belongs in the AI Platform app so the companion
+          can help create, update, and track reminders with user permission.
         </p>
+        <a class="primary" href="https://alexhartel.com/calendar">Open Calendar</a>
       </section>
 
       <section class="panel page-block hidden" data-page="auth" id="authPanel">
         <div class="panel-header">
           <div>
             <p class="eyebrow">Account</p>
-            <h2>Login or Register</h2>
+            <h2>Use your shared AI Platform account</h2>
           </div>
         </div>
-
-        <div class="tabs">
-          <button class="tab active" data-auth-tab="login">Login</button>
-          <button class="tab" data-auth-tab="register">Register</button>
+        <p class="muted">
+          Login and registration now happen through the shared account page so Study,
+          Companion, Calendar, and Profile can use the same account.
+        </p>
+        <div class="mode-row">
+          <a class="primary" href="https://alexhartel.com/login">Open Account Login</a>
+          <a class="secondary" href="https://alexhartel.com/register">Create Account</a>
         </div>
-
-        <form id="authForm" class="form-grid">
-          <label>
-            Email
-            <input id="emailInput" type="email" placeholder="you@example.com" autocomplete="email" required />
-          </label>
-
-          <label>
-            Password
-            <input id="passwordInput" type="password" placeholder="At least 10 characters" autocomplete="current-password" required />
-          </label>
-
-          <label id="displayNameWrap" class="hidden">
-            Display name
-            <input id="displayNameInput" type="text" placeholder="Your name" autocomplete="name" />
-          </label>
-
-          <button class="primary" type="submit" id="authSubmit">Login</button>
-        </form>
-
-        <p class="message" id="authMessage"></p>
       </section>
 
       <section class="panel hidden" data-page="study" id="dashboardPanel">
@@ -318,5 +275,10 @@
   </div>
 
   <script src="./app.js"></script>
+
+<div id="deployMarker" style="position:fixed;left:10px;bottom:10px;z-index:99999;background:#111827;color:#39d98a;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:8px 12px;font:12px system-ui;">
+  AI Platform deploy marker: 2026-06-04 08:04:42
+</div>
+
 </body>
 </html>

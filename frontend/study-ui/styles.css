@@ -583,3 +583,435 @@ select:focus {
     flex-direction: column;
   }
 }
+
+
+/* === Companion + local calendar patch === */
+.companion-layout {
+  display: grid;
+  gap: 18px;
+}
+
+.companion-chat {
+  min-height: 260px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  background: rgba(255,255,255,.04);
+}
+
+.chat-bubble {
+  max-width: 850px;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.chat-bubble.user {
+  margin-left: auto;
+  background: rgba(105, 151, 255, .20);
+  border: 1px solid rgba(105, 151, 255, .35);
+}
+
+.chat-bubble.assistant {
+  margin-right: auto;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.chat-bubble.system {
+  margin-right: auto;
+  font-size: .92rem;
+  color: rgba(255,255,255,.72);
+  background: rgba(255, 214, 102, .10);
+  border: 1px solid rgba(255, 214, 102, .22);
+}
+
+.companion-form textarea {
+  min-height: 110px;
+}
+
+.calendar-item {
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+}
+
+.calendar-item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.calendar-item time {
+  display: block;
+  color: rgba(255,255,255,.72);
+  margin-bottom: 8px;
+}
+
+.calendar-item .mode-row {
+  margin-top: 10px;
+}
+
+/* Unified AI Platform header */
+.app-shell-nav {
+  max-width: 1180px;
+  margin: 0 auto 24px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 0;
+  border-radius: 0 0 22px 22px;
+  background: rgba(5, 7, 19, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.app-shell-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.94);
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.app-shell-brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(105, 151, 255, 0.95), rgba(159, 111, 255, 0.95));
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.app-shell-links {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.app-shell-link {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 9px 13px;
+  color: rgba(255, 255, 255, 0.76);
+  background: transparent;
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-shell-link:hover,
+.app-shell-link.active {
+  color: rgba(255, 255, 255, 0.96);
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 900px) {
+  .app-shell-nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .app-shell-links {
+    justify-content: flex-start;
+  }
+}
+
+/* Unified AI Platform header */
+.app-shell-nav {
+  max-width: 1180px;
+  margin: 0 auto 24px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 0;
+  border-radius: 0 0 22px 22px;
+  background: rgba(5, 7, 19, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.app-shell-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.94);
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.app-shell-brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(105, 151, 255, 0.95), rgba(159, 111, 255, 0.95));
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.app-shell-links {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.app-shell-link {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 9px 13px;
+  color: rgba(255, 255, 255, 0.76);
+  background: transparent;
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-shell-link:hover,
+.app-shell-link.active {
+  color: rgba(255, 255, 255, 0.96);
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 900px) {
+  .app-shell-nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .app-shell-links {
+    justify-content: flex-start;
+  }
+}
+
+/* ============================================================
+   System status header panel
+   ============================================================ */
+
+:root {
+  --sys-bg: rgba(7, 10, 19, 0.96);
+  --sys-card: rgba(255,255,255,0.075);
+  --sys-border: rgba(255,255,255,0.14);
+  --sys-text: rgba(255,255,255,0.94);
+  --sys-muted: rgba(255,255,255,0.68);
+  --sys-good: #39d98a;
+  --sys-warn: #ffd166;
+  --sys-bad: #ff5c7a;
+  --sys-boot: #73b7ff;
+  --sys-unknown: #a6adbb;
+}
+
+.system-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--sys-text);
+  border: 1px solid var(--sys-border);
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  padding: 0.55rem 0.8rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.system-status-pill:hover {
+  background: rgba(255,255,255,0.11);
+}
+
+.system-status-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: var(--sys-unknown);
+  box-shadow: 0 0 16px currentColor;
+}
+
+.system-status-dot.online {
+  background: var(--sys-good);
+  color: var(--sys-good);
+}
+
+.system-status-dot.degraded {
+  background: var(--sys-warn);
+  color: var(--sys-warn);
+}
+
+.system-status-dot.booting {
+  background: var(--sys-boot);
+  color: var(--sys-boot);
+}
+
+.system-status-dot.error,
+.system-status-dot.offline {
+  background: var(--sys-bad);
+  color: var(--sys-bad);
+}
+
+.system-status-dot.unknown {
+  background: var(--sys-unknown);
+  color: var(--sys-unknown);
+}
+
+.system-status-panel {
+  position: fixed;
+  top: 5.25rem;
+  right: clamp(1rem, 3vw, 2rem);
+  z-index: 9999;
+  width: min(760px, calc(100vw - 2rem));
+  max-height: calc(100vh - 7rem);
+  overflow: auto;
+  color: var(--sys-text);
+  padding: 1rem;
+  border: 1px solid var(--sys-border);
+  border-radius: 1.35rem;
+  background: var(--sys-bg);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.42);
+  backdrop-filter: blur(18px);
+}
+
+.system-status-panel.hidden {
+  display: none !important;
+}
+
+.system-status-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--sys-border);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.system-status-panel h2,
+.system-status-panel h3,
+.system-status-panel p {
+  margin: 0;
+}
+
+.system-status-panel p {
+  margin-top: 0.35rem;
+  color: var(--sys-muted);
+}
+
+.system-status-primary {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  background: var(--sys-good);
+  color: #071018;
+}
+
+.system-status-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.system-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.system-status-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.system-status-item {
+  border: 1px solid var(--sys-border);
+  border-radius: 1rem;
+  padding: 0.8rem;
+  background: var(--sys-card);
+}
+
+.system-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.system-status-name {
+  font-weight: 800;
+}
+
+.system-status-detail {
+  margin-top: 0.35rem;
+  color: var(--sys-muted);
+  font-size: 0.88rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.system-status-badge {
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.11);
+}
+
+.system-status-badge.online {
+  color: var(--sys-good);
+}
+
+.system-status-badge.degraded {
+  color: var(--sys-warn);
+}
+
+.system-status-badge.booting {
+  color: var(--sys-boot);
+}
+
+.system-status-badge.offline,
+.system-status-badge.error {
+  color: var(--sys-bad);
+}
+
+.system-status-notice {
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(255, 209, 102, 0.45);
+  border-radius: 1rem;
+  background: rgba(255, 209, 102, 0.1);
+  color: rgba(255,255,255,0.86);
+}
+
+@media (max-width: 760px) {
+  .system-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .system-status-panel {
+    top: 7.5rem;
+  }
+}

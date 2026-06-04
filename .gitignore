@@ -38,3 +38,26 @@ cache/
 *.bak-*
 *.backup
 *.old
+
+# Local secrets / runtime state
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.db
+.system_state/
+.wrangler/
+__pycache__/
+*.pyc
+
+# Python envs
+.venv/
+venv/
+
+# Node
+node_modules/
+package-lock.json
+
+# Logs / generated reports
+*.log
+website-code-report.txt

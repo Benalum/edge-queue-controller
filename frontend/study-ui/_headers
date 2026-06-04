@@ -1,6 +1,6 @@
 /*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
+  Content-Security-Policy: default-src 'self'; connect-src 'self' https://alexhartel.com https://companion.alexhartel.com https://calendar.alexhartel.com https://profile.alexhartel.com https://edge-public-proxy.alexhartel179.workers.dev; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://alexhartel.com
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; connect-src 'self' https://edge-public-proxy.alexhartel179.workers.dev; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY

@@ -82,7 +82,7 @@ def init_db() -> None:
 class CreateEdgeJobRequest(BaseModel):
     job_type: str = Field(default="ollama_chat", min_length=1)
     prompt: str = Field(..., min_length=1)
-    requested_model: str | None = Field(default="qwen2.5:0.5b")
+    requested_model: str | None = Field(default="gemma4:e4b")
 
 
 def row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
@@ -4780,7 +4780,7 @@ def _mark_edge_job_forward_error(job_id: int, error: str):
 
 
 async def _forward_ollama_chat_job_direct(job: dict[str, Any], ollama_base_url: str):
-    model = job.get("requested_model") or os.getenv("EDGE_OLLAMA_DEFAULT_MODEL", "qwen2.5:0.5b")
+    model = job.get("requested_model") or os.getenv("EDGE_OLLAMA_DEFAULT_MODEL", "gemma4:e4b")
     prompt = job.get("prompt") or ""
 
     payload = {
@@ -5089,7 +5089,7 @@ def _public_max_prompt_chars() -> int:
 
 
 def _public_default_model() -> str:
-    return os.getenv("EDGE_PUBLIC_DEFAULT_MODEL", os.getenv("EDGE_OLLAMA_DEFAULT_MODEL", "qwen2.5:0.5b"))
+    return os.getenv("EDGE_PUBLIC_DEFAULT_MODEL", os.getenv("EDGE_OLLAMA_DEFAULT_MODEL", "gemma4:e4b"))
 
 
 async def _require_public_api_key(request: Request):
@@ -7408,3 +7408,459 @@ async def public_companion_chat(request: Request):
         "poll_url": f"/public/jobs/{job['id']}",
         "message": "Companion response queued. Poll the job URL for the result.",
     }
+
+# ============================================================
+# System status dashboard endpoints
+# Added for always-visible alexhartel.com wrapper/header
+# ============================================================
+
+import os as _sys_os
+import json as _sys_json
+import time as _sys_time
+import socket as _sys_socket
+import shutil as _sys_shutil
+import platform as _sys_platform
+import subprocess as _sys_subprocess
+from datetime import datetime as _sys_datetime, timezone as _sys_timezone
+from pathlib import Path as _sys_Path
+from fastapi import Body as _sys_Body
+
+_SYSTEM_STATE_DIR = _sys_Path(_sys_os.getenv("SYSTEM_STATE_DIR", ".system_state"))
+_SYSTEM_STATE_DIR.mkdir(exist_ok=True)
+
+_SYSTEM_PVESO_HOST = _sys_os.getenv("SYSTEM_PVESO_HOST", "100.88.194.19")
+_SYSTEM_PVESO_SSH = _sys_os.getenv("SYSTEM_PVESO_SSH", f"root@{_SYSTEM_PVESO_HOST}")
+
+# Your last known Wake-on-LAN values.
+# You can override these in .env or shell later.
+_SYSTEM_PVESO_WOL_MAC = _sys_os.getenv("SYSTEM_PVESO_WOL_MAC", "d8:bb:c1:03:fc:33")
+_SYSTEM_PVESO_WOL_BROADCAST = _sys_os.getenv("SYSTEM_PVESO_WOL_BROADCAST", "192.168.0.255")
+
+_SYSTEM_BOOTING_UNTIL_FILE = _SYSTEM_STATE_DIR / "pveso_booting_until.txt"
+
+
+def _system_now_iso():
+    return _sys_datetime.now(_sys_timezone.utc).isoformat()
+
+
+def _system_run(cmd, timeout=5):
+    try:
+        r = _sys_subprocess.run(
+            cmd,
+            text=True,
+            capture_output=True,
+            timeout=timeout,
+        )
+        return {
+            "ok": r.returncode == 0,
+            "returncode": r.returncode,
+            "stdout": (r.stdout or "").strip(),
+            "stderr": (r.stderr or "").strip(),
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "returncode": None,
+            "stdout": "",
+            "stderr": str(e),
+        }
+
+
+def _system_tcp_check(host, port, timeout=2):
+    try:
+        with _sys_socket.create_connection((host, port), timeout=timeout):
+            return True
+    except Exception:
+        return False
+
+
+def _system_http_check(url, timeout=3):
+    try:
+        import urllib.request
+        req = urllib.request.Request(url, headers={"User-Agent": "edge-system-status/1.0"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return {
+                "ok": 200 <= resp.status < 500,
+                "status_code": resp.status,
+                "error": None,
+            }
+    except Exception as e:
+        return {
+            "ok": False,
+            "status_code": None,
+            "error": str(e),
+        }
+
+
+def _system_ssh_check():
+    return _system_run(
+        [
+            "ssh",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=4",
+            "-o", "StrictHostKeyChecking=accept-new",
+            _SYSTEM_PVESO_SSH,
+            "echo online",
+        ],
+        timeout=6,
+    )
+
+
+def _system_pct_status(ctid):
+    r = _system_run(
+        [
+            "ssh",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=4",
+            "-o", "StrictHostKeyChecking=accept-new",
+            _SYSTEM_PVESO_SSH,
+            f"pct status {ctid}",
+        ],
+        timeout=8,
+    )
+
+    if not r["ok"]:
+        return {
+            "state": "error",
+            "detail": r["stderr"] or r["stdout"] or "pct status failed",
+        }
+
+    out = r["stdout"].lower()
+
+    if "status: running" in out:
+        return {
+            "state": "online",
+            "detail": r["stdout"],
+        }
+
+    if "status: stopped" in out:
+        return {
+            "state": "offline",
+            "detail": r["stdout"],
+        }
+
+    return {
+        "state": "unknown",
+        "detail": r["stdout"],
+    }
+
+
+def _system_read_booting_marker():
+    try:
+        until = float(_SYSTEM_BOOTING_UNTIL_FILE.read_text().strip())
+        remaining = int(until - _sys_time.time())
+
+        if remaining > 0:
+            return {
+                "active": True,
+                "remaining_seconds": remaining,
+                "until_epoch": until,
+            }
+    except Exception:
+        pass
+
+    return {
+        "active": False,
+        "remaining_seconds": 0,
+        "until_epoch": None,
+    }
+
+
+def _system_mark_booting(seconds=600):
+    until = _sys_time.time() + seconds
+    _SYSTEM_BOOTING_UNTIL_FILE.write_text(str(until))
+    return until
+
+
+def _system_laptop_specs():
+    cpu_name = _sys_platform.processor() or "unknown"
+    machine = _sys_platform.machine()
+    system = _sys_platform.system()
+    release = _sys_platform.release()
+
+    nproc = _system_run(["bash", "-lc", "nproc"], timeout=2)
+    ram = _system_run(["bash", "-lc", "free -h | awk '/Mem:/ {print $2}'"], timeout=2)
+    disk = _system_run(["bash", "-lc", "df -h / | awk 'NR==2 {print $2}'"], timeout=2)
+
+    return {
+        "cpu": cpu_name,
+        "machine": machine,
+        "os": f"{system} {release}",
+        "cores": nproc["stdout"] if nproc["ok"] else "unknown",
+        "ram": ram["stdout"] if ram["ok"] else "unknown",
+        "root_disk": disk["stdout"] if disk["ok"] else "unknown",
+    }
+
+
+@app.get("/system/status")
+def system_status():
+    """
+    Public-safe status summary for the always-visible site wrapper.
+
+    This should expose friendly status only.
+    Do not expose passwords, tokens, SSH keys, or sensitive internal details.
+    """
+
+    checked_at = _system_now_iso()
+    booting_marker = _system_read_booting_marker()
+
+    # Master laptop is this process.
+    master_node = {
+        "id": "master-laptop",
+        "name": "Controller Node",
+        "role": "master",
+        "state": "online",
+        "checked_at": checked_at,
+        "specs": _system_laptop_specs(),
+        "services": [
+            {
+                "name": "edge-queue-controller",
+                "state": "online",
+                "detail": "This API process is responding.",
+            }
+        ],
+    }
+
+    # Check pveso.
+    pveso_tcp_ssh = _system_tcp_check(_SYSTEM_PVESO_HOST, 22, timeout=2)
+    pveso_ssh = _system_ssh_check() if pveso_tcp_ssh else {
+        "ok": False,
+        "stdout": "",
+        "stderr": "SSH port unreachable",
+    }
+
+    if pveso_ssh["ok"]:
+        pveso_state = "online"
+        pveso_detail = "SSH reachable."
+    elif booting_marker["active"]:
+        pveso_state = "booting"
+        pveso_detail = f"Boot marker active. About {booting_marker['remaining_seconds']} seconds remaining."
+    else:
+        pveso_state = "offline"
+        pveso_detail = pveso_ssh["stderr"] or "Server unreachable."
+
+    pveso_node = {
+        "id": "pveso",
+        "name": "Main Proxmox Server",
+        "role": "compute-host",
+        "state": pveso_state,
+        "checked_at": checked_at,
+        "address": _SYSTEM_PVESO_HOST,
+        "detail": pveso_detail,
+        "specs": {
+            "cpu": "Intel Core i9-10900K",
+            "gpu": "AMD RX 6900 XT",
+            "hypervisor": "Proxmox VE",
+        },
+    }
+
+    workers = []
+
+    if pveso_state == "online":
+        ct101 = _system_pct_status("101")
+        ct108 = _system_pct_status("108")
+    elif pveso_state == "booting":
+        ct101 = {"state": "booting", "detail": "Waiting for pveso to finish booting."}
+        ct108 = {"state": "booting", "detail": "Waiting for pveso to finish booting."}
+    else:
+        ct101 = {"state": "offline", "detail": "pveso is offline."}
+        ct108 = {"state": "offline", "detail": "pveso is offline."}
+
+    workers.append({
+        "id": "ct-101",
+        "name": "LLM Worker",
+        "role": "container",
+        "state": ct101["state"],
+        "checked_at": checked_at,
+        "detail": ct101["detail"],
+        "services": ["OpenWebUI", "Ollama"],
+    })
+
+    workers.append({
+        "id": "ct-108",
+        "name": "ComfyUI Worker",
+        "role": "container",
+        "state": ct108["state"],
+        "checked_at": checked_at,
+        "detail": ct108["detail"],
+        "services": ["ComfyUI"],
+    })
+
+    # Service checks.
+    # These are intentionally friendly/high-level.
+    services = []
+
+    # The Study API lives in this same controller, but the frontend may access it
+    # through /api/backend/... while the direct FastAPI path may be different.
+    # Try several safe candidates and mark it online if any respond.
+    study_candidates = [
+        "http://127.0.0.1:7070/public/study/progress",
+        "http://127.0.0.1:7070/public/study/decks",
+        "http://127.0.0.1:7070/health",
+    ]
+
+    study_check = None
+    study_url_used = None
+
+    for url in study_candidates:
+        c = _system_http_check(url, timeout=2)
+        if c["ok"]:
+            study_check = c
+            study_url_used = url
+            break
+        if study_check is None:
+            study_check = c
+            study_url_used = url
+
+    services.append({
+        "id": "study-api",
+        "name": "Study API",
+        "state": "online" if study_check and study_check["ok"] else "degraded",
+        "checked_at": checked_at,
+        "detail": (
+            f"HTTP {study_check['status_code']} via {study_url_used}"
+            if study_check and study_check["ok"]
+            else f"Study route not confirmed. Last check: {study_check['error'] if study_check else 'unknown'}"
+        ),
+    })
+
+    # These services depend on pveso. If pveso is offline, skip public-domain checks
+    # so DNS/proxy failures do not make the entire system look broken.
+    if pveso_state == "online":
+        openwebui_check = _system_http_check("https://ai.alexhartel.com", timeout=4)
+        openwebui_state = "online" if openwebui_check["ok"] else "error"
+        openwebui_detail = f"HTTP {openwebui_check['status_code']}" if openwebui_check["ok"] else openwebui_check["error"]
+    elif pveso_state == "booting":
+        openwebui_state = "booting"
+        openwebui_detail = "Waiting for pveso to finish booting."
+    else:
+        openwebui_state = "offline"
+        openwebui_detail = "pveso is offline."
+
+    services.append({
+        "id": "openwebui",
+        "name": "OpenWebUI",
+        "state": openwebui_state,
+        "checked_at": checked_at,
+        "detail": openwebui_detail,
+    })
+
+    if pveso_state == "online":
+        comfy_check = _system_http_check("https://aianimation.alexhartel.com", timeout=4)
+        comfy_state = "online" if comfy_check["ok"] else "error"
+        comfy_detail = f"HTTP {comfy_check['status_code']}" if comfy_check["ok"] else comfy_check["error"]
+    elif pveso_state == "booting":
+        comfy_state = "booting"
+        comfy_detail = "Waiting for pveso to finish booting."
+    else:
+        comfy_state = "offline"
+        comfy_detail = "pveso is offline."
+
+    services.append({
+        "id": "comfyui",
+        "name": "ComfyUI",
+        "state": comfy_state,
+        "checked_at": checked_at,
+        "detail": comfy_detail,
+    })
+
+    all_items = [master_node, pveso_node] + workers + services
+    states = [item.get("state") for item in all_items]
+
+    critical_states = {
+        "master": master_node.get("state"),
+        "pveso": pveso_node.get("state"),
+    }
+
+    if critical_states["master"] == "error":
+        overall_state = "error"
+    elif pveso_state == "booting" or any(s == "booting" for s in states):
+        overall_state = "booting"
+    elif pveso_state == "offline" or any(s in ("offline", "degraded", "error") for s in states):
+        overall_state = "degraded"
+    else:
+        overall_state = "online"
+
+    return {
+        "ok": True,
+        "checked_at": checked_at,
+        "overall_state": overall_state,
+        "nodes": [
+            master_node,
+            pveso_node,
+            *workers,
+        ],
+        "services": services,
+    }
+
+
+@app.post("/system/pveso/boot")
+def system_boot_pveso(payload: dict = _sys_Body(default={})):
+    """
+    Sends Wake-on-LAN for pveso and marks the node as booting.
+
+    Safety:
+    - Keep this behind your authenticated dashboard / Cloudflare Access.
+    - Do not expose this publicly without auth.
+    """
+
+    confirm = payload.get("confirm") if isinstance(payload, dict) else None
+    required = "BOOT_PVESO"
+
+    if confirm != required:
+        return {
+            "ok": False,
+            "boot_sent": False,
+            "blocked_reason": "Missing confirmation phrase.",
+            "required_confirm": required,
+            "example_body": {"confirm": required},
+        }
+
+    if not _SYSTEM_PVESO_WOL_MAC:
+        return {
+            "ok": False,
+            "boot_sent": False,
+            "error": "SYSTEM_PVESO_WOL_MAC is not configured.",
+        }
+
+    wakeonlan = _sys_shutil.which("wakeonlan")
+    etherwake = _sys_shutil.which("etherwake")
+
+    if wakeonlan:
+        cmd = [
+            wakeonlan,
+            "-i",
+            _SYSTEM_PVESO_WOL_BROADCAST,
+            _SYSTEM_PVESO_WOL_MAC,
+        ]
+    elif etherwake:
+        cmd = [
+            etherwake,
+            _SYSTEM_PVESO_WOL_MAC,
+        ]
+    else:
+        return {
+            "ok": False,
+            "boot_sent": False,
+            "error": "Neither wakeonlan nor etherwake is installed.",
+            "install_hint": "sudo apt install wakeonlan",
+        }
+
+    result = _system_run(cmd, timeout=8)
+
+    if result["ok"]:
+        until = _system_mark_booting(seconds=600)
+        return {
+            "ok": True,
+            "boot_sent": True,
+            "state": "booting",
+            "booting_until_epoch": until,
+            "detail": result["stdout"] or "Wake-on-LAN packet sent.",
+        }
+
+    return {
+        "ok": False,
+        "boot_sent": False,
+        "error": result["stderr"] or result["stdout"] or "Wake-on-LAN failed.",
+    }
+

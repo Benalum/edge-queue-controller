@@ -780,3 +780,975 @@ const companionConfirmWrongBtn = $("companionConfirmWrongBtn");
 if (companionConfirmWrongBtn) {
   companionConfirmWrongBtn.addEventListener("click", () => companionRecordManualReview(false));
 }
+
+
+/* === Companion + local calendar patch === */
+(function () {
+  const CHAT_KEY = "aiStudyCompanionChat:v1";
+  const CALENDAR_KEY = "aiStudyCalendarReminders:v1";
+
+  function getApiBase() {
+    try {
+      if (typeof API_BASE !== "undefined" && API_BASE) return API_BASE;
+    } catch (_) {}
+    return "https://edge-public-proxy.alexhartel179.workers.dev/api";
+  }
+
+  function getAuthToken() {
+    const keys = ["authToken", "token", "accessToken", "aiStudyToken"];
+    for (const key of keys) {
+      const value = localStorage.getItem(key);
+      if (value) return value;
+    }
+    return "";
+  }
+
+  function jsonHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    const token = getAuthToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return headers;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function loadJson(key, fallback) {
+    try {
+      return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  function saveJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function extractText(data) {
+    if (!data) return "";
+
+    if (typeof data === "string") return data;
+
+    const candidates = [
+      data.reply,
+      data.answer,
+      data.response,
+      data.output,
+      data.content,
+      data.message?.content,
+      data.result?.reply,
+      data.result?.answer,
+      data.result?.response,
+      data.result?.output,
+      data.result?.content,
+      data.result?.message?.content,
+      data.job?.result?.reply,
+      data.job?.result?.answer,
+      data.job?.result?.response,
+      data.job?.result?.output,
+      data.job?.result?.content,
+      data.job?.result?.message?.content,
+    ];
+
+    for (const item of candidates) {
+      if (typeof item === "string" && item.trim()) return item.trim();
+    }
+
+    if (data.status && data.id) {
+      return `Job ${data.id} is ${data.status}.`;
+    }
+
+    if (data.job?.status && data.job?.id) {
+      return `Job ${data.job.id} is ${data.job.status}.`;
+    }
+
+    return "";
+  }
+
+  function getJobId(data) {
+    return data?.id || data?.job?.id || data?.result?.id || null;
+  }
+
+  function getJobStatus(data) {
+    return data?.status || data?.job?.status || data?.result?.status || "";
+  }
+
+  async function fetchJson(url, options) {
+    const res = await fetch(url, options);
+    const text = await res.text();
+
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch (_) {
+      data = { raw: text };
+    }
+
+    if (!res.ok) {
+      const message = data?.detail || data?.error || data?.message || text || `${res.status} ${res.statusText}`;
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
+  async function pollJob(jobId) {
+    const base = getApiBase();
+    const paths = [
+      `${base}/jobs/${jobId}`,
+      `${base}/job/${jobId}`,
+    ];
+
+    for (let attempt = 0; attempt < 24; attempt++) {
+      for (const url of paths) {
+        try {
+          const data = await fetchJson(url, { headers: jsonHeaders() });
+          const text = extractText(data);
+          const status = getJobStatus(data);
+
+          if (text && !/^Job \d+ is queued/i.test(text)) return text;
+
+          if (["failed", "error"].includes(String(status).toLowerCase())) {
+            throw new Error(data?.last_error || data?.error || `Job ${jobId} failed`);
+          }
+
+          if (["forwarded", "done", "complete", "completed", "succeeded", "success"].includes(String(status).toLowerCase()) && text) {
+            return text;
+          }
+        } catch (err) {
+          if (attempt > 2) console.warn("Job poll issue:", err);
+        }
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+    }
+
+    return `Your message was queued as job ${jobId}, but I could not fetch the final answer yet. Check the queue status or try again.`;
+  }
+
+  function buildCompanionPrompt(message) {
+    let studyHint = "";
+
+    try {
+      if (typeof state !== "undefined") {
+        const selectedDeck = state.decks?.find?.((d) => String(d.id) === String(state.selectedDeckId));
+        const cards = Array.isArray(state.cards) ? state.cards.slice(0, 40) : [];
+
+        studyHint = JSON.stringify({
+          selected_deck: selectedDeck || null,
+          cards: cards.map((card) => ({
+            id: card.id,
+            question: card.question,
+            answer: card.answer,
+            difficulty: card.difficulty,
+            correct_reviews: card.correct_reviews,
+            incorrect_reviews: card.incorrect_reviews,
+            accuracy: card.accuracy,
+            tags: card.tags,
+          })),
+        });
+      }
+    } catch (_) {}
+
+    return [
+      "You are the user's AI study companion.",
+      "Use the user's study-card context when provided.",
+      "Do not invent cards or deck details.",
+      "If the user asks what to study, prioritize hard cards, missed cards, and cards with low accuracy.",
+      "Keep answers short, helpful, and actionable.",
+      studyHint ? `STUDY_CONTEXT_JSON: ${studyHint}` : "STUDY_CONTEXT_JSON: unavailable from this page state.",
+      `USER_MESSAGE: ${message}`,
+    ].join("\n\n");
+  }
+
+  async function sendCompanionToApi(message) {
+    const base = getApiBase();
+    const prompt = buildCompanionPrompt(message);
+
+    const attempts = [
+      {
+        url: `${base}/companion/chat`,
+        body: { message, prompt, model: "gemma4:e4b" },
+      },
+      {
+        url: `${base}/chat`,
+        body: { message, prompt, model: "gemma4:e4b" },
+      },
+      {
+        url: `${base}/jobs`,
+        body: { job_type: "ollama_chat", prompt, requested_model: "gemma4:e4b" },
+      },
+    ];
+
+    const errors = [];
+
+    for (const attempt of attempts) {
+      try {
+        const data = await fetchJson(attempt.url, {
+          method: "POST",
+          headers: jsonHeaders(),
+          body: JSON.stringify(attempt.body),
+        });
+
+        const directText = extractText(data);
+        const jobId = getJobId(data);
+        const status = getJobStatus(data);
+
+        if (directText && !/^Job \d+ is queued/i.test(directText)) return directText;
+
+        if (jobId) {
+          if (String(status).toLowerCase() === "queued") {
+            addCompanionMessage("system", `Queued with Gemma E4B as job ${jobId}. Waiting for the worker...`);
+          }
+          return await pollJob(jobId);
+        }
+
+        if (directText) return directText;
+      } catch (err) {
+        errors.push(`${attempt.url}: ${err.message}`);
+      }
+    }
+
+    throw new Error(errors.join("\n"));
+  }
+
+  function getCompanionMessages() {
+    return loadJson(CHAT_KEY, [
+      {
+        role: "assistant",
+        text: "Hi, I am your study companion. Ask me what to study, paste an answer for me to check, or ask me to help make a card.",
+      },
+    ]);
+  }
+
+  function setCompanionMessages(messages) {
+    saveJson(CHAT_KEY, messages);
+  }
+
+  function renderCompanionMessages() {
+    const wrap = document.getElementById("companionMessages");
+    if (!wrap) return;
+
+    const messages = getCompanionMessages();
+    wrap.innerHTML = messages
+      .map((m) => `<div class="chat-bubble ${escapeHtml(m.role)}">${escapeHtml(m.text)}</div>`)
+      .join("");
+
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function addCompanionMessage(role, text) {
+    const messages = getCompanionMessages();
+    messages.push({ role, text });
+    setCompanionMessages(messages);
+    renderCompanionMessages();
+  }
+
+  async function handleCompanionSubmit(message) {
+    const input = document.getElementById("companionInput");
+    const sendBtn = document.getElementById("companionSendBtn");
+    const status = document.getElementById("companionMessage");
+
+    const clean = String(message || input?.value || "").trim();
+    if (!clean) return;
+
+    if (input) input.value = "";
+    addCompanionMessage("user", clean);
+
+    if (sendBtn) sendBtn.disabled = true;
+    if (status) status.textContent = "Thinking with Gemma E4B...";
+
+    try {
+      const answer = await sendCompanionToApi(clean);
+      addCompanionMessage("assistant", answer || "I got a response, but it did not include readable text.");
+      if (status) status.textContent = "";
+    } catch (err) {
+      console.error(err);
+      addCompanionMessage(
+        "system",
+        "I could not reach the companion endpoint yet. The Study page can still work, but the Worker/API route may need a companion route added.\n\n" + err.message
+      );
+      if (status) status.textContent = "Companion API route failed.";
+    } finally {
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  }
+
+  function setupCompanion() {
+    renderCompanionMessages();
+
+    const form = document.getElementById("companionForm");
+    const clearBtn = document.getElementById("companionClearBtn");
+    const suggestBtn = document.getElementById("companionStudySuggestBtn");
+
+    if (form && !form.dataset.bound) {
+      form.dataset.bound = "1";
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        handleCompanionSubmit();
+      });
+    }
+
+    if (clearBtn && !clearBtn.dataset.bound) {
+      clearBtn.dataset.bound = "1";
+      clearBtn.addEventListener("click", () => {
+        localStorage.removeItem(CHAT_KEY);
+        renderCompanionMessages();
+      });
+    }
+
+    if (suggestBtn && !suggestBtn.dataset.bound) {
+      suggestBtn.dataset.bound = "1";
+      suggestBtn.addEventListener("click", () => {
+        handleCompanionSubmit("What should I study right now based on my cards?");
+      });
+    }
+  }
+
+  function getReminders() {
+    return loadJson(CALENDAR_KEY, []);
+  }
+
+  function setReminders(items) {
+    saveJson(CALENDAR_KEY, items);
+  }
+
+  function renderCalendar() {
+    const list = document.getElementById("calendarList");
+    if (!list) return;
+
+    const reminders = getReminders().sort((a, b) => String(a.time).localeCompare(String(b.time)));
+
+    if (!reminders.length) {
+      list.innerHTML = `<p class="muted">No reminders yet.</p>`;
+      return;
+    }
+
+    list.innerHTML = reminders
+      .map((item) => {
+        const when = item.time ? new Date(item.time).toLocaleString() : "No time";
+        return `
+          <div class="calendar-item">
+            <strong>${escapeHtml(item.title)}</strong>
+            <time>${escapeHtml(when)}</time>
+            ${item.notes ? `<p>${escapeHtml(item.notes)}</p>` : ""}
+            <div class="mode-row">
+              <button class="secondary" type="button" data-delete-reminder="${escapeHtml(item.id)}">Delete</button>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  function setupCalendar() {
+    renderCalendar();
+
+    const form = document.getElementById("calendarForm");
+    const list = document.getElementById("calendarList");
+
+    if (form && !form.dataset.bound) {
+      form.dataset.bound = "1";
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const title = document.getElementById("calendarTitleInput")?.value?.trim();
+        const time = document.getElementById("calendarTimeInput")?.value;
+        const notes = document.getElementById("calendarNotesInput")?.value?.trim();
+
+        if (!title || !time) return;
+
+        const reminders = getReminders();
+        reminders.push({
+          id: String(Date.now()),
+          title,
+          time,
+          notes,
+        });
+
+        setReminders(reminders);
+        form.reset();
+        renderCalendar();
+      });
+    }
+
+    if (list && !list.dataset.bound) {
+      list.dataset.bound = "1";
+      list.addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-delete-reminder]");
+        if (!btn) return;
+
+        const id = btn.getAttribute("data-delete-reminder");
+        setReminders(getReminders().filter((item) => String(item.id) !== String(id)));
+        renderCalendar();
+      });
+    }
+  }
+
+  function setupExtraPageLinks() {
+    document.querySelectorAll("[data-page-link]").forEach((btn) => {
+      if (btn.dataset.extraBound) return;
+      btn.dataset.extraBound = "1";
+      btn.addEventListener("click", () => {
+        setupCompanion();
+        setupCalendar();
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    setupCompanion();
+    setupCalendar();
+    setupExtraPageLinks();
+  });
+})();
+
+
+/* === Shared Account auth redirect patch === */
+(function () {
+  const ACCOUNT_LOGIN = "https://alexhartel.com/login";
+  const ACCOUNT_REGISTER = "https://alexhartel.com/register";
+  const ACCOUNT_LOGOUT = "https://alexhartel.com/logout";
+  const ACCOUNT_PROFILE = "https://alexhartel.com/profile";
+
+  function go(url) {
+    window.location.href = url;
+  }
+
+  function isOldLoginTarget(value) {
+    value = String(value || "").toLowerCase();
+    return value === "login" || value === "#login" || value === "/login" || value.includes("loginpanel");
+  }
+
+  function isOldRegisterTarget(value) {
+    value = String(value || "").toLowerCase();
+    return value === "register" || value === "#register" || value === "/register" || value.includes("registerpanel");
+  }
+
+  function isOldProfileTarget(value) {
+    value = String(value || "").toLowerCase();
+    return value === "profile" || value === "#profile" || value === "/profile" || value.includes("profilepanel");
+  }
+
+  function rewriteAuthLinks() {
+    document.querySelectorAll("a, button").forEach((el) => {
+      const href = el.getAttribute("href");
+      const pageLink = el.getAttribute("data-page-link");
+      const text = (el.textContent || "").trim().toLowerCase();
+
+      if (isOldLoginTarget(href) || isOldLoginTarget(pageLink) || text === "login" || text === "login / register") {
+        el.setAttribute("href", ACCOUNT_LOGIN);
+        el.removeAttribute("data-page-link");
+      }
+
+      if (isOldRegisterTarget(href) || isOldRegisterTarget(pageLink) || text === "register" || text === "create account") {
+        el.setAttribute("href", ACCOUNT_REGISTER);
+        el.removeAttribute("data-page-link");
+      }
+
+      if (isOldProfileTarget(href) || isOldProfileTarget(pageLink) || text === "profile") {
+        el.setAttribute("href", ACCOUNT_PROFILE);
+        el.removeAttribute("data-page-link");
+      }
+
+      if (text === "logout" || href === "/logout" || pageLink === "logout") {
+        el.setAttribute("href", ACCOUNT_LOGOUT);
+        el.removeAttribute("data-page-link");
+      }
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const el = event.target.closest("a, button");
+    if (!el) return;
+
+    const href = el.getAttribute("href");
+    const pageLink = el.getAttribute("data-page-link");
+    const text = (el.textContent || "").trim().toLowerCase();
+
+    if (isOldLoginTarget(href) || isOldLoginTarget(pageLink) || text === "login" || text === "login / register") {
+      event.preventDefault();
+      event.stopPropagation();
+      go(ACCOUNT_LOGIN);
+      return;
+    }
+
+    if (isOldRegisterTarget(href) || isOldRegisterTarget(pageLink) || text === "register" || text === "create account") {
+      event.preventDefault();
+      event.stopPropagation();
+      go(ACCOUNT_REGISTER);
+      return;
+    }
+
+    if (isOldProfileTarget(href) || isOldProfileTarget(pageLink) || text === "profile") {
+      event.preventDefault();
+      event.stopPropagation();
+      go(ACCOUNT_PROFILE);
+      return;
+    }
+
+    if (text === "logout" || href === "/logout" || pageLink === "logout") {
+      event.preventDefault();
+      event.stopPropagation();
+      go(ACCOUNT_LOGOUT);
+    }
+  }, true);
+
+  document.addEventListener("DOMContentLoaded", rewriteAuthLinks);
+  setInterval(rewriteAuthLinks, 1000);
+
+  if (["#login", "#register", "#profile", "#logout"].includes(window.location.hash.toLowerCase())) {
+    const hash = window.location.hash.toLowerCase();
+    if (hash === "#login") go(ACCOUNT_LOGIN);
+    if (hash === "#register") go(ACCOUNT_REGISTER);
+    if (hash === "#profile") go(ACCOUNT_PROFILE);
+    if (hash === "#logout") go(ACCOUNT_LOGOUT);
+  }
+})();
+
+
+/* === Disable old Study auth panel and normalize Home/Study routing === */
+(function () {
+  const ACCOUNT_LOGIN = "https://alexhartel.com/login";
+  const ACCOUNT_REGISTER = "https://alexhartel.com/register";
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function hasOldStudyToken() {
+    // Keep compatibility with whatever the old Study app used.
+    // This does not read the new HttpOnly account cookie.
+    return Boolean(
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("aiStudyToken")
+    );
+  }
+
+  function hideAllPages() {
+    document.querySelectorAll(".page-block").forEach((el) => el.classList.add("hidden"));
+  }
+
+  function showPage(page) {
+    hideAllPages();
+    const panel = document.querySelector(`[data-page="${page}"]`);
+    if (panel) panel.classList.remove("hidden");
+  }
+
+  function showHome() {
+    showPage("home");
+    document.body.dataset.currentPage = "home";
+  }
+
+  function showStudyOrAccountLogin() {
+    // Until Study is migrated to the shared account API, never show the old Study login form.
+    if (!hasOldStudyToken()) {
+      window.location.href = `${ACCOUNT_LOGIN}?next=${encodeURIComponent("https://alexhartel.com/study")}`;
+      return;
+    }
+
+    showPage("study");
+    document.body.dataset.currentPage = "study";
+  }
+
+  function disableOldAuthPanel() {
+    const authPanel = $("authPanel");
+    if (!authPanel) return;
+
+    // If old app tries to show authPanel, immediately replace it with shared account message.
+    const title = authPanel.querySelector("h2");
+    if (title) title.textContent = "Use your shared AI Platform account";
+
+    authPanel.querySelectorAll("form").forEach((form) => {
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        window.location.href = ACCOUNT_LOGIN;
+      }, true);
+    });
+
+    authPanel.querySelectorAll("[data-auth-tab]").forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const mode = btn.getAttribute("data-auth-tab");
+        window.location.href = mode === "register" ? ACCOUNT_REGISTER : ACCOUNT_LOGIN;
+      }, true);
+    });
+  }
+
+  function routeFromHash() {
+    const hash = String(window.location.hash || "#home").toLowerCase();
+
+    if (hash === "#study") {
+      showStudyOrAccountLogin();
+      return;
+    }
+
+    if (hash === "#login" || hash === "#auth") {
+      window.location.href = ACCOUNT_LOGIN;
+      return;
+    }
+
+    if (hash === "#register") {
+      window.location.href = ACCOUNT_REGISTER;
+      return;
+    }
+
+    showHome();
+  }
+
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("a, button");
+    if (!link) return;
+
+    const href = link.getAttribute("href") || "";
+    const pageLink = link.getAttribute("data-page-link") || "";
+    const text = (link.textContent || "").trim().toLowerCase();
+
+    if (href.endsWith("#home") || pageLink === "home" || text === "home") {
+      event.preventDefault();
+      event.stopPropagation();
+      history.pushState(null, "", "#home");
+      showHome();
+      return;
+    }
+
+    if (href.endsWith("#study") || pageLink === "study" || text === "study") {
+      event.preventDefault();
+      event.stopPropagation();
+      history.pushState(null, "", "#study");
+      showStudyOrAccountLogin();
+      return;
+    }
+
+    if (pageLink === "auth" || text === "login" || text === "login / register") {
+      event.preventDefault();
+      event.stopPropagation();
+      window.location.href = ACCOUNT_LOGIN;
+    }
+  }, true);
+
+  window.addEventListener("hashchange", routeFromHash);
+
+  document.addEventListener("DOMContentLoaded", () => {
+    disableOldAuthPanel();
+    setTimeout(routeFromHash, 0);
+    setTimeout(routeFromHash, 250);
+  });
+
+  // If the older app reveals authPanel after async API checks, push the user to shared account instead.
+  const observer = new MutationObserver(() => {
+    const authPanel = $("authPanel");
+    if (authPanel && !authPanel.classList.contains("hidden")) {
+      if (window.location.hash.toLowerCase() === "#study" && !hasOldStudyToken()) {
+        window.location.href = `${ACCOUNT_LOGIN}?next=${encodeURIComponent("https://alexhartel.com/study")}`;
+      }
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    observer.observe(document.body, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ["class"],
+    });
+  });
+})();
+
+
+/* === Shared Account dynamic header auth state === */
+(function () {
+  const ACCOUNT_LOGIN = "https://alexhartel.com/login";
+  const ACCOUNT_LOGOUT = "https://alexhartel.com/logout";
+  const AUTH_STATUS_URL = "https://alexhartel.com/api/public/auth-status";
+
+  async function updateSharedAuthHeader() {
+    const link = document.getElementById("sharedAuthLink");
+    if (!link) return;
+
+    link.textContent = "Login / Register";
+    link.href = ACCOUNT_LOGIN;
+
+    try {
+      const res = await fetch(AUTH_STATUS_URL, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+
+      if (data && data.authenticated) {
+        link.textContent = "Logout";
+        link.href = ACCOUNT_LOGOUT;
+      }
+    } catch {
+      // If cross-domain status fails, keep Login/Register visible.
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", updateSharedAuthHeader);
+  window.addEventListener("focus", updateSharedAuthHeader);
+})();
+
+/* ============================================================
+   System status header panel
+   Shows controller/server/container/service state from:
+   GET  /api/system/status
+   POST /api/system/pveso/boot
+   ============================================================ */
+
+(function systemStatusPanelPatch() {
+  const SYSTEM_REFRESH_MS = 30000;
+
+  function systemTitleCase(value) {
+    if (!value) return "Unknown";
+    return String(value).slice(0, 1).toUpperCase() + String(value).slice(1);
+  }
+
+  function systemApiBase() {
+    // Reuse the existing frontend API base when available.
+    // In this app API_BASE usually ends with /api.
+    if (typeof API_BASE !== "undefined" && API_BASE) return API_BASE;
+    return "https://edge-public-proxy.alexhartel179.workers.dev/api";
+  }
+
+  function systemAuthHeaders() {
+    const headers = {
+      "Content-Type": "application/json",
+    };
+
+    const token =
+      localStorage.getItem("edgeStudyToken") ||
+      localStorage.getItem("aiStudyToken") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("token") ||
+      "";
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    return headers;
+  }
+
+  function systemCreatePanel() {
+    if (document.getElementById("systemStatusButton")) return;
+
+    const button = document.createElement("button");
+    button.id = "systemStatusButton";
+    button.type = "button";
+    button.className = "system-status-pill";
+    button.innerHTML = `
+      <span id="systemStatusDot" class="system-status-dot unknown"></span>
+      <span id="systemStatusLabel">System</span>
+    `;
+
+    const panel = document.createElement("section");
+    panel.id = "systemStatusPanel";
+    panel.className = "system-status-panel hidden";
+    panel.innerHTML = `
+      <div class="system-status-head">
+        <div>
+          <h2>System Status</h2>
+          <p id="systemStatusSummary">Checking system...</p>
+        </div>
+        <button id="systemBootServerBtn" class="system-status-primary" type="button">
+          Start Server
+        </button>
+      </div>
+
+      <div class="system-status-grid">
+        <div>
+          <h3>Nodes</h3>
+          <div id="systemNodesList" class="system-status-list"></div>
+        </div>
+
+        <div>
+          <h3>Services</h3>
+          <div id="systemServicesList" class="system-status-list"></div>
+        </div>
+      </div>
+
+      <div id="systemOfflineNotice" class="system-status-notice hidden">
+        The compute server is offline. The website can stay loaded from Cloudflare,
+        and the controller can wake the server when needed.
+      </div>
+    `;
+
+    const headerTarget =
+      document.querySelector(".hdr-nav") ||
+      document.querySelector("header nav") ||
+      document.querySelector(".app-header") ||
+      document.querySelector(".top-nav") ||
+      document.querySelector("header") ||
+      document.body;
+
+    headerTarget.appendChild(button);
+    document.body.appendChild(panel);
+
+    button.addEventListener("click", () => {
+      panel.classList.toggle("hidden");
+      systemLoadStatus();
+    });
+
+    document
+      .getElementById("systemBootServerBtn")
+      ?.addEventListener("click", systemBootServer);
+  }
+
+  function systemSetState(state) {
+    const clean = state || "unknown";
+    const dot = document.getElementById("systemStatusDot");
+    const label = document.getElementById("systemStatusLabel");
+
+    if (dot) dot.className = `system-status-dot ${clean}`;
+    if (label) label.textContent = `System: ${systemTitleCase(clean)}`;
+  }
+
+  function systemRenderItems(targetId, items) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    target.innerHTML = "";
+
+    for (const item of items || []) {
+      const state = item.state || "unknown";
+
+      const row = document.createElement("div");
+      row.className = "system-status-item";
+      row.innerHTML = `
+        <div class="system-status-row">
+          <div class="system-status-name"></div>
+          <span class="system-status-badge ${state}"></span>
+        </div>
+        <div class="system-status-detail"></div>
+      `;
+
+      row.querySelector(".system-status-name").textContent =
+        item.name || item.id || "Unknown";
+
+      row.querySelector(".system-status-badge").textContent = state;
+
+      row.querySelector(".system-status-detail").textContent =
+        item.detail || item.role || "";
+
+      target.appendChild(row);
+    }
+  }
+
+  async function systemLoadStatus() {
+    const summary = document.getElementById("systemStatusSummary");
+    const bootBtn = document.getElementById("systemBootServerBtn");
+    const offlineNotice = document.getElementById("systemOfflineNotice");
+
+    try {
+      const res = await fetch(`${systemApiBase()}/system/status`, {
+        method: "GET",
+        headers: systemAuthHeaders(),
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      systemSetState(data.overall_state);
+
+      if (summary) {
+        summary.textContent = `Overall state: ${systemTitleCase(data.overall_state)}. Last checked: ${data.checked_at || "unknown"}.`;
+      }
+
+      systemRenderItems("systemNodesList", data.nodes || []);
+      systemRenderItems("systemServicesList", data.services || []);
+
+      const pveso = (data.nodes || []).find((n) => n.id === "pveso");
+
+      if (pveso?.state === "offline") {
+        offlineNotice?.classList.remove("hidden");
+        if (bootBtn) {
+          bootBtn.disabled = true;
+          bootBtn.textContent = state.token ? "Start Server" : "Login to Start Server";
+        }
+      } else if (pveso?.state === "booting") {
+        offlineNotice?.classList.remove("hidden");
+        if (bootBtn) {
+          bootBtn.disabled = true;
+          bootBtn.textContent = "Server Booting";
+        }
+      } else {
+        offlineNotice?.classList.add("hidden");
+        if (bootBtn) {
+          bootBtn.disabled = true;
+          bootBtn.textContent = state.token ? "Start Server" : "Login to Start Server";
+        }
+      }
+    } catch (err) {
+      systemSetState("unknown");
+
+      if (summary) {
+        summary.textContent = `Could not reach system controller: ${err.message}`;
+      }
+
+      systemRenderItems("systemNodesList", []);
+      systemRenderItems("systemServicesList", []);
+      offlineNotice?.classList.remove("hidden");
+    }
+  }
+
+  async function systemBootServer() {
+    const bootBtn = document.getElementById("systemBootServerBtn");
+
+    if (bootBtn) {
+      bootBtn.disabled = true;
+      bootBtn.textContent = "Sending wake signal...";
+    }
+
+    try {
+      if (!state.token) {
+        alert("Please log in before starting the server.");
+        return;
+      }
+
+      const res = await fetch(`${systemApiBase()}/system/pveso/boot`, {
+        method: "POST",
+        headers: systemAuthHeaders(),
+        body: JSON.stringify({ confirm: "BOOT_PVESO" }),
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || data.blocked_reason || "Boot request failed");
+      }
+
+      await systemLoadStatus();
+    } catch (err) {
+      alert(`Could not start server: ${err.message}`);
+    } finally {
+      if (bootBtn) {
+        bootBtn.disabled = false;
+        bootBtn.textContent = "Start Server";
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    systemCreatePanel();
+    systemLoadStatus();
+    setInterval(systemLoadStatus, SYSTEM_REFRESH_MS);
+  });
+})();
