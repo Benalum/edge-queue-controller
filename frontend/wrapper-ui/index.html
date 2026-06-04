@@ -8,106 +8,98 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/">
+    <a class="brand" href="/" data-route="/">
       <span class="brand-mark">AI</span>
       <span>AlexHartel AI Platform</span>
     </a>
 
-    <nav class="nav">
-      <a href="/">Home</a>
-      <a href="https://study.alexhartel.com">Study</a>
-      <a href="https://companion.alexhartel.com">Companion</a>
-      <a href="https://calendar.alexhartel.com">Calendar</a>
-      <a href="https://profile.alexhartel.com">Profile</a>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="/" data-route="/">Home</a>
+      <a href="/study" data-route="/study">Study</a>
+      <a href="/companion" data-route="/companion">Companion</a>
+      <a href="/calendar" data-route="/calendar">Calendar</a>
+      <a href="/profile" data-route="/profile">Profile</a>
+      <a href="/system" data-route="/system" id="systemNavLink">
+        <span id="systemNavDot" class="dot unknown"></span>
+        <span id="systemNavText">System</span>
+      </a>
 
-      <button id="systemButton" class="system-pill" type="button">
-        <span id="systemDot" class="dot unknown"></span>
-        <span id="systemLabel">System</span>
+      <button id="authOpenBtn" class="primary-btn nav-auth-btn" type="button">
+        Login / Register
+      </button>
+
+      <button id="logoutBtn" class="ghost-btn nav-auth-btn hidden" type="button">
+        Logout
       </button>
     </nav>
   </header>
 
-  <section id="systemPanel" class="system-panel hidden">
-    <div class="panel-head">
+  <main id="app" class="app-shell">
+    Loading...
+  </main>
+
+  <aside id="systemDrawer" class="system-drawer hidden" aria-label="System status drawer">
+    <div class="drawer-head">
       <div>
         <h2>System Status</h2>
-        <p id="systemSummary">Checking system...</p>
+        <p id="drawerSummary">Checking system...</p>
       </div>
-      <button id="bootButton" class="primary small" type="button" disabled>
-        Login to Start Server
+
+      <button id="drawerCloseBtn" class="ghost-btn" type="button">
+        Close
       </button>
     </div>
 
     <div class="status-grid">
-      <div>
+      <section>
         <h3>Nodes</h3>
-        <div id="nodesList" class="status-list"></div>
-      </div>
+        <div id="drawerNodes" class="status-list"></div>
+      </section>
 
-      <div>
+      <section>
         <h3>Services</h3>
-        <div id="servicesList" class="status-list"></div>
-      </div>
+        <div id="drawerServices" class="status-list"></div>
+      </section>
     </div>
-  </section>
+  </aside>
 
-  <main class="hero">
-    <div class="hero-card">
-      <p class="eyebrow">Always-on Cloudflare wrapper</p>
-      <h1>AlexHartel AI Platform</h1>
-
-      <p class="subtitle">
-        This page stays online even when the main Proxmox server is powered off.
-        The System panel shows the controller, compute host, worker containers,
-        and services in real time.
-      </p>
-
-      <div class="status-strip">
+  <section id="authModal" class="auth-modal hidden" aria-label="Login and register dialog">
+    <div class="auth-card">
+      <div class="drawer-head">
         <div>
-          <span>Controller</span>
-          <strong id="controllerState">checking...</strong>
+          <h2 id="authTitle">Login</h2>
+          <p id="authSubtitle">Sign in to wake services and access your dashboard.</p>
         </div>
-        <div>
-          <span>Main Server</span>
-          <strong id="serverState">checking...</strong>
-        </div>
-        <div>
-          <span>LLM Worker</span>
-          <strong id="llmState">checking...</strong>
-        </div>
-        <div>
-          <span>ComfyUI Worker</span>
-          <strong id="comfyState">checking...</strong>
-        </div>
-      </div>
 
-      <div class="cards">
-        <a class="card" href="https://study.alexhartel.com">
-          <strong>Study</strong>
-          <span>Decks, cards, review queues, and stats.</span>
-        </a>
-
-        <a class="card" href="https://companion.alexhartel.com">
-          <strong>Companion</strong>
-          <span>Talk with your AI companion using study context.</span>
-        </a>
-
-        <a class="card" href="https://aianimation.alexhartel.com">
-          <strong>AI Animation</strong>
-          <span>Image and animation tools backed by worker nodes.</span>
-        </a>
-
-        <button class="card button-card" id="openSystemCard" type="button">
-          <strong>System</strong>
-          <span>View machine, container, and service state.</span>
+        <button id="authCloseBtn" class="ghost-btn" type="button">
+          Close
         </button>
       </div>
 
-      <div id="notice" class="notice">
-        Checking system state...
+      <div class="auth-tabs">
+        <button id="loginTabBtn" class="ghost-btn active" type="button">Login</button>
+        <button id="registerTabBtn" class="ghost-btn" type="button">Register</button>
       </div>
+
+      <form id="authForm" class="auth-form">
+        <label>
+          Email
+          <input id="authEmail" type="email" autocomplete="email" required />
+        </label>
+
+        <label>
+          Password
+          <input id="authPassword" type="password" autocomplete="current-password" required />
+        </label>
+
+        <button id="authSubmitBtn" class="primary-btn" type="submit">
+          Login
+        </button>
+      </form>
+
+      <div id="authMessage" class="notice hidden"></div>
     </div>
-  </main>
+  </section>
 
   <script src="./app.js"></script>
 </body>
