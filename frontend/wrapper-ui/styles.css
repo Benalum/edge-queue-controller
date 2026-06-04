@@ -436,3 +436,328 @@ button.card {
   outline: 2px solid rgba(57,217,138,.35);
   border-color: rgba(57,217,138,.55);
 }
+
+/* ============================================================
+   System grouping display
+   ============================================================ */
+
+.system-section {
+  margin-top: 28px;
+}
+
+.system-section h2 {
+  margin-bottom: 6px;
+}
+
+.section-copy {
+  margin-top: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.count-line {
+  margin-top: 10px;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-weight: 950;
+}
+
+.summary-box p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.badge.planned {
+  color: var(--unknown);
+}
+
+/* ============================================================
+   Cleaner logo + grouped system display
+   ============================================================ */
+
+.logo-only {
+  min-width: 42px;
+}
+
+.helper-logo svg {
+  width: 27px;
+  height: 27px;
+  fill: none;
+  stroke: #061018;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.system-section {
+  margin-top: 28px;
+}
+
+.system-section h2 {
+  margin-bottom: 6px;
+}
+
+.section-copy {
+  margin-top: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.count-line {
+  margin-top: 10px;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-weight: 950;
+}
+
+.mini-counts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.mini-counts span {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.07);
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.summary-box p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.badge.planned {
+  color: var(--unknown);
+}
+
+/* ============================================================
+   Header credits display
+   ============================================================ */
+
+.credits-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(57,217,138,.42);
+  border-radius: 999px;
+  padding: 9px 13px;
+  background: rgba(57,217,138,.12);
+  color: var(--text);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.credits-pill small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* ============================================================
+   Credits / pricing page
+   ============================================================ */
+
+.credits-pill {
+  cursor: pointer;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.pricing-card {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 18px;
+  background: var(--panel);
+}
+
+.pricing-card.featured {
+  border-color: rgba(57,217,138,.48);
+  background: rgba(57,217,138,.10);
+}
+
+.pricing-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.6rem;
+  letter-spacing: -0.04em;
+}
+
+.pricing-card p {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.pricing-card ul {
+  margin: 14px 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.plan-label {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,.07);
+  color: var(--text);
+  font-weight: 900;
+  font-size: .82rem;
+}
+
+@media (max-width: 900px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Credit activity lists
+   ============================================================ */
+
+.activity-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.activity-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.055);
+}
+
+.activity-row strong {
+  display: block;
+}
+
+.activity-row span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: .84rem;
+}
+
+.activity-row b {
+  white-space: nowrap;
+}
+
+.activity-row b.positive {
+  color: var(--good);
+}
+
+.activity-row b.negative {
+  color: var(--bad);
+}
+
+.empty-list {
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  color: var(--muted);
+  background: rgba(255,255,255,.04);
+}
+
+/* ============================================================
+   Mock GPU quote UI
+   ============================================================ */
+
+.gpu-quote-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 180px auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(255,255,255,.055);
+}
+
+.gpu-quote-panel label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.gpu-quote-panel select,
+.gpu-quote-panel input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 11px 12px;
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  outline: none;
+}
+
+.quote-box {
+  margin-top: 16px;
+}
+
+.quote-box h3 {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 850px) {
+  .gpu-quote-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Reservation row actions
+   ============================================================ */
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mini-danger-btn {
+  border: 1px solid rgba(255,92,122,.45);
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: rgba(255,92,122,.12);
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.mini-danger-btn:hover {
+  background: rgba(255,92,122,.20);
+}

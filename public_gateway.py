@@ -416,3 +416,333 @@ async def _system_proxy_middleware_bypass_v1(request, call_next):
 
     return _system_mw_proxy("/system/pveso/boot", method="POST", body=payload)
 
+
+# ============================================================
+# SYSTEM_PUBLIC_ADMIN_STATUS_V2
+# Public users see API health only.
+# Admin users can see full infrastructure details.
+# ============================================================
+
+import os as _system_v2_os
+import json as _system_v2_json
+import urllib.request as _system_v2_request
+import urllib.error as _system_v2_error
+from fastapi.responses import JSONResponse as _SystemV2JSONResponse
+
+_SYSTEM_V2_CONTROLLER_BASE = _system_v2_os.getenv(
+    "SYSTEM_CONTROLLER_BASE",
+    "http://127.0.0.1:7070"
+).rstrip("/")
+
+
+def _system_v2_fetch_json(path, method="GET", body=None, headers=None, timeout=15):
+    url = _SYSTEM_V2_CONTROLLER_BASE + path
+    req_headers = {
+        "User-Agent": "edge-public-gateway-system-v2/1.0",
+    }
+
+    if headers:
+        for k, v in headers.items():
+            if v:
+                req_headers[k] = v
+
+    data = None
+    if body is not None:
+        data = _system_v2_json.dumps(body).encode("utf-8")
+        req_headers["Content-Type"] = "application/json"
+
+    req = _system_v2_request.Request(
+        url,
+        data=data,
+        headers=req_headers,
+        method=method,
+    )
+
+    try:
+        with _system_v2_request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+            try:
+                payload = _system_v2_json.loads(raw)
+            except Exception:
+                payload = {"ok": False, "detail": raw}
+            return resp.status, payload
+    except _system_v2_error.HTTPError as e:
+        raw = e.read().decode("utf-8", errors="replace")
+        try:
+            payload = _system_v2_json.loads(raw)
+        except Exception:
+            payload = {"ok": False, "detail": raw}
+        return e.code, payload
+    except Exception as e:
+        return 502, {
+            "ok": False,
+            "detail": f"Controller fetch failed: {e}",
+            "path": path,
+        }
+
+
+def _system_v2_public_api_state(service, fallback="planned"):
+    if not service:
+        return fallback
+
+    state = service.get("state") or fallback
+    detail = str(service.get("detail") or "").lower()
+
+    # 401/403 means the API exists but is protected.
+    if "401" in detail or "403" in detail or "unauthorized" in detail:
+        return "online"
+
+    return state
+
+
+def _system_v2_public_api_detail(service, fallback):
+    if not service:
+        return fallback
+
+    detail = str(service.get("detail") or "")
+
+    if "401" in detail or "403" in detail or "unauthorized" in detail.lower():
+        return "Protected API route is responding."
+
+    return detail or fallback
+
+
+def _system_v2_public_payload():
+    status_code, full = _system_v2_fetch_json("/system/status")
+
+    if status_code >= 500 or not isinstance(full, dict):
+        return {
+            "ok": False,
+            "overall_state": "unknown",
+            "checked_at": None,
+            "apis": [
+                {
+                    "id": "study-api",
+                    "name": "Study API",
+                    "state": "unknown",
+                    "detail": "Could not reach controller.",
+                },
+                {
+                    "id": "companion-api",
+                    "name": "Companion API",
+                    "state": "planned",
+                    "detail": "Companion API will track chat, grading, and context.",
+                },
+                {
+                    "id": "profile-api",
+                    "name": "Profile API",
+                    "state": "planned",
+                    "detail": "Profile API will track preferences and permissions.",
+                },
+                {
+                    "id": "calendar-api",
+                    "name": "Calendar API",
+                    "state": "planned",
+                    "detail": "Calendar API will track scheduling and reminders.",
+                },
+                {
+                    "id": "images-api",
+                    "name": "Images API",
+                    "state": "planned",
+                    "detail": "Images API will support future ComfyUI-backed image generation.",
+                },
+            ],
+            "services": [],
+        }
+
+    services = full.get("services") or []
+    by_id = {s.get("id"): s for s in services if isinstance(s, dict)}
+    study = by_id.get("study-api")
+
+    apis = [
+        {
+            "id": "study-api",
+            "name": "Study API",
+            "state": _system_v2_public_api_state(study, "unknown"),
+            "detail": _system_v2_public_api_detail(
+                study,
+                "Decks, cards, reviews, stats, and study progress."
+            ),
+        },
+        {
+            "id": "companion-api",
+            "name": "Companion API",
+            "state": "planned",
+            "detail": "Companion chat, grading, and context API.",
+        },
+        {
+            "id": "profile-api",
+            "name": "Profile API",
+            "state": "planned",
+            "detail": "Profile, preferences, permissions, and user settings API.",
+        },
+        {
+            "id": "calendar-api",
+            "name": "Calendar API",
+            "state": "planned",
+            "detail": "Calendar, reminders, deadlines, and scheduling API.",
+        },
+        {
+            "id": "images-api",
+            "name": "Images API",
+            "state": "planned",
+            "detail": "Future ComfyUI-backed image generation for user-specific companion images.",
+        },
+    ]
+
+    active_api_states = [
+        api["state"]
+        for api in apis
+        if api["state"] != "planned"
+    ]
+
+    if any(s == "error" for s in active_api_states):
+        overall = "error"
+    elif any(s in ("offline", "degraded", "unknown") for s in active_api_states):
+        overall = "degraded"
+    else:
+        overall = "online"
+
+    return {
+        "ok": True,
+        "checked_at": full.get("checked_at"),
+        "overall_state": overall,
+        "apis": apis,
+        # Keep services alias so older frontend code can still read it.
+        "services": apis,
+    }
+
+
+def _system_v2_admin_emails():
+    raw = _system_v2_os.getenv("ADMIN_EMAILS", "")
+    return {
+        item.strip().lower()
+        for item in raw.split(",")
+        if item.strip()
+    }
+
+
+def _system_v2_extract_email(me_payload):
+    if not isinstance(me_payload, dict):
+        return ""
+
+    user = me_payload.get("user")
+    if isinstance(user, dict):
+        return str(user.get("email") or user.get("username") or "").lower()
+
+    return str(
+        me_payload.get("email") or
+        me_payload.get("username") or
+        ""
+    ).lower()
+
+
+def _system_v2_is_admin(request):
+    # DB role/is_admin is the primary source of truth.
+    # ADMIN_EMAILS is only an optional bootstrap/recovery fallback.
+    admin_emails = _system_v2_admin_emails()
+
+    authorization = request.headers.get("Authorization") or ""
+    if not authorization:
+        return False, ""
+
+    forward_headers = {
+        "Authorization": authorization,
+    }
+
+    edge_key = request.headers.get("X-Edge-Api-Key")
+    if edge_key:
+        forward_headers["X-Edge-Api-Key"] = edge_key
+
+    # Try the likely account/session endpoints used by the controller.
+    # Different parts of this project have used slightly different auth paths.
+    me = None
+    email = ""
+
+    for me_path in ("/system/session/me", "/system/account/me", "/me", "/auth/me", "/public/me"):
+        status_code, payload = _system_v2_fetch_json(
+            me_path,
+            method="GET",
+            headers=forward_headers,
+            timeout=8,
+        )
+
+        if status_code == 200:
+            me = payload
+            email = _system_v2_extract_email(me)
+
+            user = payload.get("user") if isinstance(payload, dict) else None
+            if isinstance(user, dict):
+                if user.get("is_admin") is True or str(user.get("role") or "").lower() == "admin":
+                    return True, email
+
+            if email:
+                break
+
+    if not email:
+        return False, ""
+
+    # Fallback/bootstrap admin list.
+    return email in admin_emails, email
+
+
+@app.middleware("http")
+async def _system_public_admin_status_v2(request, call_next):
+    path = request.url.path
+    method = request.method.upper()
+
+    if method == "GET" and path in ("/system/status", "/system/public-status"):
+        return _SystemV2JSONResponse(_system_v2_public_payload(), status_code=200)
+
+    if method == "GET" and path == "/system/admin-status":
+        is_admin, email = _system_v2_is_admin(request)
+
+        if not is_admin:
+            return _SystemV2JSONResponse(
+                {
+                    "ok": False,
+                    "detail": "Admin access required.",
+                    "email": email or None,
+                },
+                status_code=403,
+            )
+
+        status_code, full = _system_v2_fetch_json("/system/status")
+        if isinstance(full, dict):
+            full["admin"] = True
+            full["admin_email"] = email
+        return _SystemV2JSONResponse(full, status_code=status_code)
+
+    return await call_next(request)
+
+
+# ============================================================
+# Public ad reward route guard
+# Rewarded-ad routes stay blocked publicly until a real provider
+# verification flow is implemented and explicitly enabled.
+# Local dev server can still call controller /system/ads/* directly.
+# ============================================================
+
+@app.middleware("http")
+async def _block_public_ad_reward_routes_until_enabled(request, call_next):
+    path = request.url.path
+
+    if path.startswith("/system/ads/"):
+        enabled = str(_system_v2_os.getenv("ENABLE_PUBLIC_AD_REWARD_ROUTES", "false")).strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+
+        if not enabled:
+            return _SystemV2JSONResponse(
+                {
+                    "ok": False,
+                    "detail": "Rewarded ads are not enabled on the public gateway yet.",
+                },
+                status_code=404,
+            )
+
+    return await call_next(request)
+

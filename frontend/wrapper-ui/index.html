@@ -8,9 +8,15 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/" data-route="/">
-      <span class="brand-mark">AI</span>
-      <span>AlexHartel AI Platform</span>
+    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+      <span class="brand-mark helper-logo" title="Study Companion Helper">
+        <svg viewBox="0 0 64 64" role="img" aria-label="Study Companion Helper logo">
+          <path d="M12 16c8 0 14 2 20 7v31c-6-5-12-7-20-7V16z"></path>
+          <path d="M52 16c-8 0-14 2-20 7v31c6-5 12-7 20-7V16z"></path>
+          <path d="M21 25h8M21 33h8M35 25h8M35 33h8"></path>
+          <circle cx="32" cy="12" r="5"></circle>
+        </svg>
+      </span>
     </a>
 
     <nav class="nav" aria-label="Main navigation">
@@ -23,6 +29,10 @@
         <span id="systemNavDot" class="dot unknown"></span>
         <span id="systemNavText">System</span>
       </a>
+
+      <button id="creditsPill" class="credits-pill hidden" type="button" data-route="/credits" title="View credits and plans">
+        Credits: —
+      </button>
 
       <button id="authOpenBtn" class="primary-btn nav-auth-btn" type="button">
         Login / Register
@@ -52,12 +62,12 @@
 
     <div class="status-grid">
       <section>
-        <h3>Nodes</h3>
+        <h3>Infrastructure</h3>
         <div id="drawerNodes" class="status-list"></div>
       </section>
 
       <section>
-        <h3>Services</h3>
+        <h3>APIs</h3>
         <div id="drawerServices" class="status-list"></div>
       </section>
     </div>
@@ -68,7 +78,7 @@
       <div class="drawer-head">
         <div>
           <h2 id="authTitle">Login</h2>
-          <p id="authSubtitle">Sign in to wake services and access your dashboard.</p>
+          <p id="authSubtitle">Sign in to access your dashboard and future live services.</p>
         </div>
 
         <button id="authCloseBtn" class="ghost-btn" type="button">

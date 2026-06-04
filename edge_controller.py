@@ -7864,3 +7864,2628 @@ def system_boot_pveso(payload: dict = _sys_Body(default={})):
         "error": result["stderr"] or result["stdout"] or "Wake-on-LAN failed.",
     }
 
+
+# ============================================================
+# Internal system session identity endpoint
+# Used by public_gateway.py to determine whether a logged-in user is admin.
+# Requires valid Bearer session token but does not require the public API key.
+# ============================================================
+
+@app.get("/system/session/me")
+async def system_session_me(request: Request):
+    _account_init_tables()
+    user_row = _auth_current_user_from_request(request)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_row["id"],),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "user": _account_enriched_public_user(row),
+    }
+
+
+# ============================================================
+# Internal system session auth endpoints
+# Local/dev trusted endpoints used by wrapper-ui local proxy.
+# These do NOT require EDGE_PUBLIC_API_KEY.
+# Do NOT expose these directly through the public gateway.
+# ============================================================
+
+@app.post("/system/session/login")
+async def system_session_login(request: Request):
+    _auth_init_tables()
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    email = _auth_normalize_email(payload.get("email") if isinstance(payload, dict) else "")
+    password = payload.get("password") if isinstance(payload, dict) else ""
+
+    if not email or not isinstance(password, str):
+        raise HTTPException(status_code=400, detail="Email and password are required.")
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE email = ?
+            """,
+            (email,),
+        ).fetchone()
+
+        if not row or not _auth_verify_password(password, row["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid email or password.")
+
+        now = _auth_now_iso()
+        conn.execute(
+            """
+            UPDATE app_users
+            SET last_login_at = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (now, now, row["id"]),
+        )
+        conn.commit()
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (row["id"],),
+        ).fetchone()
+
+    session = _auth_create_session(user_id=int(row["id"]), request=request)
+
+    return {
+        "ok": True,
+        "user": _auth_public_user(row),
+        "session": session,
+    }
+
+
+@app.post("/system/session/register")
+async def system_session_register(request: Request):
+    _auth_init_tables()
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    email = _auth_normalize_email(payload.get("email") if isinstance(payload, dict) else "")
+    password = payload.get("password") if isinstance(payload, dict) else ""
+
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Valid email is required.")
+
+    if not isinstance(password, str) or len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters.")
+
+    now = _auth_now_iso()
+    password_hash = _auth_hash_password(password)
+
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.execute(
+                """
+                INSERT INTO app_users (
+                    email,
+                    password_hash,
+                    status,
+                    created_at,
+                    updated_at,
+                    last_login_at
+                )
+                VALUES (?, ?, 'active', ?, ?, ?)
+                """,
+                (email, password_hash, now, now, now),
+            )
+            user_id = cur.lastrowid
+            conn.commit()
+
+            row = conn.execute(
+                """
+                SELECT *
+                FROM app_users
+                WHERE id = ?
+                """,
+                (user_id,),
+            ).fetchone()
+
+    except sqlite3.IntegrityError:
+        raise HTTPException(status_code=409, detail="An account with that email already exists.")
+
+    session = _auth_create_session(user_id=int(user_id), request=request)
+
+    return {
+        "ok": True,
+        "user": _auth_public_user(row),
+        "session": session,
+    }
+
+
+@app.post("/system/session/logout")
+async def system_session_logout(request: Request):
+    token = _auth_get_bearer_token(request)
+
+    if not token:
+        return {"ok": True, "logged_out": False}
+
+    token_hash = _auth_hash_token(token)
+    now = _auth_now_iso()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            UPDATE user_sessions
+            SET revoked_at = ?, updated_at = ?
+            WHERE token_hash = ?
+              AND revoked_at IS NULL
+            """,
+            (now, now, token_hash),
+        )
+        conn.commit()
+
+    return {"ok": True, "logged_out": True}
+
+
+# ============================================================
+# Account roles, plans, credits, and quotas
+# Foundation for admin access, billing, free credits, monthly passes.
+# ============================================================
+
+def _account_column_exists(conn, table: str, column: str) -> bool:
+    rows = conn.execute(f"PRAGMA table_info({table})").fetchall()
+    return any(row[1] == column for row in rows)
+
+
+def _account_add_column_if_missing(conn, table: str, column: str, ddl: str):
+    if not _account_column_exists(conn, table, column):
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
+
+
+def _account_init_tables():
+    _auth_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        _account_add_column_if_missing(conn, "app_users", "role", "role TEXT NOT NULL DEFAULT 'user'")
+        _account_add_column_if_missing(conn, "app_users", "plan", "plan TEXT NOT NULL DEFAULT 'free'")
+        _account_add_column_if_missing(conn, "app_users", "billing_status", "billing_status TEXT NOT NULL DEFAULT 'none'")
+        _account_add_column_if_missing(conn, "app_users", "credit_balance", "credit_balance INTEGER NOT NULL DEFAULT 100")
+        _account_add_column_if_missing(conn, "app_users", "monthly_credit_allowance", "monthly_credit_allowance INTEGER NOT NULL DEFAULT 100")
+        _account_add_column_if_missing(conn, "app_users", "storage_quota_mb", "storage_quota_mb INTEGER NOT NULL DEFAULT 100")
+        _account_add_column_if_missing(conn, "app_users", "monthly_pass_expires_at", "monthly_pass_expires_at TEXT")
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS user_credit_ledger (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                delta INTEGER NOT NULL,
+                reason TEXT NOT NULL,
+                metadata_json TEXT,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS user_usage_limits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                usage_type TEXT NOT NULL,
+                period_start TEXT NOT NULL,
+                period_end TEXT NOT NULL,
+                used_amount INTEGER NOT NULL DEFAULT 0,
+                limit_amount INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                UNIQUE(user_id, usage_type, period_start, period_end),
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+
+        conn.commit()
+
+
+def _account_admin_email_set():
+    return {
+        item.strip().lower()
+        for item in os.getenv("ADMIN_EMAILS", "").split(",")
+        if item.strip()
+    }
+
+
+def _account_enriched_public_user(row):
+    base = _auth_public_user(row)
+
+    role = str(row["role"] if "role" in row.keys() and row["role"] else "user").lower()
+    email = str(base.get("email") or "").lower()
+
+    # Bootstrap fallback: ADMIN_EMAILS can still mark an account admin,
+    # but the database role is the long-term source of truth.
+    is_bootstrap_admin = email in _account_admin_email_set()
+    is_admin = role == "admin" or is_bootstrap_admin
+
+    if is_bootstrap_admin and role != "admin":
+        role = "admin"
+
+    base.update({
+        "role": role,
+        "is_admin": bool(is_admin),
+        "plan": row["plan"] if "plan" in row.keys() else "free",
+        "billing_status": row["billing_status"] if "billing_status" in row.keys() else "none",
+        "credit_balance": int(row["credit_balance"] if "credit_balance" in row.keys() and row["credit_balance"] is not None else 0),
+        "monthly_credit_allowance": int(row["monthly_credit_allowance"] if "monthly_credit_allowance" in row.keys() and row["monthly_credit_allowance"] is not None else 0),
+        "storage_quota_mb": int(row["storage_quota_mb"] if "storage_quota_mb" in row.keys() and row["storage_quota_mb"] is not None else 0),
+        "monthly_pass_expires_at": row["monthly_pass_expires_at"] if "monthly_pass_expires_at" in row.keys() else None,
+    })
+
+    return base
+
+
+@app.post("/system/account/bootstrap-admin")
+async def system_account_bootstrap_admin(request: Request):
+    """
+    Promote the current logged-in account to admin if its email is listed in ADMIN_EMAILS.
+    This is a bootstrap endpoint for the platform owner.
+    """
+    _account_init_tables()
+
+    user_row = _auth_current_user_from_request(request)
+    email = str(user_row["email"]).strip().lower()
+
+    if email not in _account_admin_email_set():
+        raise HTTPException(status_code=403, detail="This account is not listed in ADMIN_EMAILS.")
+
+    now = _auth_now_iso()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute(
+            """
+            UPDATE app_users
+            SET role = 'admin',
+                plan = CASE WHEN plan = 'free' THEN 'pro' ELSE plan END,
+                billing_status = CASE WHEN billing_status = 'none' THEN 'active' ELSE billing_status END,
+                credit_balance = MAX(credit_balance, 10000),
+                monthly_credit_allowance = MAX(monthly_credit_allowance, 10000),
+                storage_quota_mb = MAX(storage_quota_mb, 10240),
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (now, user_row["id"]),
+        )
+        conn.commit()
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_row["id"],),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "user": _account_enriched_public_user(row),
+    }
+
+
+@app.get("/system/account/me")
+async def system_account_me(request: Request):
+    _account_init_tables()
+    user_row = _auth_current_user_from_request(request)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_row["id"],),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "user": _account_enriched_public_user(row),
+    }
+
+
+# ============================================================
+# Credit accounting engine
+# Safe foundation for GPU sessions, cloud storage, RAG, billing, and paid usage.
+# ============================================================
+
+import json as _credit_json
+import secrets as _credit_secrets
+
+
+def _credit_init_tables():
+    _account_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS credit_reservations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                reservation_token TEXT NOT NULL UNIQUE,
+                amount INTEGER NOT NULL,
+                reason TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'reserved',
+                metadata_json TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                expires_at TEXT,
+                committed_at TEXT,
+                refunded_at TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+
+        conn.commit()
+
+
+def _credit_get_user_row(request: Request):
+    _credit_init_tables()
+    auth_row = _auth_current_user_from_request(request)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (auth_row["id"],),
+        ).fetchone()
+
+    if not row:
+        raise HTTPException(status_code=401, detail="User not found.")
+
+    return row
+
+
+def _credit_require_admin(request: Request):
+    row = _credit_get_user_row(request)
+    user = _account_enriched_public_user(row)
+
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required.")
+
+    return row
+
+
+def _credit_json_dumps(value):
+    if value is None:
+        return None
+
+    try:
+        return _credit_json.dumps(value, sort_keys=True)
+    except Exception:
+        return _credit_json.dumps({"value": str(value)})
+
+
+def _credit_parse_payload_amount(payload, field="amount", min_amount=1):
+    try:
+        amount = int(payload.get(field))
+    except Exception:
+        raise HTTPException(status_code=400, detail=f"{field} must be an integer.")
+
+    if amount < min_amount:
+        raise HTTPException(status_code=400, detail=f"{field} must be at least {min_amount}.")
+
+    return amount
+
+
+def _credit_get_active_reserved_total(conn, user_id: int) -> int:
+    row = conn.execute(
+        """
+        SELECT COALESCE(SUM(amount), 0) AS total
+        FROM credit_reservations
+        WHERE user_id = ?
+          AND status = 'reserved'
+        """,
+        (user_id,),
+    ).fetchone()
+
+    return int(row["total"] if row and row["total"] is not None else 0)
+
+
+def _credit_add_ledger(conn, user_id: int, delta: int, reason: str, metadata=None):
+    now = _auth_now_iso()
+
+    conn.execute(
+        """
+        INSERT INTO user_credit_ledger (
+            user_id,
+            delta,
+            reason,
+            metadata_json,
+            created_at
+        )
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            user_id,
+            int(delta),
+            str(reason),
+            _credit_json_dumps(metadata),
+            now,
+        ),
+    )
+
+
+def _credit_public_summary_for_user(user_id: int):
+    _credit_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        reserved_total = _credit_get_active_reserved_total(conn, user_id)
+
+        reservations = conn.execute(
+            """
+            SELECT
+                id,
+                reservation_token,
+                amount,
+                reason,
+                status,
+                metadata_json,
+                created_at,
+                updated_at,
+                expires_at,
+                committed_at,
+                refunded_at
+            FROM credit_reservations
+            WHERE user_id = ?
+            ORDER BY id DESC
+            LIMIT 20
+            """,
+            (user_id,),
+        ).fetchall()
+
+        ledger = conn.execute(
+            """
+            SELECT
+                id,
+                delta,
+                reason,
+                metadata_json,
+                created_at
+            FROM user_credit_ledger
+            WHERE user_id = ?
+            ORDER BY id DESC
+            LIMIT 50
+            """,
+            (user_id,),
+        ).fetchall()
+
+    user = _account_enriched_public_user(row)
+
+    return {
+        "ok": True,
+        "user": user,
+        "credits": {
+            "available": int(user.get("credit_balance") or 0),
+            "reserved": int(reserved_total),
+            "monthly_allowance": int(user.get("monthly_credit_allowance") or 0),
+            "plan": user.get("plan"),
+            "billing_status": user.get("billing_status"),
+            "storage_quota_mb": int(user.get("storage_quota_mb") or 0),
+        },
+        "reservations": [
+            {
+                "id": r["id"],
+                "reservation_token": r["reservation_token"],
+                "amount": r["amount"],
+                "reason": r["reason"],
+                "status": r["status"],
+                "metadata": _credit_json.loads(r["metadata_json"]) if r["metadata_json"] else None,
+                "created_at": r["created_at"],
+                "updated_at": r["updated_at"],
+                "expires_at": r["expires_at"],
+                "committed_at": r["committed_at"],
+                "refunded_at": r["refunded_at"],
+            }
+            for r in reservations
+        ],
+        "ledger": [
+            {
+                "id": l["id"],
+                "delta": l["delta"],
+                "reason": l["reason"],
+                "metadata": _credit_json.loads(l["metadata_json"]) if l["metadata_json"] else None,
+                "created_at": l["created_at"],
+            }
+            for l in ledger
+        ],
+    }
+
+
+def _credit_find_reservation(conn, user_id: int, payload):
+    reservation_id = payload.get("reservation_id")
+    reservation_token = payload.get("reservation_token")
+
+    if reservation_id:
+        row = conn.execute(
+            """
+            SELECT *
+            FROM credit_reservations
+            WHERE id = ?
+              AND user_id = ?
+            """,
+            (int(reservation_id), user_id),
+        ).fetchone()
+    elif reservation_token:
+        row = conn.execute(
+            """
+            SELECT *
+            FROM credit_reservations
+            WHERE reservation_token = ?
+              AND user_id = ?
+            """,
+            (str(reservation_token), user_id),
+        ).fetchone()
+    else:
+        raise HTTPException(status_code=400, detail="reservation_id or reservation_token is required.")
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Reservation not found.")
+
+    return row
+
+
+@app.get("/system/account/credits")
+async def system_account_credits(request: Request):
+    row = _credit_get_user_row(request)
+    return _credit_public_summary_for_user(int(row["id"]))
+
+
+@app.post("/system/credits/reserve")
+async def system_credits_reserve(request: Request):
+    row = _credit_get_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    amount = _credit_parse_payload_amount(payload, "amount")
+    reason = str(payload.get("reason") or "reservation").strip()[:120]
+    metadata = payload.get("metadata")
+    now = _auth_now_iso()
+    token = _credit_secrets.token_urlsafe(32)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        current = conn.execute(
+            """
+            SELECT credit_balance
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        available = int(current["credit_balance"] if current else 0)
+
+        if amount > available:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient credits. Required {amount}, available {available}.",
+            )
+
+        conn.execute("BEGIN IMMEDIATE")
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET credit_balance = credit_balance - ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (amount, now, user_id),
+        )
+
+        conn.execute(
+            """
+            INSERT INTO credit_reservations (
+                user_id,
+                reservation_token,
+                amount,
+                reason,
+                status,
+                metadata_json,
+                created_at,
+                updated_at,
+                expires_at
+            )
+            VALUES (?, ?, ?, ?, 'reserved', ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                token,
+                amount,
+                reason,
+                _credit_json_dumps(metadata),
+                now,
+                now,
+                payload.get("expires_at"),
+            ),
+        )
+
+        reservation_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+        _credit_add_ledger(
+            conn,
+            user_id,
+            -amount,
+            f"reserve:{reason}",
+            {
+                "reservation_id": reservation_id,
+                "reservation_token": token,
+                "metadata": metadata,
+            },
+        )
+
+        conn.commit()
+
+    result = _credit_public_summary_for_user(user_id)
+    result["reservation"] = {
+        "id": reservation_id,
+        "reservation_token": token,
+        "amount": amount,
+        "reason": reason,
+        "status": "reserved",
+    }
+    return result
+
+
+@app.post("/system/credits/commit")
+async def system_credits_commit(request: Request):
+    row = _credit_get_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    final_amount = payload.get("final_amount")
+    metadata = payload.get("metadata")
+    now = _auth_now_iso()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        reservation = _credit_find_reservation(conn, user_id, payload)
+
+        if reservation["status"] != "reserved":
+            raise HTTPException(status_code=409, detail=f"Reservation is already {reservation['status']}.")
+
+        reserved_amount = int(reservation["amount"])
+        settle_amount = reserved_amount if final_amount is None else int(final_amount)
+
+        if settle_amount < 0:
+            raise HTTPException(status_code=400, detail="final_amount cannot be negative.")
+
+        if settle_amount < reserved_amount:
+            refund = reserved_amount - settle_amount
+
+            conn.execute(
+                """
+                UPDATE app_users
+                SET credit_balance = credit_balance + ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (refund, now, user_id),
+            )
+
+            _credit_add_ledger(
+                conn,
+                user_id,
+                refund,
+                f"release_unused:{reservation['reason']}",
+                {
+                    "reservation_id": reservation["id"],
+                    "reserved_amount": reserved_amount,
+                    "final_amount": settle_amount,
+                    "metadata": metadata,
+                },
+            )
+
+        elif settle_amount > reserved_amount:
+            extra = settle_amount - reserved_amount
+
+            current = conn.execute(
+                """
+                SELECT credit_balance
+                FROM app_users
+                WHERE id = ?
+                """,
+                (user_id,),
+            ).fetchone()
+
+            available = int(current["credit_balance"] if current else 0)
+
+            if extra > available:
+                raise HTTPException(
+                    status_code=402,
+                    detail=f"Insufficient credits for overage. Required extra {extra}, available {available}.",
+                )
+
+            conn.execute(
+                """
+                UPDATE app_users
+                SET credit_balance = credit_balance - ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (extra, now, user_id),
+            )
+
+            _credit_add_ledger(
+                conn,
+                user_id,
+                -extra,
+                f"commit_overage:{reservation['reason']}",
+                {
+                    "reservation_id": reservation["id"],
+                    "reserved_amount": reserved_amount,
+                    "final_amount": settle_amount,
+                    "metadata": metadata,
+                },
+            )
+
+        conn.execute(
+            """
+            UPDATE credit_reservations
+            SET status = 'committed',
+                updated_at = ?,
+                committed_at = ?,
+                metadata_json = COALESCE(?, metadata_json)
+            WHERE id = ?
+            """,
+            (
+                now,
+                now,
+                _credit_json_dumps(metadata) if metadata is not None else None,
+                reservation["id"],
+            ),
+        )
+
+        _credit_add_ledger(
+            conn,
+            user_id,
+            0,
+            f"commit:{reservation['reason']}",
+            {
+                "reservation_id": reservation["id"],
+                "reserved_amount": reserved_amount,
+                "final_amount": settle_amount,
+                "metadata": metadata,
+            },
+        )
+
+        conn.commit()
+
+    return _credit_public_summary_for_user(user_id)
+
+
+@app.post("/system/credits/refund")
+async def system_credits_refund(request: Request):
+    row = _credit_get_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    now = _auth_now_iso()
+    metadata = payload.get("metadata")
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        reservation = _credit_find_reservation(conn, user_id, payload)
+
+        if reservation["status"] != "reserved":
+            raise HTTPException(status_code=409, detail=f"Reservation is already {reservation['status']}.")
+
+        amount = int(reservation["amount"])
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET credit_balance = credit_balance + ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (amount, now, user_id),
+        )
+
+        conn.execute(
+            """
+            UPDATE credit_reservations
+            SET status = 'refunded',
+                updated_at = ?,
+                refunded_at = ?,
+                metadata_json = COALESCE(?, metadata_json)
+            WHERE id = ?
+            """,
+            (
+                now,
+                now,
+                _credit_json_dumps(metadata) if metadata is not None else None,
+                reservation["id"],
+            ),
+        )
+
+        _credit_add_ledger(
+            conn,
+            user_id,
+            amount,
+            f"refund:{reservation['reason']}",
+            {
+                "reservation_id": reservation["id"],
+                "reservation_token": reservation["reservation_token"],
+                "metadata": metadata,
+            },
+        )
+
+        conn.commit()
+
+    return _credit_public_summary_for_user(user_id)
+
+
+@app.post("/system/credits/grant")
+async def system_credits_grant(request: Request):
+    admin_row = _credit_require_admin(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    amount = _credit_parse_payload_amount(payload, "amount")
+    reason = str(payload.get("reason") or "admin_grant").strip()[:120]
+    target_email = _auth_normalize_email(payload.get("email") or "")
+    target_user_id = payload.get("user_id")
+    metadata = payload.get("metadata")
+    now = _auth_now_iso()
+
+    if not target_email and not target_user_id:
+        raise HTTPException(status_code=400, detail="email or user_id is required.")
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        if target_user_id:
+            target = conn.execute(
+                """
+                SELECT *
+                FROM app_users
+                WHERE id = ?
+                """,
+                (int(target_user_id),),
+            ).fetchone()
+        else:
+            target = conn.execute(
+                """
+                SELECT *
+                FROM app_users
+                WHERE email = ?
+                """,
+                (target_email,),
+            ).fetchone()
+
+        if not target:
+            raise HTTPException(status_code=404, detail="Target user not found.")
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET credit_balance = credit_balance + ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (amount, now, int(target["id"])),
+        )
+
+        _credit_add_ledger(
+            conn,
+            int(target["id"]),
+            amount,
+            f"grant:{reason}",
+            {
+                "admin_user_id": int(admin_row["id"]),
+                "admin_email": admin_row["email"],
+                "metadata": metadata,
+            },
+        )
+
+        conn.commit()
+
+    return _credit_public_summary_for_user(int(target["id"]))
+
+
+# ============================================================
+# Credit pool engine v2
+# Separates free/local credits from paid credits.
+#
+# Rule:
+# - free_credit_balance can only be used for service_class='local'
+# - paid_credit_balance can be used for local or external_paid
+# - external_paid jobs may ONLY use paid credits
+# ============================================================
+
+def _credit_pool_init_tables():
+    _credit_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        _account_add_column_if_missing(conn, "app_users", "free_credit_balance", "free_credit_balance INTEGER NOT NULL DEFAULT 100")
+        _account_add_column_if_missing(conn, "app_users", "paid_credit_balance", "paid_credit_balance INTEGER NOT NULL DEFAULT 0")
+        _account_add_column_if_missing(conn, "app_users", "monthly_free_credit_allowance", "monthly_free_credit_allowance INTEGER NOT NULL DEFAULT 100")
+        _account_add_column_if_missing(conn, "app_users", "monthly_paid_credit_allowance", "monthly_paid_credit_allowance INTEGER NOT NULL DEFAULT 0")
+
+        _account_add_column_if_missing(conn, "credit_reservations", "service_class", "service_class TEXT NOT NULL DEFAULT 'local'")
+        _account_add_column_if_missing(conn, "credit_reservations", "free_amount", "free_amount INTEGER NOT NULL DEFAULT 0")
+        _account_add_column_if_missing(conn, "credit_reservations", "paid_amount", "paid_amount INTEGER NOT NULL DEFAULT 0")
+
+        _account_add_column_if_missing(conn, "user_credit_ledger", "free_delta", "free_delta INTEGER NOT NULL DEFAULT 0")
+        _account_add_column_if_missing(conn, "user_credit_ledger", "paid_delta", "paid_delta INTEGER NOT NULL DEFAULT 0")
+        _account_add_column_if_missing(conn, "user_credit_ledger", "service_class", "service_class TEXT")
+
+        # One-time-ish sync for existing users:
+        # If new pools are still at defaults but legacy credit_balance is higher,
+        # keep the current balance as free/local credits.
+        rows = conn.execute(
+            """
+            SELECT id, credit_balance, free_credit_balance, paid_credit_balance
+            FROM app_users
+            """
+        ).fetchall()
+
+        for row in rows:
+            user_id = int(row[0])
+            legacy = int(row[1] or 0)
+            free = int(row[2] or 0)
+            paid = int(row[3] or 0)
+
+            if legacy > free + paid:
+                conn.execute(
+                    """
+                    UPDATE app_users
+                    SET free_credit_balance = ?,
+                        credit_balance = ?,
+                        updated_at = ?
+                    WHERE id = ?
+                    """,
+                    (legacy, legacy, _auth_now_iso(), user_id),
+                )
+
+        conn.commit()
+
+
+def _credit_pool_user_row(request: Request):
+    _credit_pool_init_tables()
+    auth_row = _auth_current_user_from_request(request)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (auth_row["id"],),
+        ).fetchone()
+
+    if not row:
+        raise HTTPException(status_code=401, detail="User not found.")
+
+    return row
+
+
+def _credit_pool_require_admin(request: Request):
+    row = _credit_pool_user_row(request)
+    user = _account_enriched_public_user(row)
+
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required.")
+
+    return row
+
+
+def _credit_pool_active_reserved_totals(conn, user_id: int):
+    row = conn.execute(
+        """
+        SELECT
+            COALESCE(SUM(free_amount), 0) AS free_reserved,
+            COALESCE(SUM(paid_amount), 0) AS paid_reserved
+        FROM credit_reservations
+        WHERE user_id = ?
+          AND status = 'reserved'
+        """,
+        (user_id,),
+    ).fetchone()
+
+    if not row:
+        return 0, 0
+
+    return int(row["free_reserved"] or 0), int(row["paid_reserved"] or 0)
+
+
+def _credit_pool_sync_legacy_total(conn, user_id: int):
+    row = conn.execute(
+        """
+        SELECT free_credit_balance, paid_credit_balance
+        FROM app_users
+        WHERE id = ?
+        """,
+        (user_id,),
+    ).fetchone()
+
+    if not row:
+        return
+
+    total = int(row["free_credit_balance"] or 0) + int(row["paid_credit_balance"] or 0)
+
+    conn.execute(
+        """
+        UPDATE app_users
+        SET credit_balance = ?,
+            updated_at = ?
+        WHERE id = ?
+        """,
+        (total, _auth_now_iso(), user_id),
+    )
+
+
+def _credit_pool_add_ledger(conn, user_id: int, free_delta: int, paid_delta: int, reason: str, service_class: str, metadata=None):
+    total_delta = int(free_delta) + int(paid_delta)
+    now = _auth_now_iso()
+
+    conn.execute(
+        """
+        INSERT INTO user_credit_ledger (
+            user_id,
+            delta,
+            free_delta,
+            paid_delta,
+            reason,
+            service_class,
+            metadata_json,
+            created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            user_id,
+            total_delta,
+            int(free_delta),
+            int(paid_delta),
+            str(reason),
+            str(service_class),
+            _credit_json_dumps(metadata),
+            now,
+        ),
+    )
+
+
+def _credit_pool_summary(user_id: int):
+    _credit_pool_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        free_reserved, paid_reserved = _credit_pool_active_reserved_totals(conn, user_id)
+
+        reservations = conn.execute(
+            """
+            SELECT
+                id,
+                reservation_token,
+                amount,
+                free_amount,
+                paid_amount,
+                service_class,
+                reason,
+                status,
+                metadata_json,
+                created_at,
+                updated_at,
+                expires_at,
+                committed_at,
+                refunded_at
+            FROM credit_reservations
+            WHERE user_id = ?
+            ORDER BY id DESC
+            LIMIT 25
+            """,
+            (user_id,),
+        ).fetchall()
+
+        ledger = conn.execute(
+            """
+            SELECT
+                id,
+                delta,
+                free_delta,
+                paid_delta,
+                service_class,
+                reason,
+                metadata_json,
+                created_at
+            FROM user_credit_ledger
+            WHERE user_id = ?
+            ORDER BY id DESC
+            LIMIT 75
+            """,
+            (user_id,),
+        ).fetchall()
+
+    user = _account_enriched_public_user(row)
+
+    free_available = int(row["free_credit_balance"] or 0)
+    paid_available = int(row["paid_credit_balance"] or 0)
+
+    return {
+        "ok": True,
+        "user": user,
+        "credits": {
+            "free_available": free_available,
+            "paid_available": paid_available,
+            "total_available": free_available + paid_available,
+            "free_reserved": free_reserved,
+            "paid_reserved": paid_reserved,
+            "total_reserved": free_reserved + paid_reserved,
+            "monthly_free_allowance": int(row["monthly_free_credit_allowance"] or 0),
+            "monthly_paid_allowance": int(row["monthly_paid_credit_allowance"] or 0),
+            "plan": row["plan"],
+            "billing_status": row["billing_status"],
+            "storage_quota_mb": int(row["storage_quota_mb"] or 0),
+            "rules": {
+                "free_credits": "local_only",
+                "paid_credits": "local_or_external_paid",
+            },
+        },
+        "reservations": [
+            {
+                "id": r["id"],
+                "reservation_token": r["reservation_token"],
+                "amount": r["amount"],
+                "free_amount": r["free_amount"],
+                "paid_amount": r["paid_amount"],
+                "service_class": r["service_class"],
+                "reason": r["reason"],
+                "status": r["status"],
+                "metadata": _credit_json.loads(r["metadata_json"]) if r["metadata_json"] else None,
+                "created_at": r["created_at"],
+                "updated_at": r["updated_at"],
+                "expires_at": r["expires_at"],
+                "committed_at": r["committed_at"],
+                "refunded_at": r["refunded_at"],
+            }
+            for r in reservations
+        ],
+        "ledger": [
+            {
+                "id": l["id"],
+                "delta": l["delta"],
+                "free_delta": l["free_delta"],
+                "paid_delta": l["paid_delta"],
+                "service_class": l["service_class"],
+                "reason": l["reason"],
+                "metadata": _credit_json.loads(l["metadata_json"]) if l["metadata_json"] else None,
+                "created_at": l["created_at"],
+            }
+            for l in ledger
+        ],
+    }
+
+
+def _credit_pool_debit_plan(free_available: int, paid_available: int, amount: int, service_class: str, allow_paid_for_local: bool = True):
+    service_class = str(service_class or "local").strip().lower()
+
+    if service_class not in ("local", "external_paid"):
+        raise HTTPException(status_code=400, detail="service_class must be 'local' or 'external_paid'.")
+
+    amount = int(amount)
+
+    if service_class == "external_paid":
+        if paid_available < amount:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient paid credits. External paid services require paid credits. Required {amount}, paid available {paid_available}.",
+            )
+        return 0, amount
+
+    # Local jobs can use free credits first.
+    free_to_use = min(free_available, amount)
+    remaining = amount - free_to_use
+
+    paid_to_use = 0
+    if remaining > 0:
+        if not allow_paid_for_local:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient free/local credits. Required {amount}, free available {free_available}.",
+            )
+
+        if paid_available < remaining:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient credits. Required {amount}, free available {free_available}, paid available {paid_available}.",
+            )
+
+        paid_to_use = remaining
+
+    return free_to_use, paid_to_use
+
+
+def _credit_pool_find_reservation(conn, user_id: int, payload):
+    reservation_id = payload.get("reservation_id")
+    reservation_token = payload.get("reservation_token")
+
+    if reservation_id:
+        row = conn.execute(
+            """
+            SELECT *
+            FROM credit_reservations
+            WHERE id = ?
+              AND user_id = ?
+            """,
+            (int(reservation_id), user_id),
+        ).fetchone()
+    elif reservation_token:
+        row = conn.execute(
+            """
+            SELECT *
+            FROM credit_reservations
+            WHERE reservation_token = ?
+              AND user_id = ?
+            """,
+            (str(reservation_token), user_id),
+        ).fetchone()
+    else:
+        raise HTTPException(status_code=400, detail="reservation_id or reservation_token is required.")
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Reservation not found.")
+
+    return row
+
+
+@app.get("/system/account/credit-pools")
+async def system_account_credit_pools(request: Request):
+    row = _credit_pool_user_row(request)
+    return _credit_pool_summary(int(row["id"]))
+
+
+@app.post("/system/credits/reserve-v2")
+async def system_credits_reserve_v2(request: Request):
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    amount = _credit_parse_payload_amount(payload, "amount")
+    reason = str(payload.get("reason") or "reservation").strip()[:120]
+    service_class = str(payload.get("service_class") or "local").strip().lower()
+    allow_paid_for_local = bool(payload.get("allow_paid_for_local", True))
+    metadata = payload.get("metadata")
+    now = _auth_now_iso()
+    token = _credit_secrets.token_urlsafe(32)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        current = conn.execute(
+            """
+            SELECT free_credit_balance, paid_credit_balance
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        free_available = int(current["free_credit_balance"] if current else 0)
+        paid_available = int(current["paid_credit_balance"] if current else 0)
+
+        free_amount, paid_amount = _credit_pool_debit_plan(
+            free_available=free_available,
+            paid_available=paid_available,
+            amount=amount,
+            service_class=service_class,
+            allow_paid_for_local=allow_paid_for_local,
+        )
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET free_credit_balance = free_credit_balance - ?,
+                paid_credit_balance = paid_credit_balance - ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (free_amount, paid_amount, now, user_id),
+        )
+
+        conn.execute(
+            """
+            INSERT INTO credit_reservations (
+                user_id,
+                reservation_token,
+                amount,
+                free_amount,
+                paid_amount,
+                service_class,
+                reason,
+                status,
+                metadata_json,
+                created_at,
+                updated_at,
+                expires_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                token,
+                amount,
+                free_amount,
+                paid_amount,
+                service_class,
+                reason,
+                _credit_json_dumps(metadata),
+                now,
+                now,
+                payload.get("expires_at"),
+            ),
+        )
+
+        reservation_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            -free_amount,
+            -paid_amount,
+            f"reserve:{reason}",
+            service_class,
+            {
+                "reservation_id": reservation_id,
+                "reservation_token": token,
+                "amount": amount,
+                "free_amount": free_amount,
+                "paid_amount": paid_amount,
+                "metadata": metadata,
+            },
+        )
+
+        _credit_pool_sync_legacy_total(conn, user_id)
+        conn.commit()
+
+    result = _credit_pool_summary(user_id)
+    result["reservation"] = {
+        "id": reservation_id,
+        "reservation_token": token,
+        "amount": amount,
+        "free_amount": free_amount,
+        "paid_amount": paid_amount,
+        "service_class": service_class,
+        "reason": reason,
+        "status": "reserved",
+    }
+    return result
+
+
+@app.post("/system/credits/commit-v2")
+async def system_credits_commit_v2(request: Request):
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    final_amount_raw = payload.get("final_amount")
+    metadata = payload.get("metadata")
+    now = _auth_now_iso()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        reservation = _credit_pool_find_reservation(conn, user_id, payload)
+
+        if reservation["status"] != "reserved":
+            raise HTTPException(status_code=409, detail=f"Reservation is already {reservation['status']}.")
+
+        reserved_amount = int(reservation["amount"])
+        service_class = reservation["service_class"]
+        free_reserved = int(reservation["free_amount"] or 0)
+        paid_reserved = int(reservation["paid_amount"] or 0)
+
+        final_amount = reserved_amount if final_amount_raw is None else int(final_amount_raw)
+
+        if final_amount < 0:
+            raise HTTPException(status_code=400, detail="final_amount cannot be negative.")
+
+        if final_amount < reserved_amount:
+            refund_total = reserved_amount - final_amount
+
+            # Refund paid first because paid credits are more valuable.
+            paid_refund = min(paid_reserved, refund_total)
+            remaining_refund = refund_total - paid_refund
+            free_refund = min(free_reserved, remaining_refund)
+
+            conn.execute(
+                """
+                UPDATE app_users
+                SET free_credit_balance = free_credit_balance + ?,
+                    paid_credit_balance = paid_credit_balance + ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (free_refund, paid_refund, now, user_id),
+            )
+
+            _credit_pool_add_ledger(
+                conn,
+                user_id,
+                free_refund,
+                paid_refund,
+                f"release_unused:{reservation['reason']}",
+                service_class,
+                {
+                    "reservation_id": reservation["id"],
+                    "reserved_amount": reserved_amount,
+                    "final_amount": final_amount,
+                    "free_refund": free_refund,
+                    "paid_refund": paid_refund,
+                    "metadata": metadata,
+                },
+            )
+
+        elif final_amount > reserved_amount:
+            extra = final_amount - reserved_amount
+
+            current = conn.execute(
+                """
+                SELECT free_credit_balance, paid_credit_balance
+                FROM app_users
+                WHERE id = ?
+                """,
+                (user_id,),
+            ).fetchone()
+
+            free_available = int(current["free_credit_balance"] if current else 0)
+            paid_available = int(current["paid_credit_balance"] if current else 0)
+
+            extra_free, extra_paid = _credit_pool_debit_plan(
+                free_available=free_available,
+                paid_available=paid_available,
+                amount=extra,
+                service_class=service_class,
+                allow_paid_for_local=True,
+            )
+
+            conn.execute(
+                """
+                UPDATE app_users
+                SET free_credit_balance = free_credit_balance - ?,
+                    paid_credit_balance = paid_credit_balance - ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (extra_free, extra_paid, now, user_id),
+            )
+
+            _credit_pool_add_ledger(
+                conn,
+                user_id,
+                -extra_free,
+                -extra_paid,
+                f"commit_overage:{reservation['reason']}",
+                service_class,
+                {
+                    "reservation_id": reservation["id"],
+                    "reserved_amount": reserved_amount,
+                    "final_amount": final_amount,
+                    "extra_free": extra_free,
+                    "extra_paid": extra_paid,
+                    "metadata": metadata,
+                },
+            )
+
+        conn.execute(
+            """
+            UPDATE credit_reservations
+            SET status = 'committed',
+                updated_at = ?,
+                committed_at = ?,
+                metadata_json = COALESCE(?, metadata_json)
+            WHERE id = ?
+            """,
+            (
+                now,
+                now,
+                _credit_json_dumps(metadata) if metadata is not None else None,
+                reservation["id"],
+            ),
+        )
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            0,
+            0,
+            f"commit:{reservation['reason']}",
+            service_class,
+            {
+                "reservation_id": reservation["id"],
+                "reserved_amount": reserved_amount,
+                "final_amount": final_amount,
+                "metadata": metadata,
+            },
+        )
+
+        _credit_pool_sync_legacy_total(conn, user_id)
+        conn.commit()
+
+    return _credit_pool_summary(user_id)
+
+
+@app.post("/system/credits/refund-v2")
+async def system_credits_refund_v2(request: Request):
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    metadata = payload.get("metadata")
+    now = _auth_now_iso()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        reservation = _credit_pool_find_reservation(conn, user_id, payload)
+
+        if reservation["status"] != "reserved":
+            raise HTTPException(status_code=409, detail=f"Reservation is already {reservation['status']}.")
+
+        free_amount = int(reservation["free_amount"] or 0)
+        paid_amount = int(reservation["paid_amount"] or 0)
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET free_credit_balance = free_credit_balance + ?,
+                paid_credit_balance = paid_credit_balance + ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (free_amount, paid_amount, now, user_id),
+        )
+
+        conn.execute(
+            """
+            UPDATE credit_reservations
+            SET status = 'refunded',
+                updated_at = ?,
+                refunded_at = ?,
+                metadata_json = COALESCE(?, metadata_json)
+            WHERE id = ?
+            """,
+            (
+                now,
+                now,
+                _credit_json_dumps(metadata) if metadata is not None else None,
+                reservation["id"],
+            ),
+        )
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            free_amount,
+            paid_amount,
+            f"refund:{reservation['reason']}",
+            reservation["service_class"],
+            {
+                "reservation_id": reservation["id"],
+                "reservation_token": reservation["reservation_token"],
+                "free_amount": free_amount,
+                "paid_amount": paid_amount,
+                "metadata": metadata,
+            },
+        )
+
+        _credit_pool_sync_legacy_total(conn, user_id)
+        conn.commit()
+
+    return _credit_pool_summary(user_id)
+
+
+@app.post("/system/credits/grant-free")
+async def system_credits_grant_free(request: Request):
+    admin_row = _credit_pool_require_admin(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    amount = _credit_parse_payload_amount(payload, "amount")
+    target_email = _auth_normalize_email(payload.get("email") or "")
+    reason = str(payload.get("reason") or "admin_free_credit_grant").strip()[:120]
+    metadata = payload.get("metadata")
+    now = _auth_now_iso()
+
+    if not target_email:
+        raise HTTPException(status_code=400, detail="email is required.")
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        target = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE email = ?
+            """,
+            (target_email,),
+        ).fetchone()
+
+        if not target:
+            raise HTTPException(status_code=404, detail="Target user not found.")
+
+        user_id = int(target["id"])
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET free_credit_balance = free_credit_balance + ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (amount, now, user_id),
+        )
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            amount,
+            0,
+            f"grant_free:{reason}",
+            "local",
+            {
+                "admin_user_id": int(admin_row["id"]),
+                "admin_email": admin_row["email"],
+                "metadata": metadata,
+            },
+        )
+
+        _credit_pool_sync_legacy_total(conn, user_id)
+        conn.commit()
+
+    return _credit_pool_summary(user_id)
+
+
+@app.post("/system/credits/grant-paid")
+async def system_credits_grant_paid(request: Request):
+    admin_row = _credit_pool_require_admin(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    amount = _credit_parse_payload_amount(payload, "amount")
+    target_email = _auth_normalize_email(payload.get("email") or "")
+    reason = str(payload.get("reason") or "admin_paid_credit_grant").strip()[:120]
+    metadata = payload.get("metadata")
+    now = _auth_now_iso()
+
+    if not target_email:
+        raise HTTPException(status_code=400, detail="email is required.")
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        target = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE email = ?
+            """,
+            (target_email,),
+        ).fetchone()
+
+        if not target:
+            raise HTTPException(status_code=404, detail="Target user not found.")
+
+        user_id = int(target["id"])
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET paid_credit_balance = paid_credit_balance + ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (amount, now, user_id),
+        )
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            0,
+            amount,
+            f"grant_paid:{reason}",
+            "external_paid",
+            {
+                "admin_user_id": int(admin_row["id"]),
+                "admin_email": admin_row["email"],
+                "metadata": metadata,
+            },
+        )
+
+        _credit_pool_sync_legacy_total(conn, user_id)
+        conn.commit()
+
+    return _credit_pool_summary(user_id)
+
+
+# ============================================================
+# Rewarded ad free-credit engine
+#
+# IMPORTANT:
+# - This is local/mock reward claiming for development.
+# - Real production use must verify reward completion with the ad provider.
+# - Rewards grant FREE/LOCAL credits only.
+# - Ad-earned credits must never pay for external_paid services.
+# ============================================================
+
+import hashlib as _ad_hashlib
+
+
+def _ad_reward_init_tables():
+    _credit_pool_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS ad_reward_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                provider TEXT NOT NULL,
+                reward_event_id TEXT,
+                status TEXT NOT NULL DEFAULT 'granted',
+                credits_granted INTEGER NOT NULL DEFAULT 0,
+                credit_pool TEXT NOT NULL DEFAULT 'free',
+                ip_hash TEXT,
+                user_agent_hash TEXT,
+                metadata_json TEXT,
+                created_at TEXT NOT NULL,
+                UNIQUE(provider, reward_event_id),
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+        conn.commit()
+
+
+def _ad_reward_settings():
+    return {
+        "reward_credits": int(os.getenv("AD_REWARD_FREE_CREDITS", "5")),
+        "daily_limit": int(os.getenv("AD_REWARD_DAILY_LIMIT", "5")),
+        "monthly_limit": int(os.getenv("AD_REWARD_MONTHLY_LIMIT", "100")),
+        "cooldown_seconds": int(os.getenv("AD_REWARD_COOLDOWN_SECONDS", "300")),
+    }
+
+
+def _ad_hash(value: str) -> str:
+    return _ad_hashlib.sha256(str(value or "").encode("utf-8")).hexdigest()
+
+
+def _ad_request_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+
+    client = getattr(request, "client", None)
+    return getattr(client, "host", "") if client else ""
+
+
+def _ad_reward_counts(conn, user_id: int):
+    now = _auth_now_iso()
+    day_prefix = now[:10]
+    month_prefix = now[:7]
+
+    daily = conn.execute(
+        """
+        SELECT COUNT(*) AS count
+        FROM ad_reward_events
+        WHERE user_id = ?
+          AND status = 'granted'
+          AND created_at LIKE ?
+        """,
+        (user_id, f"{day_prefix}%"),
+    ).fetchone()["count"]
+
+    monthly = conn.execute(
+        """
+        SELECT COUNT(*) AS count
+        FROM ad_reward_events
+        WHERE user_id = ?
+          AND status = 'granted'
+          AND created_at LIKE ?
+        """,
+        (user_id, f"{month_prefix}%"),
+    ).fetchone()["count"]
+
+    last = conn.execute(
+        """
+        SELECT created_at
+        FROM ad_reward_events
+        WHERE user_id = ?
+          AND status = 'granted'
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (user_id,),
+    ).fetchone()
+
+    return int(daily or 0), int(monthly or 0), last["created_at"] if last else None
+
+
+def _ad_iso_to_epoch(value: str) -> float:
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
+    except Exception:
+        return 0.0
+
+
+def _ad_reward_status_for_user(user_id: int):
+    _ad_reward_init_tables()
+    settings = _ad_reward_settings()
+    now_iso = _auth_now_iso()
+    now_epoch = _ad_iso_to_epoch(now_iso)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        daily, monthly, last_claim_at = _ad_reward_counts(conn, user_id)
+
+    cooldown_remaining = 0
+    if last_claim_at:
+        elapsed = max(0, now_epoch - _ad_iso_to_epoch(last_claim_at))
+        cooldown_remaining = max(0, int(settings["cooldown_seconds"] - elapsed))
+
+    can_claim = (
+        daily < settings["daily_limit"]
+        and monthly < settings["monthly_limit"]
+        and cooldown_remaining <= 0
+    )
+
+    blocked_reason = None
+    if daily >= settings["daily_limit"]:
+        blocked_reason = "Daily rewarded-ad limit reached."
+    elif monthly >= settings["monthly_limit"]:
+        blocked_reason = "Monthly rewarded-ad limit reached."
+    elif cooldown_remaining > 0:
+        blocked_reason = f"Reward cooldown active. Try again in {cooldown_remaining} seconds."
+
+    return {
+        "ok": True,
+        "can_claim": can_claim,
+        "blocked_reason": blocked_reason,
+        "reward_credits": settings["reward_credits"],
+        "credit_pool": "free",
+        "credit_rule": "Ad rewards grant free/local credits only.",
+        "daily": {
+            "used": daily,
+            "limit": settings["daily_limit"],
+        },
+        "monthly": {
+            "used": monthly,
+            "limit": settings["monthly_limit"],
+        },
+        "cooldown": {
+            "seconds": settings["cooldown_seconds"],
+            "remaining_seconds": cooldown_remaining,
+            "last_claim_at": last_claim_at,
+        },
+    }
+
+
+@app.get("/system/ads/reward/status")
+async def system_ads_reward_status(request: Request):
+    row = _credit_pool_user_row(request)
+    return _ad_reward_status_for_user(int(row["id"]))
+
+
+@app.post("/system/ads/reward/claim")
+async def system_ads_reward_claim(request: Request):
+    """
+    Local/dev rewarded-ad claim endpoint.
+
+    Production version should verify a real provider reward callback/proof before granting.
+    This endpoint intentionally grants only free/local credits.
+    """
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        payload = {}
+
+    provider = str(payload.get("provider") or "mock_rewarded_ad").strip()[:80]
+    reward_event_id = str(payload.get("reward_event_id") or _credit_secrets.token_urlsafe(24)).strip()
+    metadata = payload.get("metadata") or {}
+
+    # Production safety:
+    # mock rewarded ads are for localhost/dev testing only.
+    # Real production rewards must use a provider-verified reward event.
+    mock_enabled = str(os.getenv("AD_REWARD_MOCK_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on")
+    if provider == "mock_rewarded_ad" and not mock_enabled:
+        raise HTTPException(
+            status_code=403,
+            detail="Mock rewarded ads are disabled. Real provider verification is required.",
+        )
+
+    settings = _ad_reward_settings()
+    credits = int(settings["reward_credits"])
+    now = _auth_now_iso()
+
+    _ad_reward_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        existing = conn.execute(
+            """
+            SELECT *
+            FROM ad_reward_events
+            WHERE provider = ?
+              AND reward_event_id = ?
+            """,
+            (provider, reward_event_id),
+        ).fetchone()
+
+        if existing:
+            conn.commit()
+            summary = _credit_pool_summary(user_id)
+            summary["ad_reward"] = {
+                "ok": True,
+                "duplicate": True,
+                "credits_granted": 0,
+                "detail": "Reward event was already claimed.",
+            }
+            summary["reward_status"] = _ad_reward_status_for_user(user_id)
+            return summary
+
+        daily, monthly, last_claim_at = _ad_reward_counts(conn, user_id)
+        now_epoch = _ad_iso_to_epoch(now)
+
+        cooldown_remaining = 0
+        if last_claim_at:
+            elapsed = max(0, now_epoch - _ad_iso_to_epoch(last_claim_at))
+            cooldown_remaining = max(0, int(settings["cooldown_seconds"] - elapsed))
+
+        if daily >= settings["daily_limit"]:
+            raise HTTPException(status_code=429, detail="Daily rewarded-ad limit reached.")
+
+        if monthly >= settings["monthly_limit"]:
+            raise HTTPException(status_code=429, detail="Monthly rewarded-ad limit reached.")
+
+        if cooldown_remaining > 0:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Reward cooldown active. Try again in {cooldown_remaining} seconds.",
+            )
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET free_credit_balance = free_credit_balance + ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (credits, now, user_id),
+        )
+
+        conn.execute(
+            """
+            INSERT INTO ad_reward_events (
+                user_id,
+                provider,
+                reward_event_id,
+                status,
+                credits_granted,
+                credit_pool,
+                ip_hash,
+                user_agent_hash,
+                metadata_json,
+                created_at
+            )
+            VALUES (?, ?, ?, 'granted', ?, 'free', ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                provider,
+                reward_event_id,
+                credits,
+                _ad_hash(_ad_request_ip(request)),
+                _ad_hash(request.headers.get("user-agent", "")),
+                _credit_json_dumps(metadata),
+                now,
+            ),
+        )
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            credits,
+            0,
+            f"ad_reward:{provider}",
+            "local",
+            {
+                "provider": provider,
+                "reward_event_id": reward_event_id,
+                "credit_pool": "free",
+                "metadata": metadata,
+            },
+        )
+
+        _credit_pool_sync_legacy_total(conn, user_id)
+        conn.commit()
+
+    summary = _credit_pool_summary(user_id)
+    summary["ad_reward"] = {
+        "ok": True,
+        "duplicate": False,
+        "credits_granted": credits,
+        "credit_pool": "free",
+        "detail": "Reward granted as free/local credits.",
+    }
+    summary["reward_status"] = _ad_reward_status_for_user(user_id)
+    return summary
+
+
+# ============================================================
+# Mock external GPU quote engine
+#
+# This does NOT start real cloud GPUs yet.
+# It quotes mock external GPU sessions and reserves PAID credits only.
+# Foundation for future RunPod/Vast/Lambda/etc integrations.
+# ============================================================
+
+import math as _gpu_math
+import secrets as _gpu_secrets
+from datetime import datetime as _gpu_datetime, timezone as _gpu_timezone, timedelta as _gpu_timedelta
+
+
+def _gpu_quote_init_tables():
+    _credit_pool_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS gpu_session_quotes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                quote_token TEXT NOT NULL UNIQUE,
+                provider TEXT NOT NULL,
+                gpu_id TEXT NOT NULL,
+                gpu_name TEXT NOT NULL,
+                duration_minutes INTEGER NOT NULL,
+                service_class TEXT NOT NULL DEFAULT 'external_paid',
+                provider_cost_cents INTEGER NOT NULL,
+                fees_cents INTEGER NOT NULL,
+                margin_cents INTEGER NOT NULL,
+                tax_buffer_cents INTEGER NOT NULL,
+                total_cents INTEGER NOT NULL,
+                credits_required INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'quoted',
+                reservation_token TEXT,
+                metadata_json TEXT,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                reserved_at TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+        conn.commit()
+
+
+def _gpu_catalog():
+    return [
+        {
+            "provider": "mock-cloud",
+            "gpu_id": "rtx-4090",
+            "name": "NVIDIA RTX 4090",
+            "vram_gb": 24,
+            "provider_cost_cents_per_hour": 400,
+            "service_class": "external_paid",
+            "description": "Mock high-end consumer GPU session.",
+        },
+        {
+            "provider": "mock-cloud",
+            "gpu_id": "a100-40gb",
+            "name": "NVIDIA A100 40GB",
+            "vram_gb": 40,
+            "provider_cost_cents_per_hour": 1800,
+            "service_class": "external_paid",
+            "description": "Mock data-center GPU session.",
+        },
+        {
+            "provider": "mock-cloud",
+            "gpu_id": "h100-80gb",
+            "name": "NVIDIA H100 80GB",
+            "vram_gb": 80,
+            "provider_cost_cents_per_hour": 3500,
+            "service_class": "external_paid",
+            "description": "Mock premium data-center GPU session.",
+        },
+    ]
+
+
+def _gpu_find_catalog_item(gpu_id: str):
+    gpu_id = str(gpu_id or "").strip().lower()
+
+    for item in _gpu_catalog():
+        if item["gpu_id"] == gpu_id:
+            return item
+
+    raise HTTPException(status_code=404, detail="GPU option not found.")
+
+
+def _gpu_quote_settings():
+    return {
+        "credit_cents": int(os.getenv("CREDIT_CENTS", "1")),
+        "platform_margin_pct": float(os.getenv("GPU_QUOTE_PLATFORM_MARGIN_PCT", "0.30")),
+        "fee_buffer_pct": float(os.getenv("GPU_QUOTE_FEE_BUFFER_PCT", "0.08")),
+        "tax_buffer_pct": float(os.getenv("GPU_QUOTE_TAX_BUFFER_PCT", "0.10")),
+        "quote_ttl_minutes": int(os.getenv("GPU_QUOTE_TTL_MINUTES", "15")),
+    }
+
+
+def _gpu_now():
+    return _gpu_datetime.now(_gpu_timezone.utc)
+
+
+def _gpu_iso(dt):
+    return dt.isoformat()
+
+
+def _gpu_parse_iso(value):
+    return _gpu_datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+
+
+def _gpu_calculate_quote(item, duration_minutes: int):
+    settings = _gpu_quote_settings()
+
+    duration_minutes = int(duration_minutes)
+
+    if duration_minutes < 5:
+        raise HTTPException(status_code=400, detail="duration_minutes must be at least 5.")
+
+    if duration_minutes > 24 * 60:
+        raise HTTPException(status_code=400, detail="duration_minutes cannot exceed 1440 for one quote.")
+
+    hourly = int(item["provider_cost_cents_per_hour"])
+
+    provider_cost = _gpu_math.ceil(hourly * (duration_minutes / 60.0))
+    fees = _gpu_math.ceil(provider_cost * settings["fee_buffer_pct"])
+    margin = _gpu_math.ceil(provider_cost * settings["platform_margin_pct"])
+    tax_buffer = _gpu_math.ceil(provider_cost * settings["tax_buffer_pct"])
+    total_cents = provider_cost + fees + margin + tax_buffer
+
+    credit_cents = max(1, int(settings["credit_cents"]))
+    credits_required = _gpu_math.ceil(total_cents / credit_cents)
+
+    return {
+        "provider_cost_cents": provider_cost,
+        "fees_cents": fees,
+        "margin_cents": margin,
+        "tax_buffer_cents": tax_buffer,
+        "total_cents": total_cents,
+        "credits_required": credits_required,
+        "credit_cents": credit_cents,
+    }
+
+
+@app.get("/system/gpu/catalog")
+async def system_gpu_catalog(request: Request):
+    _credit_pool_user_row(request)
+
+    return {
+        "ok": True,
+        "mode": "mock",
+        "detail": "Mock external GPU catalog. No real cloud GPUs are started yet.",
+        "items": _gpu_catalog(),
+        "pricing_rule": {
+            "service_class": "external_paid",
+            "requires": "paid credits only",
+            "free_credits_allowed": False,
+        },
+    }
+
+
+@app.post("/system/gpu/quote")
+async def system_gpu_quote(request: Request):
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    gpu_id = str(payload.get("gpu_id") or "").strip().lower()
+
+    try:
+        duration_minutes = int(payload.get("duration_minutes"))
+    except Exception:
+        raise HTTPException(status_code=400, detail="duration_minutes must be an integer.")
+
+    item = _gpu_find_catalog_item(gpu_id)
+    quote = _gpu_calculate_quote(item, duration_minutes)
+
+    _gpu_quote_init_tables()
+
+    now = _gpu_now()
+    settings = _gpu_quote_settings()
+    expires_at = now + _gpu_timedelta(minutes=settings["quote_ttl_minutes"])
+    quote_token = _gpu_secrets.token_urlsafe(32)
+
+    metadata = {
+        "input": payload,
+        "quote_settings": settings,
+        "note": "Mock quote only. No external provider instance is started.",
+    }
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            INSERT INTO gpu_session_quotes (
+                user_id,
+                quote_token,
+                provider,
+                gpu_id,
+                gpu_name,
+                duration_minutes,
+                service_class,
+                provider_cost_cents,
+                fees_cents,
+                margin_cents,
+                tax_buffer_cents,
+                total_cents,
+                credits_required,
+                status,
+                metadata_json,
+                created_at,
+                expires_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, 'external_paid', ?, ?, ?, ?, ?, ?, 'quoted', ?, ?, ?)
+            """,
+            (
+                user_id,
+                quote_token,
+                item["provider"],
+                item["gpu_id"],
+                item["name"],
+                duration_minutes,
+                quote["provider_cost_cents"],
+                quote["fees_cents"],
+                quote["margin_cents"],
+                quote["tax_buffer_cents"],
+                quote["total_cents"],
+                quote["credits_required"],
+                _credit_json_dumps(metadata),
+                _gpu_iso(now),
+                _gpu_iso(expires_at),
+            ),
+        )
+        conn.commit()
+
+    return {
+        "ok": True,
+        "mode": "mock",
+        "quote": {
+            "quote_token": quote_token,
+            "provider": item["provider"],
+            "gpu_id": item["gpu_id"],
+            "gpu_name": item["name"],
+            "duration_minutes": duration_minutes,
+            "service_class": "external_paid",
+            "provider_cost_cents": quote["provider_cost_cents"],
+            "fees_cents": quote["fees_cents"],
+            "margin_cents": quote["margin_cents"],
+            "tax_buffer_cents": quote["tax_buffer_cents"],
+            "total_cents": quote["total_cents"],
+            "credits_required": quote["credits_required"],
+            "credit_cents": quote["credit_cents"],
+            "expires_at": _gpu_iso(expires_at),
+        },
+        "important": "This quote requires paid credits only. Free/local credits cannot be used.",
+    }
+
+
+@app.post("/system/gpu/reserve-quote")
+async def system_gpu_reserve_quote(request: Request):
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    quote_token = str(payload.get("quote_token") or "").strip()
+
+    if not quote_token:
+        raise HTTPException(status_code=400, detail="quote_token is required.")
+
+    _gpu_quote_init_tables()
+
+    now = _gpu_now()
+    now_iso = _gpu_iso(now)
+    reservation_token = _credit_secrets.token_urlsafe(32)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        quote = conn.execute(
+            """
+            SELECT *
+            FROM gpu_session_quotes
+            WHERE user_id = ?
+              AND quote_token = ?
+            """,
+            (user_id, quote_token),
+        ).fetchone()
+
+        if not quote:
+            raise HTTPException(status_code=404, detail="Quote not found.")
+
+        if quote["status"] != "quoted":
+            raise HTTPException(status_code=409, detail=f"Quote is already {quote['status']}.")
+
+        if _gpu_parse_iso(quote["expires_at"]) < now:
+            conn.execute(
+                """
+                UPDATE gpu_session_quotes
+                SET status = 'expired'
+                WHERE id = ?
+                """,
+                (quote["id"],),
+            )
+            conn.commit()
+            raise HTTPException(status_code=409, detail="Quote expired. Create a new quote.")
+
+        amount = int(quote["credits_required"])
+
+        current = conn.execute(
+            """
+            SELECT paid_credit_balance
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        paid_available = int(current["paid_credit_balance"] if current else 0)
+
+        if paid_available < amount:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient paid credits. Required {amount}, paid available {paid_available}.",
+            )
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET paid_credit_balance = paid_credit_balance - ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (amount, _auth_now_iso(), user_id),
+        )
+
+        conn.execute(
+            """
+            INSERT INTO credit_reservations (
+                user_id,
+                reservation_token,
+                amount,
+                free_amount,
+                paid_amount,
+                service_class,
+                reason,
+                status,
+                metadata_json,
+                created_at,
+                updated_at,
+                expires_at
+            )
+            VALUES (?, ?, ?, 0, ?, 'external_paid', ?, 'reserved', ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                reservation_token,
+                amount,
+                amount,
+                f"gpu_quote:{quote['gpu_id']}",
+                _credit_json_dumps({
+                    "quote_token": quote_token,
+                    "provider": quote["provider"],
+                    "gpu_id": quote["gpu_id"],
+                    "gpu_name": quote["gpu_name"],
+                    "duration_minutes": quote["duration_minutes"],
+                    "total_cents": quote["total_cents"],
+                }),
+                now_iso,
+                now_iso,
+                quote["expires_at"],
+            ),
+        )
+
+        reservation_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            0,
+            -amount,
+            f"reserve_gpu_quote:{quote['gpu_id']}",
+            "external_paid",
+            {
+                "quote_id": quote["id"],
+                "quote_token": quote_token,
+                "reservation_id": reservation_id,
+                "reservation_token": reservation_token,
+                "credits_required": amount,
+            },
+        )
+
+        conn.execute(
+            """
+            UPDATE gpu_session_quotes
+            SET status = 'reserved',
+                reservation_token = ?,
+                reserved_at = ?
+            WHERE id = ?
+            """,
+            (reservation_token, now_iso, quote["id"]),
+        )
+
+        _credit_pool_sync_legacy_total(conn, user_id)
+        conn.commit()
+
+    result = _credit_pool_summary(user_id)
+    result["gpu_quote"] = {
+        "ok": True,
+        "mode": "mock",
+        "status": "reserved",
+        "quote_token": quote_token,
+        "reservation_token": reservation_token,
+        "reservation_id": reservation_id,
+        "paid_credits_reserved": amount,
+        "detail": "Mock GPU quote reserved with paid credits only. No real GPU was started.",
+    }
+    return result
+
