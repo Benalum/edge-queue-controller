@@ -12,15 +12,21 @@ const authState = {
 
 const pages = {
   "/": {
-    eyebrow: "Always-on Cloudflare wrapper",
-    title: "AlexHartel AI Platform",
+    eyebrow: "Welcome",
+    title: "Welcome to your AI-powered learning space",
     subtitle:
-      "This wrapper stays online even when the main Proxmox server is powered off. Use it to view summaries, check system state, and wake services later through login-aware automation.",
+      "Practice smarter with study cards, guided review, and an AI companion that can help you focus on what you need most. The goal is simple: make studying more active, more personalized, and easier to keep up with.",
     cards: [
-      ["Study", "Decks, cards, review queues, and stats.", "/study"],
-      ["Companion", "AI chat that can use study context and future tools.", "/companion"],
-      ["AI Tools", "Image generation, LLM jobs, queues, and worker-backed tools.", "/ai"],
-      ["System", "Machine, container, service, and power state.", "/system"],
+      ["Study", "Create decks, review cards, and track what needs more practice.", "/study"],
+      ["Companion", "Practice with an AI companion that can help check answers and explain concepts.", "/companion"],
+      ["AI Tools", "Use AI-powered tools for generation, automation, and future learning workflows.", "/ai"],
+      ["System", "View platform status, services, workers, and power state.", "/system"],
+    ],
+    boxes: [
+      ["Why it helps", "Active practice and personalized feedback can help learners focus on weak areas instead of reviewing everything the same way."],
+      ["Research note", "Studies on intelligent tutoring systems and AI-assisted personalized learning suggest adaptive support can improve learning outcomes when implemented well."],
+      ["How this platform uses it", "Study cards, review history, answer feedback, and companion context can work together to guide what to study next."],
+      ["Best use", "Use AI as a coach for practice and feedback, not as a replacement for thinking through the answer yourself."],
     ],
   },
 
@@ -188,22 +194,6 @@ function stateText(value) {
   return value || "unknown";
 }
 
-function renderHomeStatus() {
-  const controller = nodeById("master-laptop");
-  const pveso = nodeById("pveso");
-  const llm = nodeById("ct-101");
-  const comfy = nodeById("ct-108");
-
-  return `
-    <div class="status-strip">
-      <div><span>Controller</span><strong>${stateText(controller?.state)}</strong></div>
-      <div><span>Main Server</span><strong>${stateText(pveso?.state)}</strong></div>
-      <div><span>LLM Worker</span><strong>${stateText(llm?.state)}</strong></div>
-      <div><span>ComfyUI Worker</span><strong>${stateText(comfy?.state)}</strong></div>
-    </div>
-  `;
-}
-
 function renderNotice() {
   const pveso = nodeById("pveso");
   const overall = lastStatus?.overall_state || "unknown";
@@ -287,16 +277,17 @@ function renderPage() {
       <h1>${page.title}</h1>
       <p class="subtitle">${page.subtitle}</p>
 
-      ${isHome ? renderHomeStatus() : ""}
       ${page.cards ? renderCards(page.cards) : ""}
       ${page.boxes ? renderBoxes(page.boxes) : ""}
       ${isSystem ? renderSystemSnapshot() : ""}
-      ${renderNotice()}
+      ${isSystem ? renderNotice() : ""}
 
-      <div class="actions">
-        <button class="primary-btn" type="button" id="openSystemBtn">Open System Panel</button>
-        <button class="primary-btn" type="button" id="wakeLoginBtn">${authState.token ? "Wake Services Soon" : "Login to Wake Services"}</button>
-      </div>
+      ${isSystem ? `
+        <div class="actions">
+          <button class="primary-btn" type="button" id="openSystemBtn">Open System Panel</button>
+          <button class="primary-btn" type="button" id="wakeLoginBtn">${authState.token ? "Wake Services Soon" : "Login to Wake Services"}</button>
+        </div>
+      ` : ""}
     </section>
   `;
 
@@ -416,7 +407,13 @@ async function handleAuthSubmit(event) {
       body: JSON.stringify({ email, password }),
     });
 
-    const token = data.token || data.access_token || data.jwt || "";
+    const token =
+      data.token ||
+      data.access_token ||
+      data.jwt ||
+      data.session?.access_token ||
+      data.session?.token ||
+      "";
 
     if (!token) {
       throw new Error("Login response did not include a token.");
