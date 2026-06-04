@@ -1,0 +1,333 @@
+:root {
+  --bg: #060914;
+  --panel: rgba(255,255,255,.075);
+  --panel2: rgba(255,255,255,.115);
+  --border: rgba(255,255,255,.14);
+  --text: rgba(255,255,255,.94);
+  --muted: rgba(255,255,255,.68);
+  --good: #39d98a;
+  --warn: #ffd166;
+  --bad: #ff5c7a;
+  --boot: #73b7ff;
+  --unknown: #a6adbb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(900px 480px at 15% 0%, rgba(57,217,138,.18), transparent 60%),
+    radial-gradient(900px 480px at 90% 10%, rgba(115,183,255,.20), transparent 60%),
+    linear-gradient(180deg, #070b18, var(--bg));
+}
+
+a {
+  color: inherit;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(16px, 3vw, 32px);
+  border-bottom: 1px solid var(--border);
+  background: rgba(6, 9, 20, .82);
+  backdrop-filter: blur(16px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--good), var(--boot));
+  color: #061018;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nav a,
+.system-pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 9px 13px;
+  color: var(--text);
+  background: rgba(255,255,255,.06);
+  text-decoration: none;
+  font: inherit;
+}
+
+.system-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.dot {
+  width: .65rem;
+  height: .65rem;
+  border-radius: 999px;
+  background: var(--unknown);
+  box-shadow: 0 0 16px currentColor;
+}
+
+.dot.online { background: var(--good); color: var(--good); }
+.dot.degraded { background: var(--warn); color: var(--warn); }
+.dot.booting { background: var(--boot); color: var(--boot); }
+.dot.offline,
+.dot.error { background: var(--bad); color: var(--bad); }
+.dot.unknown { background: var(--unknown); color: var(--unknown); }
+
+.hero {
+  display: grid;
+  place-items: center;
+  padding: clamp(20px, 5vw, 64px);
+}
+
+.hero-card {
+  width: min(1180px, 100%);
+  border: 1px solid var(--border);
+  border-radius: 32px;
+  padding: clamp(24px, 5vw, 56px);
+  background: rgba(8, 12, 24, .78);
+  box-shadow: 0 30px 100px rgba(0,0,0,.36);
+  backdrop-filter: blur(18px);
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  color: var(--good);
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: .78rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 7vw, 6rem);
+  line-height: .92;
+  letter-spacing: -.07em;
+}
+
+.subtitle {
+  max-width: 780px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1.65;
+}
+
+.status-strip,
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.status-strip > div,
+.card {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--panel);
+}
+
+.status-strip > div {
+  padding: 14px;
+}
+
+.status-strip span {
+  display: block;
+  color: var(--muted);
+  font-size: .82rem;
+  margin-bottom: 5px;
+}
+
+.status-strip strong {
+  text-transform: capitalize;
+}
+
+.card {
+  display: block;
+  min-height: 122px;
+  padding: 18px;
+  text-decoration: none;
+}
+
+.button-card {
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.card:hover {
+  background: var(--panel2);
+}
+
+.card strong {
+  display: block;
+  font-size: 1.14rem;
+  margin-bottom: 8px;
+}
+
+.card span {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.notice {
+  margin-top: 20px;
+  border: 1px solid rgba(255,209,102,.38);
+  border-radius: 18px;
+  padding: 14px;
+  color: rgba(255,255,255,.86);
+  background: rgba(255,209,102,.10);
+}
+
+.system-panel {
+  position: fixed;
+  top: 76px;
+  right: clamp(12px, 3vw, 32px);
+  z-index: 40;
+  width: min(760px, calc(100vw - 24px));
+  max-height: calc(100vh - 92px);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 18px;
+  background: rgba(8, 12, 24, .96);
+  box-shadow: 0 30px 100px rgba(0,0,0,.45);
+  backdrop-filter: blur(18px);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+}
+
+.panel-head h2,
+.panel-head p {
+  margin: 0;
+}
+
+.panel-head p {
+  margin-top: 5px;
+  color: var(--muted);
+}
+
+.primary {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 14px;
+  background: var(--good);
+  color: #061018;
+  font-weight: 900;
+}
+
+.primary:disabled {
+  opacity: .62;
+  cursor: not-allowed;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.status-list {
+  display: grid;
+  gap: 10px;
+}
+
+.status-item {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  background: var(--panel);
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.status-name {
+  font-weight: 900;
+}
+
+.badge {
+  text-transform: uppercase;
+  font-size: .76rem;
+  font-weight: 900;
+}
+
+.badge.online { color: var(--good); }
+.badge.degraded { color: var(--warn); }
+.badge.booting { color: var(--boot); }
+.badge.offline,
+.badge.error { color: var(--bad); }
+
+.status-detail {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: .88rem;
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .status-strip,
+  .cards,
+  .status-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 580px) {
+  .status-strip,
+  .cards,
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+}

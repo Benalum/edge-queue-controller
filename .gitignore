@@ -61,3 +61,23 @@ package-lock.json
 # Logs / generated reports
 *.log
 website-code-report.txt
+
+# Local patch backups
+*.bak-*
+*.bak
+website-code-report.txt
+
+# Runtime/cache/build artifacts
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.db
+.system_state/
+.wrangler/
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.pyc
+*.log
