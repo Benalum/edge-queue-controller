@@ -10489,3 +10489,654 @@ async def system_gpu_reserve_quote(request: Request):
     }
     return result
 
+
+# ============================================================
+# Mock external GPU session lifecycle
+#
+# Flow:
+# quote -> reserve paid credits -> start mock session -> stop session
+#
+# Stop commits only estimated used credits and releases unused paid credits.
+# No real cloud GPU is started yet.
+# ============================================================
+
+def _gpu_session_init_tables():
+    _gpu_quote_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS gpu_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                session_token TEXT NOT NULL UNIQUE,
+                quote_token TEXT NOT NULL,
+                reservation_token TEXT NOT NULL,
+                provider TEXT NOT NULL,
+                gpu_id TEXT NOT NULL,
+                gpu_name TEXT NOT NULL,
+                duration_minutes INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'running',
+                service_class TEXT NOT NULL DEFAULT 'external_paid',
+                credits_reserved INTEGER NOT NULL,
+                final_credits_charged INTEGER,
+                billable_minutes INTEGER,
+                metadata_json TEXT,
+                created_at TEXT NOT NULL,
+                started_at TEXT NOT NULL,
+                stopped_at TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+        conn.commit()
+
+
+def _gpu_session_public(row):
+    return {
+        "id": row["id"],
+        "session_token": row["session_token"],
+        "quote_token": row["quote_token"],
+        "reservation_token": row["reservation_token"],
+        "provider": row["provider"],
+        "gpu_id": row["gpu_id"],
+        "gpu_name": row["gpu_name"],
+        "duration_minutes": row["duration_minutes"],
+        "status": row["status"],
+        "service_class": row["service_class"],
+        "credits_reserved": row["credits_reserved"],
+        "final_credits_charged": row["final_credits_charged"],
+        "billable_minutes": row["billable_minutes"],
+        "created_at": row["created_at"],
+        "started_at": row["started_at"],
+        "stopped_at": row["stopped_at"],
+        "metadata": _credit_json.loads(row["metadata_json"]) if row["metadata_json"] else None,
+    }
+
+
+@app.get("/system/gpu/sessions")
+async def system_gpu_sessions(request: Request):
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    _gpu_session_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        sessions = conn.execute(
+            """
+            SELECT *
+            FROM gpu_sessions
+            WHERE user_id = ?
+            ORDER BY id DESC
+            LIMIT 50
+            """,
+            (user_id,),
+        ).fetchall()
+
+    return {
+        "ok": True,
+        "mode": "mock",
+        "detail": "Mock GPU sessions only. No real cloud GPUs are started yet.",
+        "sessions": [_gpu_session_public(s) for s in sessions],
+    }
+
+
+@app.post("/system/gpu/start-reserved")
+async def system_gpu_start_reserved(request: Request):
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    quote_token = str(payload.get("quote_token") or "").strip()
+    reservation_token = str(payload.get("reservation_token") or "").strip()
+
+    if not quote_token and not reservation_token:
+        raise HTTPException(status_code=400, detail="quote_token or reservation_token is required.")
+
+    _gpu_session_init_tables()
+
+    now = _gpu_now()
+    now_iso = _gpu_iso(now)
+    session_token = _gpu_secrets.token_urlsafe(32)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        if quote_token:
+            quote = conn.execute(
+                """
+                SELECT *
+                FROM gpu_session_quotes
+                WHERE user_id = ?
+                  AND quote_token = ?
+                """,
+                (user_id, quote_token),
+            ).fetchone()
+        else:
+            quote = conn.execute(
+                """
+                SELECT *
+                FROM gpu_session_quotes
+                WHERE user_id = ?
+                  AND reservation_token = ?
+                """,
+                (user_id, reservation_token),
+            ).fetchone()
+
+        if not quote:
+            raise HTTPException(status_code=404, detail="Reserved quote not found.")
+
+        if quote["status"] != "reserved":
+            raise HTTPException(status_code=409, detail=f"Quote must be reserved before starting. Current status: {quote['status']}.")
+
+        reservation_token = quote["reservation_token"]
+
+        reservation = conn.execute(
+            """
+            SELECT *
+            FROM credit_reservations
+            WHERE user_id = ?
+              AND reservation_token = ?
+            """,
+            (user_id, reservation_token),
+        ).fetchone()
+
+        if not reservation:
+            raise HTTPException(status_code=404, detail="Credit reservation not found.")
+
+        if reservation["status"] != "reserved":
+            raise HTTPException(status_code=409, detail=f"Reservation is {reservation['status']}, not reserved.")
+
+        existing = conn.execute(
+            """
+            SELECT *
+            FROM gpu_sessions
+            WHERE user_id = ?
+              AND quote_token = ?
+              AND status IN ('starting', 'running')
+            """,
+            (user_id, quote["quote_token"]),
+        ).fetchone()
+
+        if existing:
+            raise HTTPException(status_code=409, detail="A running session already exists for this quote.")
+
+        conn.execute(
+            """
+            INSERT INTO gpu_sessions (
+                user_id,
+                session_token,
+                quote_token,
+                reservation_token,
+                provider,
+                gpu_id,
+                gpu_name,
+                duration_minutes,
+                status,
+                service_class,
+                credits_reserved,
+                metadata_json,
+                created_at,
+                started_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'running', 'external_paid', ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                session_token,
+                quote["quote_token"],
+                reservation_token,
+                quote["provider"],
+                quote["gpu_id"],
+                quote["gpu_name"],
+                quote["duration_minutes"],
+                int(reservation["paid_amount"] or reservation["amount"]),
+                _credit_json_dumps({
+                    "mock": True,
+                    "detail": "No real cloud GPU was started.",
+                    "quote_id": quote["id"],
+                    "reservation_id": reservation["id"],
+                }),
+                now_iso,
+                now_iso,
+            ),
+        )
+
+        session_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+        conn.execute(
+            """
+            UPDATE gpu_session_quotes
+            SET status = 'running'
+            WHERE id = ?
+            """,
+            (quote["id"],),
+        )
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            0,
+            0,
+            f"start_mock_gpu:{quote['gpu_id']}",
+            "external_paid",
+            {
+                "quote_token": quote["quote_token"],
+                "reservation_token": reservation_token,
+                "session_token": session_token,
+                "session_id": session_id,
+                "mock": True,
+            },
+        )
+
+        conn.commit()
+
+    return {
+        "ok": True,
+        "mode": "mock",
+        "session": {
+            "id": session_id,
+            "session_token": session_token,
+            "quote_token": quote_token or quote["quote_token"],
+            "reservation_token": reservation_token,
+            "provider": quote["provider"],
+            "gpu_id": quote["gpu_id"],
+            "gpu_name": quote["gpu_name"],
+            "duration_minutes": quote["duration_minutes"],
+            "status": "running",
+            "credits_reserved": int(reservation["paid_amount"] or reservation["amount"]),
+            "started_at": now_iso,
+        },
+        "detail": "Mock GPU session started. No real cloud GPU was started.",
+    }
+
+
+@app.post("/system/gpu/stop-session")
+async def system_gpu_stop_session(request: Request):
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    session_token = str(payload.get("session_token") or "").strip()
+
+    if not session_token:
+        raise HTTPException(status_code=400, detail="session_token is required.")
+
+    _gpu_session_init_tables()
+
+    now = _gpu_now()
+    now_iso = _gpu_iso(now)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        session = conn.execute(
+            """
+            SELECT *
+            FROM gpu_sessions
+            WHERE user_id = ?
+              AND session_token = ?
+            """,
+            (user_id, session_token),
+        ).fetchone()
+
+        if not session:
+            raise HTTPException(status_code=404, detail="GPU session not found.")
+
+        if session["status"] != "running":
+            raise HTTPException(status_code=409, detail=f"Session is {session['status']}, not running.")
+
+        reservation = conn.execute(
+            """
+            SELECT *
+            FROM credit_reservations
+            WHERE user_id = ?
+              AND reservation_token = ?
+            """,
+            (user_id, session["reservation_token"]),
+        ).fetchone()
+
+        if not reservation:
+            raise HTTPException(status_code=404, detail="Credit reservation not found.")
+
+        if reservation["status"] != "reserved":
+            raise HTTPException(status_code=409, detail=f"Reservation is {reservation['status']}, not reserved.")
+
+        started_at = _gpu_parse_iso(session["started_at"])
+        elapsed_seconds = max(1, int((now - started_at).total_seconds()))
+
+        # Mock billing: charge by elapsed minute, minimum 1 minute,
+        # capped by quoted duration and reserved credits.
+        billable_minutes = min(
+            int(session["duration_minutes"]),
+            max(1, _gpu_math.ceil(elapsed_seconds / 60.0)),
+        )
+
+        credits_reserved = int(session["credits_reserved"])
+        duration_minutes = max(1, int(session["duration_minutes"]))
+
+        final_credits = min(
+            credits_reserved,
+            _gpu_math.ceil(credits_reserved * (billable_minutes / duration_minutes)),
+        )
+
+        paid_reserved = int(reservation["paid_amount"] or reservation["amount"])
+        paid_refund = max(0, paid_reserved - final_credits)
+
+        if paid_refund > 0:
+            conn.execute(
+                """
+                UPDATE app_users
+                SET paid_credit_balance = paid_credit_balance + ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (paid_refund, _auth_now_iso(), user_id),
+            )
+
+            _credit_pool_add_ledger(
+                conn,
+                user_id,
+                0,
+                paid_refund,
+                f"release_unused_mock_gpu:{session['gpu_id']}",
+                "external_paid",
+                {
+                    "session_token": session_token,
+                    "reservation_token": session["reservation_token"],
+                    "credits_reserved": credits_reserved,
+                    "final_credits": final_credits,
+                    "paid_refund": paid_refund,
+                    "billable_minutes": billable_minutes,
+                },
+            )
+
+        conn.execute(
+            """
+            UPDATE credit_reservations
+            SET status = 'committed',
+                updated_at = ?,
+                committed_at = ?,
+                metadata_json = COALESCE(?, metadata_json)
+            WHERE id = ?
+            """,
+            (
+                now_iso,
+                now_iso,
+                _credit_json_dumps({
+                    "session_token": session_token,
+                    "mock_gpu_stop": True,
+                    "credits_reserved": credits_reserved,
+                    "final_credits": final_credits,
+                    "paid_refund": paid_refund,
+                    "billable_minutes": billable_minutes,
+                }),
+                reservation["id"],
+            ),
+        )
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            0,
+            0,
+            f"commit_mock_gpu:{session['gpu_id']}",
+            "external_paid",
+            {
+                "session_token": session_token,
+                "reservation_token": session["reservation_token"],
+                "credits_reserved": credits_reserved,
+                "final_credits": final_credits,
+                "billable_minutes": billable_minutes,
+            },
+        )
+
+        conn.execute(
+            """
+            UPDATE gpu_sessions
+            SET status = 'stopped',
+                stopped_at = ?,
+                final_credits_charged = ?,
+                billable_minutes = ?
+            WHERE id = ?
+            """,
+            (
+                now_iso,
+                final_credits,
+                billable_minutes,
+                session["id"],
+            ),
+        )
+
+        conn.execute(
+            """
+            UPDATE gpu_session_quotes
+            SET status = 'completed'
+            WHERE user_id = ?
+              AND quote_token = ?
+            """,
+            (user_id, session["quote_token"]),
+        )
+
+        _credit_pool_sync_legacy_total(conn, user_id)
+        conn.commit()
+
+    result = _credit_pool_summary(user_id)
+    result["gpu_session"] = {
+        "ok": True,
+        "mode": "mock",
+        "session_token": session_token,
+        "status": "stopped",
+        "gpu_id": session["gpu_id"],
+        "gpu_name": session["gpu_name"],
+        "credits_reserved": credits_reserved,
+        "final_credits_charged": final_credits,
+        "paid_credits_refunded": paid_refund,
+        "billable_minutes": billable_minutes,
+        "detail": "Mock GPU session stopped and reservation committed.",
+    }
+
+    return result
+
+
+# ============================================================
+# Mock GPU stuck-session cleanup
+#
+# Development safety endpoint:
+# - Cleans up mock GPU sessions that got stuck during UI/backend testing.
+# - If the reservation is still reserved, it refunds held credits.
+# - If the reservation is already committed/refunded, it only marks session stopped.
+# - This should not be used for real provider sessions later.
+# ============================================================
+
+@app.post("/system/gpu/cleanup-mock-session")
+async def system_gpu_cleanup_mock_session(request: Request):
+    row = _credit_pool_user_row(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    session_token = str(payload.get("session_token") or "").strip()
+
+    if not session_token:
+        raise HTTPException(status_code=400, detail="session_token is required.")
+
+    _gpu_session_init_tables()
+
+    now = _gpu_now()
+    now_iso = _gpu_iso(now)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        session = conn.execute(
+            """
+            SELECT *
+            FROM gpu_sessions
+            WHERE user_id = ?
+              AND session_token = ?
+            """,
+            (user_id, session_token),
+        ).fetchone()
+
+        if not session:
+            raise HTTPException(status_code=404, detail="GPU session not found.")
+
+        reservation = conn.execute(
+            """
+            SELECT *
+            FROM credit_reservations
+            WHERE user_id = ?
+              AND reservation_token = ?
+            """,
+            (user_id, session["reservation_token"]),
+        ).fetchone()
+
+        refunded_free = 0
+        refunded_paid = 0
+        reservation_status_before = reservation["status"] if reservation else "missing"
+
+        if reservation and reservation["status"] == "reserved":
+            refunded_free = int(reservation["free_amount"] or 0)
+            refunded_paid = int(reservation["paid_amount"] or 0)
+
+            conn.execute(
+                """
+                UPDATE app_users
+                SET free_credit_balance = free_credit_balance + ?,
+                    paid_credit_balance = paid_credit_balance + ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (refunded_free, refunded_paid, _auth_now_iso(), user_id),
+            )
+
+            conn.execute(
+                """
+                UPDATE credit_reservations
+                SET status = 'refunded',
+                    updated_at = ?,
+                    refunded_at = ?,
+                    metadata_json = COALESCE(?, metadata_json)
+                WHERE id = ?
+                """,
+                (
+                    now_iso,
+                    now_iso,
+                    _credit_json_dumps({
+                        "cleanup": True,
+                        "session_token": session_token,
+                        "reason": "mock_gpu_stuck_session_cleanup",
+                    }),
+                    reservation["id"],
+                ),
+            )
+
+            _credit_pool_add_ledger(
+                conn,
+                user_id,
+                refunded_free,
+                refunded_paid,
+                f"cleanup_refund_mock_gpu:{session['gpu_id']}",
+                "external_paid",
+                {
+                    "session_token": session_token,
+                    "reservation_token": session["reservation_token"],
+                    "refunded_free": refunded_free,
+                    "refunded_paid": refunded_paid,
+                    "reservation_status_before": reservation_status_before,
+                },
+            )
+
+        conn.execute(
+            """
+            UPDATE gpu_sessions
+            SET status = 'stopped',
+                stopped_at = COALESCE(stopped_at, ?),
+                final_credits_charged = COALESCE(final_credits_charged, 0),
+                billable_minutes = COALESCE(billable_minutes, 0),
+                metadata_json = COALESCE(?, metadata_json)
+            WHERE id = ?
+            """,
+            (
+                now_iso,
+                _credit_json_dumps({
+                    "cleanup": True,
+                    "reason": "mock_gpu_stuck_session_cleanup",
+                    "reservation_status_before": reservation_status_before,
+                }),
+                session["id"],
+            ),
+        )
+
+        conn.execute(
+            """
+            UPDATE gpu_session_quotes
+            SET status = CASE
+                WHEN status IN ('running', 'reserved', 'quoted') THEN 'canceled'
+                ELSE status
+            END
+            WHERE user_id = ?
+              AND quote_token = ?
+            """,
+            (user_id, session["quote_token"]),
+        )
+
+        _credit_pool_add_ledger(
+            conn,
+            user_id,
+            0,
+            0,
+            f"cleanup_mock_gpu_session:{session['gpu_id']}",
+            "external_paid",
+            {
+                "session_token": session_token,
+                "reservation_token": session["reservation_token"],
+                "reservation_status_before": reservation_status_before,
+                "refunded_free": refunded_free,
+                "refunded_paid": refunded_paid,
+            },
+        )
+
+        _credit_pool_sync_legacy_total(conn, user_id)
+        conn.commit()
+
+    result = _credit_pool_summary(user_id)
+    result["gpu_session_cleanup"] = {
+        "ok": True,
+        "mode": "mock",
+        "session_token": session_token,
+        "status": "stopped",
+        "reservation_status_before": reservation_status_before,
+        "refunded_free": refunded_free,
+        "refunded_paid": refunded_paid,
+        "detail": "Mock GPU session cleaned up.",
+    }
+
+    return result
+

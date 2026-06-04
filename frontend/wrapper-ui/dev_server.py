@@ -43,6 +43,18 @@ def map_api(path):
     if path == "/api/gpu/reserve-quote":
         return CONTROLLER, "/system/gpu/reserve-quote"
 
+    if path == "/api/gpu/sessions":
+        return CONTROLLER, "/system/gpu/sessions"
+
+    if path == "/api/gpu/start-reserved":
+        return CONTROLLER, "/system/gpu/start-reserved"
+
+    if path == "/api/gpu/stop-session":
+        return CONTROLLER, "/system/gpu/stop-session"
+
+    if path == "/api/gpu/cleanup-mock-session":
+        return CONTROLLER, "/system/gpu/cleanup-mock-session"
+
 
     if path == "/api/credits/reserve-v2":
         return CONTROLLER, "/system/credits/reserve-v2"

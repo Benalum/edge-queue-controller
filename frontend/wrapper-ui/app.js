@@ -12,6 +12,7 @@ let accountCredits = null;
 let gpuCatalog = null;
 let gpuQuote = null;
 let gpuReserveResult = null;
+let gpuSessions = null;
 let adRewardStatus = null;
 let authMode = "login";
 
@@ -611,6 +612,18 @@ function renderGpuReserveResult() {
       ${safeText(result.detail || "Quote reserved.")}
       Paid credits reserved: ${formatNumber(result.paid_credits_reserved || 0)}.
     </div>
+
+    <div class="actions">
+      <button
+        id="gpuStartSessionBtn"
+        class="primary-btn"
+        type="button"
+        data-gpu-quote-token="${safeText(result.quote_token || "")}"
+        data-gpu-reservation-token="${safeText(result.reservation_token || "")}"
+      >
+        Start mock session
+      </button>
+    </div>
   `;
 }
 
@@ -734,6 +747,176 @@ async function reserveMockGpuQuote() {
       button.disabled = false;
       button.textContent = "Reserve paid credits";
     }
+  }
+}
+
+async function loadGpuSessions() {
+  gpuSessions = null;
+
+  if (!authState.token) {
+    return;
+  }
+
+  try {
+    gpuSessions = await api("/gpu/sessions", {
+      method: "GET",
+    });
+  } catch {
+    gpuSessions = null;
+  }
+}
+
+function renderGpuSessionsList() {
+  const sessions = gpuSessions?.sessions || [];
+
+  if (!sessions.length) {
+    return `<div class="empty-list">No GPU sessions yet.</div>`;
+  }
+
+  return `
+    <div class="activity-list">
+      ${sessions.slice(0, 8).map((session) => `
+        <div class="activity-row">
+          <div>
+            <strong>${safeText(session.gpu_name || session.gpu_id || "GPU session")}</strong>
+            <span>
+              ${safeText(session.status)} ·
+              reserved ${formatNumber(session.credits_reserved || 0)} paid credits ·
+              charged ${formatNumber(session.final_credits_charged || 0)} ·
+              billable ${formatNumber(session.billable_minutes || 0)} min
+            </span>
+          </div>
+
+          <div class="row-actions">
+            <b>${safeText(session.status)}</b>
+            ${session.status === "running" ? `
+              <button
+                class="mini-danger-btn"
+                type="button"
+                data-stop-gpu-session="${safeText(session.session_token || "")}"
+              >
+                Stop
+              </button>
+
+              <button
+                class="mini-danger-btn"
+                type="button"
+                data-cleanup-gpu-session="${safeText(session.session_token || "")}"
+              >
+                Cleanup
+              </button>
+            ` : ""}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+async function startMockGpuSession(quoteToken, reservationToken) {
+  if (!authState.token) {
+    openAuthModal("login");
+    return;
+  }
+
+  if (!quoteToken && !reservationToken) {
+    alert("Missing quote or reservation token.");
+    return;
+  }
+
+  try {
+    const result = await api("/gpu/start-reserved", {
+      method: "POST",
+      body: JSON.stringify({
+        quote_token: quoteToken || undefined,
+        reservation_token: reservationToken || undefined,
+      }),
+    });
+
+    gpuReserveResult = null;
+    gpuQuote = null;
+
+    await loadAccountCredits();
+    await loadGpuSessions();
+
+    alert(result.detail || "Mock GPU session started.");
+    renderPage();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+async function cleanupMockGpuSession(sessionToken) {
+  if (!authState.token) {
+    openAuthModal("login");
+    return;
+  }
+
+  if (!sessionToken) {
+    alert("Missing session token.");
+    return;
+  }
+
+  const ok = confirm("Force-clean this stuck mock GPU session? This is for development testing only.");
+  if (!ok) return;
+
+  try {
+    const result = await api("/gpu/cleanup-mock-session", {
+      method: "POST",
+      body: JSON.stringify({
+        session_token: sessionToken,
+      }),
+    });
+
+    accountCredits = result;
+
+    await loadGpuSessions();
+
+    if (result.user) {
+      authState.user = result.user;
+    }
+
+    alert(result.gpu_session_cleanup?.detail || "Mock GPU session cleaned up.");
+    renderPage();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+async function stopMockGpuSession(sessionToken) {
+  if (!authState.token) {
+    openAuthModal("login");
+    return;
+  }
+
+  if (!sessionToken) {
+    alert("Missing session token.");
+    return;
+  }
+
+  const ok = confirm("Stop this mock GPU session and commit actual used credits?");
+  if (!ok) return;
+
+  try {
+    const result = await api("/gpu/stop-session", {
+      method: "POST",
+      body: JSON.stringify({
+        session_token: sessionToken,
+      }),
+    });
+
+    accountCredits = result;
+
+    await loadGpuSessions();
+
+    if (result.user) {
+      authState.user = result.user;
+    }
+
+    alert(result.gpu_session?.detail || "Mock GPU session stopped.");
+    renderPage();
+  } catch (err) {
+    alert(err.message);
   }
 }
 
@@ -937,6 +1120,14 @@ function renderCreditsPage() {
     </section>
 
     <section class="system-section">
+      <h2>GPU session history</h2>
+      <p class="section-copy">
+        Mock GPU session history. Running sessions can be stopped to commit actual used credits and release unused paid credits.
+      </p>
+      ${loggedIn ? renderGpuSessionsList() : `<div class="notice">Log in to view GPU sessions.</div>`}
+    </section>
+
+    <section class="system-section">
       <h2>Monthly plans</h2>
       <p class="section-copy">
         Draft tiers for testing the business model. Checkout will be connected later.
@@ -1091,6 +1282,18 @@ function renderPage() {
   $("claimAdRewardBtn")?.addEventListener("click", claimMockAdReward);
   $("gpuQuoteBtn")?.addEventListener("click", quoteMockGpuSession);
   $("gpuReserveQuoteBtn")?.addEventListener("click", reserveMockGpuQuote);
+
+  $("gpuStartSessionBtn")?.addEventListener("click", (buttonEvent) => {
+    const button = buttonEvent.currentTarget;
+    startMockGpuSession(button.dataset.gpuQuoteToken, button.dataset.gpuReservationToken);
+  });
+
+  document.querySelectorAll("[data-stop-gpu-session]").forEach((button) => {
+    button.addEventListener("click", () => stopMockGpuSession(button.dataset.stopGpuSession));
+  });
+  document.querySelectorAll("[data-cleanup-gpu-session]").forEach((button) => {
+    button.addEventListener("click", () => cleanupMockGpuSession(button.dataset.cleanupGpuSession));
+  });
   document.querySelectorAll("[data-refund-token]").forEach((button) => {
     button.addEventListener("click", () => refundReservationToken(button.dataset.refundToken));
   });
@@ -1230,6 +1433,7 @@ async function claimMockAdReward() {
 
 async function loadAccountCredits() {
   accountCredits = null;
+  gpuSessions = null;
 
   if (!authState.token) {
     return;
@@ -1246,6 +1450,8 @@ async function loadAccountCredits() {
     if (accountCredits?.user) {
       authState.user = accountCredits.user;
     }
+
+    await loadGpuSessions();
   } catch {
     accountCredits = null;
   }
