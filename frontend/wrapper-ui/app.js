@@ -941,6 +941,134 @@ async function stopMockGpuSession(sessionToken) {
   }
 }
 
+function renderAdminCreditGrant() {
+  const user = authState.user || {};
+
+  if (!user.is_admin) {
+    return "";
+  }
+
+  return `
+    <section class="system-section admin-only-section">
+      <h2>Admin credit tools</h2>
+      <p class="section-copy">
+        Grant free/local credits or paid credits to a user account. Free credits can only be used on local services.
+        Paid credits can be used for external GPU/cloud services.
+      </p>
+
+      <div class="admin-credit-panel">
+        <label>
+          User email
+          <input id="adminGrantEmail" type="email" placeholder="user@example.com" value="${safeText(user.email || "")}" />
+        </label>
+
+        <label>
+          Amount
+          <input id="adminGrantAmount" type="number" min="1" step="1" value="100" />
+        </label>
+
+        <label>
+          Credit type
+          <select id="adminGrantType">
+            <option value="free">Free/local credits</option>
+            <option value="paid">Paid credits</option>
+          </select>
+        </label>
+
+        <label>
+          Reason
+          <input id="adminGrantReason" type="text" value="admin_manual_grant" />
+        </label>
+
+        <button id="adminGrantCreditsBtn" class="primary-btn" type="button">
+          Grant credits
+        </button>
+      </div>
+
+      <div class="notice">
+        Admin-only. Use paid credits carefully because they represent credits that can fund external paid resources.
+      </div>
+    </section>
+  `;
+}
+
+async function adminGrantCredits() {
+  if (!authState.token) {
+    openAuthModal("login");
+    return;
+  }
+
+  const user = authState.user || {};
+  if (!user.is_admin) {
+    alert("Admin access required.");
+    return;
+  }
+
+  const email = $("adminGrantEmail")?.value?.trim();
+  const amount = Number($("adminGrantAmount")?.value || 0);
+  const type = $("adminGrantType")?.value || "free";
+  const reason = $("adminGrantReason")?.value?.trim() || "admin_manual_grant";
+
+  if (!email) {
+    alert("Enter a user email.");
+    return;
+  }
+
+  if (!Number.isFinite(amount) || amount < 1) {
+    alert("Amount must be at least 1.");
+    return;
+  }
+
+  const confirmText =
+    type === "paid"
+      ? `Grant ${formatNumber(amount)} PAID credits to ${email}?`
+      : `Grant ${formatNumber(amount)} free/local credits to ${email}?`;
+
+  if (!confirm(confirmText)) {
+    return;
+  }
+
+  const endpoint = type === "paid" ? "/credits/grant-paid" : "/credits/grant-free";
+
+  const button = $("adminGrantCreditsBtn");
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Granting...";
+  }
+
+  try {
+    const result = await api(endpoint, {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        amount,
+        reason,
+        metadata: {
+          source: "credits_page_admin_ui",
+        },
+      }),
+    });
+
+    accountCredits = result;
+
+    if (result.user && result.user.email === authState.user?.email) {
+      authState.user = result.user;
+    }
+
+    await loadAccountCredits();
+
+    alert(`Granted ${formatNumber(amount)} ${type} credits to ${email}.`);
+    renderPage();
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Grant credits";
+    }
+  }
+}
+
 function renderCreditsPage() {
   const loggedIn = Boolean(authState.token);
   const live = accountCredits || {};
@@ -1083,6 +1211,8 @@ function renderCreditsPage() {
           </div>
         `}
       </section>
+
+      ${renderAdminCreditGrant()}
 
       <section class="system-section">
         <h2>Recent credit history</h2>
@@ -1303,6 +1433,7 @@ function renderPage() {
   $("claimAdRewardBtn")?.addEventListener("click", claimMockAdReward);
   $("gpuQuoteBtn")?.addEventListener("click", quoteMockGpuSession);
   $("gpuReserveQuoteBtn")?.addEventListener("click", reserveMockGpuQuote);
+  $("adminGrantCreditsBtn")?.addEventListener("click", adminGrantCredits);
 
   $("gpuStartSessionBtn")?.addEventListener("click", (buttonEvent) => {
     const button = buttonEvent.currentTarget;

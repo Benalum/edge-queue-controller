@@ -799,3 +799,46 @@ button.card {
     display: none;
   }
 }
+
+/* ============================================================
+   Admin credit tools
+   ============================================================ */
+
+.admin-only-section {
+  border: 1px solid rgba(115,183,255,.32);
+  border-radius: 24px;
+  padding: 18px;
+  background: rgba(115,183,255,.07);
+}
+
+.admin-credit-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) 140px 190px minmax(180px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 16px;
+}
+
+.admin-credit-panel label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.admin-credit-panel input,
+.admin-credit-panel select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 11px 12px;
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  outline: none;
+}
+
+@media (max-width: 1050px) {
+  .admin-credit-panel {
+    grid-template-columns: 1fr;
+  }
+}
