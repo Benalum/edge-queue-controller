@@ -11140,3 +11140,610 @@ async def system_gpu_cleanup_mock_session(request: Request):
 
     return result
 
+
+# ============================================================
+# Admin panel + support messaging foundation
+#
+# Features:
+# - Admin user list / online users
+# - User support tickets
+# - Admin support inbox
+# - User/admin threaded messages
+# ============================================================
+
+def _admin_support_init_tables():
+    _account_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS support_tickets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                subject TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'open',
+                priority TEXT NOT NULL DEFAULT 'normal',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                closed_at TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS support_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ticket_id INTEGER NOT NULL,
+                sender_user_id INTEGER NOT NULL,
+                sender_role TEXT NOT NULL DEFAULT 'user',
+                body TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(ticket_id) REFERENCES support_tickets(id),
+                FOREIGN KEY(sender_user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+
+        conn.commit()
+
+
+def _admin_support_user_from_request(request: Request):
+    _admin_support_init_tables()
+    row = _credit_pool_user_row(request)
+    return row, _account_enriched_public_user(row)
+
+
+def _admin_support_require_admin(request: Request):
+    row, user = _admin_support_user_from_request(request)
+
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required.")
+
+    return row, user
+
+
+def _admin_support_ticket_public(ticket_row, message_count=None, last_message_at=None):
+    return {
+        "id": ticket_row["id"],
+        "user_id": ticket_row["user_id"],
+        "email": ticket_row["email"] if "email" in ticket_row.keys() else None,
+        "subject": ticket_row["subject"],
+        "status": ticket_row["status"],
+        "priority": ticket_row["priority"],
+        "created_at": ticket_row["created_at"],
+        "updated_at": ticket_row["updated_at"],
+        "closed_at": ticket_row["closed_at"],
+        "message_count": message_count,
+        "last_message_at": last_message_at,
+    }
+
+
+@app.get("/system/admin/users")
+async def system_admin_users(request: Request):
+    _admin_support_require_admin(request)
+    _admin_support_init_tables()
+
+    now = _auth_now_iso()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        users = conn.execute(
+            """
+            SELECT
+                u.id,
+                u.email,
+                u.display_name,
+                u.status,
+                COALESCE(u.role, 'user') AS role,
+                COALESCE(u.plan, 'free') AS plan,
+                COALESCE(u.billing_status, 'none') AS billing_status,
+                COALESCE(u.free_credit_balance, 0) AS free_credit_balance,
+                COALESCE(u.paid_credit_balance, 0) AS paid_credit_balance,
+                COALESCE(u.storage_quota_mb, 0) AS storage_quota_mb,
+                u.created_at,
+                u.updated_at,
+                u.last_login_at,
+                MAX(s.last_seen_at) AS last_seen_at,
+                COUNT(CASE WHEN s.revoked_at IS NULL AND s.expires_at > ? THEN 1 END) AS active_session_count
+            FROM app_users u
+            LEFT JOIN user_sessions s ON s.user_id = u.id
+            GROUP BY u.id
+            ORDER BY COALESCE(MAX(s.last_seen_at), u.last_login_at, u.created_at) DESC
+            LIMIT 250
+            """,
+            (now,),
+        ).fetchall()
+
+    online_window_seconds = int(os.getenv("ADMIN_ONLINE_WINDOW_SECONDS", "300"))
+    now_epoch = _ad_iso_to_epoch(now)
+
+    result_users = []
+    online_count = 0
+
+    for u in users:
+        last_seen = u["last_seen_at"] or u["last_login_at"]
+        last_seen_epoch = _ad_iso_to_epoch(last_seen) if last_seen else 0
+        is_online = bool(last_seen_epoch and (now_epoch - last_seen_epoch) <= online_window_seconds)
+
+        if is_online:
+            online_count += 1
+
+        result_users.append({
+            "id": u["id"],
+            "email": u["email"],
+            "display_name": u["display_name"],
+            "status": u["status"],
+            "role": u["role"],
+            "is_admin": u["role"] == "admin",
+            "plan": u["plan"],
+            "billing_status": u["billing_status"],
+            "free_credit_balance": u["free_credit_balance"],
+            "paid_credit_balance": u["paid_credit_balance"],
+            "storage_quota_mb": u["storage_quota_mb"],
+            "created_at": u["created_at"],
+            "updated_at": u["updated_at"],
+            "last_login_at": u["last_login_at"],
+            "last_seen_at": last_seen,
+            "active_session_count": int(u["active_session_count"] or 0),
+            "online": is_online,
+        })
+
+    return {
+        "ok": True,
+        "online_window_seconds": online_window_seconds,
+        "online_count": online_count,
+        "user_count_returned": len(result_users),
+        "users": result_users,
+    }
+
+
+@app.post("/system/support/tickets")
+async def system_support_create_ticket(request: Request):
+    row, user = _admin_support_user_from_request(request)
+    user_id = int(row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    subject = str(payload.get("subject") or "").strip()
+    body = str(payload.get("body") or "").strip()
+
+    if len(subject) < 3:
+        raise HTTPException(status_code=400, detail="Subject must be at least 3 characters.")
+
+    if len(body) < 5:
+        raise HTTPException(status_code=400, detail="Message must be at least 5 characters.")
+
+    subject = subject[:160]
+    body = body[:5000]
+    now = _auth_now_iso()
+
+    _admin_support_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        conn.execute(
+            """
+            INSERT INTO support_tickets (
+                user_id,
+                subject,
+                status,
+                priority,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, 'waiting_admin', 'normal', ?, ?)
+            """,
+            (user_id, subject, now, now),
+        )
+
+        ticket_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+        conn.execute(
+            """
+            INSERT INTO support_messages (
+                ticket_id,
+                sender_user_id,
+                sender_role,
+                body,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                ticket_id,
+                user_id,
+                "admin" if user.get("is_admin") else "user",
+                body,
+                now,
+            ),
+        )
+
+        conn.commit()
+
+    return {
+        "ok": True,
+        "ticket": {
+            "id": ticket_id,
+            "subject": subject,
+            "status": "waiting_admin",
+            "priority": "normal",
+            "created_at": now,
+            "updated_at": now,
+        },
+    }
+
+
+@app.get("/system/support/tickets")
+async def system_support_my_tickets(request: Request):
+    row, user = _admin_support_user_from_request(request)
+    user_id = int(row["id"])
+
+    _admin_support_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        tickets = conn.execute(
+            """
+            SELECT
+                t.*,
+                u.email,
+                COUNT(m.id) AS message_count,
+                MAX(m.created_at) AS last_message_at
+            FROM support_tickets t
+            JOIN app_users u ON u.id = t.user_id
+            LEFT JOIN support_messages m ON m.ticket_id = t.id
+            WHERE t.user_id = ?
+            GROUP BY t.id
+            ORDER BY COALESCE(MAX(m.created_at), t.updated_at) DESC
+            LIMIT 100
+            """,
+            (user_id,),
+        ).fetchall()
+
+    return {
+        "ok": True,
+        "tickets": [
+            _admin_support_ticket_public(t, t["message_count"], t["last_message_at"])
+            for t in tickets
+        ],
+    }
+
+
+@app.get("/system/admin/support/tickets")
+async def system_admin_support_tickets(request: Request):
+    _admin_support_require_admin(request)
+    _admin_support_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        tickets = conn.execute(
+            """
+            SELECT
+                t.*,
+                u.email,
+                COUNT(m.id) AS message_count,
+                MAX(m.created_at) AS last_message_at
+            FROM support_tickets t
+            JOIN app_users u ON u.id = t.user_id
+            LEFT JOIN support_messages m ON m.ticket_id = t.id
+            GROUP BY t.id
+            ORDER BY
+                CASE t.status
+                    WHEN 'waiting_admin' THEN 0
+                    WHEN 'open' THEN 1
+                    WHEN 'waiting_user' THEN 2
+                    WHEN 'solved' THEN 3
+                    WHEN 'closed' THEN 4
+                    ELSE 5
+                END,
+                COALESCE(MAX(m.created_at), t.updated_at) DESC
+            LIMIT 250
+            """
+        ).fetchall()
+
+    return {
+        "ok": True,
+        "tickets": [
+            _admin_support_ticket_public(t, t["message_count"], t["last_message_at"])
+            for t in tickets
+        ],
+    }
+
+
+def _support_get_ticket_for_user_or_admin(conn, ticket_id: int, user_id: int, is_admin: bool):
+    if is_admin:
+        return conn.execute(
+            """
+            SELECT t.*, u.email
+            FROM support_tickets t
+            JOIN app_users u ON u.id = t.user_id
+            WHERE t.id = ?
+            """,
+            (ticket_id,),
+        ).fetchone()
+
+    return conn.execute(
+        """
+        SELECT t.*, u.email
+        FROM support_tickets t
+        JOIN app_users u ON u.id = t.user_id
+        WHERE t.id = ?
+          AND t.user_id = ?
+        """,
+        (ticket_id, user_id),
+    ).fetchone()
+
+
+@app.get("/system/support/tickets/{ticket_id}/messages")
+async def system_support_ticket_messages(ticket_id: int, request: Request):
+    row, user = _admin_support_user_from_request(request)
+    user_id = int(row["id"])
+    is_admin = bool(user.get("is_admin"))
+
+    _admin_support_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        ticket = _support_get_ticket_for_user_or_admin(conn, ticket_id, user_id, is_admin)
+
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found.")
+
+        messages = conn.execute(
+            """
+            SELECT
+                m.id,
+                m.ticket_id,
+                m.sender_user_id,
+                m.sender_role,
+                m.body,
+                m.created_at,
+                u.email
+            FROM support_messages m
+            JOIN app_users u ON u.id = m.sender_user_id
+            WHERE m.ticket_id = ?
+            ORDER BY m.id ASC
+            """,
+            (ticket_id,),
+        ).fetchall()
+
+    return {
+        "ok": True,
+        "ticket": _admin_support_ticket_public(ticket),
+        "messages": [
+            {
+                "id": m["id"],
+                "ticket_id": m["ticket_id"],
+                "sender_user_id": m["sender_user_id"],
+                "sender_role": m["sender_role"],
+                "sender_email": m["email"],
+                "body": m["body"],
+                "created_at": m["created_at"],
+            }
+            for m in messages
+        ],
+    }
+
+
+@app.post("/system/support/tickets/{ticket_id}/messages")
+async def system_support_ticket_reply(ticket_id: int, request: Request):
+    row, user = _admin_support_user_from_request(request)
+    user_id = int(row["id"])
+    is_admin = bool(user.get("is_admin"))
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    body = str(payload.get("body") or "").strip()
+    status = str(payload.get("status") or "").strip().lower()
+
+    if len(body) < 2:
+        raise HTTPException(status_code=400, detail="Message must be at least 2 characters.")
+
+    body = body[:5000]
+    now = _auth_now_iso()
+
+    _admin_support_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        ticket = _support_get_ticket_for_user_or_admin(conn, ticket_id, user_id, is_admin)
+
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found.")
+
+        sender_role = "admin" if is_admin else "user"
+
+        conn.execute(
+            """
+            INSERT INTO support_messages (
+                ticket_id,
+                sender_user_id,
+                sender_role,
+                body,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (ticket_id, user_id, sender_role, body, now),
+        )
+
+        next_status = ticket["status"]
+
+        if status in ("waiting_admin", "waiting_user", "solved"):
+            next_status = status
+        elif is_admin:
+            next_status = "waiting_user"
+        else:
+            next_status = "waiting_admin"
+
+        conn.execute(
+            """
+            UPDATE support_tickets
+            SET status = ?,
+                updated_at = ?,
+                closed_at = CASE WHEN ? = 'solved' THEN ? ELSE closed_at END
+            WHERE id = ?
+            """,
+            (next_status, now, next_status, now, ticket_id),
+        )
+
+        conn.commit()
+
+    return {
+        "ok": True,
+        "ticket_id": ticket_id,
+        "status": next_status,
+        "message": {
+            "sender_role": sender_role,
+            "body": body,
+            "created_at": now,
+        },
+    }
+
+
+# ============================================================
+# Session presence heartbeat
+# Lets the frontend keep logged-in users marked online.
+# ============================================================
+
+@app.post("/system/session/presence")
+async def system_session_presence(request: Request):
+    row = _auth_current_user_from_request(request)
+
+    return {
+        "ok": True,
+        "user": _account_enriched_public_user(row) if "_account_enriched_public_user" in globals() else _auth_public_user(row),
+        "seen_at": _auth_now_iso(),
+    }
+
+
+# ============================================================
+# Support ticket status update
+#
+# Allows:
+# - Ticket owner to mark their own ticket solved
+# - Admin to mark any ticket solved
+# - Admin/user can optionally reopen/update status where allowed
+# ============================================================
+
+@app.post("/system/support/tickets/{ticket_id}/status")
+async def system_support_ticket_status(ticket_id: int, request: Request):
+    row, user = _admin_support_user_from_request(request)
+    user_id = int(row["id"])
+    is_admin = bool(user.get("is_admin"))
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        payload = {}
+
+    status = str(payload.get("status") or "").strip().lower()
+    note = str(payload.get("note") or "").strip()
+
+    if status not in ("waiting_admin", "waiting_user", "solved"):
+        raise HTTPException(
+            status_code=400,
+            detail="status must be waiting_admin, waiting_user, or solved.",
+        )
+
+    # Normal users can solve or reopen their own ticket to waiting_admin.
+    # Admins can set all supported statuses.
+    if not is_admin and status == "waiting_user":
+        raise HTTPException(
+            status_code=403,
+            detail="Only admins can set a ticket to waiting_user.",
+        )
+
+    _admin_support_init_tables()
+    now = _auth_now_iso()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        ticket = _support_get_ticket_for_user_or_admin(conn, ticket_id, user_id, is_admin)
+
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found.")
+
+        old_status = ticket["status"]
+        sender_role = "admin" if is_admin else "user"
+
+        if not note:
+            if status == "solved":
+                note = "Marked ticket as solved."
+            elif status == "waiting_admin":
+                note = "Reopened ticket. Waiting on admin."
+            elif status == "waiting_user":
+                note = "Waiting on user."
+
+        conn.execute(
+            """
+            UPDATE support_tickets
+            SET status = ?,
+                updated_at = ?,
+                closed_at = CASE WHEN ? = 'solved' THEN ? ELSE NULL END
+            WHERE id = ?
+            """,
+            (status, now, status, now, ticket_id),
+        )
+
+        conn.execute(
+            """
+            INSERT INTO support_messages (
+                ticket_id,
+                sender_user_id,
+                sender_role,
+                body,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                ticket_id,
+                user_id,
+                sender_role,
+                note[:5000],
+                now,
+            ),
+        )
+
+        conn.commit()
+
+    return {
+        "ok": True,
+        "ticket_id": ticket_id,
+        "old_status": old_status,
+        "status": status,
+        "message": {
+            "sender_role": sender_role,
+            "body": note[:5000],
+            "created_at": now,
+        },
+    }
+

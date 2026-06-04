@@ -13,6 +13,10 @@ def map_api(path):
     if path == "/api/me":
         return CONTROLLER, "/system/session/me"
 
+    if path == "/api/session/presence":
+        return CONTROLLER, "/system/session/presence"
+
+
     if path == "/api/auth/login":
         return CONTROLLER, "/system/session/login"
 
@@ -83,6 +87,18 @@ def map_api(path):
 
     if path == "/api/credits/grant":
         return CONTROLLER, "/system/credits/grant"
+
+    if path == "/api/admin/users":
+        return CONTROLLER, "/system/admin/users"
+
+    if path == "/api/admin/support/tickets":
+        return CONTROLLER, "/system/admin/support/tickets"
+
+    if path == "/api/support/tickets":
+        return CONTROLLER, "/system/support/tickets"
+
+    if path.startswith("/api/support/tickets/"):
+        return CONTROLLER, path.replace("/api/support/", "/system/support/", 1)
 
     if path.startswith("/api/system/"):
         return GATEWAY, path.replace("/api/system/", "/system/", 1)

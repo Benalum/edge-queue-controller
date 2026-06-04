@@ -13,6 +13,11 @@ let gpuCatalog = null;
 let gpuQuote = null;
 let gpuReserveResult = null;
 let gpuSessions = null;
+let adminUsers = null;
+let adminTickets = null;
+let adminSystemStatus = null;
+let supportTickets = null;
+let supportThread = null;
 let adRewardStatus = null;
 let authMode = "login";
 
@@ -99,6 +104,22 @@ const pages = {
     title: "Credits and Plans",
     subtitle:
       "Credits control access to higher-cost features like AI jobs, companion usage, image generation, storage, and future premium tools.",
+    boxes: [],
+  },
+
+  "/admin": {
+    eyebrow: "Admin",
+    title: "Admin Panel",
+    subtitle:
+      "Manage users, credits, support tickets, and infrastructure status from one admin-only dashboard.",
+    boxes: [],
+  },
+
+  "/support": {
+    eyebrow: "Support",
+    title: "Customer Support",
+    subtitle:
+      "Send a message to support if something is not working, you need account help, or you have questions about credits and services.",
     boxes: [],
   },
 
@@ -1069,6 +1090,433 @@ async function adminGrantCredits() {
   }
 }
 
+async function loadAdminPanelData() {
+  adminUsers = null;
+  adminTickets = null;
+  adminSystemStatus = null;
+
+  if (!authState.token || !authState.user?.is_admin) {
+    return;
+  }
+
+  try {
+    adminUsers = await api("/admin/users", { method: "GET" });
+  } catch {
+    adminUsers = null;
+  }
+
+  try {
+    adminTickets = await api("/admin/support/tickets", { method: "GET" });
+  } catch {
+    adminTickets = null;
+  }
+
+  try {
+    adminSystemStatus = await api("/system/admin-status", { method: "GET" });
+  } catch {
+    adminSystemStatus = null;
+  }
+}
+
+async function loadSupportData() {
+  supportTickets = null;
+
+  if (!authState.token) {
+    return;
+  }
+
+  try {
+    supportTickets = await api("/support/tickets", { method: "GET" });
+  } catch {
+    supportTickets = null;
+  }
+}
+
+async function loadSupportThread(ticketId) {
+  if (!authState.token || !ticketId) {
+    return;
+  }
+
+  try {
+    supportThread = await api(`/support/tickets/${ticketId}/messages`, {
+      method: "GET",
+    });
+    renderPage();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+function renderAdminUsers() {
+  const users = adminUsers?.users || [];
+
+  if (!users.length) {
+    return `<div class="empty-list">No users loaded yet.</div>`;
+  }
+
+  return `
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Online</th>
+            <th>Role</th>
+            <th>Plan</th>
+            <th>Free</th>
+            <th>Paid</th>
+            <th>Last seen</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${users.map((u) => `
+            <tr>
+              <td>${safeText(u.email || "")}</td>
+              <td><span class="badge ${u.online ? "online" : "offline"}">${u.online ? "online" : "offline"}</span></td>
+              <td>${safeText(u.role || "user")}</td>
+              <td>${safeText(u.plan || "free")}</td>
+              <td>${formatNumber(u.free_credit_balance || 0)}</td>
+              <td>${formatNumber(u.paid_credit_balance || 0)}</td>
+              <td>${safeText(u.last_seen_at || "")}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderAdminSupportInbox() {
+  const tickets = adminTickets?.tickets || [];
+
+  if (!tickets.length) {
+    return `<div class="empty-list">No support tickets yet.</div>`;
+  }
+
+  return `
+    <div class="activity-list">
+      ${tickets.map((ticket) => `
+        <div class="activity-row">
+          <div>
+            <strong>#${ticket.id} · ${safeText(ticket.subject)}</strong>
+            <span>
+              ${safeText(ticket.email || "")} ·
+              ${safeText(ticket.status)} ·
+              ${formatNumber(ticket.message_count || 0)} messages ·
+              ${safeText(ticket.last_message_at || ticket.updated_at || "")}
+            </span>
+          </div>
+          <div class="row-actions">
+            <button class="primary-btn mini-primary-btn" type="button" data-open-ticket="${ticket.id}">
+              Open
+            </button>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderAdminSystemStatus() {
+  const payload = adminSystemStatus || {};
+  const nodes = payload.nodes || [];
+  const services = payload.services || [];
+
+  if (!authState.user?.is_admin) {
+    return `<div class="notice">Admin access required.</div>`;
+  }
+
+  if (!payload.ok && !nodes.length && !services.length) {
+    return `<div class="empty-list">Admin system status not loaded yet.</div>`;
+  }
+
+  return `
+    <div class="summary-grid">
+      <div class="summary-box">
+        <span>Infrastructure visibility</span>
+        <strong>Admin only</strong>
+        <p>This detailed node view is hidden from normal users.</p>
+      </div>
+      <div class="summary-box">
+        <span>Overall</span>
+        <strong>${safeText(payload.overall_state || "unknown")}</strong>
+        <p>${safeText(payload.admin_email || authState.user?.email || "")}</p>
+      </div>
+      <div class="summary-box">
+        <span>Nodes</span>
+        <strong>${formatNumber(nodes.length)}</strong>
+        <p>Controller, server, CPU/GPU, and future storage nodes.</p>
+      </div>
+      <div class="summary-box">
+        <span>APIs</span>
+        <strong>${formatNumber(services.length)}</strong>
+        <p>Study, Companion, Profile, Calendar, Images, and related APIs.</p>
+      </div>
+    </div>
+
+    <h3>Nodes</h3>
+    <div class="status-list">
+      ${nodes.map((node) => `
+        <div class="status-item">
+          <div class="status-row">
+            <div class="status-name">${safeText(node.name || node.id || "Node")}</div>
+            <div class="badge ${safeText(node.state || "unknown")}">${safeText(node.state || "unknown")}</div>
+          </div>
+          <div class="status-detail">${safeText(node.detail || node.role || "")}</div>
+        </div>
+      `).join("")}
+    </div>
+
+    <h3>APIs / Services</h3>
+    <div class="status-list">
+      ${services.map((svc) => `
+        <div class="status-item">
+          <div class="status-row">
+            <div class="status-name">${safeText(svc.name || svc.id || "Service")}</div>
+            <div class="badge ${safeText(svc.state || "unknown")}">${safeText(svc.state || "unknown")}</div>
+          </div>
+          <div class="status-detail">${safeText(svc.detail || "")}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderSupportTicketList(tickets) {
+  const rows = tickets || [];
+
+  if (!rows.length) {
+    return `<div class="empty-list">No tickets yet.</div>`;
+  }
+
+  return `
+    <div class="activity-list">
+      ${rows.map((ticket) => `
+        <div class="activity-row">
+          <div>
+            <strong>#${ticket.id} · ${safeText(ticket.subject)}</strong>
+            <span>
+              ${safeText(ticket.status)} ·
+              ${formatNumber(ticket.message_count || 0)} messages ·
+              ${safeText(ticket.last_message_at || ticket.updated_at || "")}
+            </span>
+          </div>
+          <div class="row-actions">
+            <button class="primary-btn mini-primary-btn" type="button" data-open-ticket="${ticket.id}">
+              Open
+            </button>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderSupportThread() {
+  if (!supportThread?.ticket) {
+    return "";
+  }
+
+  return `
+    <section class="system-section">
+      <h2>Ticket #${supportThread.ticket.id}: ${safeText(supportThread.ticket.subject)}</h2>
+      <p class="section-copy">
+        Status: ${safeText(supportThread.ticket.status)} · Created: ${safeText(supportThread.ticket.created_at)}
+      </p>
+
+      <div class="message-thread">
+        ${(supportThread.messages || []).map((message) => `
+          <div class="message-bubble ${message.sender_role === "admin" ? "admin-message" : "user-message"}">
+            <div class="message-meta">
+              ${safeText(message.sender_role)} · ${safeText(message.sender_email || "")} · ${safeText(message.created_at)}
+            </div>
+            <div>${safeText(message.body)}</div>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="support-reply-box">
+        <textarea id="supportReplyBody" rows="4" placeholder="Write a reply..."></textarea>
+        <div class="actions">
+          <button id="supportReplyBtn" class="primary-btn" type="button" data-ticket-id="${supportThread.ticket.id}">
+            Send reply
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderSupportPage() {
+  const loggedIn = Boolean(authState.token);
+
+  if (!loggedIn) {
+    return `<div class="notice">Log in to contact support and view your tickets.</div>`;
+  }
+
+  return `
+    <section class="system-section">
+      <h2>Message customer support</h2>
+      <p class="section-copy">
+        Send a message if you are having account, credit, billing, study, companion, or platform issues.
+      </p>
+
+      <div class="support-form">
+        <label>
+          Subject
+          <input id="supportSubject" type="text" placeholder="Short description of the issue" />
+        </label>
+
+        <label>
+          Message
+          <textarea id="supportBody" rows="5" placeholder="Describe what happened, what page you were on, and what you expected."></textarea>
+        </label>
+
+        <button id="supportCreateTicketBtn" class="primary-btn" type="button">
+          Send message
+        </button>
+      </div>
+    </section>
+
+    <section class="system-section">
+      <h2>Your support tickets</h2>
+      ${renderSupportTicketList(supportTickets?.tickets || [])}
+    </section>
+
+    ${renderSupportThread()}
+  `;
+}
+
+function renderAdminPage() {
+  if (!authState.token) {
+    return `<div class="notice">Log in with an admin account to view the admin panel.</div>`;
+  }
+
+  if (!authState.user?.is_admin) {
+    return `<div class="notice">Admin access required.</div>`;
+  }
+
+  return `
+    ${renderAdminCreditGrant()}
+
+    <section class="system-section">
+      <h2>Users online</h2>
+      <p class="section-copy">
+        Online means the user had an active session seen within the configured online window.
+      </p>
+
+      <div class="summary-grid">
+        <div class="summary-box">
+          <span>Online users</span>
+          <strong>${formatNumber(adminUsers?.online_count || 0)}</strong>
+          <p>Currently active within the online window.</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Users returned</span>
+          <strong>${formatNumber(adminUsers?.user_count_returned || 0)}</strong>
+          <p>Latest users by activity.</p>
+        </div>
+      </div>
+
+      ${renderAdminUsers()}
+    </section>
+
+    <section class="system-section">
+      <h2>Support inbox</h2>
+      <p class="section-copy">
+        Read and respond to customer support messages.
+      </p>
+      ${renderAdminSupportInbox()}
+    </section>
+
+    ${renderSupportThread()}
+
+    <section class="system-section">
+      <h2>Admin system view</h2>
+      <p class="section-copy">
+        Detailed infrastructure state is admin-only and has been moved here from the public System page.
+      </p>
+      ${renderAdminSystemStatus()}
+    </section>
+  `;
+}
+
+async function createSupportTicket() {
+  if (!authState.token) {
+    openAuthModal("login");
+    return;
+  }
+
+  const subject = $("supportSubject")?.value?.trim() || "";
+  const body = $("supportBody")?.value?.trim() || "";
+
+  if (subject.length < 3) {
+    alert("Subject must be at least 3 characters.");
+    return;
+  }
+
+  if (body.length < 5) {
+    alert("Message must be at least 5 characters.");
+    return;
+  }
+
+  try {
+    const result = await api("/support/tickets", {
+      method: "POST",
+      body: JSON.stringify({ subject, body }),
+    });
+
+    supportThread = null;
+    await loadSupportData();
+
+    alert(`Support ticket #${result.ticket?.id} created.`);
+    renderPage();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+async function sendSupportReply(ticketId) {
+  if (!authState.token) {
+    openAuthModal("login");
+    return;
+  }
+
+  const body = $("supportReplyBody")?.value?.trim() || "";
+
+  if (body.length < 2) {
+    alert("Reply must be at least 2 characters.");
+    return;
+  }
+
+  try {
+    const selectedStatus = cleanIsAdmin()
+      ? (document.getElementById("cleanSupportReplyStatus")?.value || "waiting_user")
+      : "waiting_admin";
+
+    await api(`/support/tickets/${ticketId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({
+        body,
+        status: selectedStatus,
+      }),
+    });
+
+    await loadSupportThread(ticketId);
+
+    if (authState.user?.is_admin) {
+      await loadAdminPanelData();
+    } else {
+      await loadSupportData();
+    }
+
+    renderPage();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
 function renderCreditsPage() {
   const loggedIn = Boolean(authState.token);
   const live = accountCredits || {};
@@ -1403,9 +1851,13 @@ function renderPage() {
   setSystemHeaderState();
   renderAuthButtons();
 
+  $("adminNavLink")?.classList.toggle("hidden", !authState.user?.is_admin);
+
   const isHome = path === "/";
   const isSystem = path === "/system";
   const isCredits = path === "/credits";
+  const isAdmin = path === "/admin";
+  const isSupport = path === "/support";
 
   $("app").innerHTML = `
     <section class="${isHome ? "hero-card" : "page-card"}">
@@ -1416,6 +1868,8 @@ function renderPage() {
       ${page.cards ? renderCards(page.cards) : ""}
       ${page.boxes?.length ? renderBoxes(page.boxes) : ""}
       ${isCredits ? renderCreditsPage() : ""}
+      ${isAdmin ? renderAdminPage() : ""}
+      ${isSupport ? renderSupportPage() : ""}
       ${isSystem ? renderSystemPage() : ""}
     </section>
   `;
@@ -1434,6 +1888,15 @@ function renderPage() {
   $("gpuQuoteBtn")?.addEventListener("click", quoteMockGpuSession);
   $("gpuReserveQuoteBtn")?.addEventListener("click", reserveMockGpuQuote);
   $("adminGrantCreditsBtn")?.addEventListener("click", adminGrantCredits);
+
+  $("supportCreateTicketBtn")?.addEventListener("click", createSupportTicket);
+  $("supportReplyBtn")?.addEventListener("click", (event) => {
+    sendSupportReply(event.currentTarget.dataset.ticketId);
+  });
+
+  document.querySelectorAll("[data-open-ticket]").forEach((button) => {
+    button.addEventListener("click", () => loadSupportThread(button.dataset.openTicket));
+  });
 
   $("gpuStartSessionBtn")?.addEventListener("click", (buttonEvent) => {
     const button = buttonEvent.currentTarget;
@@ -1785,3 +2248,893 @@ renderPage();
 checkExistingLogin();
 loadSystemStatus();
 setInterval(loadSystemStatus, 30000);
+
+
+// ============================================================
+
+
+// ============================================================
+// OLD_HEADER_ADMIN_SUPPORT_NAV_PATCH_V1
+// Keeps the old header. Only shows/hides Admin link.
+// Support remains visible for all users.
+// ============================================================
+
+function oldHeaderSyncAdminSupportNav() {
+  const supportLink = document.querySelector('[data-route="/support"]');
+  if (supportLink) {
+    supportLink.classList.remove("hidden");
+  }
+
+  const adminLink = document.getElementById("adminNavLink");
+  if (adminLink) {
+    const isAdmin = Boolean(window.authState?.user?.is_admin || authState?.user?.is_admin);
+    adminLink.classList.toggle("hidden", !isAdmin);
+  }
+}
+
+try {
+  const oldHeaderOriginalRenderPage = renderPage;
+  renderPage = function(...args) {
+    const result = oldHeaderOriginalRenderPage.apply(this, args);
+    oldHeaderSyncAdminSupportNav();
+    return result;
+  };
+} catch (err) {
+  console.warn("Old-header nav patch could not wrap renderPage:", err);
+}
+
+setInterval(oldHeaderSyncAdminSupportNav, 1000);
+setTimeout(oldHeaderSyncAdminSupportNav, 100);
+setTimeout(oldHeaderSyncAdminSupportNav, 1000);
+
+
+
+// ============================================================
+// CLEAN_ADMIN_SUPPORT_PAGES_V4
+// Keeps old header. Adds working /admin and /support pages.
+// Moves admin-only infrastructure from /system to /admin.
+// ============================================================
+
+let cleanAdminUsers = null;
+let cleanAdminTickets = null;
+let cleanAdminSystem = null;
+let cleanSupportTickets = null;
+let cleanOpenThread = null;
+
+function cleanIsLoggedIn() {
+  return Boolean(authState?.token);
+}
+
+function cleanIsAdmin() {
+  return Boolean(authState?.user?.is_admin);
+}
+
+function cleanEsc(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function cleanNum(value) {
+  return Number(value || 0).toLocaleString();
+}
+
+function cleanSyncNav() {
+  const adminLink = document.getElementById("adminNavLink");
+  if (adminLink) {
+    adminLink.classList.toggle("hidden", !cleanIsAdmin());
+  }
+
+  const supportLink = document.querySelector('[data-route="/support"]');
+  if (supportLink) {
+    supportLink.classList.remove("hidden");
+  }
+}
+
+async function cleanHeartbeat() {
+  if (!cleanIsLoggedIn()) return;
+
+  try {
+    await api("/session/presence", { method: "POST" });
+  } catch {
+    // ignore presence errors
+  }
+}
+
+async function cleanLoadSupportTickets() {
+  if (!cleanIsLoggedIn()) {
+    cleanSupportTickets = null;
+    return;
+  }
+
+  try {
+    cleanSupportTickets = await api("/support/tickets", { method: "GET" });
+  } catch (err) {
+    cleanSupportTickets = { ok: false, tickets: [], detail: err.message };
+  }
+}
+
+async function cleanLoadAdminData() {
+  if (!cleanIsLoggedIn() || !cleanIsAdmin()) {
+    cleanAdminUsers = null;
+    cleanAdminTickets = null;
+    cleanAdminSystem = null;
+    return;
+  }
+
+  await cleanHeartbeat();
+
+  try {
+    cleanAdminUsers = await api("/admin/users", { method: "GET" });
+  } catch (err) {
+    cleanAdminUsers = { ok: false, users: [], detail: err.message };
+  }
+
+  try {
+    cleanAdminTickets = await api("/admin/support/tickets", { method: "GET" });
+  } catch (err) {
+    cleanAdminTickets = { ok: false, tickets: [], detail: err.message };
+  }
+
+  try {
+    cleanAdminSystem = await api("/system/admin-status", { method: "GET" });
+  } catch (err) {
+    cleanAdminSystem = { ok: false, nodes: [], services: [], detail: err.message };
+  }
+}
+
+async function cleanLoadRouteData() {
+  if (location.pathname === "/support") {
+    await cleanLoadSupportTickets();
+  }
+
+  if (location.pathname === "/admin") {
+    await cleanLoadAdminData();
+  }
+}
+
+function cleanTicketRows(tickets, adminMode = false) {
+  const rows = tickets || [];
+
+  if (!rows.length) {
+    return `<div class="empty-list">No support tickets yet.</div>`;
+  }
+
+  return `
+    <div class="activity-list">
+      ${rows.map((ticket) => `
+        <div class="activity-row">
+          <div>
+            <strong>#${ticket.id} · ${cleanEsc(ticket.subject)}</strong>
+            <span>
+              ${adminMode ? `${cleanEsc(ticket.email || "")} · ` : ""}
+              ${cleanEsc(ticket.status || "open")} ·
+              ${cleanNum(ticket.message_count || 0)} messages ·
+              ${cleanEsc(ticket.last_message_at || ticket.updated_at || "")}
+            </span>
+          </div>
+          <div class="row-actions">
+            <button class="primary-btn mini-primary-btn" type="button" data-clean-open-ticket="${ticket.id}">
+              Open
+            </button>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+async function cleanOpenTicket(ticketId) {
+  if (!cleanIsLoggedIn()) return;
+
+  try {
+    cleanOpenThread = await api(`/support/tickets/${ticketId}/messages`, { method: "GET" });
+    cleanRenderNow();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+function cleanRenderThread() {
+  if (!cleanOpenThread?.ticket) return "";
+
+  const ticket = cleanOpenThread.ticket;
+  const messages = cleanOpenThread.messages || [];
+
+  return `
+    <section class="system-section">
+      <h2>Ticket #${ticket.id}: ${cleanEsc(ticket.subject)}</h2>
+      <p class="section-copy">
+        Status: ${cleanEsc(ticket.status)} · Created: ${cleanEsc(ticket.created_at)}
+      </p>
+
+      <div class="message-thread">
+        ${messages.map((m) => `
+          <div class="message-bubble ${m.sender_role === "admin" ? "admin-message" : "user-message"}">
+            <div class="message-meta">
+              ${cleanEsc(m.sender_role)} · ${cleanEsc(m.sender_email || "")} · ${cleanEsc(m.created_at)}
+            </div>
+            <div>${cleanEsc(m.body)}</div>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="support-reply-box">
+        <textarea id="cleanSupportReplyBody" rows="4" placeholder="Write a reply..."></textarea>
+
+        ${cleanIsAdmin() ? `
+          <label class="support-status-label">
+            Ticket status after reply
+            <select id="cleanSupportReplyStatus">
+              <option value="waiting_user">Waiting on user</option>
+              <option value="solved">Solved</option>
+              <option value="waiting_admin">Waiting on admin</option>
+            </select>
+          </label>
+        ` : ""}
+
+        <div class="actions">
+          <button class="primary-btn" type="button" data-clean-reply-ticket="${ticket.id}">
+            Send reply
+          </button>
+
+          ${ticket.status !== "solved" ? `
+            <button class="secondary-btn" type="button" data-clean-solve-ticket="${ticket.id}">
+              Mark solved
+            </button>
+          ` : `
+            <button class="secondary-btn" type="button" data-clean-reopen-ticket="${ticket.id}">
+              Reopen ticket
+            </button>
+          `}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+async function cleanCreateSupportTicket() {
+  if (!cleanIsLoggedIn()) {
+    openAuthModal("login");
+    return;
+  }
+
+  const subject = document.getElementById("cleanSupportSubject")?.value?.trim() || "";
+  const body = document.getElementById("cleanSupportBody")?.value?.trim() || "";
+
+  if (subject.length < 3) {
+    alert("Subject must be at least 3 characters.");
+    return;
+  }
+
+  if (body.length < 5) {
+    alert("Message must be at least 5 characters.");
+    return;
+  }
+
+  try {
+    const result = await api("/support/tickets", {
+      method: "POST",
+      body: JSON.stringify({ subject, body }),
+    });
+
+    cleanOpenThread = null;
+    await cleanLoadSupportTickets();
+
+    alert(`Support ticket #${result.ticket?.id || ""} created.`);
+    cleanRenderNow();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+async function cleanSetTicketStatus(ticketId, status) {
+  if (!cleanIsLoggedIn()) {
+    openAuthModal("login");
+    return;
+  }
+
+  if (!ticketId || !status) {
+    alert("Missing ticket or status.");
+    return;
+  }
+
+  let note = "";
+
+  if (status === "solved") {
+    const ok = confirm("Mark this support ticket as solved?");
+    if (!ok) return;
+    note = "Marked ticket as solved.";
+  }
+
+  if (status === "waiting_admin") {
+    note = "Reopened ticket. Waiting on admin.";
+  }
+
+  try {
+    await api(`/support/tickets/${ticketId}/status`, {
+      method: "POST",
+      body: JSON.stringify({
+        status,
+        note,
+      }),
+    });
+
+    await cleanOpenTicket(ticketId);
+    await cleanLoadSupportTickets();
+
+    if (cleanIsAdmin()) {
+      await cleanLoadAdminData();
+    }
+
+    cleanRenderNow();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+async function cleanSendReply(ticketId) {
+  const body = document.getElementById("cleanSupportReplyBody")?.value?.trim() || "";
+
+  if (body.length < 2) {
+    alert("Reply must be at least 2 characters.");
+    return;
+  }
+
+  try {
+    await api(`/support/tickets/${ticketId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ body }),
+    });
+
+    await cleanOpenTicket(ticketId);
+    await cleanLoadSupportTickets();
+
+    if (cleanIsAdmin()) {
+      await cleanLoadAdminData();
+    }
+
+    cleanRenderNow();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+function cleanRenderSupportPage() {
+  if (!cleanIsLoggedIn()) {
+    return `
+      <section class="hero">
+        <p class="eyebrow">Support</p>
+        <h1>Customer Support</h1>
+        <p>Log in to send a support message or view your ticket history.</p>
+        <button class="primary-btn" type="button" data-clean-login>Log in</button>
+      </section>
+    `;
+  }
+
+  return `
+    <section class="hero">
+      <p class="eyebrow">Support</p>
+      <h1>Customer Support</h1>
+      <p>Send a message if you need account, credit, billing, study, companion, or platform help.</p>
+    </section>
+
+    <section class="system-section">
+      <h2>Message customer support</h2>
+      <div class="support-form">
+        <label>
+          Subject
+          <input id="cleanSupportSubject" type="text" placeholder="Short description of the issue" />
+        </label>
+
+        <label>
+          Message
+          <textarea id="cleanSupportBody" rows="5" placeholder="Describe what happened and what you expected."></textarea>
+        </label>
+
+        <button id="cleanCreateSupportTicketBtn" class="primary-btn" type="button">
+          Send message
+        </button>
+      </div>
+    </section>
+
+    <section class="system-section">
+      <h2>Your support tickets</h2>
+      ${cleanSupportTickets ? cleanTicketRows(cleanSupportTickets.tickets || []) : `<div class="empty-list">Loading support tickets...</div>`}
+    </section>
+
+    ${cleanRenderThread()}
+  `;
+}
+
+function cleanGroupCounts(groupNodes) {
+  const counts = {
+    online: 0,
+    offline: 0,
+    booting: 0,
+    error: 0,
+  };
+
+  for (const node of groupNodes) {
+    const state = node.state || "unknown";
+    if (state in counts) counts[state] += 1;
+  }
+
+  return counts;
+}
+
+function cleanGroupCard(title, state, nodes, description) {
+  const counts = cleanGroupCounts(nodes);
+  const total = nodes.length;
+
+  return `
+    <div class="summary-box infrastructure-card">
+      <div class="group-head">
+        <span>${cleanEsc(title)}</span>
+        <div class="badge ${cleanEsc(state || "unknown")}">${cleanEsc(state || "unknown")}</div>
+      </div>
+      <div class="count-line">${cleanNum(total)}</div>
+      <p>
+        Online ${cleanNum(counts.online)}
+        Offline ${cleanNum(counts.offline)}
+        Booting ${cleanNum(counts.booting)}
+        Error ${cleanNum(counts.error)}
+      </p>
+      <p>${cleanEsc(description)}</p>
+    </div>
+  `;
+}
+
+function cleanWorstState(nodes) {
+  if (!nodes.length) return "unknown";
+  if (nodes.some((n) => n.state === "error")) return "error";
+  if (nodes.some((n) => n.state === "booting")) return "booting";
+  if (nodes.some((n) => n.state === "offline")) return "offline";
+  if (nodes.every((n) => n.state === "online")) return "online";
+  return nodes[0].state || "unknown";
+}
+
+function cleanRenderInfrastructure() {
+  const nodes = cleanAdminSystem?.nodes || [];
+
+  const controllerNodes = nodes.filter((n) => n.role === "master" || n.id === "master-laptop");
+  const serverNodes = nodes.filter((n) => n.role === "compute-host" || n.id === "pveso");
+
+  // Current design: only LLM/Ollama container counts as CPU node.
+  // GPU and Storage nodes are future groups until explicitly registered.
+  const cpuNodes = nodes.filter((n) =>
+    n.role === "container" &&
+    (
+      String(n.id || "").includes("101") ||
+      String(n.name || "").toLowerCase().includes("llm") ||
+      JSON.stringify(n.services || []).toLowerCase().includes("ollama")
+    )
+  );
+
+  const gpuNodes = [];
+  const storageNodes = [];
+
+  return `
+    <section class="system-section">
+      <h2>Infrastructure</h2>
+      <p class="section-copy">
+        Admin-only view of controller, server, CPU, GPU, and storage node capacity.
+      </p>
+
+      <div class="summary-grid">
+        ${cleanGroupCard("Controller Node", cleanWorstState(controllerNodes), controllerNodes, "Always-on laptop/main controller.")}
+        ${cleanGroupCard("Server Nodes", cleanWorstState(serverNodes), serverNodes, "Configured Proxmox server nodes.")}
+        ${cleanGroupCard("CPU Nodes", cleanWorstState(cpuNodes), cpuNodes, "CPU processing containers currently configured.")}
+        ${cleanGroupCard("GPU Nodes", cleanWorstState(gpuNodes), gpuNodes, "Future GPU processing containers for image/video jobs.")}
+        ${cleanGroupCard("Storage Nodes", cleanWorstState(storageNodes), storageNodes, "Future NAS/storage stations.")}
+      </div>
+
+      <div class="actions">
+        <button id="cleanToggleAdminSystemDetailsBtn" class="primary-btn" type="button">
+          Open Admin System Panel
+        </button>
+      </div>
+
+      <div id="cleanAdminSystemDetails" class="hidden">
+        ${cleanRenderAdminSystemDetails()}
+      </div>
+    </section>
+  `;
+}
+
+function cleanRenderAdminSystemDetails() {
+  const nodes = cleanAdminSystem?.nodes || [];
+  const services = cleanAdminSystem?.services || [];
+
+  return `
+    <section class="system-section">
+      <h2>Admin system details</h2>
+
+      <h3>Nodes</h3>
+      <div class="status-list">
+        ${nodes.map((n) => `
+          <div class="status-item">
+            <div class="status-row">
+              <div class="status-name">${cleanEsc(n.name || n.id)}</div>
+              <div class="badge ${cleanEsc(n.state || "unknown")}">${cleanEsc(n.state || "unknown")}</div>
+            </div>
+            <div class="status-detail">${cleanEsc(n.detail || n.role || "")}</div>
+          </div>
+        `).join("")}
+      </div>
+
+      <h3>APIs / Services</h3>
+      <div class="status-list">
+        ${services.map((svc) => `
+          <div class="status-item">
+            <div class="status-row">
+              <div class="status-name">${cleanEsc(svc.name || svc.id)}</div>
+              <div class="badge ${cleanEsc(svc.state || "unknown")}">${cleanEsc(svc.state || "unknown")}</div>
+            </div>
+            <div class="status-detail">${cleanEsc(svc.detail || "")}</div>
+          </div>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function cleanAdminCreditToolHtml() {
+  const email = authState?.user?.email || "";
+
+  return `
+    <section class="system-section admin-only-section">
+      <h2>Admin credit tools</h2>
+      <p class="section-copy">Grant free/local credits or paid credits to a user account.</p>
+
+      <div class="admin-credit-panel">
+        <label>
+          User email
+          <input id="cleanAdminGrantEmail" type="email" placeholder="user@example.com" value="${cleanEsc(email)}" />
+        </label>
+
+        <label>
+          Amount
+          <input id="cleanAdminGrantAmount" type="number" min="1" step="1" value="100" />
+        </label>
+
+        <label>
+          Credit type
+          <select id="cleanAdminGrantType">
+            <option value="free">Free/local credits</option>
+            <option value="paid">Paid credits</option>
+          </select>
+        </label>
+
+        <label>
+          Reason
+          <input id="cleanAdminGrantReason" type="text" value="admin_manual_grant" />
+        </label>
+
+        <button id="cleanAdminGrantCreditsBtn" class="primary-btn" type="button">
+          Grant credits
+        </button>
+      </div>
+    </section>
+  `;
+}
+
+async function cleanAdminGrantCredits() {
+  if (!cleanIsAdmin()) {
+    alert("Admin access required.");
+    return;
+  }
+
+  const email = document.getElementById("cleanAdminGrantEmail")?.value?.trim() || "";
+  const amount = Number(document.getElementById("cleanAdminGrantAmount")?.value || 0);
+  const type = document.getElementById("cleanAdminGrantType")?.value || "free";
+  const reason = document.getElementById("cleanAdminGrantReason")?.value?.trim() || "admin_manual_grant";
+
+  if (!email) {
+    alert("Enter an email.");
+    return;
+  }
+
+  if (!Number.isFinite(amount) || amount < 1) {
+    alert("Amount must be at least 1.");
+    return;
+  }
+
+  const ok = confirm(`Grant ${cleanNum(amount)} ${type} credits to ${email}?`);
+  if (!ok) return;
+
+  const endpoint = type === "paid" ? "/credits/grant-paid" : "/credits/grant-free";
+
+  try {
+    await api(endpoint, {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        amount,
+        reason,
+        metadata: { source: "admin_panel" },
+      }),
+    });
+
+    await loadAccountCredits?.();
+    await cleanLoadAdminData();
+
+    alert("Credits granted.");
+    cleanRenderNow();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+function cleanRenderUsers() {
+  const users = cleanAdminUsers?.users || [];
+
+  if (!users.length) {
+    return `<div class="empty-list">No users loaded yet.</div>`;
+  }
+
+  return `
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Online</th>
+            <th>Role</th>
+            <th>Plan</th>
+            <th>Free</th>
+            <th>Paid</th>
+            <th>Last seen</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${users.map((u) => `
+            <tr>
+              <td>${cleanEsc(u.email)}</td>
+              <td><span class="badge ${u.online ? "online" : "offline"}">${u.online ? "online" : "offline"}</span></td>
+              <td>${cleanEsc(u.role)}</td>
+              <td>${cleanEsc(u.plan)}</td>
+              <td>${cleanNum(u.free_credit_balance)}</td>
+              <td>${cleanNum(u.paid_credit_balance)}</td>
+              <td>${cleanEsc(u.last_seen_at || "")}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function cleanRenderAdminSupportInbox() {
+  const tickets = cleanAdminTickets?.tickets || [];
+
+  const waitingAdmin = tickets.filter((t) =>
+    ["waiting_admin", "open"].includes(t.status)
+  );
+
+  const waitingUser = tickets.filter((t) =>
+    t.status === "waiting_user"
+  );
+
+  const solved = tickets.filter((t) =>
+    ["solved", "closed"].includes(t.status)
+  );
+
+  return `
+    <section class="system-section">
+      <h2>Support Inbox</h2>
+      <p class="section-copy">
+        Unsolved tickets are split by who needs to respond next.
+      </p>
+
+      <h3>Waiting on Admin</h3>
+      ${cleanTicketRows(waitingAdmin, true)}
+
+      <h3>Waiting on User</h3>
+      ${cleanTicketRows(waitingUser, true)}
+    </section>
+
+    <section class="system-section">
+      <h2>Solved Tickets</h2>
+      <p class="section-copy">
+        Resolved support conversations are kept here for history.
+      </p>
+      ${cleanTicketRows(solved, true)}
+    </section>
+  `;
+}
+
+function cleanRenderAdminPage() {
+  if (!cleanIsLoggedIn()) {
+    return `
+      <section class="hero">
+        <p class="eyebrow">Admin</p>
+        <h1>Admin Panel</h1>
+        <p>Log in with an admin account to view this page.</p>
+        <button class="primary-btn" type="button" data-clean-login>Log in</button>
+      </section>
+    `;
+  }
+
+  if (!cleanIsAdmin()) {
+    return `
+      <section class="hero">
+        <p class="eyebrow">Admin</p>
+        <h1>Admin access required</h1>
+        <p>This page is only available to admin users.</p>
+      </section>
+    `;
+  }
+
+  return `
+    <section class="hero">
+      <p class="eyebrow">Admin</p>
+      <h1>Admin Panel</h1>
+      <p>Manage users, credits, support tickets, and infrastructure status.</p>
+    </section>
+
+    ${cleanAdminCreditToolHtml()}
+
+    <section class="system-section">
+      <h2>Online Users</h2>
+      <div class="summary-grid">
+        <div class="summary-box">
+          <span>Online users</span>
+          <strong>${cleanNum(cleanAdminUsers?.online_count || 0)}</strong>
+          <p>Users active within the online window.</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Users returned</span>
+          <strong>${cleanNum(cleanAdminUsers?.user_count_returned || 0)}</strong>
+          <p>Latest users by activity.</p>
+        </div>
+      </div>
+
+      ${cleanAdminUsers ? cleanRenderUsers() : `<div class="empty-list">Loading users...</div>`}
+    </section>
+
+    ${cleanAdminTickets ? cleanRenderAdminSupportInbox() : `
+      <section class="system-section">
+        <h2>Support Inbox</h2>
+        <div class="empty-list">Loading support tickets...</div>
+      </section>
+    `}
+
+    ${cleanRenderThread()}
+
+    ${cleanRenderInfrastructure()}
+  `;
+}
+
+function cleanRemoveAdminInfrastructureFromSystemPage() {
+  if (location.pathname !== "/system") return;
+
+  const headings = [...document.querySelectorAll("h2, h3")];
+
+  for (const heading of headings) {
+    const text = heading.textContent.trim().toLowerCase();
+
+    if (text === "infrastructure" || text.includes("admin system")) {
+      const section = heading.closest("section") || heading.closest(".system-section");
+      if (section) section.remove();
+    }
+  }
+
+  [...document.querySelectorAll("button, a")].forEach((el) => {
+    const text = el.textContent.trim().toLowerCase();
+
+    if (text.includes("wake service soon")) {
+      el.remove();
+    }
+
+    if (text.includes("open admin system panel")) {
+      el.remove();
+    }
+  });
+}
+
+function cleanAttachHandlers() {
+  document.getElementById("cleanCreateSupportTicketBtn")?.addEventListener("click", cleanCreateSupportTicket);
+  document.getElementById("cleanAdminGrantCreditsBtn")?.addEventListener("click", cleanAdminGrantCredits);
+
+  document.querySelectorAll("[data-clean-open-ticket]").forEach((btn) => {
+    if (btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", () => cleanOpenTicket(btn.dataset.cleanOpenTicket));
+  });
+
+  document.querySelectorAll("[data-clean-reply-ticket]").forEach((btn) => {
+    if (btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", () => cleanSendReply(btn.dataset.cleanReplyTicket));
+  });
+
+  document.querySelectorAll("[data-clean-solve-ticket]").forEach((btn) => {
+    if (btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", () => cleanSetTicketStatus(btn.dataset.cleanSolveTicket, "solved"));
+  });
+
+  document.querySelectorAll("[data-clean-reopen-ticket]").forEach((btn) => {
+    if (btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", () => cleanSetTicketStatus(btn.dataset.cleanReopenTicket, "waiting_admin"));
+  });
+
+  document.querySelectorAll("[data-clean-login]").forEach((btn) => {
+    if (btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", () => openAuthModal("login"));
+  });
+
+  document.getElementById("cleanToggleAdminSystemDetailsBtn")?.addEventListener("click", () => {
+    const panel = document.getElementById("cleanAdminSystemDetails");
+    if (panel) panel.classList.toggle("hidden");
+  });
+}
+
+let cleanOriginalRenderPage = null;
+
+try {
+  cleanOriginalRenderPage = renderPage;
+
+  renderPage = function(...args) {
+    cleanSyncNav();
+
+    const app = document.getElementById("app");
+
+    if (location.pathname === "/support") {
+      if (app) app.innerHTML = cleanRenderSupportPage();
+      cleanAttachHandlers();
+      return;
+    }
+
+    if (location.pathname === "/admin") {
+      if (app) app.innerHTML = cleanRenderAdminPage();
+      cleanAttachHandlers();
+      return;
+    }
+
+    const result = cleanOriginalRenderPage.apply(this, args);
+    cleanSyncNav();
+    cleanRemoveAdminInfrastructureFromSystemPage();
+    cleanAttachHandlers();
+    return result;
+  };
+} catch (err) {
+  console.warn("Clean admin/support render wrapper failed:", err);
+}
+
+async function cleanRenderNow() {
+  await cleanLoadRouteData();
+  renderPage();
+}
+
+document.addEventListener("click", async (event) => {
+  const link = event.target.closest?.("[data-route]");
+
+  if (!link) return;
+
+  const route = link.dataset.route;
+  if (!route) return;
+
+  event.preventDefault();
+  history.pushState({}, "", route);
+
+  await cleanLoadRouteData();
+  renderPage();
+}, true);
+
+window.addEventListener("popstate", cleanRenderNow);
+
+setInterval(cleanHeartbeat, 30000);
+
+setTimeout(async () => {
+  cleanSyncNav();
+  await cleanHeartbeat();
+  await cleanLoadRouteData();
+  renderPage();
+}, 300);
+

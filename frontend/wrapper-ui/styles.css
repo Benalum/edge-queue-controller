@@ -842,3 +842,436 @@ button.card {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   Admin panel + support messaging
+   ============================================================ */
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255,255,255,.045);
+  margin-top: 14px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 820px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.09);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.mini-primary-btn {
+  padding: 8px 11px;
+  font-size: .82rem;
+}
+
+.support-form,
+.support-reply-box {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.support-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.support-form input,
+.support-form textarea,
+.support-reply-box textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  outline: none;
+  resize: vertical;
+}
+
+.message-thread {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.message-bubble {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,.06);
+  line-height: 1.5;
+}
+
+.admin-message {
+  border-color: rgba(115,183,255,.32);
+  background: rgba(115,183,255,.08);
+}
+
+.user-message {
+  border-color: rgba(57,217,138,.25);
+  background: rgba(57,217,138,.07);
+}
+
+.message-meta {
+  color: var(--muted);
+  font-size: .82rem;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+/* ============================================================
+   Admin panel + support messaging
+   ============================================================ */
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255,255,255,.045);
+  margin-top: 14px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 820px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.09);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.mini-primary-btn {
+  padding: 8px 11px;
+  font-size: .82rem;
+}
+
+.support-form,
+.support-reply-box {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.support-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.support-form input,
+.support-form textarea,
+.support-reply-box textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  outline: none;
+  resize: vertical;
+}
+
+.message-thread {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.message-bubble {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,.06);
+  line-height: 1.5;
+}
+
+.admin-message {
+  border-color: rgba(115,183,255,.32);
+  background: rgba(115,183,255,.08);
+}
+
+.user-message {
+  border-color: rgba(57,217,138,.25);
+  background: rgba(57,217,138,.07);
+}
+
+.message-meta {
+  color: var(--muted);
+  font-size: .82rem;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+/* Safety utility */
+.hidden {
+  display: none !important;
+}
+
+/* ============================================================
+   Admin/support forced UI patch styles
+   ============================================================ */
+
+.hidden {
+  display: none !important;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255,255,255,.045);
+  margin-top: 14px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 820px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.09);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.mini-primary-btn {
+  padding: 8px 11px;
+  font-size: .82rem;
+}
+
+.support-form,
+.support-reply-box {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.support-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.support-form input,
+.support-form textarea,
+.support-reply-box textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  outline: none;
+  resize: vertical;
+}
+
+.message-thread {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.message-bubble {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,.06);
+  line-height: 1.5;
+}
+
+.admin-message {
+  border-color: rgba(115,183,255,.32);
+  background: rgba(115,183,255,.08);
+}
+
+.user-message {
+  border-color: rgba(57,217,138,.25);
+  background: rgba(57,217,138,.07);
+}
+
+.message-meta {
+  color: var(--muted);
+  font-size: .82rem;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+/* ============================================================
+   Admin/support page UI
+   ============================================================ */
+
+.hidden {
+  display: none !important;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255,255,255,.045);
+  margin-top: 14px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 820px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.09);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.mini-primary-btn {
+  padding: 8px 11px;
+  font-size: .82rem;
+}
+
+.support-form,
+.support-reply-box {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.support-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.support-form input,
+.support-form textarea,
+.support-reply-box textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  outline: none;
+  resize: vertical;
+}
+
+.message-thread {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.message-bubble {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,.06);
+  line-height: 1.5;
+}
+
+.admin-message {
+  border-color: rgba(115,183,255,.32);
+  background: rgba(115,183,255,.08);
+}
+
+.user-message {
+  border-color: rgba(57,217,138,.25);
+  background: rgba(57,217,138,.07);
+}
+
+.message-meta {
+  color: var(--muted);
+  font-size: .82rem;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+.infrastructure-card .count-line {
+  margin-top: 10px;
+}
+
+/* Support ticket status selector */
+.support-status-label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.support-status-label select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  outline: none;
+}
+
+.secondary-btn {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  background: rgba(255,255,255,.14);
+}
