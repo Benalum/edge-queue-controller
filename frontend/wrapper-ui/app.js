@@ -187,19 +187,40 @@ function renderCreditsPill() {
 
   const loggedIn = Boolean(authState.token);
   const user = authState.user || {};
-  const credits =
-    user.paid_credit_balance ??
-    user.credit_balance ??
-    0;
+  const pools = accountCredits?.credits || {};
 
   pill.classList.toggle("hidden", !loggedIn);
 
   if (!loggedIn) {
-    pill.textContent = "Credits: —";
+    pill.textContent = "Credits";
+    pill.title = "Log in to view credits.";
     return;
   }
 
-  pill.innerHTML = `Credits: ${formatNumber(credits)}${user.plan ? ` <small>${user.plan}</small>` : ""}`;
+  const freeCredits =
+    pools.free_available ??
+    user.free_credit_balance ??
+    0;
+
+  const paidCredits =
+    pools.paid_available ??
+    user.paid_credit_balance ??
+    0;
+
+  const totalCredits =
+    pools.total_available ??
+    user.credit_balance ??
+    Number(freeCredits || 0) + Number(paidCredits || 0);
+
+  pill.innerHTML = `
+    <span class="credits-total">Credits ${formatNumber(totalCredits)}</span>
+    <span class="credits-breakdown">
+      Free ${formatNumber(freeCredits)} · Paid ${formatNumber(paidCredits)}
+    </span>
+  `;
+
+  pill.title =
+    "Free credits are local-only. Paid credits can be used for external GPU/cloud services.";
 }
 
 function renderAuthButtons() {
