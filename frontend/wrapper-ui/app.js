@@ -3430,6 +3430,10 @@ async function fastRefreshAfterAuth(reason = "") {
     jobs.push(refreshHeaderCredits(reason));
   }
 
+  if (typeof sendWebPresence === "function" && authState?.token) {
+    jobs.push(sendWebPresence("force"));
+  }
+
   if (typeof loadSystemStatus === "function") {
     jobs.push(loadSystemStatus());
   }
@@ -3591,7 +3595,11 @@ function getWebPresenceVisitorId() {
   let id = localStorage.getItem(WEB_PRESENCE_VISITOR_KEY);
 
   if (!id) {
-    id = "v-" + crypto.randomUUID();
+    const randomPart =
+      crypto?.randomUUID?.() ||
+      `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    id = "v-" + randomPart;
     localStorage.setItem(WEB_PRESENCE_VISITOR_KEY, id);
   }
 
@@ -3648,6 +3656,11 @@ async function sendWebPresence(reason = "") {
 
   return webPresenceInFlight;
 }
+
+// Logged-in users signal immediately; anonymous visitors signal wake intent after 15s.
+setTimeout(() => {
+  sendWebPresence(authState?.token ? "startup-logged-in" : "startup-anonymous-check");
+}, 1_500);
 
 setTimeout(() => {
   sendWebPresence("15-second-intent");
