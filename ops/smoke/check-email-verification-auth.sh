@@ -106,7 +106,7 @@ async def main():
             assert registered["ok"] is True
             assert registered["verification_required"] is True
             assert registered["email"] == email
-            assert registered["debug_verify_url"].startswith("https://example.test/verify-email?token=")
+            assert registered["debug_verify_url"].startswith("https://example.test/api/auth/verify-email?token=")
             assert count_users(db_path, email) == 0
             assert pending_for(db_path, email) is not None
 
