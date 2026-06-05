@@ -748,6 +748,16 @@ function renderApiCards(items) {
   `;
 }
 
+
+// ============================================================
+// CREDITS_AND_GPU_WORKFLOWS
+// Shared /credits page code.
+// Includes admin credit grants, free/paid credit pools,
+// mock ad rewards, mock external GPU quotes, reservations,
+// sessions, start/stop/cleanup.
+// Do NOT remove this section when cleaning legacy admin/support UI.
+// ============================================================
+
 async function loadGpuCatalog({ force = false } = {}) {
   if (!authState.token) {
     gpuCatalog = null;
@@ -1596,6 +1606,13 @@ async function sendSupportReply(ticketId) {
     alert(err.message);
   }
 }
+
+
+// ============================================================
+// CREDITS_PAGE_RENDER
+// Main /credits page renderer.
+// Depends on CREDITS_AND_GPU_WORKFLOWS functions above.
+// ============================================================
 
 function renderCreditsPage() {
   const loggedIn = Boolean(authState.token);
