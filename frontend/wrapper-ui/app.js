@@ -255,7 +255,194 @@ function renderAuthButtons() {
 function navigate(path) {
   if (!pages[path]) path = "/";
   history.pushState({}, "", path);
-  renderPage();
+
+// ============================================================
+// API_CACHE_LAYER_V1
+// Small stale-while-refresh cache for GET requests.
+// - GET routes can return cached data instantly.
+// - Mutations invalidate related caches.
+// - Important operations still force fresh data when needed.
+// ============================================================
+
+const AH_CACHE_TTL = {
+  PUBLIC_STATUS: 15_000,
+  CREDITS: 10_000,
+  AD_REWARD: 5_000,
+  GPU_CATALOG: 10 * 60_000,
+  GPU_SESSIONS: 10_000,
+  SUPPORT_TICKETS: 10_000,
+  ADMIN_USERS: 10_000,
+  ADMIN_SUPPORT: 10_000,
+  ADMIN_SYSTEM: 15_000,
+};
+
+const ahApiCache = new Map();
+const ahApiInflight = new Map();
+
+function ahCacheUserKey() {
+  // Include token fragment so cached private data is not shared between accounts.
+  const token = authState?.token || "public";
+  return token === "public" ? "public" : token.slice(-12);
+}
+
+function ahCacheKey(path, options = {}) {
+  const method = String(options.method || "GET").toUpperCase();
+  return `${ahCacheUserKey()}::${method}::${path}`;
+}
+
+function ahInvalidateCache(matchers = []) {
+  const list = Array.isArray(matchers) ? matchers : [matchers];
+
+  for (const key of [...ahApiCache.keys()]) {
+    if (!list.length || list.some((m) => key.includes(m))) {
+      ahApiCache.delete(key);
+    }
+  }
+
+  for (const key of [...ahApiInflight.keys()]) {
+    if (!list.length || list.some((m) => key.includes(m))) {
+      ahApiInflight.delete(key);
+    }
+  }
+}
+
+function ahInvalidateForMutation(path) {
+  const p = String(path || "");
+
+  if (p.includes("/support/")) {
+    ahInvalidateCache([
+      "/support/tickets",
+      "/admin/support/tickets",
+    ]);
+  }
+
+  if (
+    p.includes("/credits/") ||
+    p.includes("/gpu/") ||
+    p.includes("/ads/")
+  ) {
+    ahInvalidateCache([
+      "/account/credit-pools",
+      "/ads/reward/status",
+      "/gpu/sessions",
+      "/admin/users",
+    ]);
+  }
+
+  if (
+    p.includes("/auth/") ||
+    p.includes("/session/") ||
+    p.includes("/account/")
+  ) {
+    ahInvalidateCache([]);
+  }
+
+  if (p.includes("/system/")) {
+    ahInvalidateCache([
+      "/system/public-status",
+      "/system/admin-status",
+      "/admin/users",
+    ]);
+  }
+}
+
+async function cachedApi(path, options = {}, ttlMs = 10_000, cacheOptions = {}) {
+  const method = String(options.method || "GET").toUpperCase();
+
+  if (method !== "GET") {
+    const result = await api(path, options);
+    ahInvalidateForMutation(path);
+    return result;
+  }
+
+  const force = Boolean(cacheOptions.force);
+  const allowStale = cacheOptions.allowStale !== false;
+  const key = ahCacheKey(path, options);
+  const now = Date.now();
+  const cached = ahApiCache.get(key);
+
+  if (!force && cached) {
+    const age = now - cached.time;
+
+    if (age < ttlMs) {
+      return cached.data;
+    }
+
+    if (allowStale) {
+      // Return old data instantly, then refresh in background.
+      if (!ahApiInflight.has(key)) {
+        const refresh = api(path, options)
+          .then((data) => {
+            ahApiCache.set(key, {
+              time: Date.now(),
+              data,
+            });
+
+            // Let the page update when fresh data arrives.
+            setTimeout(() => {
+              try {
+                renderPage();
+              } catch {
+                // ignore render failures
+              }
+            }, 0);
+
+            return data;
+          })
+          .finally(() => {
+            ahApiInflight.delete(key);
+          });
+
+        ahApiInflight.set(key, refresh);
+      }
+
+      return cached.data;
+    }
+  }
+
+  if (!force && ahApiInflight.has(key)) {
+    return ahApiInflight.get(key);
+  }
+
+  const promise = api(path, options)
+    .then((data) => {
+      ahApiCache.set(key, {
+        time: Date.now(),
+        data,
+      });
+      return data;
+    })
+    .finally(() => {
+      ahApiInflight.delete(key);
+    });
+
+  ahApiInflight.set(key, promise);
+  return promise;
+}
+
+// Make existing POST/PUT/DELETE api() calls invalidate cache automatically.
+// This only wraps if api is assignable in this script.
+try {
+  if (typeof api === "function" && !window.__ahApiMutationCacheWrapped) {
+    window.__ahApiMutationCacheWrapped = true;
+    window.__ahOriginalApiForCache = api;
+
+    api = async function(path, options = {}) {
+      const method = String(options.method || "GET").toUpperCase();
+      const result = await window.__ahOriginalApiForCache(path, options);
+
+      if (method !== "GET") {
+        ahInvalidateForMutation(path);
+      }
+
+      return result;
+    };
+  }
+} catch (err) {
+  console.warn("API cache mutation wrapper could not be installed:", err);
+}
+
+renderPage();
 }
 
 function nodeById(id) {
@@ -886,6 +1073,7 @@ async function startMockGpuSession(quoteToken, reservationToken) {
     await loadGpuSessions();
 
     alert(result.detail || "Mock GPU session started.");
+    forceRefreshAfterOperation("gpu-session-started");
     renderPage();
   } catch (err) {
     alert(err.message);
@@ -923,6 +1111,7 @@ async function cleanupMockGpuSession(sessionToken) {
     }
 
     alert(result.gpu_session_cleanup?.detail || "Mock GPU session cleaned up.");
+    forceRefreshAfterOperation("gpu-session-cleaned");
     renderPage();
   } catch (err) {
     alert(err.message);
@@ -960,6 +1149,7 @@ async function stopMockGpuSession(sessionToken) {
     }
 
     alert(result.gpu_session?.detail || "Mock GPU session stopped.");
+    forceRefreshAfterOperation("gpu-session-stopped");
     renderPage();
   } catch (err) {
     alert(err.message);
@@ -1104,19 +1294,19 @@ async function loadAdminPanelData() {
   }
 
   try {
-    adminUsers = await api("/admin/users", { method: "GET" });
+    adminUsers = await cachedApi("/admin/users", { method: "GET" }, AH_CACHE_TTL.ADMIN_USERS);
   } catch {
     adminUsers = null;
   }
 
   try {
-    adminTickets = await api("/admin/support/tickets", { method: "GET" });
+    adminTickets = await cachedApi("/admin/support/tickets", { method: "GET" }, AH_CACHE_TTL.ADMIN_SUPPORT);
   } catch {
     adminTickets = null;
   }
 
   try {
-    adminSystemStatus = await api("/system/admin-status", { method: "GET" });
+    adminSystemStatus = await cachedApi("/system/admin-status", { method: "GET" }, AH_CACHE_TTL.ADMIN_SYSTEM);
   } catch {
     adminSystemStatus = null;
   }
@@ -1130,7 +1320,7 @@ async function loadSupportData() {
   }
 
   try {
-    supportTickets = await api("/support/tickets", { method: "GET" });
+    supportTickets = await cachedApi("/support/tickets", { method: "GET" }, AH_CACHE_TTL.SUPPORT_TICKETS);
   } catch {
     supportTickets = null;
   }
@@ -2309,7 +2499,9 @@ function cleanSyncNav() {
 
   const supportLink = document.querySelector('[data-route="/support"]');
   if (supportLink) {
-    supportLink.classList.remove("hidden");
+    // Normal users use the Support page.
+    // Admins use the Admin panel Support Inbox instead.
+    supportLink.classList.toggle("hidden", cleanIsAdmin());
   }
 }
 
@@ -2330,7 +2522,7 @@ async function cleanLoadSupportTickets() {
   }
 
   try {
-    cleanSupportTickets = await api("/support/tickets", { method: "GET" });
+    cleanSupportTickets = await cachedApi("/support/tickets", { method: "GET" }, AH_CACHE_TTL.SUPPORT_TICKETS);
   } catch (err) {
     cleanSupportTickets = { ok: false, tickets: [], detail: err.message };
   }
@@ -2504,6 +2696,7 @@ async function cleanCreateSupportTicket() {
     await cleanLoadSupportTickets();
 
     alert(`Support ticket #${result.ticket?.id || ""} created.`);
+    forceRefreshAfterOperation("support-ticket-created");
     cleanRenderNow();
   } catch (err) {
     alert(err.message);
@@ -2582,14 +2775,83 @@ async function cleanSendReply(ticketId) {
   }
 }
 
+function cleanRenderSupportSummary() {
+  return `
+    <section class="hero">
+      <p class="eyebrow">Support</p>
+      <h1>Help when something is not working</h1>
+      <p>
+        Support gives users a direct way to contact customer support, track open tickets,
+        read admin replies, and mark issues solved once the problem is fixed.
+      </p>
+    </section>
+
+    <section class="card-grid">
+      <a class="feature-card" href="/support" data-route="/support">
+        <h3>Send a message</h3>
+        <p>Logged-in users can create a support ticket with a subject and message.</p>
+      </a>
+
+      <a class="feature-card" href="/support" data-route="/support">
+        <h3>Track ticket status</h3>
+        <p>Tickets move through waiting on admin, waiting on user, and solved states.</p>
+      </a>
+
+      <a class="feature-card" href="/support" data-route="/support">
+        <h3>Keep replies organized</h3>
+        <p>Each ticket keeps the full conversation in one place so users and admins have context.</p>
+      </a>
+
+      <a class="feature-card" href="/support" data-route="/support">
+        <h3>Resolve issues clearly</h3>
+        <p>Users or admins can mark a ticket solved when the issue is fixed.</p>
+      </a>
+    </section>
+
+    <section class="system-section">
+      <h2>What support helps with</h2>
+      <div class="summary-grid">
+        <div class="summary-box">
+          <span>Account help</span>
+          <strong>Login, profile, access</strong>
+          <p>Get help when account tools, login, or profile settings are not working.</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Credits and billing</span>
+          <strong>Balances and charges</strong>
+          <p>Ask about free credits, paid credits, reservations, refunds, and future billing issues.</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Study and companion</span>
+          <strong>Learning tools</strong>
+          <p>Report issues with decks, reviews, companion replies, or learning workflows.</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Platform issues</span>
+          <strong>System problems</strong>
+          <p>Report slow pages, broken buttons, offline services, or unexpected errors.</p>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function cleanRenderSupportPage() {
   if (!cleanIsLoggedIn()) {
     return `
-      <section class="hero">
-        <p class="eyebrow">Support</p>
-        <h1>Customer Support</h1>
-        <p>Log in to send a support message or view your ticket history.</p>
-        <button class="primary-btn" type="button" data-clean-login>Log in</button>
+      ${cleanRenderSupportSummary()}
+
+      <section class="system-section">
+        <h2>Need help?</h2>
+        <p class="section-copy">
+          Log in to send a message to customer support and view your ticket history.
+        </p>
+        <div class="actions">
+          <button class="primary-btn" type="button" data-clean-login>Log in to contact support</button>
+        </div>
       </section>
     `;
   }
@@ -2842,6 +3104,7 @@ async function cleanAdminGrantCredits() {
     await cleanLoadAdminData();
 
     alert("Credits granted.");
+    forceRefreshAfterOperation("credits-granted");
     cleanRenderNow();
   } catch (err) {
     alert(err.message);
@@ -3118,4 +3381,38 @@ setTimeout(async () => {
   await cleanLoadRouteData();
   renderPage();
 }, 300);
+
+
+
+function forceRefreshAfterOperation(reason = "") {
+  ahInvalidateCache([]);
+
+  console.log("[cache] force refresh after operation", reason);
+
+  return Promise.resolve()
+    .then(async () => {
+      const path = location.pathname;
+
+      if (typeof loadSystemStatus === "function") {
+        await loadSystemStatus();
+      }
+
+      if (path === "/credits" && typeof loadAccountCredits === "function") {
+        await loadAccountCredits();
+      }
+
+      if (path === "/support" && typeof cleanLoadSupportTickets === "function") {
+        await cleanLoadSupportTickets();
+      }
+
+      if (path === "/admin" && typeof cleanLoadAdminData === "function") {
+        await cleanLoadAdminData();
+      }
+
+      renderPage();
+    })
+    .catch((err) => {
+      console.warn("[cache] force refresh failed", err);
+    });
+}
 
