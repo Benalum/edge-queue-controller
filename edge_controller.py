@@ -8212,6 +8212,12 @@ async def system_account_me(request: Request):
 
 import json as _credit_json
 import secrets as _credit_secrets
+from edge_modules.credits import (
+    credit_pool_active_reserved_totals as _credit_pool_active_reserved_totals_impl,
+    credit_pool_add_ledger as _credit_pool_add_ledger_impl,
+    credit_pool_find_reservation as _credit_pool_find_reservation_impl,
+    credit_pool_sync_legacy_total as _credit_pool_sync_legacy_total_impl,
+)
 from edge_modules.credit_helpers import (
     ad_hash as _ad_hash,
     ad_iso_to_epoch as _ad_iso_to_epoch,
@@ -8943,79 +8949,35 @@ def _credit_pool_require_admin(request: Request):
 
 
 def _credit_pool_active_reserved_totals(conn, user_id: int):
-    row = conn.execute(
-        """
-        SELECT
-            COALESCE(SUM(free_amount), 0) AS free_reserved,
-            COALESCE(SUM(paid_amount), 0) AS paid_reserved
-        FROM credit_reservations
-        WHERE user_id = ?
-          AND status = 'reserved'
-        """,
-        (user_id,),
-    ).fetchone()
+    return _credit_pool_active_reserved_totals_impl(conn, user_id)
 
-    if not row:
-        return 0, 0
 
-    return int(row["free_reserved"] or 0), int(row["paid_reserved"] or 0)
 
 
 def _credit_pool_sync_legacy_total(conn, user_id: int):
-    row = conn.execute(
-        """
-        SELECT free_credit_balance, paid_credit_balance
-        FROM app_users
-        WHERE id = ?
-        """,
-        (user_id,),
-    ).fetchone()
-
-    if not row:
-        return
-
-    total = int(row["free_credit_balance"] or 0) + int(row["paid_credit_balance"] or 0)
-
-    conn.execute(
-        """
-        UPDATE app_users
-        SET credit_balance = ?,
-            updated_at = ?
-        WHERE id = ?
-        """,
-        (total, _auth_now_iso(), user_id),
+    return _credit_pool_sync_legacy_total_impl(
+        conn,
+        user_id,
+        now_iso=_auth_now_iso,
     )
+
+
 
 
 def _credit_pool_add_ledger(conn, user_id: int, free_delta: int, paid_delta: int, reason: str, service_class: str, metadata=None):
-    total_delta = int(free_delta) + int(paid_delta)
-    now = _auth_now_iso()
-
-    conn.execute(
-        """
-        INSERT INTO user_credit_ledger (
-            user_id,
-            delta,
-            free_delta,
-            paid_delta,
-            reason,
-            service_class,
-            metadata_json,
-            created_at
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            user_id,
-            total_delta,
-            int(free_delta),
-            int(paid_delta),
-            str(reason),
-            str(service_class),
-            _credit_json_dumps(metadata),
-            now,
-        ),
+    return _credit_pool_add_ledger_impl(
+        conn,
+        user_id,
+        free_delta,
+        paid_delta,
+        reason,
+        service_class,
+        metadata,
+        now_iso=_auth_now_iso,
+        credit_json_dumps=_credit_json_dumps,
     )
+
+
 
 
 def _credit_pool_summary(user_id: int):
@@ -9144,36 +9106,9 @@ def _credit_pool_summary(user_id: int):
 
 
 def _credit_pool_find_reservation(conn, user_id: int, payload):
-    reservation_id = payload.get("reservation_id")
-    reservation_token = payload.get("reservation_token")
+    return _credit_pool_find_reservation_impl(conn, user_id, payload)
 
-    if reservation_id:
-        row = conn.execute(
-            """
-            SELECT *
-            FROM credit_reservations
-            WHERE id = ?
-              AND user_id = ?
-            """,
-            (int(reservation_id), user_id),
-        ).fetchone()
-    elif reservation_token:
-        row = conn.execute(
-            """
-            SELECT *
-            FROM credit_reservations
-            WHERE reservation_token = ?
-              AND user_id = ?
-            """,
-            (str(reservation_token), user_id),
-        ).fetchone()
-    else:
-        raise HTTPException(status_code=400, detail="reservation_id or reservation_token is required.")
 
-    if not row:
-        raise HTTPException(status_code=404, detail="Reservation not found.")
-
-    return row
 
 
 @app.get("/system/account/credit-pools")
