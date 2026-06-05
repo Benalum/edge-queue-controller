@@ -2160,6 +2160,8 @@ async function loadAccountCredits({ deep = false } = {}) {
 let systemStatusLoadInFlight = null;
 
 async function loadSystemStatus() {
+  if (!pageIsActive()) return;
+
   if (systemStatusLoadInFlight) {
     return systemStatusLoadInFlight;
   }
@@ -2356,6 +2358,10 @@ let cleanAdminSystem = null;
 let cleanSupportTickets = null;
 let cleanOpenThread = null;
 
+function pageIsActive() {
+  return document.visibilityState !== "hidden";
+}
+
 function cleanIsLoggedIn() {
   return Boolean(authState?.token);
 }
@@ -2391,6 +2397,7 @@ function cleanSyncNav() {
 
 async function cleanHeartbeat() {
   if (!cleanIsLoggedIn()) return;
+  if (!pageIsActive()) return;
 
   try {
     await api("/session/presence", { method: "POST" });
