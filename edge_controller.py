@@ -8271,6 +8271,10 @@ from edge_modules.credit_helpers import (
     credit_pool_debit_plan as _credit_pool_debit_plan,
     parse_payload_amount as _credit_parse_payload_amount,
 )
+from edge_modules.rewarded_ads import (
+    ad_request_ip as _ad_request_ip,
+    ad_reward_settings as _ad_reward_settings,
+)
 
 
 def _credit_init_tables():
@@ -9767,23 +9771,7 @@ def _ad_reward_init_tables():
         conn.commit()
 
 
-def _ad_reward_settings():
-    return {
-        "reward_credits": int(os.getenv("AD_REWARD_FREE_CREDITS", "5")),
-        "daily_limit": int(os.getenv("AD_REWARD_DAILY_LIMIT", "5")),
-        "monthly_limit": int(os.getenv("AD_REWARD_MONTHLY_LIMIT", "100")),
-        "cooldown_seconds": int(os.getenv("AD_REWARD_COOLDOWN_SECONDS", "300")),
-    }
 
-
-
-def _ad_request_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-
-    client = getattr(request, "client", None)
-    return getattr(client, "host", "") if client else ""
 
 
 def _ad_reward_counts(conn, user_id: int):
