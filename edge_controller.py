@@ -7658,13 +7658,10 @@ def system_status():
 
     if pveso_state == "online":
         ct101 = _system_pct_status("101")
-        ct108 = _system_pct_status("108")
     elif pveso_state == "booting":
         ct101 = {"state": "booting", "detail": "Waiting for pveso to finish booting."}
-        ct108 = {"state": "booting", "detail": "Waiting for pveso to finish booting."}
     else:
         ct101 = {"state": "offline", "detail": "pveso is offline."}
-        ct108 = {"state": "offline", "detail": "pveso is offline."}
 
     workers.append({
         "id": "ct-101",
@@ -7674,16 +7671,6 @@ def system_status():
         "checked_at": checked_at,
         "detail": ct101["detail"],
         "services": ["OpenWebUI", "Ollama"],
-    })
-
-    workers.append({
-        "id": "ct-108",
-        "name": "ComfyUI Worker",
-        "role": "container",
-        "state": ct108["state"],
-        "checked_at": checked_at,
-        "detail": ct108["detail"],
-        "services": ["ComfyUI"],
     })
 
     # Service checks.
@@ -7743,25 +7730,6 @@ def system_status():
         "state": openwebui_state,
         "checked_at": checked_at,
         "detail": openwebui_detail,
-    })
-
-    if pveso_state == "online":
-        comfy_check = _system_http_check("https://aianimation.alexhartel.com", timeout=4)
-        comfy_state = "online" if comfy_check["ok"] else "error"
-        comfy_detail = f"HTTP {comfy_check['status_code']}" if comfy_check["ok"] else comfy_check["error"]
-    elif pveso_state == "booting":
-        comfy_state = "booting"
-        comfy_detail = "Waiting for pveso to finish booting."
-    else:
-        comfy_state = "offline"
-        comfy_detail = "pveso is offline."
-
-    services.append({
-        "id": "comfyui",
-        "name": "ComfyUI",
-        "state": comfy_state,
-        "checked_at": checked_at,
-        "detail": comfy_detail,
     })
 
     all_items = [master_node, pveso_node] + workers + services
