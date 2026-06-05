@@ -1292,13 +1292,13 @@ async function adminGrantCredits() {
 
 async function loadAdminPanelData() {
   // Legacy admin loader disabled.
-  // Active Admin page uses cleanLoadAdminData().
+  // Active admin page uses cleanLoadAdminData().
   return;
 }
 
 async function loadSupportData() {
   // Legacy support loader disabled.
-  // Active Support page uses cleanLoadSupportTickets().
+  // Active support page uses cleanLoadSupportTickets().
   return;
 }
 
