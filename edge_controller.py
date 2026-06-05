@@ -7440,58 +7440,6 @@ USER_MESSAGE:
 """
 
 
-@app.get("/public/companion/context")
-async def public_companion_context(request: Request):
-    await _require_public_api_key(request)
-    user_row = _auth_current_user_from_request(request)
-    user_id = int(user_row["id"])
-
-    return {
-        "ok": True,
-        "user_id": user_id,
-        "context": _companion_build_context(user_id),
-    }
-
-
-@app.post("/public/companion/chat")
-async def public_companion_chat(request: Request):
-    await _require_public_api_key(request)
-    user_row = _auth_current_user_from_request(request)
-    user_id = int(user_row["id"])
-
-    try:
-        payload = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Request body must be JSON.")
-
-    message = payload.get("message") if isinstance(payload, dict) else None
-    requested_model = payload.get("requested_model") if isinstance(payload, dict) else None
-
-    if not isinstance(message, str) or not message.strip():
-        raise HTTPException(status_code=400, detail="message is required.")
-
-    message = message.strip()
-
-    if len(message) > 4000:
-        raise HTTPException(status_code=400, detail="message is too long. Max characters: 4000.")
-
-    context = _companion_build_context(user_id)
-    prompt = _companion_prompt_from_context(message, context)
-
-    job = _public_create_ollama_job(
-        prompt=prompt,
-        requested_model=requested_model or _public_default_model(),
-        user_id=user_id,
-    )
-
-    return {
-        "ok": True,
-        "user_id": user_id,
-        "job_id": job["id"],
-        "status": job["status"],
-        "poll_url": f"/public/jobs/{job['id']}",
-        "message": "Companion response queued. Poll the job URL for the result.",
-    }
 
 # ============================================================
 # System status dashboard endpoints
