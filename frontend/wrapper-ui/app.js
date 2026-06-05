@@ -2380,6 +2380,7 @@ setInterval(loadSystemStatus, 60000);
 let cleanAdminUsers = null;
 let cleanAdminTickets = null;
 let cleanAdminSystem = null;
+let cleanPowerPolicy = null;
 let cleanSupportTickets = null;
 let cleanOpenThread = null;
 
@@ -2453,6 +2454,33 @@ async function cleanLoadSupportTickets() {
     cleanSupportTickets = await cachedApi("/support/tickets", { method: "GET" }, AH_CACHE_TTL.SUPPORT_TICKETS);
   } catch (err) {
     cleanSupportTickets = { ok: false, tickets: [], detail: err.message };
+  }
+}
+
+async function cleanLoadPowerPolicy() {
+  if (!cleanIsAdmin()) {
+    cleanPowerPolicy = null;
+    return;
+  }
+
+  try {
+    if (typeof cachedApi === "function") {
+      cleanPowerPolicy = await cachedApi(
+        "/presence/power-policy",
+        { method: "GET" },
+        10_000,
+        { force: true }
+      );
+    } else {
+      cleanPowerPolicy = await api("/presence/power-policy", {
+        method: "GET",
+      });
+    }
+  } catch (err) {
+    cleanPowerPolicy = {
+      ok: false,
+      error: err.message,
+    };
   }
 }
 
@@ -3117,6 +3145,83 @@ function cleanRenderAdminSupportInbox() {
   `;
 }
 
+function cleanRenderPowerPolicy() {
+  const policy = cleanPowerPolicy;
+
+  if (!policy) {
+    return `
+      <section class="system-section">
+        <h2>Web Presence Power Policy</h2>
+        <div class="notice">Power policy has not loaded yet.</div>
+      </section>
+    `;
+  }
+
+  if (!policy.ok) {
+    return `
+      <section class="system-section">
+        <h2>Web Presence Power Policy</h2>
+        <div class="notice error">Could not load power policy: ${cleanEsc(policy.error || "Unknown error")}</div>
+      </section>
+    `;
+  }
+
+  const presence = policy.presence || {};
+  const actions = policy.actions || [];
+  const reasons = policy.reasons || [];
+
+  return `
+    <section class="system-section">
+      <h2>Web Presence Power Policy</h2>
+      <p class="section-copy">
+        Dry-run decision engine for waking the host, starting containers, stopping containers, and future host shutdown.
+      </p>
+
+      <div class="summary-grid">
+        <div class="summary-box">
+          <span>Dry run</span>
+          <strong>${policy.dry_run ? "Yes" : "No"}</strong>
+          <p>Execution is currently ${policy.execute ? "enabled" : "disabled"}.</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Active visitors</span>
+          <strong>${cleanNum(presence.active_visible || 0)}</strong>
+          <p>Total visible active browser sessions.</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Logged-in users</span>
+          <strong>${cleanNum(presence.active_authenticated || 0)}</strong>
+          <p>Users currently signed in and active.</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Wake intent</span>
+          <strong>${cleanNum(presence.anonymous_wake_intent || 0)}</strong>
+          <p>Anonymous visitors active long enough to wake the host.</p>
+        </div>
+      </div>
+
+      <div class="summary-box system-section">
+        <span>Recommended actions</span>
+        <strong>${actions.map(cleanEsc).join(", ") || "none"}</strong>
+        <p>${reasons.map(cleanEsc).join(" ") || "No reason provided."}</p>
+      </div>
+
+      <div class="summary-box">
+        <span>Policy</span>
+        <p>
+          Anonymous wake after ${cleanNum(policy.policy?.anonymous_wake_after_seconds || 15)}s.
+          Container idle ${cleanNum(policy.policy?.container_idle_seconds || 600)}s.
+          Host idle ${cleanNum(policy.policy?.host_idle_seconds || 1500)}s.
+          Minimum host-on ${cleanNum(policy.policy?.min_host_on_seconds || 1200)}s.
+        </p>
+      </div>
+    </section>
+  `;
+}
+
 function cleanRenderAdminPage() {
   if (!cleanIsLoggedIn()) {
     return `
@@ -3685,4 +3790,56 @@ document.addEventListener("click", (event) => {
     sendWebPresence("force");
   }
 }, true);
+
+
+
+// ============================================================
+// ADMIN_POWER_POLICY_VIEW_WRAPPER_V2
+// Connects web presence dry-run policy to active Admin page.
+// Uses wrappers so we do not depend on exact cleanLoadAdminData()
+// or cleanRenderAdminPage() internals.
+// ============================================================
+
+try {
+  if (typeof cleanLoadAdminData === "function" && typeof cleanLoadPowerPolicy === "function") {
+    const originalCleanLoadAdminDataForPowerPolicy = cleanLoadAdminData;
+
+    cleanLoadAdminData = async function(...args) {
+      const results = await Promise.allSettled([
+        originalCleanLoadAdminDataForPowerPolicy.apply(this, args),
+        cleanLoadPowerPolicy(),
+      ]);
+
+      const rejected = results.find((item) => item.status === "rejected");
+      if (rejected) {
+        console.warn("[admin] power policy/admin load partial failure", rejected.reason);
+      }
+    };
+  }
+
+  if (typeof cleanRenderAdminPage === "function" && typeof cleanRenderPowerPolicy === "function") {
+    const originalCleanRenderAdminPageForPowerPolicy = cleanRenderAdminPage;
+
+    cleanRenderAdminPage = function(...args) {
+      const html = originalCleanRenderAdminPageForPowerPolicy.apply(this, args);
+
+      if (!html || html.includes("Web Presence Power Policy")) {
+        return html;
+      }
+
+      const section = cleanRenderPowerPolicy();
+
+      if (html.includes("<h2>Admin System View</h2>")) {
+        return html.replace(
+          /(<section class="system-section">\s*<h2>Admin System View<\/h2>)/,
+          `${section}\n$1`
+        );
+      }
+
+      return `${html}\n${section}`;
+    };
+  }
+} catch (err) {
+  console.warn("[admin] power policy view wrapper failed", err);
+}
 
