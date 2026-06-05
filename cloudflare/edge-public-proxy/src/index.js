@@ -25,6 +25,8 @@ const ALLOWED_ROUTES = [
 
   // System status / power control routes
   { method: "GET",  pattern: /^\/api\/system\/status$/ },
+  { method: "GET",  pattern: /^\/api\/system\/public-status$/ },
+  { method: "GET",  pattern: /^\/api\/system\/admin-status$/ },
   { method: "POST", pattern: /^\/api\/system\/pveso\/boot$/ }
 ];
 

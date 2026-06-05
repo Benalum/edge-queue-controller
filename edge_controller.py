@@ -11250,6 +11250,7 @@ async def system_admin_users(request: Request):
                 COUNT(CASE WHEN s.revoked_at IS NULL AND s.expires_at > ? THEN 1 END) AS active_session_count
             FROM app_users u
             LEFT JOIN user_sessions s ON s.user_id = u.id
+            WHERE COALESCE(u.status, 'active') != 'deleted'
             GROUP BY u.id
             ORDER BY COALESCE(MAX(s.last_seen_at), u.last_login_at, u.created_at) DESC
             LIMIT 250
