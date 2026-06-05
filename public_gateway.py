@@ -714,6 +714,21 @@ async def _system_public_admin_status_v2(request, call_next):
 @app.middleware("http")
 async def _block_public_ad_reward_routes_until_enabled(request, call_next):
     path = request.url.path
+    method = request.method.upper()
+
+    if path == "/system/ads/reward/status" and method == "GET":
+        forward_headers = {}
+        authorization = request.headers.get("Authorization")
+        if authorization:
+            forward_headers["Authorization"] = authorization
+
+        status_code, payload = _system_v2_fetch_json(
+            "/system/ads/reward/status",
+            method="GET",
+            headers=forward_headers,
+            timeout=15,
+        )
+        return _SystemV2JSONResponse(payload, status_code=status_code)
 
     if path.startswith("/system/ads/"):
         enabled = str(_system_v2_os.getenv("ENABLE_PUBLIC_AD_REWARD_ROUTES", "false")).strip().lower() in (

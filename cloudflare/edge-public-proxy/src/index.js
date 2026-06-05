@@ -25,6 +25,7 @@ const ALLOWED_ROUTES = [
 
   // System status / power control routes
   { method: "GET",  pattern: /^\/api\/system\/status$/ },
+  { method: "GET",  pattern: /^\/api\/ads\/reward\/status$/ },
   { method: "GET",  pattern: /^\/api\/system\/public-status$/ },
   { method: "GET",  pattern: /^\/api\/system\/admin-status$/ },
   { method: "POST", pattern: /^\/api\/system\/pveso\/boot$/ }
@@ -64,6 +65,10 @@ function mapApiPathToBackend(path) {
 
   if (path.startsWith("/api/companion/")) {
     return path.replace("/api/companion/", "/public/companion/");
+  }
+
+  if (path.startsWith("/api/ads/")) {
+    return path.replace("/api/ads/", "/system/ads/");
   }
 
   if (path.startsWith("/api/system/")) {

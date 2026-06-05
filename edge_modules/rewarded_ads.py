@@ -9,6 +9,40 @@ from fastapi import HTTPException
 from edge_modules.credit_helpers import ad_iso_to_epoch
 
 
+
+
+def ad_reward_provider_config():
+    provider = str(os.getenv("AD_REWARD_PROVIDER", "none")).strip().lower()
+    google_gpt_ad_unit_path = str(os.getenv("AD_REWARD_GOOGLE_GPT_AD_UNIT_PATH", "")).strip()
+    google_gpt_enabled = str(os.getenv("AD_REWARD_GOOGLE_GPT_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on")
+    client_claim_enabled = str(os.getenv("AD_REWARD_CLIENT_CLAIM_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on")
+    provider_verification_enabled = str(os.getenv("AD_REWARD_PROVIDER_VERIFICATION_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on")
+
+    ready = False
+    detail = "No rewarded-ad provider is configured."
+
+    if provider == "google_gpt":
+        if not google_gpt_enabled:
+            detail = "Google Publisher Tag rewarded ads are configured but disabled."
+        elif not google_gpt_ad_unit_path:
+            detail = "Google Publisher Tag rewarded ads need AD_REWARD_GOOGLE_GPT_AD_UNIT_PATH."
+        else:
+            ready = True
+            detail = "Google Publisher Tag rewarded ads are configured."
+
+    return {
+        "provider": provider,
+        "ready": ready,
+        "detail": detail,
+        "client_claim_enabled": client_claim_enabled,
+        "provider_verification_enabled": provider_verification_enabled,
+        "google_gpt": {
+            "enabled": google_gpt_enabled,
+            "ad_unit_path": google_gpt_ad_unit_path if ready else "",
+        },
+    }
+
+
 def ad_reward_settings():
     return {
         "reward_credits": int(os.getenv("AD_REWARD_FREE_CREDITS", "5")),
@@ -124,6 +158,8 @@ def ad_reward_status_for_user(user_id: int, *, db_path: str, init_tables, now_is
         can_claim = False
         blocked_reason = f"Reward cooldown active. Try again in {cooldown_remaining} seconds."
 
+    provider_config = ad_reward_provider_config()
+
     return {
         "ok": True,
         "can_claim": can_claim,
@@ -132,7 +168,8 @@ def ad_reward_status_for_user(user_id: int, *, db_path: str, init_tables, now_is
         "credit_pool": "free",
         "credit_rule": "Ad rewards grant free/local credits only.",
         "mock_enabled": str(os.getenv("AD_REWARD_MOCK_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on"),
-        "provider_verification_enabled": str(os.getenv("AD_REWARD_PROVIDER_VERIFICATION_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on"),
+        "provider_verification_enabled": provider_config["provider_verification_enabled"],
+        "provider": provider_config,
         "daily": {
             "used": daily,
             "limit": settings["daily_limit"],
