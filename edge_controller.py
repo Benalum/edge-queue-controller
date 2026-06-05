@@ -3070,6 +3070,28 @@ async def power_auto_tick():
     host_plan = await power_host_shutdown_plan()
     wake_plan = await power_wake_plan()
 
+    # Guard old auto-stop / auto-shutdown path with the newer web presence policy.
+    # If someone is actively using the site, do not stop workers or shut down pveso.
+    try:
+        web_power_policy = await system_web_presence_power_policy()
+    except Exception as e:
+        web_power_policy = {
+            "ok": False,
+            "error": str(e),
+            "desired_state": {},
+        }
+
+    if not isinstance(web_power_policy, dict):
+        web_power_policy = {
+            "ok": False,
+            "error": "Web power policy returned non-dict result.",
+            "desired_state": {},
+        }
+
+    web_desired_state = web_power_policy.get("desired_state") or {}
+    web_host_required = bool(web_desired_state.get("host_required"))
+    web_container_required = bool(web_desired_state.get("container_required"))
+
     container_plans = stop_plan.get("container_stop_plans", [])
     eligible_container_plans = [
         plan for plan in container_plans
@@ -3226,6 +3248,17 @@ async def power_auto_tick():
                 "queue_demand": queue_demand,
             }
         )
+    elif web_host_required or web_container_required:
+        actions.append(
+            {
+                "area": "worker_stop",
+                "action": "skip_worker_stop_due_to_web_presence",
+                "executed": False,
+                "reason": "Active web presence requires the host, so worker stop is skipped.",
+                "web_presence_policy": web_power_policy,
+                "plans": container_plans,
+            }
+        )
     elif eligible_container_plans:
         if not auto_stop_workers:
             actions.append(
@@ -3276,7 +3309,18 @@ async def power_auto_tick():
     # ------------------------------------------------------------
     # Host shutdown automation decision
     # ------------------------------------------------------------
-    if host_plan.get("eligible"):
+    if web_host_required:
+        actions.append(
+            {
+                "area": "host_shutdown",
+                "action": "skip_host_shutdown_due_to_web_presence",
+                "executed": False,
+                "reason": "Active web presence requires the host, so host shutdown is skipped.",
+                "web_presence_policy": web_power_policy,
+                "would_run": host_plan.get("would_run"),
+            }
+        )
+    elif host_plan.get("eligible"):
         if not auto_shutdown_host:
             actions.append(
                 {
