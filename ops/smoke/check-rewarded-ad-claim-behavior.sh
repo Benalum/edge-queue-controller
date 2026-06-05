@@ -96,10 +96,14 @@ def insert_test_user(conn, user_id=1, email="reward-claim-smoke@example.local"):
 
 def user_balances(conn, user_id=1):
     row = conn.execute(
-        "SELECT free_credit_balance, paid_credit_balance FROM app_users WHERE id = ?",
+        "SELECT credit_balance, free_credit_balance, paid_credit_balance FROM app_users WHERE id = ?",
         (user_id,),
     ).fetchone()
-    return int(row["free_credit_balance"]), int(row["paid_credit_balance"])
+    return (
+        int(row["credit_balance"]),
+        int(row["free_credit_balance"]),
+        int(row["paid_credit_balance"]),
+    )
 
 
 async def run_claim(payload):
@@ -177,9 +181,10 @@ async def scenario_grant_duplicate_and_cooldown():
 
         with sqlite3.connect(edge_controller.DB_PATH) as conn:
             conn.row_factory = sqlite3.Row
-            free, paid = user_balances(conn)
+            total, free, paid = user_balances(conn)
             assert free == 5, free
             assert paid == 9, paid
+            assert total == 14, total
 
         duplicate = await run_claim(
             {
@@ -193,9 +198,10 @@ async def scenario_grant_duplicate_and_cooldown():
 
         with sqlite3.connect(edge_controller.DB_PATH) as conn:
             conn.row_factory = sqlite3.Row
-            free, paid = user_balances(conn)
+            total, free, paid = user_balances(conn)
             assert free == 5, free
             assert paid == 9, paid
+            assert total == 14, total
 
         detail = await expect_http(
             429,

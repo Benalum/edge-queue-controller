@@ -170,6 +170,7 @@ def ad_reward_claim_for_user(
     init_tables,
     credit_pool_summary,
     credit_pool_add_ledger,
+    credit_pool_sync_legacy_total,
     ad_hash,
     credit_json_dumps,
 ):
@@ -288,9 +289,11 @@ def ad_reward_claim_for_user(
                 "provider": provider,
                 "reward_event_id": reward_event_id,
                 "credit_pool": "free",
+                "metadata": metadata,
             },
         )
 
+        credit_pool_sync_legacy_total(conn, user_id)
         conn.commit()
 
     summary = credit_pool_summary(user_id)

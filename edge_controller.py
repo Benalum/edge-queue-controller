@@ -9723,7 +9723,6 @@ async def system_ads_reward_status(request: Request):
 
 
 @app.post("/system/ads/reward/claim")
-@app.post("/system/ads/reward/claim")
 async def system_ads_reward_claim(request: Request):
     """
     Rewarded-ad claim endpoint.
@@ -9748,6 +9747,7 @@ async def system_ads_reward_claim(request: Request):
         init_tables=_ad_reward_init_tables,
         credit_pool_summary=_credit_pool_summary,
         credit_pool_add_ledger=_credit_pool_add_ledger,
+        credit_pool_sync_legacy_total=_credit_pool_sync_legacy_total,
         ad_hash=_ad_hash,
         credit_json_dumps=_credit_json_dumps,
     )
