@@ -1694,6 +1694,75 @@ async function sendSupportReply(ticketId) {
 // Depends on CREDITS_AND_GPU_WORKFLOWS functions above.
 // ============================================================
 
+
+function formatRewardCooldown(seconds) {
+  const value = Math.max(0, Number(seconds || 0));
+  const mins = Math.floor(value / 60);
+  const secs = value % 60;
+  if (mins <= 0) return `${secs}s`;
+  return `${mins}m ${secs}s`;
+}
+
+function adRewardUiState(status) {
+  const remaining = Number(status?.cooldown?.remaining_seconds || 0);
+  const dailyUsed = Number(status?.daily?.used || 0);
+  const dailyLimit = Number(status?.daily?.limit || 0);
+  const monthlyUsed = Number(status?.monthly?.used || 0);
+  const monthlyLimit = Number(status?.monthly?.limit || 0);
+
+  if (!status) {
+    return {
+      label: "Loading",
+      detail: "Checking rewarded-ad availability.",
+      button: "Checking...",
+      disabled: true,
+    };
+  }
+
+  if (status.can_claim) {
+    return {
+      label: "Available",
+      detail: status.blocked_reason || "Rewarded ad claim is available.",
+      button: "Earn free credits",
+      disabled: false,
+    };
+  }
+
+  if (remaining > 0) {
+    return {
+      label: "Cooldown",
+      detail: `Try again in ${formatRewardCooldown(remaining)}.`,
+      button: `Cooldown ${formatRewardCooldown(remaining)}`,
+      disabled: true,
+    };
+  }
+
+  if (dailyLimit && dailyUsed >= dailyLimit) {
+    return {
+      label: "Daily limit reached",
+      detail: "You have reached today's rewarded-ad limit.",
+      button: "Daily limit reached",
+      disabled: true,
+    };
+  }
+
+  if (monthlyLimit && monthlyUsed >= monthlyLimit) {
+    return {
+      label: "Monthly limit reached",
+      detail: "You have reached this month's rewarded-ad limit.",
+      button: "Monthly limit reached",
+      disabled: true,
+    };
+  }
+
+  return {
+    label: "Locked",
+    detail: status.blocked_reason || "Rewarded ad claim is not available yet.",
+    button: "Locked",
+    disabled: true,
+  };
+}
+
 function renderCreditsPage() {
   const loggedIn = Boolean(authState.token);
   const live = accountCredits || {};
@@ -1714,6 +1783,9 @@ function renderCreditsPage() {
   const storage = credits.storage_quota_mb ?? user.storage_quota_mb ?? 0;
   const plan = credits.plan || user.plan || (loggedIn ? "free" : "not logged in");
   const billing = credits.billing_status || user.billing_status || "none";
+  const showMockRewardButton = isLocalDevHost() || Boolean(adRewardStatus?.mock_enabled);
+  const showRealProviderNotice = !showMockRewardButton && !adRewardStatus?.provider_verification_enabled;
+  const rewardUi = adRewardUiState(adRewardStatus);
 
   return `
     ${loggedIn ? `
@@ -1805,25 +1877,25 @@ function renderCreditsPage() {
 
           <div class="summary-box">
             <span>Status</span>
-            <strong>${adRewardStatus?.can_claim ? "Available" : "Locked"}</strong>
-            <p>${safeText(adRewardStatus?.blocked_reason || "Rewarded ad claim is available.")}</p>
+            <strong>${safeText(rewardUi.label)}</strong>
+            <p>${safeText(rewardUi.detail)}</p>
           </div>
         </div>
 
-        ${isLocalDevHost() ? `
+        ${showMockRewardButton ? `
           <div class="actions">
             <button
               id="claimAdRewardBtn"
               class="primary-btn"
               type="button"
-              ${adRewardStatus && !adRewardStatus.can_claim ? "disabled" : ""}
+              ${rewardUi.disabled ? "disabled" : ""}
             >
-              Watch mock ad
+              ${safeText(rewardUi.button)}
             </button>
           </div>
 
           <div class="notice">
-            Local development mode: this simulates a rewarded ad and grants free/local credits only.
+            Mock rewarded-ad testing is enabled. This grants free/local credits only and still obeys daily, monthly, and cooldown limits.
           </div>
         ` : `
           <div class="actions">

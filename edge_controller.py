@@ -9925,6 +9925,8 @@ def _ad_reward_status_for_user(user_id: int):
         "reward_credits": settings["reward_credits"],
         "credit_pool": "free",
         "credit_rule": "Ad rewards grant free/local credits only.",
+        "mock_enabled": str(os.getenv("AD_REWARD_MOCK_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on"),
+        "provider_verification_enabled": str(os.getenv("AD_REWARD_PROVIDER_VERIFICATION_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on"),
         "daily": {
             "used": daily,
             "limit": settings["daily_limit"],
