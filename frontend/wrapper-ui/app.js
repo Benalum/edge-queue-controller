@@ -17,6 +17,7 @@ let supportThread = null;
 let adRewardStatus = null;
 let googleRewardedSlot = null;
 let googleRewardedReadyEvent = null;
+let googleRewardedEventId = "";
 let googleRewardedLoading = false;
 let googleRewardedGranted = false;
 let googleRewardedMessage = "";
@@ -1762,6 +1763,73 @@ function ensureGooglePublisherTag() {
   });
 }
 
+
+function makeGoogleRewardedEventId() {
+  if (window.crypto?.randomUUID) {
+    return `google-gpt-${Date.now()}-${window.crypto.randomUUID()}`;
+  }
+
+  return `google-gpt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function safeRewardPayload(payload) {
+  try {
+    return JSON.parse(JSON.stringify(payload || {}));
+  } catch {
+    return {
+      value: String(payload || ""),
+    };
+  }
+}
+
+async function claimGoogleRewardedCredit(rewardPayload = {}) {
+  if (!authState.token) {
+    openAuthModal("login");
+    return;
+  }
+
+  if (!adRewardProvider()?.client_claim_enabled) {
+    setGoogleRewardedMessage("Reward earned, but client credit claiming is disabled.");
+    return;
+  }
+
+  if (!googleRewardedEventId) {
+    googleRewardedEventId = makeGoogleRewardedEventId();
+  }
+
+  setGoogleRewardedMessage("Reward earned. Claiming free credits...");
+
+  const result = await api("/ads/reward/claim", {
+    method: "POST",
+    body: JSON.stringify({
+      provider: "google_gpt",
+      reward_event_id: googleRewardedEventId,
+      metadata: {
+        placement: "credits_page",
+        mode: "google_gpt_client",
+        reward_payload: safeRewardPayload(rewardPayload),
+      },
+    }),
+  });
+
+  accountCredits = result;
+  adRewardStatus = result.reward_status || null;
+
+  if (result.user) {
+    authState.user = result.user;
+  }
+
+  const granted = result?.ad_reward?.credits_granted ?? 0;
+  const duplicate = Boolean(result?.ad_reward?.duplicate);
+
+  setGoogleRewardedMessage(
+    duplicate
+      ? "Reward was already claimed. Your balance is up to date."
+      : `Reward claimed. ${granted} free credits added.`
+  );
+}
+
+
 async function loadGoogleRewardedAd() {
   if (!authState.token) {
     openAuthModal("login");
@@ -1789,6 +1857,7 @@ async function loadGoogleRewardedAd() {
   googleRewardedLoading = true;
   googleRewardedGranted = false;
   googleRewardedReadyEvent = null;
+  googleRewardedEventId = makeGoogleRewardedEventId();
   googleRewardedMessage = "Loading rewarded ad...";
 
   try {
@@ -1824,13 +1893,17 @@ async function loadGoogleRewardedAd() {
           event.makeRewardedVisible();
         });
 
-        googletag.pubads().addEventListener("rewardedSlotGranted", (event) => {
+        googletag.pubads().addEventListener("rewardedSlotGranted", async (event) => {
           if (event.slot !== googleRewardedSlot) return;
 
           googleRewardedGranted = true;
 
           if (adRewardProvider()?.client_claim_enabled) {
-            setGoogleRewardedMessage("Reward earned. Backend claim wiring is the next step.");
+            try {
+              await claimGoogleRewardedCredit(event?.payload || {});
+            } catch (err) {
+              setGoogleRewardedMessage(err.message || "Reward earned, but credit claim failed.");
+            }
           } else {
             setGoogleRewardedMessage("Reward earned in browser test. Credit claiming is still disabled until final verification is enabled.");
           }

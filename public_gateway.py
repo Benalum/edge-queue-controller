@@ -730,6 +730,42 @@ async def _block_public_ad_reward_routes_until_enabled(request, call_next):
         )
         return _SystemV2JSONResponse(payload, status_code=status_code)
 
+    if path == "/system/ads/reward/claim" and method == "POST":
+        enabled = str(_system_v2_os.getenv("ENABLE_PUBLIC_AD_REWARD_ROUTES", "false")).strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+
+        if not enabled:
+            return _SystemV2JSONResponse(
+                {
+                    "ok": False,
+                    "detail": "Rewarded ads are not enabled on the public gateway yet.",
+                },
+                status_code=404,
+            )
+
+        forward_headers = {}
+        authorization = request.headers.get("Authorization")
+        if authorization:
+            forward_headers["Authorization"] = authorization
+
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+        status_code, payload = _system_v2_fetch_json(
+            "/system/ads/reward/claim",
+            method="POST",
+            body=body,
+            headers=forward_headers,
+            timeout=20,
+        )
+        return _SystemV2JSONResponse(payload, status_code=status_code)
+
     if path.startswith("/system/ads/"):
         enabled = str(_system_v2_os.getenv("ENABLE_PUBLIC_AD_REWARD_ROUTES", "false")).strip().lower() in (
             "1",
