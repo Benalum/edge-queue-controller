@@ -4654,3 +4654,162 @@ document.addEventListener("click", (event) => {
   }
 })();
 
+
+function ensureForgotPasswordButton() {
+  const authForm = $("authForm");
+  if (!authForm) return null;
+
+  let btn = $("forgotPasswordBtn");
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.id = "forgotPasswordBtn";
+    btn.className = "ghost-btn";
+    btn.type = "button";
+    btn.textContent = "Forgot password?";
+    btn.style.marginTop = "10px";
+    btn.addEventListener("click", requestPasswordResetFromLogin);
+
+    const resendBtn = $("resendVerificationBtn");
+    const submitBtn = $("authSubmitBtn");
+
+    if (resendBtn && resendBtn.parentNode) {
+      resendBtn.parentNode.insertBefore(btn, resendBtn.nextSibling);
+    } else if (submitBtn && submitBtn.parentNode) {
+      submitBtn.parentNode.insertBefore(btn, submitBtn.nextSibling);
+    } else {
+      authForm.appendChild(btn);
+    }
+  }
+
+  btn.hidden = authMode !== "login";
+  return btn;
+}
+
+function updateForgotPasswordVisibility() {
+  const btn = $("forgotPasswordBtn");
+  if (btn) {
+    btn.hidden = authMode !== "login";
+  }
+}
+
+async function requestPasswordResetFromLogin() {
+  const email = ($("authEmail")?.value || "").trim().toLowerCase();
+
+  if (!email || !email.includes("@")) {
+    setEmailVerificationMessage("Enter your email address first, then click Forgot password.", true);
+    return;
+  }
+
+  const btn = $("forgotPasswordBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Sending reset email...";
+  }
+
+  try {
+    const data = await api("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+
+    setEmailVerificationMessage(
+      data?.message || "If that email exists, a password reset link has been sent."
+    );
+  } catch (err) {
+    setEmailVerificationMessage(err.message || "Could not request password reset.", true);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Forgot password?";
+    }
+  }
+}
+
+async function handleResetPasswordRoute() {
+  const url = new URL(window.location.href);
+
+  if (url.pathname !== "/reset-password") {
+    return false;
+  }
+
+  const token = url.searchParams.get("token") || "";
+
+  if (!token) {
+    showPageNotice("Reset link is missing a token.", true);
+    window.history.replaceState({}, "", "/login");
+    openAuthModal("login");
+    return true;
+  }
+
+  showPageNotice("Password reset link ready.");
+
+  const newPassword = window.prompt("Enter your new password. It must be at least 8 characters.");
+
+  if (!newPassword) {
+    showPageNotice("Password reset cancelled.", true);
+    window.history.replaceState({}, "", "/login");
+    openAuthModal("login");
+    return true;
+  }
+
+  const confirmPassword = window.prompt("Confirm your new password.");
+
+  if (newPassword !== confirmPassword) {
+    showPageNotice("Passwords did not match.", true);
+    window.history.replaceState({}, "", "/login");
+    openAuthModal("login");
+    return true;
+  }
+
+  try {
+    const data = await api("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({
+        token,
+        new_password: newPassword,
+      }),
+    });
+
+    showPageNotice(data?.message || "Password reset. You can now log in.");
+    window.history.replaceState({}, "", "/login");
+    openAuthModal("login");
+    setEmailVerificationMessage("Password reset. Log in with your new password.");
+
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 900);
+  } catch (err) {
+    const message = err.message || "Password reset failed.";
+    showPageNotice(message, true);
+    window.history.replaceState({}, "", "/login");
+    openAuthModal("login");
+    setEmailVerificationMessage(message, true);
+  }
+
+  return true;
+}
+
+(function installPasswordRecoveryUiHooks() {
+  const originalSetAuthMode = setAuthMode;
+
+  setAuthMode = function patchedSetAuthMode(mode) {
+    const result = originalSetAuthMode(mode);
+    ensureForgotPasswordButton();
+    updateForgotPasswordVisibility();
+    return result;
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    ensureForgotPasswordButton();
+    updateForgotPasswordVisibility();
+  });
+})();
+
+(async function bootPasswordResetRoute() {
+  try {
+    await handleResetPasswordRoute();
+  } catch (err) {
+    console.warn("Password reset route handling failed", err);
+  }
+})();
+
