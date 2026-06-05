@@ -15,6 +15,11 @@ let adminSystemStatus = null;
 let supportTickets = null;
 let supportThread = null;
 let adRewardStatus = null;
+let googleRewardedSlot = null;
+let googleRewardedReadyEvent = null;
+let googleRewardedLoading = false;
+let googleRewardedGranted = false;
+let googleRewardedMessage = "";
 let authMode = "login";
 
 const authState = {
@@ -1703,6 +1708,171 @@ function formatRewardCooldown(seconds) {
   return `${mins}m ${secs}s`;
 }
 
+
+function adRewardProvider() {
+  return adRewardStatus?.provider || {};
+}
+
+function googleRewardedConfig() {
+  return adRewardProvider()?.google_gpt || {};
+}
+
+function canUseGoogleRewardedAds() {
+  const provider = adRewardProvider();
+
+  return Boolean(
+    provider?.provider === "google_gpt" &&
+    provider?.ready &&
+    googleRewardedConfig()?.enabled &&
+    googleRewardedConfig()?.ad_unit_path
+  );
+}
+
+function setGoogleRewardedMessage(message) {
+  googleRewardedMessage = message || "";
+  renderPage();
+}
+
+function ensureGooglePublisherTag() {
+  if (window.googletag?.apiReady || window.googletag?.cmd) {
+    window.googletag = window.googletag || { cmd: [] };
+    window.googletag.cmd = window.googletag.cmd || [];
+    return Promise.resolve(window.googletag);
+  }
+
+  window.googletag = window.googletag || { cmd: [] };
+  window.googletag.cmd = window.googletag.cmd || [];
+
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-google-publisher-tag="true"]');
+
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.googletag), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Google Publisher Tag failed to load.")), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://securepubads.g.doubleclick.net/tag/js/gpt.js";
+    script.dataset.googlePublisherTag = "true";
+    script.onload = () => resolve(window.googletag);
+    script.onerror = () => reject(new Error("Google Publisher Tag failed to load."));
+    document.head.appendChild(script);
+  });
+}
+
+async function loadGoogleRewardedAd() {
+  if (!authState.token) {
+    openAuthModal("login");
+    return;
+  }
+
+  if (!canUseGoogleRewardedAds()) {
+    setGoogleRewardedMessage(adRewardProvider()?.detail || "Rewarded ads are not configured yet.");
+    return;
+  }
+
+  if (!adRewardStatus?.can_claim) {
+    setGoogleRewardedMessage(adRewardStatus?.blocked_reason || "Rewarded ads are not available right now.");
+    return;
+  }
+
+  if (googleRewardedLoading) return;
+
+  const button = $("showGoogleRewardedAdBtn");
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Loading ad...";
+  }
+
+  googleRewardedLoading = true;
+  googleRewardedGranted = false;
+  googleRewardedReadyEvent = null;
+  googleRewardedMessage = "Loading rewarded ad...";
+
+  try {
+    const googletag = await ensureGooglePublisherTag();
+    const adUnitPath = googleRewardedConfig().ad_unit_path;
+
+    googletag.cmd.push(() => {
+      try {
+        if (googleRewardedSlot) {
+          googletag.destroySlots([googleRewardedSlot]);
+          googleRewardedSlot = null;
+        }
+
+        googleRewardedSlot = googletag.defineOutOfPageSlot(
+          adUnitPath,
+          googletag.enums.OutOfPageFormat.REWARDED
+        );
+
+        if (!googleRewardedSlot) {
+          googleRewardedLoading = false;
+          setGoogleRewardedMessage("Rewarded ad slot could not be created for this device/browser.");
+          return;
+        }
+
+        googleRewardedSlot.addService(googletag.pubads());
+
+        googletag.pubads().addEventListener("rewardedSlotReady", (event) => {
+          if (event.slot !== googleRewardedSlot) return;
+
+          googleRewardedReadyEvent = event;
+          googleRewardedLoading = false;
+          setGoogleRewardedMessage("Rewarded ad is ready. Opening ad...");
+          event.makeRewardedVisible();
+        });
+
+        googletag.pubads().addEventListener("rewardedSlotGranted", (event) => {
+          if (event.slot !== googleRewardedSlot) return;
+
+          googleRewardedGranted = true;
+
+          if (adRewardProvider()?.client_claim_enabled) {
+            setGoogleRewardedMessage("Reward earned. Backend claim wiring is the next step.");
+          } else {
+            setGoogleRewardedMessage("Reward earned in browser test. Credit claiming is still disabled until final verification is enabled.");
+          }
+        });
+
+        googletag.pubads().addEventListener("rewardedSlotClosed", (event) => {
+          if (event.slot !== googleRewardedSlot) return;
+
+          if (googleRewardedSlot) {
+            googletag.destroySlots([googleRewardedSlot]);
+            googleRewardedSlot = null;
+          }
+
+          googleRewardedLoading = false;
+
+          if (!googleRewardedGranted) {
+            setGoogleRewardedMessage("Rewarded ad closed before a reward was granted.");
+          }
+        });
+
+        googletag.enableServices();
+        googletag.display(googleRewardedSlot);
+      } catch (err) {
+        googleRewardedLoading = false;
+        setGoogleRewardedMessage(err.message || "Rewarded ad failed to load.");
+      }
+    });
+  } catch (err) {
+    googleRewardedLoading = false;
+    setGoogleRewardedMessage(err.message || "Rewarded ad failed to load.");
+  } finally {
+    setTimeout(() => {
+      const latestButton = $("showGoogleRewardedAdBtn");
+      if (latestButton && !googleRewardedLoading) {
+        latestButton.disabled = false;
+        latestButton.textContent = "Load rewarded ad";
+      }
+    }, 0);
+  }
+}
+
+
 function adRewardUiState(status) {
   const remaining = Number(status?.cooldown?.remaining_seconds || 0);
   const dailyUsed = Number(status?.daily?.used || 0);
@@ -1783,8 +1953,10 @@ function renderCreditsPage() {
   const storage = credits.storage_quota_mb ?? user.storage_quota_mb ?? 0;
   const plan = credits.plan || user.plan || (loggedIn ? "free" : "not logged in");
   const billing = credits.billing_status || user.billing_status || "none";
+  const rewardProvider = adRewardProvider();
+  const googleProvider = googleRewardedConfig();
   const showMockRewardButton = isLocalDevHost() || Boolean(adRewardStatus?.mock_enabled);
-  const showRealProviderNotice = !showMockRewardButton && !adRewardStatus?.provider_verification_enabled;
+  const showGoogleRewardButton = !showMockRewardButton && canUseGoogleRewardedAds();
   const rewardUi = adRewardUiState(adRewardStatus);
 
   return `
@@ -1880,6 +2052,18 @@ function renderCreditsPage() {
             <strong>${safeText(rewardUi.label)}</strong>
             <p>${safeText(rewardUi.detail)}</p>
           </div>
+
+          <div class="summary-box">
+            <span>Provider</span>
+            <strong>${safeText(rewardProvider?.provider || "none")}</strong>
+            <p>${safeText(rewardProvider?.detail || "No rewarded-ad provider status loaded yet.")}</p>
+          </div>
+
+          <div class="summary-box">
+            <span>Claim mode</span>
+            <strong>${rewardProvider?.client_claim_enabled ? "Client claim enabled" : "Claim disabled"}</strong>
+            <p>${rewardProvider?.provider_verification_enabled ? "Provider verification enabled." : "Provider verification is not enabled yet."}</p>
+          </div>
         </div>
 
         ${showMockRewardButton ? `
@@ -1897,6 +2081,22 @@ function renderCreditsPage() {
           <div class="notice">
             Mock rewarded-ad testing is enabled. This grants free/local credits only and still obeys daily, monthly, and cooldown limits.
           </div>
+        ` : showGoogleRewardButton ? `
+          <div class="actions">
+            <button
+              id="showGoogleRewardedAdBtn"
+              class="primary-btn"
+              type="button"
+              ${rewardUi.disabled || googleRewardedLoading ? "disabled" : ""}
+            >
+              ${googleRewardedLoading ? "Loading ad..." : "Load rewarded ad"}
+            </button>
+          </div>
+
+          <div class="notice">
+            Google rewarded ads are configured for ${safeText(googleProvider?.ad_unit_path || "this site")}.
+            ${safeText(googleRewardedMessage || "Credit claiming remains disabled until final verification is enabled.")}
+          </div>
         ` : `
           <div class="actions">
             <button class="primary-btn" type="button" disabled>
@@ -1905,7 +2105,8 @@ function renderCreditsPage() {
           </div>
 
           <div class="notice">
-            Rewarded ads will be enabled after real provider verification is connected. Ad-earned credits will be free/local credits only.
+            ${safeText(rewardProvider?.detail || "Rewarded ads will be enabled after a real provider is connected.")}
+            Ad-earned credits will be free/local credits only.
           </div>
         `}
       </section>
@@ -2134,6 +2335,7 @@ function renderPage() {
   });
 
   $("claimAdRewardBtn")?.addEventListener("click", claimMockAdReward);
+  $("showGoogleRewardedAdBtn")?.addEventListener("click", loadGoogleRewardedAd);
   $("gpuQuoteBtn")?.addEventListener("click", quoteMockGpuSession);
   $("gpuReserveQuoteBtn")?.addEventListener("click", reserveMockGpuQuote);
   $("adminGrantCreditsBtn")?.addEventListener("click", adminGrantCredits);
