@@ -7743,9 +7743,9 @@ def system_status():
     # through /api/backend/... while the direct FastAPI path may be different.
     # Try several safe candidates and mark it online if any respond.
     study_candidates = [
+        "http://127.0.0.1:7070/health",
         "http://127.0.0.1:7070/public/study/progress",
         "http://127.0.0.1:7070/public/study/decks",
-        "http://127.0.0.1:7070/health",
     ]
 
     study_check = None
