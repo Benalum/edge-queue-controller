@@ -52,6 +52,10 @@ echo "=== public gateway rewarded-ad route gating ==="
 ops/smoke/check-public-gateway-ad-reward-routes.sh
 
 echo
+echo "=== rewarded-ad deployment config ==="
+ops/smoke/check-rewarded-ad-deploy-config.sh
+
+echo
 echo "=== credit ownership ==="
 ops/smoke/check-credit-ownership.sh
 
