@@ -2427,7 +2427,7 @@ $("authForm").addEventListener("submit", handleAuthSubmit);
 renderPage();
 checkExistingLogin();
 loadSystemStatus();
-setInterval(loadSystemStatus, 30000);
+setInterval(loadSystemStatus, 60000);
 
 
 // ============================================================
@@ -3359,7 +3359,7 @@ document.addEventListener("click", async (event) => {
 
 window.addEventListener("popstate", cleanRenderNow);
 
-setInterval(cleanHeartbeat, 30000);
+setInterval(cleanHeartbeat, 60000);
 
 setTimeout(async () => {
   cleanSyncNav();
@@ -3439,10 +3439,6 @@ async function refreshHeaderCredits(reason = "") {
 
   return headerCreditRefreshInFlight;
 }
-
-setInterval(() => {
-  refreshHeaderCredits("interval");
-}, 60_000);
 
 setTimeout(() => {
   refreshHeaderCredits("startup");

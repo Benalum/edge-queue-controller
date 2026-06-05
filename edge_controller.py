@@ -11748,3 +11748,48 @@ async def system_support_ticket_status(ticket_id: int, request: Request):
         },
     }
 
+
+# ============================================================
+# Safe idempotent session logout
+#
+# The older /system/session/logout endpoint is returning 500.
+# This endpoint is intentionally forgiving:
+# - no token => ok, revoked false
+# - already revoked token => ok, revoked false
+# - valid active token => ok, revoked true
+# ============================================================
+
+@app.post("/system/session/logout-safe")
+async def system_session_logout_safe(request: Request):
+    token = _auth_get_bearer_token(request)
+
+    if not token:
+        return {
+            "ok": True,
+            "revoked": False,
+            "detail": "No token supplied.",
+        }
+
+    token_hash = _auth_hash_token(token)
+    now = _auth_now_iso()
+
+    _auth_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.execute(
+            """
+            UPDATE user_sessions
+            SET revoked_at = ?,
+                last_seen_at = ?
+            WHERE token_hash = ?
+              AND revoked_at IS NULL
+            """,
+            (now, now, token_hash),
+        )
+        conn.commit()
+
+    return {
+        "ok": True,
+        "revoked": cur.rowcount > 0,
+    }
+

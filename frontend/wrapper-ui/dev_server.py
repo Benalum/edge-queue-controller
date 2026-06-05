@@ -24,7 +24,7 @@ def map_api(path):
         return CONTROLLER, "/system/session/register"
 
     if path == "/api/auth/logout":
-        return CONTROLLER, "/system/session/logout"
+        return CONTROLLER, "/system/session/logout-safe"
 
     if path == "/api/account/credits":
         return CONTROLLER, "/system/account/credits"
