@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import os
+import secrets
 import sqlite3
+
+from fastapi import HTTPException
 
 from edge_modules.credit_helpers import ad_iso_to_epoch
 
@@ -144,3 +147,166 @@ def ad_reward_status_for_user(user_id: int, *, db_path: str, init_tables, now_is
             "last_claim_at": last_claim_at,
         },
     }
+
+
+def parse_reward_claim_payload(payload):
+    if not isinstance(payload, dict):
+        payload = {}
+
+    provider = str(payload.get("provider") or "mock_rewarded_ad").strip()[:80]
+    reward_event_id = str(payload.get("reward_event_id") or secrets.token_urlsafe(24)).strip()
+    metadata = payload.get("metadata") or {}
+
+    return provider, reward_event_id, metadata
+
+
+def ad_reward_claim_for_user(
+    *,
+    request,
+    payload,
+    user_id: int,
+    db_path,
+    now_iso,
+    init_tables,
+    credit_pool_summary,
+    credit_pool_add_ledger,
+    ad_hash,
+    credit_json_dumps,
+):
+    provider, reward_event_id, metadata = parse_reward_claim_payload(payload)
+
+    mock_enabled = str(os.getenv("AD_REWARD_MOCK_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on")
+    if provider == "mock_rewarded_ad" and not mock_enabled:
+        raise HTTPException(
+            status_code=403,
+            detail="Mock rewarded ads are disabled. Real provider verification is required.",
+        )
+
+    settings = ad_reward_settings()
+    credits = int(settings["reward_credits"])
+    now = now_iso()
+
+    init_tables()
+
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("BEGIN IMMEDIATE")
+
+        existing = conn.execute(
+            """
+            SELECT *
+            FROM ad_reward_events
+            WHERE provider = ?
+              AND reward_event_id = ?
+            """,
+            (provider, reward_event_id),
+        ).fetchone()
+
+        if existing:
+            conn.commit()
+            summary = credit_pool_summary(user_id)
+            summary["ad_reward"] = {
+                "ok": True,
+                "duplicate": True,
+                "credits_granted": 0,
+                "detail": "Reward event was already claimed.",
+            }
+            summary["reward_status"] = ad_reward_status_for_user(
+                user_id,
+                db_path=db_path,
+                init_tables=init_tables,
+                now_iso=now_iso,
+            )
+            return summary
+
+        daily, monthly, last_claim_at = ad_reward_counts(conn, user_id, now_iso())
+        now_epoch = ad_iso_to_epoch(now)
+
+        cooldown_remaining = 0
+        if last_claim_at:
+            elapsed = max(0, now_epoch - ad_iso_to_epoch(last_claim_at))
+            cooldown_remaining = max(0, int(settings["cooldown_seconds"] - elapsed))
+
+        if daily >= settings["daily_limit"]:
+            raise HTTPException(status_code=429, detail="Daily rewarded-ad limit reached.")
+
+        if monthly >= settings["monthly_limit"]:
+            raise HTTPException(status_code=429, detail="Monthly rewarded-ad limit reached.")
+
+        if cooldown_remaining > 0:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Reward cooldown active. Try again in {cooldown_remaining} seconds.",
+            )
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET free_credit_balance = free_credit_balance + ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (credits, now, user_id),
+        )
+
+        conn.execute(
+            """
+            INSERT INTO ad_reward_events (
+                user_id,
+                provider,
+                reward_event_id,
+                status,
+                credits_granted,
+                credit_pool,
+                ip_hash,
+                user_agent_hash,
+                metadata_json,
+                created_at
+            )
+            VALUES (?, ?, ?, 'granted', ?, 'free', ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                provider,
+                reward_event_id,
+                credits,
+                ad_hash(ad_request_ip(request)),
+                ad_hash(request.headers.get("user-agent", "")),
+                credit_json_dumps(metadata),
+                now,
+            ),
+        )
+
+        credit_pool_add_ledger(
+            conn,
+            user_id,
+            credits,
+            0,
+            f"ad_reward:{provider}",
+            "local",
+            {
+                "provider": provider,
+                "reward_event_id": reward_event_id,
+                "credit_pool": "free",
+            },
+        )
+
+        conn.commit()
+
+    summary = credit_pool_summary(user_id)
+    summary["ad_reward"] = {
+        "ok": True,
+        "duplicate": False,
+        "provider": provider,
+        "credits_granted": credits,
+        "credit_pool": "free",
+        "detail": "Reward granted as free/local credits.",
+    }
+    summary["reward_status"] = ad_reward_status_for_user(
+        user_id,
+        db_path=db_path,
+        init_tables=init_tables,
+        now_iso=now_iso,
+    )
+    return summary
+

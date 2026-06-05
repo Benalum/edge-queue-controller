@@ -8221,6 +8221,7 @@ from edge_modules.credit_helpers import (
 )
 from edge_modules.rewarded_ads import (
     ad_request_ip as _ad_request_ip,
+    ad_reward_claim_for_user as _ad_reward_claim_for_user,
     ad_reward_counts as _ad_reward_counts,
     ad_reward_init_tables as _rewarded_ad_init_tables_impl,
     ad_reward_settings as _ad_reward_settings,
@@ -9722,12 +9723,13 @@ async def system_ads_reward_status(request: Request):
 
 
 @app.post("/system/ads/reward/claim")
+@app.post("/system/ads/reward/claim")
 async def system_ads_reward_claim(request: Request):
     """
-    Local/dev rewarded-ad claim endpoint.
+    Rewarded-ad claim endpoint.
 
-    Production version should verify a real provider reward callback/proof before granting.
-    This endpoint intentionally grants only free/local credits.
+    This route intentionally stays thin; claim rules live in edge_modules.rewarded_ads.
+    Rewards grant free/local credits only.
     """
     row = _credit_pool_user_row(request)
     user_id = int(row["id"])
@@ -9737,151 +9739,19 @@ async def system_ads_reward_claim(request: Request):
     except Exception:
         payload = {}
 
-    if not isinstance(payload, dict):
-        payload = {}
+    return _ad_reward_claim_for_user(
+        request=request,
+        payload=payload,
+        user_id=user_id,
+        db_path=DB_PATH,
+        now_iso=_auth_now_iso,
+        init_tables=_ad_reward_init_tables,
+        credit_pool_summary=_credit_pool_summary,
+        credit_pool_add_ledger=_credit_pool_add_ledger,
+        ad_hash=_ad_hash,
+        credit_json_dumps=_credit_json_dumps,
+    )
 
-    provider = str(payload.get("provider") or "mock_rewarded_ad").strip()[:80]
-    reward_event_id = str(payload.get("reward_event_id") or _credit_secrets.token_urlsafe(24)).strip()
-    metadata = payload.get("metadata") or {}
-
-    # Production safety:
-    # mock rewarded ads are for localhost/dev testing only.
-    # Real production rewards must use a provider-verified reward event.
-    mock_enabled = str(os.getenv("AD_REWARD_MOCK_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on")
-    if provider == "mock_rewarded_ad" and not mock_enabled:
-        raise HTTPException(
-            status_code=403,
-            detail="Mock rewarded ads are disabled. Real provider verification is required.",
-        )
-
-    settings = _ad_reward_settings()
-    credits = int(settings["reward_credits"])
-    now = _auth_now_iso()
-
-    _ad_reward_init_tables()
-
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        conn.execute("BEGIN IMMEDIATE")
-
-        existing = conn.execute(
-            """
-            SELECT *
-            FROM ad_reward_events
-            WHERE provider = ?
-              AND reward_event_id = ?
-            """,
-            (provider, reward_event_id),
-        ).fetchone()
-
-        if existing:
-            conn.commit()
-            summary = _credit_pool_summary(user_id)
-            summary["ad_reward"] = {
-                "ok": True,
-                "duplicate": True,
-                "credits_granted": 0,
-                "detail": "Reward event was already claimed.",
-            }
-            summary["reward_status"] = _ad_reward_status_for_user(
-                user_id,
-                db_path=DB_PATH,
-                init_tables=_ad_reward_init_tables,
-                now_iso=_auth_now_iso,
-            )
-            return summary
-
-        daily, monthly, last_claim_at = _ad_reward_counts(conn, user_id, _auth_now_iso())
-        now_epoch = _ad_iso_to_epoch(now)
-
-        cooldown_remaining = 0
-        if last_claim_at:
-            elapsed = max(0, now_epoch - _ad_iso_to_epoch(last_claim_at))
-            cooldown_remaining = max(0, int(settings["cooldown_seconds"] - elapsed))
-
-        if daily >= settings["daily_limit"]:
-            raise HTTPException(status_code=429, detail="Daily rewarded-ad limit reached.")
-
-        if monthly >= settings["monthly_limit"]:
-            raise HTTPException(status_code=429, detail="Monthly rewarded-ad limit reached.")
-
-        if cooldown_remaining > 0:
-            raise HTTPException(
-                status_code=429,
-                detail=f"Reward cooldown active. Try again in {cooldown_remaining} seconds.",
-            )
-
-        conn.execute(
-            """
-            UPDATE app_users
-            SET free_credit_balance = free_credit_balance + ?,
-                updated_at = ?
-            WHERE id = ?
-            """,
-            (credits, now, user_id),
-        )
-
-        conn.execute(
-            """
-            INSERT INTO ad_reward_events (
-                user_id,
-                provider,
-                reward_event_id,
-                status,
-                credits_granted,
-                credit_pool,
-                ip_hash,
-                user_agent_hash,
-                metadata_json,
-                created_at
-            )
-            VALUES (?, ?, ?, 'granted', ?, 'free', ?, ?, ?, ?)
-            """,
-            (
-                user_id,
-                provider,
-                reward_event_id,
-                credits,
-                _ad_hash(_ad_request_ip(request)),
-                _ad_hash(request.headers.get("user-agent", "")),
-                _credit_json_dumps(metadata),
-                now,
-            ),
-        )
-
-        _credit_pool_add_ledger(
-            conn,
-            user_id,
-            credits,
-            0,
-            f"ad_reward:{provider}",
-            "local",
-            {
-                "provider": provider,
-                "reward_event_id": reward_event_id,
-                "credit_pool": "free",
-                "metadata": metadata,
-            },
-        )
-
-        _credit_pool_sync_legacy_total(conn, user_id)
-        conn.commit()
-
-    summary = _credit_pool_summary(user_id)
-    summary["ad_reward"] = {
-        "ok": True,
-        "duplicate": False,
-        "credits_granted": credits,
-        "credit_pool": "free",
-        "detail": "Reward granted as free/local credits.",
-    }
-    summary["reward_status"] = _ad_reward_status_for_user(
-                user_id,
-                db_path=DB_PATH,
-                init_tables=_ad_reward_init_tables,
-                now_iso=_auth_now_iso,
-            )
-    return summary
 
 
 # ============================================================
