@@ -17,24 +17,23 @@ WRAPPER_ROUTES = {"/", "/study", "/companion", "/calendar", "/profile", "/system
 
 
 def map_api(path):
-    if path.startswith("/api/backend/"):
-        return CT101_FRONTEND, path
-
-    # CT101_AUTH_SOURCE_OF_TRUTH_V1
-    # CT 101 owns real app auth/user/credits. The laptop wrapper stays as
-    # public shell + system/wake/status proxy.
-    ct101_auth_exact = {
-        "/api/me": "/api/backend/auth/me",
-        "/api/auth/login": "/api/backend/auth/login",
-        "/api/auth/register": "/api/backend/auth/register",
-        "/api/auth/logout": "/api/backend/auth/logout",
-        "/api/account/credits": "/api/backend/account/credits",
-        "/api/account/credit-pools": "/api/backend/account/credits",
+    # RESTORE_CONTROLLER_AUTH_PRIORITY_V1
+    # Wrapper login/admin/credits currently belong to the laptop controller.
+    # Keep these before any CT101 routing.
+    controller_auth_exact = {
+        "/api/me": "/system/session/me",
+        "/api/auth/login": "/system/session/login",
+        "/api/auth/register": "/system/session/register",
+        "/api/auth/logout": "/system/session/logout-safe",
+        "/api/account/credits": "/system/account/credits",
+        "/api/account/credit-pools": "/system/account/credit-pools",
     }
 
-    if path in ct101_auth_exact:
-        return CT101_FRONTEND, ct101_auth_exact[path]
+    if path in controller_auth_exact:
+        return CONTROLLER, controller_auth_exact[path]
 
+    if path.startswith("/api/backend/"):
+        return CT101_FRONTEND, path
     controller_exact = {
         "/api/me": "/system/session/me",
         "/api/session/presence": "/system/session/presence",
