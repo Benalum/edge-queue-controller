@@ -38,7 +38,25 @@ function syncAuthRouteCookie() {
   }
 }
 
+
 syncAuthRouteCookie();
+
+// PRIVATE_ROUTE_REFRESH_AFTER_AUTH_V1
+const PRIVATE_APP_ROUTE_SET = new Set(["/study", "/companion", "/calendar", "/profile"]);
+
+function refreshPrivateRouteAfterAuth(reason = "auth") {
+  syncAuthRouteCookie();
+
+  if (PRIVATE_APP_ROUTE_SET.has(location.pathname)) {
+    const url = new URL(location.href);
+    url.searchParams.set("fresh", String(Date.now()));
+    url.searchParams.set("auth", reason);
+    location.replace(url.toString());
+    return true;
+  }
+
+  return false;
+}
 
 const pages = {
   "/": {
@@ -2334,6 +2352,12 @@ async function handleAuthSubmit(event) {
     authState.token = token;
     authState.user = data.user || { email };
     localStorage.setItem("edgeStudyToken", token);
+    authState.token = token;
+    syncAuthRouteCookie();
+    if (refreshPrivateRouteAfterAuth("login")) return;
+    authState.token = token;
+    syncAuthRouteCookie();
+    if (refreshPrivateRouteAfterAuth("login")) return;
     syncAuthRouteCookie();
 
     try {
@@ -3993,3 +4017,33 @@ if (document.readyState === "loading") {
 } else {
   runWrapperStartupAuthRefreshNow();
 }
+
+
+// PROTECTED_NAV_PRIVATE_RELOAD_V1
+document.addEventListener("click", (event) => {
+  const link = event.target?.closest?.("a[href]");
+  if (!link) return;
+
+  const href = link.getAttribute("href");
+  if (!href) return;
+
+  let target;
+  try {
+    target = new URL(href, location.origin);
+  } catch {
+    return;
+  }
+
+  if (target.origin !== location.origin) return;
+  if (!PRIVATE_APP_ROUTE_SET.has(target.pathname)) return;
+
+  const token = localStorage.getItem("edgeStudyToken") || authState?.token || "";
+  if (!token) return;
+
+  document.cookie =
+    `edgeStudyToken=${encodeURIComponent(token)}; Path=/; Max-Age=2592000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+
+  target.searchParams.set("fresh", String(Date.now()));
+  event.preventDefault();
+  location.href = target.toString();
+}, true);
