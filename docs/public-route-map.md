@@ -58,6 +58,23 @@ CT101 must not expose or own credit wallets, credit ledgers, rewarded ads, or /a
 | /api/worker-nodes/* | CT101 | Worker node management |
 | /api/public/platform-stats | CT101 | Public platform stats |
 
+## Cloudflare Worker translation routes
+
+The public Cloudflare Worker still translates some public `/api/*` routes into controller `/public/*` or `/system/*` routes.
+
+| Public Worker route | Controller route | Owner | Notes |
+|---|---|---|---|
+| `/api/status` | `/public/status` | Controller | Public controller status |
+| `/api/me` | `/public/me` | Controller | Public auth/session user |
+| `/api/auth/*` | `/public/auth/*` | Controller | Login/register/logout bridge |
+| `/api/jobs` | `/public/jobs` | Controller | Public Ollama job queue bridge |
+| `/api/jobs/*` | `/public/jobs/*` | Controller | Public job polling bridge |
+| `/api/study/*` | `/public/study/*` | Controller legacy/public bridge | Still routed by Worker |
+| `/api/companion/*` | `/public/companion/*` | Controller legacy/public bridge | Still routed by Worker |
+| `/api/system/*` | `/system/*` | Controller system routes | System status/power bridge |
+
+These routes are part of the public gateway path and should not be confused with CT101 private `/api/study/*`, `/api/calendar/*`, or `/api/worker-nodes/*`.
+
 ## Forbidden CT101 routes/tables
 
 The following must not exist in CT101:
