@@ -8264,6 +8264,13 @@ async def system_account_me(request: Request):
 
 import json as _credit_json
 import secrets as _credit_secrets
+from edge_modules.credit_helpers import (
+    ad_hash as _ad_hash,
+    ad_iso_to_epoch as _ad_iso_to_epoch,
+    credit_json_dumps as _credit_json_dumps,
+    credit_pool_debit_plan as _credit_pool_debit_plan,
+    parse_payload_amount as _credit_parse_payload_amount,
+)
 
 
 def _credit_init_tables():
@@ -8324,26 +8331,6 @@ def _credit_require_admin(request: Request):
     return row
 
 
-def _credit_json_dumps(value):
-    if value is None:
-        return None
-
-    try:
-        return _credit_json.dumps(value, sort_keys=True)
-    except Exception:
-        return _credit_json.dumps({"value": str(value)})
-
-
-def _credit_parse_payload_amount(payload, field="amount", min_amount=1):
-    try:
-        amount = int(payload.get(field))
-    except Exception:
-        raise HTTPException(status_code=400, detail=f"{field} must be an integer.")
-
-    if amount < min_amount:
-        raise HTTPException(status_code=400, detail=f"{field} must be at least {min_amount}.")
-
-    return amount
 
 
 def _credit_get_active_reserved_total(conn, user_id: int) -> int:
@@ -9199,44 +9186,6 @@ def _credit_pool_summary(user_id: int):
     }
 
 
-def _credit_pool_debit_plan(free_available: int, paid_available: int, amount: int, service_class: str, allow_paid_for_local: bool = True):
-    service_class = str(service_class or "local").strip().lower()
-
-    if service_class not in ("local", "external_paid"):
-        raise HTTPException(status_code=400, detail="service_class must be 'local' or 'external_paid'.")
-
-    amount = int(amount)
-
-    if service_class == "external_paid":
-        if paid_available < amount:
-            raise HTTPException(
-                status_code=402,
-                detail=f"Insufficient paid credits. External paid services require paid credits. Required {amount}, paid available {paid_available}.",
-            )
-        return 0, amount
-
-    # Local jobs can use free credits first.
-    free_to_use = min(free_available, amount)
-    remaining = amount - free_to_use
-
-    paid_to_use = 0
-    if remaining > 0:
-        if not allow_paid_for_local:
-            raise HTTPException(
-                status_code=402,
-                detail=f"Insufficient free/local credits. Required {amount}, free available {free_available}.",
-            )
-
-        if paid_available < remaining:
-            raise HTTPException(
-                status_code=402,
-                detail=f"Insufficient credits. Required {amount}, free available {free_available}, paid available {paid_available}.",
-            )
-
-        paid_to_use = remaining
-
-    return free_to_use, paid_to_use
-
 
 def _credit_pool_find_reservation(conn, user_id: int, payload):
     reservation_id = payload.get("reservation_id")
@@ -9827,9 +9776,6 @@ def _ad_reward_settings():
     }
 
 
-def _ad_hash(value: str) -> str:
-    return _ad_hashlib.sha256(str(value or "").encode("utf-8")).hexdigest()
-
 
 def _ad_request_ip(request: Request) -> str:
     forwarded = request.headers.get("x-forwarded-for", "")
@@ -9881,12 +9827,6 @@ def _ad_reward_counts(conn, user_id: int):
 
     return int(daily or 0), int(monthly or 0), last["created_at"] if last else None
 
-
-def _ad_iso_to_epoch(value: str) -> float:
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
-    except Exception:
-        return 0.0
 
 
 def _ad_reward_status_for_user(user_id: int):
