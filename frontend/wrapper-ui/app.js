@@ -3201,6 +3201,24 @@ function cleanRenderPowerPolicy() {
           <strong>${cleanNum(presence.anonymous_wake_intent || 0)}</strong>
           <p>Anonymous visitors active long enough to wake the host.</p>
         </div>
+
+        <div class="summary-box">
+          <span>Host required</span>
+          <strong>${desired.host_required ? "Yes" : "No"}</strong>
+          <p>${cleanEsc(desired.desired_host_state || "not_required")}</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Containers required</span>
+          <strong>${desired.container_required ? "Yes" : "No"}</strong>
+          <p>${cleanEsc(desired.desired_container_state || "not_required")}</p>
+        </div>
+
+        <div class="summary-box">
+          <span>Shutdown blocked</span>
+          <strong>${desired.shutdown_blocked ? "Yes" : "No"}</strong>
+          <p>${cleanEsc(desired.shutdown_block_reason || "none")}</p>
+        </div>
       </div>
 
       <div class="summary-box system-section">

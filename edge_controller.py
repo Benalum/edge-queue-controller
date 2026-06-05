@@ -12124,15 +12124,35 @@ def _web_presence_power_decision():
     actions = []
     reasons = []
 
+    host_required = False
+    container_required = False
+    desired_host_state = "not_required"
+    desired_container_state = "not_required"
+
     if queued_or_running:
+        host_required = True
+        container_required = True
+        desired_host_state = "online_or_booting"
+        desired_container_state = "required_workers_online_or_starting"
         actions.extend(["keep_host_online", "keep_required_containers_online"])
         reasons.append("Jobs are queued or running.")
 
     elif active_authenticated:
+        # Strongest user-experience rule:
+        # if a logged-in user is recently active, the host should never remain offline.
+        # It should be online or actively booting, and core app containers should be online/starting.
+        host_required = True
+        container_required = True
+        desired_host_state = "online_or_booting"
+        desired_container_state = "core_online_or_starting"
         actions.extend(["wake_host_if_needed", "start_core_containers_if_needed"])
-        reasons.append("At least one logged-in user is active.")
+        reasons.append("Logged-in user is active; host must be online or booting.")
 
     elif anonymous_wake_intent:
+        host_required = True
+        container_required = False
+        desired_host_state = "online_or_booting"
+        desired_container_state = "not_required_until_login_or_job"
         actions.append("wake_host_if_needed")
         reasons.append("Anonymous visitor stayed active long enough to show intent.")
 
@@ -12175,6 +12195,19 @@ def _web_presence_power_decision():
         },
         "presence": presence,
         "jobs": jobs,
+        "desired_state": {
+            "host_required": host_required,
+            "container_required": container_required,
+            "desired_host_state": desired_host_state,
+            "desired_container_state": desired_container_state,
+            "shutdown_blocked": bool(active_admin or active_authenticated or queued_or_running),
+            "shutdown_block_reason": (
+                "admin_active" if active_admin
+                else "logged_in_user_active" if active_authenticated
+                else "job_active" if queued_or_running
+                else None
+            ),
+        },
         "actions": actions,
         "reasons": reasons,
     }
