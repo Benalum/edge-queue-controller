@@ -48,6 +48,10 @@ echo "=== public gateway duplicate route registrations ==="
 ops/smoke/check-public-gateway-duplicate-routes.sh
 
 echo
+echo "=== public gateway rewarded-ad route gating ==="
+ops/smoke/check-public-gateway-ad-reward-routes.sh
+
+echo
 echo "=== credit ownership ==="
 ops/smoke/check-credit-ownership.sh
 
