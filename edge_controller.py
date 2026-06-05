@@ -12230,6 +12230,24 @@ async def system_web_presence_power_policy(request: Request):
 #   WEB_POWER_POLICY_EXECUTE_WAKE=1
 # ============================================================
 
+
+def _web_power_parse_bool(value, default=False):
+    if value is None:
+        return default
+
+    if isinstance(value, bool):
+        return value
+
+    text = str(value).strip().lower()
+
+    if text in ("1", "true", "yes", "y", "on", "enabled"):
+        return True
+
+    if text in ("0", "false", "no", "n", "off", "disabled"):
+        return False
+
+    return default
+
 def _web_power_policy_init_tables():
     _web_presence_init_tables()
 
@@ -12309,9 +12327,9 @@ def _web_power_policy_log_event(action: str, status: str, reason: str = "", resu
 async def system_apply_web_presence_power_policy(request: Request):
     decision = _web_presence_power_decision()
 
-    execute_wake = parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_WAKE"), False)
-    execute_containers = parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_CONTAINERS"), False)
-    execute_shutdown = parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_SHUTDOWN"), False)
+    execute_wake = _web_power_parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_WAKE"), False)
+    execute_containers = _web_power_parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_CONTAINERS"), False)
+    execute_shutdown = _web_power_parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_SHUTDOWN"), False)
 
     wake_debounce_seconds = int(os.getenv("WEB_POWER_WAKE_DEBOUNCE_SECONDS", "60"))
 

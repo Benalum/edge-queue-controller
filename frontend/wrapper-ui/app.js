@@ -2427,18 +2427,6 @@ async function cleanHeartbeat() {
 
   try {
     await api("/session/presence", { method: "POST" });
-
-    // Only the Admin page needs online-user data refreshed after presence.
-    if (location.pathname === "/admin" && cleanIsAdmin()) {
-      ahInvalidateCache(["/admin/users"]);
-      cleanAdminUsers = await cachedApi(
-        "/admin/users",
-        { method: "GET" },
-        AH_CACHE_TTL.ADMIN_USERS,
-        { force: true }
-      );
-      renderPage();
-    }
   } catch {
     // ignore presence errors
   }
@@ -3811,55 +3799,10 @@ document.addEventListener("click", (event) => {
 
 
 
-// ============================================================
-// ADMIN_POWER_POLICY_VIEW_WRAPPER_V2
-// Connects web presence dry-run policy to active Admin page.
-// Uses wrappers so we do not depend on exact cleanLoadAdminData()
-// or cleanRenderAdminPage() internals.
+
+
 // ============================================================
 
-try {
-  if (typeof cleanLoadAdminData === "function" && typeof cleanLoadPowerPolicy === "function") {
-    const originalCleanLoadAdminDataForPowerPolicy = cleanLoadAdminData;
-
-    cleanLoadAdminData = async function(...args) {
-      const results = await Promise.allSettled([
-        originalCleanLoadAdminDataForPowerPolicy.apply(this, args),
-        cleanLoadPowerPolicy(),
-      ]);
-
-      const rejected = results.find((item) => item.status === "rejected");
-      if (rejected) {
-        console.warn("[admin] power policy/admin load partial failure", rejected.reason);
-      }
-    };
-  }
-
-  if (typeof cleanRenderAdminPage === "function" && typeof cleanRenderPowerPolicy === "function") {
-    const originalCleanRenderAdminPageForPowerPolicy = cleanRenderAdminPage;
-
-    cleanRenderAdminPage = function(...args) {
-      const html = originalCleanRenderAdminPageForPowerPolicy.apply(this, args);
-
-      if (!html || html.includes("Web Presence Power Policy")) {
-        return html;
-      }
-
-      const section = cleanRenderPowerPolicy();
-
-      if (html.includes("<h2>Admin System View</h2>")) {
-        return html.replace(
-          /(<section class="system-section">\s*<h2>Admin System View<\/h2>)/,
-          `${section}\n$1`
-        );
-      }
-
-      return `${html}\n${section}`;
-    };
-  }
-} catch (err) {
-  console.warn("[admin] power policy view wrapper failed", err);
-}
 
 
 // ============================================================
