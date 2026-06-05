@@ -34,6 +34,41 @@ const ALLOWED_ROUTES = [
   { method: "POST", pattern: /^\/api\/system\/pveso\/boot$/ }
 ];
 
+
+function withQuery(path, url) {
+  return url.search ? `${path}${url.search}` : path;
+}
+
+async function proxyJson(request, env, targetPath) {
+  const upstream = new URL(targetPath, env.EDGE_API_BASE_URL);
+
+  const headers = new Headers(request.headers);
+  headers.set("Accept", "application/json");
+
+  const init = {
+    method: request.method,
+    headers,
+    redirect: "manual",
+  };
+
+  if (!["GET", "HEAD"].includes(request.method)) {
+    init.body = await request.text();
+  }
+
+  const response = await fetch(upstream.toString(), init);
+
+  const outHeaders = new Headers(response.headers);
+  outHeaders.set("Access-Control-Allow-Origin", "*");
+  outHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Edge-Api-Key");
+  outHeaders.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
+  return new Response(response.body, {
+    status: response.status,
+    headers: outHeaders,
+  });
+}
+
+
 function corsHeaders(origin) {
   return {
     "Access-Control-Allow-Origin": origin || "*",
@@ -92,6 +127,16 @@ export default {
         headers: corsHeaders(origin)
       });
     }
+
+    if (url.pathname === "/api/auth/verify-email" && request.method === "GET") {
+      return proxyJson(request, env, withQuery("/api/auth/verify-email", url));
+    }
+
+    if (url.pathname === "/api/auth/resend-verification" && request.method === "POST") {
+      return proxyJson(request, env, "/api/auth/resend-verification");
+    }
+
+
 
     if (!isAllowed(request.method, url.pathname)) {
       return Response.json(

@@ -36,6 +36,10 @@ echo "=== email verification API aliases ==="
 ops/smoke/check-email-verification-api-aliases.sh
 
 echo
+echo "=== public gateway email verification routes ==="
+ops/smoke/check-public-gateway-email-verification-routes.sh
+
+echo
 echo "=== rewarded ad status behavior ==="
 ops/smoke/check-rewarded-ad-status-behavior.sh
 

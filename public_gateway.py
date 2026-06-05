@@ -716,6 +716,33 @@ async def _block_public_ad_reward_routes_until_enabled(request, call_next):
     path = request.url.path
     method = request.method.upper()
 
+
+    if path == "/api/auth/verify-email" and method == "GET":
+        target_path = "/api/auth/verify-email"
+        if request.url.query:
+            target_path = f"{target_path}?{request.url.query}"
+
+        status_code, payload = _system_v2_fetch_json(
+            target_path,
+            method="GET",
+            timeout=20,
+        )
+        return _SystemV2JSONResponse(payload, status_code=status_code)
+
+    if path == "/api/auth/resend-verification" and method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+        status_code, payload = _system_v2_fetch_json(
+            "/api/auth/resend-verification",
+            method="POST",
+            body=body,
+            timeout=20,
+        )
+        return _SystemV2JSONResponse(payload, status_code=status_code)
+
     if path == "/system/ads/reward/status" and method == "GET":
         forward_headers = {}
         authorization = request.headers.get("Authorization")

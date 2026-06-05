@@ -5,5 +5,11 @@
   "compatibility_date": "2026-06-03",
   "vars": {
     "EDGE_API_BASE_URL": "https://edge-api.alexhartel.com"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "alexhartel.com/api/auth/*",
+      "zone_name": "alexhartel.com"
+    }
+  ]
 }
