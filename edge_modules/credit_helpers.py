@@ -4,8 +4,13 @@ import hashlib
 import json
 from datetime import datetime
 
+from fastapi import HTTPException
+
 
 def credit_json_dumps(value):
+    if value is None:
+        return None
+
     try:
         return json.dumps(value, sort_keys=True)
     except Exception:
@@ -16,15 +21,10 @@ def parse_payload_amount(payload, field="amount", min_amount=1):
     try:
         amount = int(payload.get(field))
     except Exception:
-        amount = 0
+        raise HTTPException(status_code=400, detail=f"{field} must be an integer.")
 
     if amount < min_amount:
-        from fastapi import HTTPException
-
-        raise HTTPException(
-            status_code=400,
-            detail=f"{field} must be at least {min_amount}.",
-        )
+        raise HTTPException(status_code=400, detail=f"{field} must be at least {min_amount}.")
 
     return amount
 
@@ -38,36 +38,40 @@ def credit_pool_debit_plan(
 ):
     service_class = str(service_class or "local").strip().lower()
 
-    if amount <= 0:
-        return 0, 0
+    if service_class not in ("local", "external_paid"):
+        raise HTTPException(status_code=400, detail="service_class must be 'local' or 'external_paid'.")
+
+    amount = int(amount)
 
     if service_class == "external_paid":
         if paid_available < amount:
-            return None
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient paid credits. External paid services require paid credits. Required {amount}, paid available {paid_available}.",
+            )
         return 0, amount
 
-    if service_class != "local":
-        from fastapi import HTTPException
-
-        raise HTTPException(
-            status_code=400,
-            detail="service_class must be local or external_paid.",
-        )
-
+    # Local jobs can use free credits first.
     free_to_use = min(free_available, amount)
     remaining = amount - free_to_use
 
-    if remaining <= 0:
-        return free_to_use, 0
+    paid_to_use = 0
+    if remaining > 0:
+        if not allow_paid_for_local:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient free/local credits. Required {amount}, free available {free_available}.",
+            )
 
-    if allow_paid_for_local:
-        paid_to_use = min(paid_available, remaining)
-        remaining -= paid_to_use
+        if paid_available < remaining:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient credits. Required {amount}, free available {free_available}, paid available {paid_available}.",
+            )
 
-        if remaining <= 0:
-            return free_to_use, paid_to_use
+        paid_to_use = remaining
 
-    return None
+    return free_to_use, paid_to_use
 
 
 def ad_hash(value: str) -> str:
@@ -75,9 +79,7 @@ def ad_hash(value: str) -> str:
 
 
 def ad_iso_to_epoch(value: str) -> float:
-    if not value:
-        return 0.0
     try:
-        return datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp()
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
     except Exception:
         return 0.0
