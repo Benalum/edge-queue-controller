@@ -227,7 +227,7 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
 
         headers = {"User-Agent": "wrapper-local-dev-proxy/2.1"}
 
-        for name in ("Authorization", "Content-Type"):
+        for name in ("Authorization", "Content-Type", "Cookie", "Accept"):
             value = self.headers.get(name)
             if value:
                 headers[name] = value
@@ -245,6 +245,10 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
                 self.send_response(resp.status)
                 self.send_header("Content-Type", resp.headers.get("Content-Type", "application/json"))
                 self.send_header("Cache-Control", "no-store")
+
+                for cookie in resp.headers.get_all("Set-Cookie", []):
+                    self.send_header("Set-Cookie", cookie)
+
                 self.end_headers()
                 self.wfile.write(data)
 
@@ -253,6 +257,10 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             self.send_response(e.code)
             self.send_header("Content-Type", e.headers.get("Content-Type", "application/json"))
             self.send_header("Cache-Control", "no-store")
+
+            for cookie in e.headers.get_all("Set-Cookie", []):
+                self.send_header("Set-Cookie", cookie)
+
             self.end_headers()
             self.wfile.write(data)
 
