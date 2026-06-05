@@ -3073,7 +3073,7 @@ async def power_auto_tick():
     # Guard old auto-stop / auto-shutdown path with the newer web presence policy.
     # If someone is actively using the site, do not stop workers or shut down pveso.
     try:
-        web_power_policy = await system_web_presence_power_policy()
+        web_power_policy = _web_presence_power_decision()
     except Exception as e:
         web_power_policy = {
             "ok": False,
