@@ -1,111 +1,76 @@
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-import os
 from urllib.parse import urlparse
-import urllib.request
+from http.cookies import SimpleCookie
+import os
 import urllib.error
+import urllib.request
 
-CONTROLLER = "http://127.0.0.1:7070"
-GATEWAY = "http://127.0.0.1:7071"
-PORT = 8787
+
+CONTROLLER = os.getenv("EDGE_CONTROLLER_URL", "http://127.0.0.1:7070")
+GATEWAY = os.getenv("EDGE_PUBLIC_GATEWAY_URL", "http://127.0.0.1:7071")
+CT101_FRONTEND = os.getenv("CT101_FRONTEND", "http://100.88.245.33:3010")
+PORT = int(os.getenv("WRAPPER_UI_PORT", "8787"))
+
+FULL_APP_ROUTES = {"/study", "/companion", "/calendar", "/profile"}
+WRAPPER_ROUTES = {"/", "/study", "/companion", "/calendar", "/profile", "/system"}
 
 
 def map_api(path):
-    if path == "/api/me":
-        return CONTROLLER, "/system/session/me"
+    if path.startswith("/api/backend/"):
+        return CT101_FRONTEND, path
 
-    if path == "/api/session/presence":
-        return CONTROLLER, "/system/session/presence"
+    # CT101_AUTH_SOURCE_OF_TRUTH_V1
+    # CT 101 owns real app auth/user/credits. The laptop wrapper stays as
+    # public shell + system/wake/status proxy.
+    ct101_auth_exact = {
+        "/api/me": "/api/backend/auth/me",
+        "/api/auth/login": "/api/backend/auth/login",
+        "/api/auth/register": "/api/backend/auth/register",
+        "/api/auth/logout": "/api/backend/auth/logout",
+        "/api/account/credits": "/api/backend/account/credits",
+        "/api/account/credit-pools": "/api/backend/account/credits",
+    }
 
-    if path == "/api/presence/web":
-        return CONTROLLER, "/system/presence/web"
+    if path in ct101_auth_exact:
+        return CT101_FRONTEND, ct101_auth_exact[path]
 
-    if path == "/api/presence/power-policy":
-        return CONTROLLER, "/system/presence/power-policy"
+    controller_exact = {
+        "/api/me": "/system/session/me",
+        "/api/session/presence": "/system/session/presence",
+        "/api/presence/web": "/system/presence/web",
+        "/api/presence/power-policy": "/system/presence/power-policy",
+        "/api/presence/apply-power-policy": "/system/presence/apply-power-policy",
+        "/api/auth/login": "/system/session/login",
+        "/api/auth/register": "/system/session/register",
+        "/api/auth/logout": "/system/session/logout-safe",
+        "/api/account/credits": "/system/account/credits",
+        "/api/account/credit-pools": "/system/account/credit-pools",
+        "/api/ads/reward/status": "/system/ads/reward/status",
+        "/api/ads/reward/claim": "/system/ads/reward/claim",
+        "/api/gpu/catalog": "/system/gpu/catalog",
+        "/api/gpu/quote": "/system/gpu/quote",
+        "/api/gpu/reserve-quote": "/system/gpu/reserve-quote",
+        "/api/gpu/sessions": "/system/gpu/sessions",
+        "/api/gpu/start-reserved": "/system/gpu/start-reserved",
+        "/api/gpu/stop-session": "/system/gpu/stop-session",
+        "/api/gpu/cleanup-mock-session": "/system/gpu/cleanup-mock-session",
+        "/api/credits/reserve-v2": "/system/credits/reserve-v2",
+        "/api/credits/commit-v2": "/system/credits/commit-v2",
+        "/api/credits/refund-v2": "/system/credits/refund-v2",
+        "/api/credits/grant-free": "/system/credits/grant-free",
+        "/api/credits/grant-paid": "/system/credits/grant-paid",
+        "/api/credits/reserve": "/system/credits/reserve",
+        "/api/credits/commit": "/system/credits/commit",
+        "/api/credits/refund": "/system/credits/refund",
+        "/api/credits/grant": "/system/credits/grant",
+        "/api/admin/users": "/system/admin/users",
+        "/api/admin/support/tickets": "/system/admin/support/tickets",
+        "/api/support/tickets": "/system/support/tickets",
+    }
 
-    if path == "/api/presence/apply-power-policy":
-        return CONTROLLER, "/system/presence/apply-power-policy"
-
-
-    if path == "/api/auth/login":
-        return CONTROLLER, "/system/session/login"
-
-    if path == "/api/auth/register":
-        return CONTROLLER, "/system/session/register"
-
-    if path == "/api/auth/logout":
-        return CONTROLLER, "/system/session/logout-safe"
-
-    if path == "/api/account/credits":
-        return CONTROLLER, "/system/account/credits"
-
-    if path == "/api/ads/reward/status":
-        return CONTROLLER, "/system/ads/reward/status"
-
-    if path == "/api/ads/reward/claim":
-        return CONTROLLER, "/system/ads/reward/claim"
-
-    if path == "/api/account/credit-pools":
-        return CONTROLLER, "/system/account/credit-pools"
-
-    if path == "/api/gpu/catalog":
-        return CONTROLLER, "/system/gpu/catalog"
-
-    if path == "/api/gpu/quote":
-        return CONTROLLER, "/system/gpu/quote"
-
-    if path == "/api/gpu/reserve-quote":
-        return CONTROLLER, "/system/gpu/reserve-quote"
-
-    if path == "/api/gpu/sessions":
-        return CONTROLLER, "/system/gpu/sessions"
-
-    if path == "/api/gpu/start-reserved":
-        return CONTROLLER, "/system/gpu/start-reserved"
-
-    if path == "/api/gpu/stop-session":
-        return CONTROLLER, "/system/gpu/stop-session"
-
-    if path == "/api/gpu/cleanup-mock-session":
-        return CONTROLLER, "/system/gpu/cleanup-mock-session"
-
-
-    if path == "/api/credits/reserve-v2":
-        return CONTROLLER, "/system/credits/reserve-v2"
-
-    if path == "/api/credits/commit-v2":
-        return CONTROLLER, "/system/credits/commit-v2"
-
-    if path == "/api/credits/refund-v2":
-        return CONTROLLER, "/system/credits/refund-v2"
-
-    if path == "/api/credits/grant-free":
-        return CONTROLLER, "/system/credits/grant-free"
-
-    if path == "/api/credits/grant-paid":
-        return CONTROLLER, "/system/credits/grant-paid"
-
-
-    if path == "/api/credits/reserve":
-        return CONTROLLER, "/system/credits/reserve"
-
-    if path == "/api/credits/commit":
-        return CONTROLLER, "/system/credits/commit"
-
-    if path == "/api/credits/refund":
-        return CONTROLLER, "/system/credits/refund"
-
-    if path == "/api/credits/grant":
-        return CONTROLLER, "/system/credits/grant"
-
-    if path == "/api/admin/users":
-        return CONTROLLER, "/system/admin/users"
-
-    if path == "/api/admin/support/tickets":
-        return CONTROLLER, "/system/admin/support/tickets"
-
-    if path == "/api/support/tickets":
-        return CONTROLLER, "/system/support/tickets"
+    if path in controller_exact:
+        return CONTROLLER, controller_exact[path]
 
     if path.startswith("/api/support/tickets/"):
         return CONTROLLER, path.replace("/api/support/", "/system/support/", 1)
@@ -123,121 +88,71 @@ def map_api(path):
 
 
 class SPAProxyHandler(SimpleHTTPRequestHandler):
-    # WRAPPER_NO_STORE_STATIC_V1
     def end_headers(self):
         self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
         self.send_header("Pragma", "no-cache")
         self.send_header("Expires", "0")
         return super().end_headers()
 
-    # FORCE_SPA_PUBLIC_ROUTES_V2
-    def _maybe_rewrite_spa_route(self):
-        from urllib.parse import urlparse
-
-        parsed = urlparse(self.path)
-        route_path = parsed.path or "/"
-
-        # These are browser pages owned by the wrapper SPA.
-        spa_routes = {
-            "/",
-            "/study",
-            "/companion",
-            "/calendar",
-            "/profile",
-            "/system",
-        }
-
-        if route_path in spa_routes:
-            self.path = "/index.html"
-            return True
-
-        return False
-
-    def do_HEAD(self):
-        original_path = self.path
-        self._maybe_rewrite_spa_route()
+    def _auth_route_token(self):
+        raw_cookie = self.headers.get("Cookie", "")
         try:
-            return super().do_HEAD()
-        finally:
-            self.path = original_path
+            cookie = SimpleCookie()
+            cookie.load(raw_cookie)
+            value = cookie.get("edgeStudyToken")
+            return value.value if value and value.value else ""
+        except Exception:
+            marker = "edgeStudyToken="
+            if marker not in raw_cookie:
+                return ""
+            return raw_cookie.split(marker, 1)[1].split(";", 1)[0].strip()
 
-    def do_GET(self):
-        original_path = self.path
+    def _has_auth_route_cookie(self):
+        return bool(self._auth_route_token())
 
-        # Do not rewrite API/proxy routes.
-        from urllib.parse import urlparse
-        route_path = urlparse(self.path).path or "/"
-        if (
-            route_path.startswith("/api/")
-            or route_path.startswith("/public/")
-            or route_path.startswith("/system/")
-        ):
-            return super().do_GET()
+    def _should_proxy_full_app(self, path):
+        if not self._has_auth_route_cookie():
+            return False
 
-        self._maybe_rewrite_spa_route()
-        try:
-            return super().do_GET()
-        finally:
-            self.path = original_path
+        return (
+            path in FULL_APP_ROUTES
+            or path.startswith("/_next/")
+            or path.startswith("/api/backend/")
+        )
 
-    # SPA_FALLBACK_DEEP_ROUTES_V1
-    def send_head(self):
-        """
-        Serve index.html for wrapper app routes like /study, /companion,
-        /calendar, /profile, and /system so local dev matches Cloudflare Pages.
-        API/proxy routes and real static files still use normal handling.
-        """
-        import os
-        from urllib.parse import urlparse
-
-        parsed = urlparse(self.path)
-        route_path = parsed.path or "/"
-
-        # API/proxy routes should not be rewritten to index.html.
-        if (
-            route_path.startswith("/api/")
-            or route_path.startswith("/public/")
-            or route_path.startswith("/system/")
-        ):
-            return super().send_head()
-
-        translated = self.translate_path(route_path)
-
-        # Existing files/directories should be served normally.
-        if os.path.exists(translated):
-            return super().send_head()
-
-        # Browser SPA routes without file extensions should serve index.html.
-        basename = os.path.basename(route_path)
-        if "." not in basename:
-            old_path = self.path
-            self.path = "/index.html"
-            try:
-                return super().send_head()
-            finally:
-                self.path = old_path
-
-        return super().send_head()
-
-    def _proxy_api(self):
-        parsed = urlparse(self.path)
-        backend, upstream_path = map_api(parsed.path)
+    def _proxy_to_backend(self, backend, upstream_path, query=""):
         upstream_url = backend + upstream_path
-
-        if parsed.query:
-            upstream_url += "?" + parsed.query
+        if query:
+            upstream_url += "?" + query
 
         body = None
         if self.command in ("POST", "PUT", "PATCH"):
             length = int(self.headers.get("Content-Length", "0") or "0")
             body = self.rfile.read(length) if length else None
 
-        headers = {"User-Agent": "wrapper-local-dev-proxy/2.1"}
+        headers = {"User-Agent": "wrapper-proxy/3.0"}
 
-        for name in ("Authorization", "Content-Type", "Cookie", "Accept"):
+        for name in (
+            "Authorization",
+            "Content-Type",
+            "Cookie",
+            "Accept",
+            "RSC",
+            "Next-Router-State-Tree",
+            "Next-Router-Prefetch",
+            "Next-Router-Segment-Prefetch",
+        ):
             value = self.headers.get(name)
             if value:
                 headers[name] = value
+
+        # BACKEND_COOKIE_TO_BEARER_V1
+        # Browser has edgeStudyToken as a cookie for same-domain routing.
+        # CT101 /api/backend routes need Authorization so FastAPI can authenticate.
+        if upstream_path.startswith("/api/backend/") and not headers.get("Authorization"):
+            token = self._auth_route_token()
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
 
         req = urllib.request.Request(
             upstream_url,
@@ -249,76 +164,127 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
                 data = resp.read()
-                self.send_response(resp.status)
-                self.send_header("Content-Type", resp.headers.get("Content-Type", "application/json"))
-                self.send_header("Cache-Control", "no-store")
 
-                for cookie in resp.headers.get_all("Set-Cookie", []):
-                    self.send_header("Set-Cookie", cookie)
+                self.send_response(resp.status)
+
+                for header in (
+                    "Content-Type",
+                    "Location",
+                    "Vary",
+                    "Set-Cookie",
+                ):
+                    for value in resp.headers.get_all(header, []):
+                        self.send_header(header, value)
 
                 self.end_headers()
-                self.wfile.write(data)
+
+                if self.command != "HEAD":
+                    self.wfile.write(data)
 
         except urllib.error.HTTPError as e:
             data = e.read()
             self.send_response(e.code)
-            self.send_header("Content-Type", e.headers.get("Content-Type", "application/json"))
-            self.send_header("Cache-Control", "no-store")
 
-            for cookie in e.headers.get_all("Set-Cookie", []):
-                self.send_header("Set-Cookie", cookie)
+            for header in ("Content-Type", "Location", "Vary", "Set-Cookie"):
+                for value in e.headers.get_all(header, []):
+                    self.send_header(header, value)
 
             self.end_headers()
-            self.wfile.write(data)
+
+            if self.command != "HEAD":
+                self.wfile.write(data)
 
         except BrokenPipeError:
             pass
 
         except Exception as e:
-            data = ('{"ok":false,"detail":"Local API proxy failed: %s"}' % str(e).replace('"', '\\"')).encode()
-            try:
-                self.send_response(502)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Cache-Control", "no-store")
-                self.end_headers()
+            data = (
+                '{"ok":false,"detail":"Proxy failed: %s"}'
+                % str(e).replace('"', '\\"')
+            ).encode()
+
+            self.send_response(502)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+
+            if self.command != "HEAD":
                 self.wfile.write(data)
-            except BrokenPipeError:
-                pass
 
-    def do_GET(self):
-        requested = urlparse(self.path).path
+    def _proxy_api(self):
+        parsed = urlparse(self.path)
+        backend, upstream_path = map_api(parsed.path)
+        return self._proxy_to_backend(backend, upstream_path, parsed.query)
 
-        if requested.startswith("/api/"):
-            return self._proxy_api()
+    def _serve_wrapper_or_static(self):
+        parsed = urlparse(self.path)
+        path = parsed.path or "/"
 
-        local_path = Path("." + requested)
+        local_path = Path("." + path)
 
         if local_path.exists() and local_path.is_file():
             return super().do_GET()
 
-        if "." not in Path(requested).name:
+        if path in WRAPPER_ROUTES or "." not in Path(path).name:
             self.path = "/index.html"
+            return super().do_GET()
 
         return super().do_GET()
 
-    def do_POST(self):
-        requested = urlparse(self.path).path
+    def do_HEAD(self):
+        parsed = urlparse(self.path)
+        path = parsed.path or "/"
 
-        if requested.startswith("/api/"):
+        if path.startswith("/api/"):
+            return self._proxy_api()
+
+        if self._should_proxy_full_app(path):
+            return self._proxy_to_backend(CT101_FRONTEND, path, parsed.query)
+
+        original = self.command
+        self.command = "HEAD"
+        try:
+            return self._serve_wrapper_or_static()
+        finally:
+            self.command = original
+
+    def do_GET(self):
+        parsed = urlparse(self.path)
+        path = parsed.path or "/"
+
+        if path.startswith("/api/"):
+            return self._proxy_api()
+
+        if self._should_proxy_full_app(path):
+            return self._proxy_to_backend(CT101_FRONTEND, path, parsed.query)
+
+        return self._serve_wrapper_or_static()
+
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        path = parsed.path or "/"
+
+        if path.startswith("/api/"):
+            return self._proxy_api()
+
+        self.send_error(404)
+
+    def do_PUT(self):
+        return self.do_POST()
+
+    def do_PATCH(self):
+        return self.do_POST()
+
+    def do_DELETE(self):
+        parsed = urlparse(self.path)
+        path = parsed.path or "/"
+
+        if path.startswith("/api/"):
             return self._proxy_api()
 
         self.send_error(404)
 
 
 if __name__ == "__main__":
-    # WRAPPER_UI_ROOT_CHDIR_V1
-    # Serve static files from this script's folder, no matter what systemd's
-    # WorkingDirectory is.
     os.chdir(Path(__file__).resolve().parent)
-
     print(f"Serving wrapper UI at http://127.0.0.1:{PORT}")
-    print("Auth/me routes      -> controller 7070 /system/session/*")
-    print("Credits routes      -> controller 7070 /system/credits/*")
-    print("System routes       -> gateway 7071 /system/*")
-    print("Study/companion API -> gateway 7071 /public/*")
     ThreadingHTTPServer(("127.0.0.1", PORT), SPAProxyHandler).serve_forever()
