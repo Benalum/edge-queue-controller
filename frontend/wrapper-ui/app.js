@@ -22,6 +22,24 @@ const authState = {
   user: null,
 };
 
+// AUTH_ROUTE_COOKIE_V1
+// Mirror the token into a same-site cookie so the always-on Python wrapper
+// can decide whether /study, /companion, /calendar, and /profile should proxy
+// the full CT 101 app or serve public summaries.
+function syncAuthRouteCookie() {
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+
+  if (authState.token) {
+    document.cookie =
+      `edgeStudyToken=${encodeURIComponent(authState.token)}; Path=/; Max-Age=2592000; SameSite=Lax${secure}`;
+  } else {
+    document.cookie =
+      `edgeStudyToken=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+  }
+}
+
+syncAuthRouteCookie();
+
 const pages = {
   "/": {
     eyebrow: "Welcome",
@@ -2316,6 +2334,7 @@ async function handleAuthSubmit(event) {
     authState.token = token;
     authState.user = data.user || { email };
     localStorage.setItem("edgeStudyToken", token);
+    syncAuthRouteCookie();
 
     try {
       const me = await api("/me", { method: "GET" });
@@ -2351,6 +2370,7 @@ async function logout() {
   authState.token = "";
   authState.user = null;
   localStorage.removeItem("edgeStudyToken");
+  syncAuthRouteCookie();
   await loadSystemStatus();
   renderPage();
 }
@@ -2370,6 +2390,7 @@ async function checkExistingLogin() {
     authState.token = "";
     authState.user = null;
     localStorage.removeItem("edgeStudyToken");
+  syncAuthRouteCookie();
   }
 
   renderAuthButtons();
@@ -3657,6 +3678,7 @@ async function fastHandleAuthSubmit(event) {
 
     authState.token = token;
     localStorage.setItem("edgeStudyToken", token);
+    syncAuthRouteCookie();
 
     // Fetch enriched user once so admin/is_admin/credits state is correct.
     try {
@@ -3708,6 +3730,7 @@ function fastHandleLogoutClick(event) {
   authState.token = "";
   authState.user = null;
   localStorage.removeItem("edgeStudyToken");
+  syncAuthRouteCookie();
 
   if (typeof ahInvalidateCache === "function") {
     ahInvalidateCache([]);
@@ -3951,6 +3974,7 @@ async function wrapperStartupAuthRefresh() {
     authState.token = "";
     authState.user = null;
     localStorage.removeItem("edgeStudyToken");
+  syncAuthRouteCookie();
     renderCreditsPill();
     cleanSyncNav?.();
     forceSyncAccountUi();

@@ -3,6 +3,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 from http.cookies import SimpleCookie
 import os
+import json
 import urllib.error
 import urllib.request
 
@@ -11,6 +12,7 @@ CONTROLLER = os.getenv("EDGE_CONTROLLER_URL", "http://127.0.0.1:7070")
 GATEWAY = os.getenv("EDGE_PUBLIC_GATEWAY_URL", "http://127.0.0.1:7071")
 CT101_FRONTEND = os.getenv("CT101_FRONTEND", "http://100.88.245.33:3010")
 PORT = int(os.getenv("WRAPPER_UI_PORT", "8787"))
+EDGE_TRUSTED_PROXY_SECRET = os.getenv("EDGE_TRUSTED_PROXY_SECRET", "")
 
 FULL_APP_ROUTES = {"/study", "/companion", "/calendar", "/profile"}
 WRAPPER_ROUTES = {"/", "/study", "/companion", "/calendar", "/profile", "/system"}
@@ -119,6 +121,48 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             or path.startswith("/api/backend/")
         )
 
+
+    # EDGE_USER_HEADER_BRIDGE_V1
+    def _controller_user_from_token(self):
+        token = self._auth_route_token()
+        if not token:
+            auth = self.headers.get("Authorization", "")
+            if auth.lower().startswith("bearer "):
+                token = auth.split(" ", 1)[1].strip()
+
+        if not token:
+            return None
+
+        req = urllib.request.Request(
+            CONTROLLER + "/system/session/me",
+            headers={"Authorization": f"Bearer {token}"},
+            method="GET",
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read().decode() or "{}")
+                return data.get("user") or data
+        except Exception:
+            return None
+
+    def _inject_trusted_edge_headers(self, headers, upstream_path):
+        if not upstream_path.startswith("/api/backend/"):
+            return
+
+        if not EDGE_TRUSTED_PROXY_SECRET:
+            return
+
+        user = self._controller_user_from_token()
+        if not user:
+            return
+
+        headers["X-Edge-Auth-Secret"] = EDGE_TRUSTED_PROXY_SECRET
+        headers["X-Edge-User-Id"] = str(user.get("id") or "")
+        headers["X-Edge-User-Email"] = str(user.get("email") or "")
+        headers["X-Edge-User-Is-Admin"] = "true" if user.get("is_admin") else "false"
+
+
     def _proxy_to_backend(self, backend, upstream_path, query=""):
         upstream_url = backend + upstream_path
         if query:
@@ -152,6 +196,8 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             token = self._auth_route_token()
             if token:
                 headers["Authorization"] = f"Bearer {token}"
+
+        self._inject_trusted_edge_headers(headers, upstream_path)
 
         req = urllib.request.Request(
             upstream_url,
