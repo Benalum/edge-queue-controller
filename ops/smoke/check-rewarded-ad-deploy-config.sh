@@ -11,6 +11,10 @@ import public_gateway
 
 
 PENDING_VALUES = {
+    "AD_REWARD_FREE_CREDITS": "5",
+    "AD_REWARD_DAILY_LIMIT": "25",
+    "AD_REWARD_MONTHLY_LIMIT": "750",
+    "AD_REWARD_COOLDOWN_SECONDS": "120",
     "AD_REWARD_PROVIDER": "none",
     "AD_REWARD_GOOGLE_GPT_ENABLED": "false",
     "AD_REWARD_GOOGLE_GPT_AD_UNIT_PATH": "",
@@ -53,6 +57,11 @@ try:
         os.environ[key] = value
 
     provider = ad_reward_provider_config()
+
+    assert os.environ["AD_REWARD_FREE_CREDITS"] == "5"
+    assert os.environ["AD_REWARD_DAILY_LIMIT"] == "25"
+    assert os.environ["AD_REWARD_MONTHLY_LIMIT"] == "750"
+    assert os.environ["AD_REWARD_COOLDOWN_SECONDS"] == "120"
 
     assert provider["provider"] == "none", provider
     assert provider["ready"] is False, provider
