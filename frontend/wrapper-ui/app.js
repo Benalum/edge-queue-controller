@@ -3448,3 +3448,182 @@ setTimeout(() => {
   refreshHeaderCredits("startup");
 }, 800);
 
+
+// ============================================================
+// FAST_AUTH_PATCH_V1
+// Makes login/logout feel instant.
+// Login: auth -> /me -> render now -> refresh page data in background.
+// Logout: clear local state now -> revoke backend session in background.
+// ============================================================
+
+let fastAuthBusy = false;
+
+function fastSetAuthMessage(message, isError = false) {
+  const box = document.getElementById("authMessage");
+  if (!box) {
+    if (message && isError) alert(message);
+    return;
+  }
+
+  box.textContent = message || "";
+  box.classList.toggle("hidden", !message);
+  box.classList.toggle("error", Boolean(isError));
+}
+
+async function fastRefreshAfterAuth(reason = "") {
+  const path = location.pathname;
+
+  const jobs = [];
+
+  if (typeof cleanHeartbeat === "function" && authState?.token) {
+    jobs.push(cleanHeartbeat());
+  }
+
+  if (typeof refreshHeaderCredits === "function" && authState?.token) {
+    jobs.push(refreshHeaderCredits(reason));
+  }
+
+  if (typeof loadSystemStatus === "function") {
+    jobs.push(loadSystemStatus());
+  }
+
+  if (path === "/support" && typeof cleanLoadSupportTickets === "function") {
+    jobs.push(cleanLoadSupportTickets());
+  }
+
+  if (path === "/admin" && typeof cleanLoadAdminData === "function" && authState?.user?.is_admin) {
+    jobs.push(cleanLoadAdminData());
+  }
+
+  if (path === "/credits" && typeof loadAccountCredits === "function") {
+    jobs.push(loadAccountCredits({ deep: true }));
+  }
+
+  await Promise.allSettled(jobs);
+
+  try {
+    renderPage();
+  } catch {
+    // ignore render errors
+  }
+}
+
+async function fastHandleAuthSubmit(event) {
+  const form = event.target;
+
+  if (!form || form.id !== "authForm") {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+
+  if (fastAuthBusy) return;
+  fastAuthBusy = true;
+
+  const submitBtn = document.getElementById("authSubmitBtn");
+  const email = document.getElementById("authEmail")?.value?.trim() || "";
+  const password = document.getElementById("authPassword")?.value || "";
+  const mode = typeof authMode !== "undefined" && authMode === "register" ? "register" : "login";
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = mode === "register" ? "Registering..." : "Logging in...";
+  }
+
+  fastSetAuthMessage("");
+
+  try {
+    const result = await api(`/auth/${mode}`, {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+
+    const token = result?.session?.access_token;
+
+    if (!token) {
+      throw new Error("Login response did not include a token.");
+    }
+
+    authState.token = token;
+    localStorage.setItem("edgeStudyToken", token);
+
+    // Fetch enriched user once so admin/is_admin/credits state is correct.
+    try {
+      const me = await api("/me", { method: "GET" });
+      authState.user = me?.user || result.user || null;
+    } catch {
+      authState.user = result.user || null;
+    }
+
+    if (typeof ahInvalidateCache === "function") {
+      ahInvalidateCache([]);
+    }
+
+    if (typeof closeAuthModal === "function") {
+      closeAuthModal();
+    }
+
+    // Render immediately so login feels fast.
+    renderPage();
+
+    // Then refresh related data in the background.
+    fastRefreshAfterAuth("login");
+  } catch (err) {
+    fastSetAuthMessage(err.message || "Login failed.", true);
+  } finally {
+    fastAuthBusy = false;
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === "register" ? "Register" : "Login";
+    }
+  }
+}
+
+function fastHandleLogoutClick(event) {
+  const button = event.target?.closest?.("#logoutBtn, [data-logout], [data-auth-logout]");
+
+  if (!button) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+
+  const oldToken = authState?.token || localStorage.getItem("edgeStudyToken") || "";
+
+  // UI changes immediately.
+  authState.token = "";
+  authState.user = null;
+  localStorage.removeItem("edgeStudyToken");
+
+  if (typeof ahInvalidateCache === "function") {
+    ahInvalidateCache([]);
+  }
+
+  try {
+    renderPage();
+  } catch {
+    // ignore render errors
+  }
+
+  // Revoke backend session in background without making the user wait.
+  if (oldToken && typeof API_BASE !== "undefined") {
+    fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${oldToken}`,
+      },
+      keepalive: true,
+    }).catch((err) => {
+      console.warn("[auth] background logout revoke failed", err);
+    });
+  }
+}
+
+document.addEventListener("submit", fastHandleAuthSubmit, true);
+document.addEventListener("click", fastHandleLogoutClick, true);
+
