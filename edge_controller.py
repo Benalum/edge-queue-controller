@@ -7732,7 +7732,7 @@ def system_status():
         "state": ct101["state"],
         "checked_at": checked_at,
         "detail": ct101["detail"],
-        "services": ["OpenWebUI", "Ollama"],
+        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
     })
 
     # Service checks.
@@ -7775,25 +7775,6 @@ def system_status():
 
     # These services depend on pveso. If pveso is offline, skip public-domain checks
     # so DNS/proxy failures do not make the entire system look broken.
-    if pveso_state == "online":
-        openwebui_check = _system_http_check("https://ai.alexhartel.com", timeout=4)
-        openwebui_state = "online" if openwebui_check["ok"] else "error"
-        openwebui_detail = f"HTTP {openwebui_check['status_code']}" if openwebui_check["ok"] else openwebui_check["error"]
-    elif pveso_state == "booting":
-        openwebui_state = "booting"
-        openwebui_detail = "Waiting for pveso to finish booting."
-    else:
-        openwebui_state = "offline"
-        openwebui_detail = "pveso is offline."
-
-    services.append({
-        "id": "openwebui",
-        "name": "OpenWebUI",
-        "state": openwebui_state,
-        "checked_at": checked_at,
-        "detail": openwebui_detail,
-    })
-
     all_items = [master_node, pveso_node] + workers + services
     states = [item.get("state") for item in all_items]
 
