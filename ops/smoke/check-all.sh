@@ -4,6 +4,19 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
+if [ -x "$ROOT/.venv/bin/python3" ]; then
+  export PATH="$ROOT/.venv/bin:$PATH"
+fi
+
+echo "=== python environment ==="
+python3 - <<'PYENV'
+import sys
+print(sys.executable)
+import fastapi
+print("fastapi import ok")
+PYENV
+
+echo
 echo "=== compile controller modules ==="
 python3 -m py_compile \
   edge_controller.py \
