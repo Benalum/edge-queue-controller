@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$ROOT"
+
+echo "=== compile controller modules ==="
+python3 -m py_compile \
+  edge_controller.py \
+  edge_modules/credit_helpers.py \
+  edge_modules/rewarded_ads.py
+
+echo
+echo "=== extracted helper behavior ==="
+ops/smoke/check-extracted-helper-behavior.sh
+
+echo
+echo "=== rewarded ad status behavior ==="
+ops/smoke/check-rewarded-ad-status-behavior.sh
+
+echo
+echo "=== credit ownership ==="
+ops/smoke/check-credit-ownership.sh
+
+echo
+echo "PASS: all controller smoke checks passed"
