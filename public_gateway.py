@@ -271,18 +271,6 @@ def _system_proxy_json_request(path, method="GET", body=None):
         )
 
 
-@app.get("/system/status")
-def public_system_status():
-    return _system_proxy_json_request("/system/status", method="GET")
-
-
-@app.post("/system/pveso/boot")
-async def public_system_boot_pveso(payload: dict = _SystemProxyBody(default={})):
-    return _system_proxy_json_request(
-        "/system/pveso/boot",
-        method="POST",
-        body=payload,
-    )
 
 
 
