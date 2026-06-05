@@ -1,8 +1,4 @@
-const API_BASE =
-  localStorage.getItem("AH_API_BASE") ||
-  (["127.0.0.1", "localhost"].includes(location.hostname)
-    ? "/api"
-    : "https://edge-public-proxy.alexhartel179.workers.dev/api");
+const API_BASE = "/api";
 
 const $ = (id) => document.getElementById(id);
 
@@ -3872,3 +3868,44 @@ try {
   console.warn("[presence] apply policy wrapper failed", err);
 }
 
+
+
+// WRAPPER_STARTUP_AUTH_REFRESH_V1
+async function wrapperStartupAuthRefresh() {
+  if (!authState.token) {
+    renderCreditsPill();
+    cleanSyncNav?.();
+    return;
+  }
+
+  try {
+    const me = await api("/me", { method: "GET" });
+    authState.user = me.user || me;
+
+    try {
+      accountCredits = await api("/account/credits", { method: "GET" });
+      if (accountCredits?.user) {
+        authState.user = accountCredits.user;
+      }
+    } catch (creditErr) {
+      console.warn("Startup credits refresh failed:", creditErr);
+    }
+
+    renderCreditsPill();
+    cleanSyncNav?.();
+    renderPage();
+    sendWebPresence?.("force");
+  } catch (err) {
+    console.warn("Startup auth refresh failed:", err);
+    authState.token = "";
+    authState.user = null;
+    localStorage.removeItem("edgeStudyToken");
+    renderCreditsPill();
+    cleanSyncNav?.();
+    renderPage();
+  }
+}
+
+window.addEventListener("load", () => {
+  wrapperStartupAuthRefresh();
+});
