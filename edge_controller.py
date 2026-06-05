@@ -8216,6 +8216,8 @@ from edge_modules.credits import (
     credit_pool_active_reserved_totals as _credit_pool_active_reserved_totals_impl,
     credit_pool_add_ledger as _credit_pool_add_ledger_impl,
     credit_pool_find_reservation as _credit_pool_find_reservation_impl,
+    credit_pool_grant_free_to_email as _credit_pool_grant_free_to_email_impl,
+    credit_pool_grant_paid_to_email as _credit_pool_grant_paid_to_email_impl,
     credit_pool_sync_legacy_total as _credit_pool_sync_legacy_total_impl,
 )
 from edge_modules.credit_helpers import (
@@ -9494,60 +9496,28 @@ async def system_credits_grant_free(request: Request):
         raise HTTPException(status_code=400, detail="JSON object required.")
 
     amount = _credit_parse_payload_amount(payload, "amount")
+    reason = str(payload.get("reason") or "admin_grant_free").strip()[:120]
     target_email = _auth_normalize_email(payload.get("email") or "")
-    reason = str(payload.get("reason") or "admin_free_credit_grant").strip()[:120]
     metadata = payload.get("metadata")
-    now = _auth_now_iso()
 
     if not target_email:
         raise HTTPException(status_code=400, detail="email is required.")
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        conn.execute("BEGIN IMMEDIATE")
+    target_id = _credit_pool_grant_free_to_email_impl(
+        db_path=DB_PATH,
+        email=target_email,
+        amount=amount,
+        reason=reason,
+        admin_user_id=int(admin_row["id"]),
+        admin_email=admin_row["email"],
+        metadata=metadata,
+        now_iso=_auth_now_iso,
+        credit_json_dumps=_credit_json_dumps,
+    )
 
-        target = conn.execute(
-            """
-            SELECT *
-            FROM app_users
-            WHERE email = ?
-            """,
-            (target_email,),
-        ).fetchone()
+    return _credit_pool_summary(target_id)
 
-        if not target:
-            raise HTTPException(status_code=404, detail="Target user not found.")
 
-        user_id = int(target["id"])
-
-        conn.execute(
-            """
-            UPDATE app_users
-            SET free_credit_balance = free_credit_balance + ?,
-                updated_at = ?
-            WHERE id = ?
-            """,
-            (amount, now, user_id),
-        )
-
-        _credit_pool_add_ledger(
-            conn,
-            user_id,
-            amount,
-            0,
-            f"grant_free:{reason}",
-            "local",
-            {
-                "admin_user_id": int(admin_row["id"]),
-                "admin_email": admin_row["email"],
-                "metadata": metadata,
-            },
-        )
-
-        _credit_pool_sync_legacy_total(conn, user_id)
-        conn.commit()
-
-    return _credit_pool_summary(user_id)
 
 
 @app.post("/system/credits/grant-paid")
@@ -9563,60 +9533,28 @@ async def system_credits_grant_paid(request: Request):
         raise HTTPException(status_code=400, detail="JSON object required.")
 
     amount = _credit_parse_payload_amount(payload, "amount")
+    reason = str(payload.get("reason") or "admin_grant_paid").strip()[:120]
     target_email = _auth_normalize_email(payload.get("email") or "")
-    reason = str(payload.get("reason") or "admin_paid_credit_grant").strip()[:120]
     metadata = payload.get("metadata")
-    now = _auth_now_iso()
 
     if not target_email:
         raise HTTPException(status_code=400, detail="email is required.")
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        conn.execute("BEGIN IMMEDIATE")
+    target_id = _credit_pool_grant_paid_to_email_impl(
+        db_path=DB_PATH,
+        email=target_email,
+        amount=amount,
+        reason=reason,
+        admin_user_id=int(admin_row["id"]),
+        admin_email=admin_row["email"],
+        metadata=metadata,
+        now_iso=_auth_now_iso,
+        credit_json_dumps=_credit_json_dumps,
+    )
 
-        target = conn.execute(
-            """
-            SELECT *
-            FROM app_users
-            WHERE email = ?
-            """,
-            (target_email,),
-        ).fetchone()
+    return _credit_pool_summary(target_id)
 
-        if not target:
-            raise HTTPException(status_code=404, detail="Target user not found.")
 
-        user_id = int(target["id"])
-
-        conn.execute(
-            """
-            UPDATE app_users
-            SET paid_credit_balance = paid_credit_balance + ?,
-                updated_at = ?
-            WHERE id = ?
-            """,
-            (amount, now, user_id),
-        )
-
-        _credit_pool_add_ledger(
-            conn,
-            user_id,
-            0,
-            amount,
-            f"grant_paid:{reason}",
-            "external_paid",
-            {
-                "admin_user_id": int(admin_row["id"]),
-                "admin_email": admin_row["email"],
-                "metadata": metadata,
-            },
-        )
-
-        _credit_pool_sync_legacy_total(conn, user_id)
-        conn.commit()
-
-    return _credit_pool_summary(user_id)
 
 
 # ============================================================
