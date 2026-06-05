@@ -12217,3 +12217,206 @@ def _web_presence_power_decision():
 async def system_web_presence_power_policy(request: Request):
     return _web_presence_power_decision()
 
+
+# ============================================================
+# Apply web presence power policy
+#
+# First execution phase:
+# - execute wake_host_if_needed only
+# - keep container start/stop dry-run
+# - keep host shutdown dry-run
+#
+# Execution is controlled by:
+#   WEB_POWER_POLICY_EXECUTE_WAKE=1
+# ============================================================
+
+def _web_power_policy_init_tables():
+    _web_presence_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS web_power_policy_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                action TEXT NOT NULL,
+                status TEXT NOT NULL,
+                reason TEXT,
+                result_json TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_web_power_policy_events_action_created
+            ON web_power_policy_events(action, created_at)
+            """
+        )
+        conn.commit()
+
+
+def _web_power_policy_last_event_seconds(action: str, statuses=("executed", "blocked", "dry_run")):
+    _web_power_policy_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        placeholders = ",".join(["?"] * len(statuses))
+        row = conn.execute(
+            f"""
+            SELECT created_at
+            FROM web_power_policy_events
+            WHERE action = ?
+              AND status IN ({placeholders})
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (action, *statuses),
+        ).fetchone()
+
+    if not row:
+        return None
+
+    return _web_presence_seconds_ago(row["created_at"])
+
+
+def _web_power_policy_log_event(action: str, status: str, reason: str = "", result=None):
+    _web_power_policy_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            INSERT INTO web_power_policy_events (
+                action,
+                status,
+                reason,
+                result_json,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                action,
+                status,
+                reason,
+                json.dumps(result or {}),
+                _auth_now_iso(),
+            ),
+        )
+        conn.commit()
+
+
+@app.post("/system/presence/apply-power-policy")
+async def system_apply_web_presence_power_policy(request: Request):
+    decision = _web_presence_power_decision()
+
+    execute_wake = parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_WAKE"), False)
+    execute_containers = parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_CONTAINERS"), False)
+    execute_shutdown = parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_SHUTDOWN"), False)
+
+    wake_debounce_seconds = int(os.getenv("WEB_POWER_WAKE_DEBOUNCE_SECONDS", "60"))
+
+    actions = decision.get("actions") or []
+    executed = []
+    skipped = []
+    blocked = []
+    results = {}
+
+    # Phase 1: only wake_host_if_needed may execute.
+    if "wake_host_if_needed" in actions:
+        last_wake_age = _web_power_policy_last_event_seconds(
+            "wake_host_if_needed",
+            statuses=("executed",),
+        )
+
+        if not execute_wake:
+            skipped.append({
+                "action": "wake_host_if_needed",
+                "reason": "WEB_POWER_POLICY_EXECUTE_WAKE=0",
+            })
+            _web_power_policy_log_event(
+                "wake_host_if_needed",
+                "dry_run",
+                "WEB_POWER_POLICY_EXECUTE_WAKE=0",
+                {"decision": decision},
+            )
+
+        elif last_wake_age is not None and last_wake_age < wake_debounce_seconds:
+            blocked.append({
+                "action": "wake_host_if_needed",
+                "reason": f"Wake debounce active. Last wake was {last_wake_age}s ago.",
+                "remaining_seconds": wake_debounce_seconds - last_wake_age,
+            })
+            _web_power_policy_log_event(
+                "wake_host_if_needed",
+                "blocked",
+                "Wake debounce active.",
+                {
+                    "last_wake_age": last_wake_age,
+                    "wake_debounce_seconds": wake_debounce_seconds,
+                },
+            )
+
+        else:
+            # Reuse existing pveso boot path because it sends WoL and marks booting.
+            wake_result = system_boot_pveso({
+                "source": "web_presence_power_policy",
+                "decision": {
+                    "actions": actions,
+                    "reasons": decision.get("reasons") or [],
+                    "desired_state": decision.get("desired_state") or {},
+                },
+            })
+
+            results["wake_host_if_needed"] = wake_result
+
+            if wake_result.get("boot_sent"):
+                executed.append("wake_host_if_needed")
+                _web_power_policy_log_event(
+                    "wake_host_if_needed",
+                    "executed",
+                    "Wake sent by web presence power policy.",
+                    wake_result,
+                )
+            else:
+                blocked.append({
+                    "action": "wake_host_if_needed",
+                    "reason": wake_result.get("error") or wake_result.get("detail") or "Wake was not sent.",
+                    "result": wake_result,
+                })
+                _web_power_policy_log_event(
+                    "wake_host_if_needed",
+                    "blocked",
+                    "Wake was not sent.",
+                    wake_result,
+                )
+
+    dry_run_only_actions = [
+        "start_core_containers_if_needed",
+        "keep_required_containers_online",
+        "stop_core_containers_if_no_jobs",
+        "shutdown_host_if_min_on_elapsed_and_no_jobs",
+        "keep_host_online",
+    ]
+
+    for action in dry_run_only_actions:
+        if action in actions:
+            skipped.append({
+                "action": action,
+                "reason": "This action remains dry-run in phase 1.",
+            })
+
+    return {
+        "ok": True,
+        "phase": "wake_only",
+        "execute_flags": {
+            "wake": execute_wake,
+            "containers": execute_containers,
+            "shutdown": execute_shutdown,
+        },
+        "decision": decision,
+        "executed": executed,
+        "skipped": skipped,
+        "blocked": blocked,
+        "results": results,
+    }
+

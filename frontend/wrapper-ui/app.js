@@ -3861,3 +3861,69 @@ try {
   console.warn("[admin] power policy view wrapper failed", err);
 }
 
+
+// ============================================================
+// WEB_PRESENCE_APPLY_POLICY_V1
+// After web presence is sent, ask backend to apply policy.
+// Backend currently executes only wake_host_if_needed when enabled.
+// ============================================================
+
+let webPresencePolicyApplyInFlight = null;
+let webPresencePolicyLastApplyAt = 0;
+
+async function applyWebPresencePowerPolicy(reason = "") {
+  if (!pageIsActive()) return;
+
+  const now = Date.now();
+
+  // Prevent rapid duplicate applies from login/startup/visibility events.
+  if (now - webPresencePolicyLastApplyAt < 55_000) {
+    return;
+  }
+
+  if (webPresencePolicyApplyInFlight) {
+    return webPresencePolicyApplyInFlight;
+  }
+
+  webPresencePolicyLastApplyAt = now;
+
+  webPresencePolicyApplyInFlight = api("/presence/apply-power-policy", {
+    method: "POST",
+    body: JSON.stringify({
+      reason,
+      route: location.pathname,
+    }),
+  })
+    .then((result) => {
+      console.log("[presence] apply power policy", result);
+      return result;
+    })
+    .catch((err) => {
+      console.warn("[presence] apply power policy failed", err);
+    })
+    .finally(() => {
+      webPresencePolicyApplyInFlight = null;
+    });
+
+  return webPresencePolicyApplyInFlight;
+}
+
+try {
+  if (typeof sendWebPresence === "function" && !window.__ahWebPresenceApplyWrapped) {
+    window.__ahWebPresenceApplyWrapped = true;
+    window.__ahOriginalSendWebPresence = sendWebPresence;
+
+    sendWebPresence = async function(reason = "") {
+      const result = await window.__ahOriginalSendWebPresence(reason);
+
+      if (result !== undefined) {
+        await applyWebPresencePowerPolicy(reason);
+      }
+
+      return result;
+    };
+  }
+} catch (err) {
+  console.warn("[presence] apply policy wrapper failed", err);
+}
+

@@ -22,6 +22,9 @@ def map_api(path):
     if path == "/api/presence/power-policy":
         return CONTROLLER, "/system/presence/power-policy"
 
+    if path == "/api/presence/apply-power-policy":
+        return CONTROLLER, "/system/presence/apply-power-policy"
+
 
     if path == "/api/auth/login":
         return CONTROLLER, "/system/session/login"
