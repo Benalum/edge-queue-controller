@@ -11,6 +11,7 @@ from edge_controller import app
 
 expected = {
     "/system/account/credits",
+    "/system/account/credit-pools",
     "/system/credits/reserve",
     "/system/credits/commit",
     "/system/credits/refund",
@@ -29,7 +30,7 @@ seen = set()
 for r in app.routes:
     path = getattr(r, "path", "")
     methods = ",".join(sorted(getattr(r, "methods", []) or []))
-    if "credits" in path or "ads/reward" in path:
+    if "credits" in path or "credit-pools" in path or "ads/reward" in path:
         print(f"{methods:20} {path}")
         seen.add(path)
 
