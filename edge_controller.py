@@ -11793,3 +11793,394 @@ async def system_session_logout_safe(request: Request):
         "revoked": cur.rowcount > 0,
     }
 
+
+# ============================================================
+# Web presence driven power policy
+#
+# Goal:
+# - Cloudflare/wrapper stays available.
+# - Anonymous visitor active for 15s can request host wake.
+# - Logged-in user active requests host + core containers.
+# - No logged-in users + no jobs => containers can stop after grace.
+# - No visitors + no jobs => host can shut down after grace.
+#
+# This first version is DRY RUN ONLY.
+# It reports decisions without executing power actions.
+# ============================================================
+
+import hashlib as _web_presence_hashlib
+import secrets as _web_presence_secrets
+from datetime import datetime as _web_presence_datetime, timezone as _web_presence_timezone
+
+
+def _web_presence_now():
+    return _auth_now_iso()
+
+
+def _web_presence_parse_dt(value):
+    if not value:
+        return None
+    try:
+        return _web_presence_datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
+def _web_presence_seconds_ago(value):
+    dt = _web_presence_parse_dt(value)
+    if not dt:
+        return 999999999
+    now = _web_presence_datetime.now(_web_presence_timezone.utc)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=_web_presence_timezone.utc)
+    return max(0, int((now - dt).total_seconds()))
+
+
+def _web_presence_init_tables():
+    _auth_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS web_presence (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                visitor_id TEXT NOT NULL UNIQUE,
+                user_id INTEGER,
+                route TEXT,
+                is_authenticated INTEGER NOT NULL DEFAULT 0,
+                is_admin INTEGER NOT NULL DEFAULT 0,
+                active_seconds INTEGER NOT NULL DEFAULT 0,
+                visibility TEXT,
+                first_seen_at TEXT NOT NULL,
+                last_seen_at TEXT NOT NULL,
+                user_agent_hash TEXT,
+                ip_hash TEXT,
+                metadata_json TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_web_presence_last_seen
+            ON web_presence(last_seen_at)
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_web_presence_user
+            ON web_presence(user_id)
+            """
+        )
+
+        conn.commit()
+
+
+def _web_presence_optional_user(request: Request):
+    token = _auth_get_bearer_token(request)
+    if not token:
+        return None
+
+    token_hash = _auth_hash_token(token)
+    now = _auth_now_iso()
+
+    _auth_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT u.*
+            FROM user_sessions s
+            JOIN app_users u ON u.id = s.user_id
+            WHERE s.token_hash = ?
+              AND s.revoked_at IS NULL
+              AND s.expires_at > ?
+              AND COALESCE(u.status, 'active') = 'active'
+            """,
+            (token_hash, now),
+        ).fetchone()
+
+        if row:
+            conn.execute(
+                """
+                UPDATE user_sessions
+                SET last_seen_at = ?
+                WHERE token_hash = ?
+                """,
+                (now, token_hash),
+            )
+            conn.commit()
+
+        return row
+
+
+def _web_presence_hash(value):
+    if not value:
+        return None
+
+    salt = os.getenv("WEB_PRESENCE_HASH_SALT", "edge-presence-local-dev")
+    raw = f"{salt}:{value}".encode("utf-8", errors="ignore")
+    return _web_presence_hashlib.sha256(raw).hexdigest()
+
+
+@app.post("/system/presence/web")
+async def system_web_presence(request: Request):
+    _web_presence_init_tables()
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        payload = {}
+
+    visitor_id = str(payload.get("visitor_id") or "").strip()
+
+    if not visitor_id:
+        visitor_id = "srv-" + _web_presence_secrets.token_urlsafe(18)
+
+    route = str(payload.get("route") or "/").strip()[:250]
+    visibility = str(payload.get("visibility") or "").strip()[:50]
+    active_seconds = int(payload.get("active_seconds") or 0)
+    active_seconds = max(0, min(active_seconds, 24 * 60 * 60))
+
+    metadata = payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {}
+
+    user_row = _web_presence_optional_user(request)
+    user_id = int(user_row["id"]) if user_row else None
+    is_authenticated = 1 if user_row else 0
+
+    role = str(user_row["role"] if user_row and "role" in user_row.keys() else "").lower() if user_row else ""
+    is_admin = 1 if role == "admin" else 0
+
+    now = _web_presence_now()
+    user_agent = request.headers.get("user-agent", "")
+    xff = request.headers.get("x-forwarded-for", "")
+    client_host = getattr(request.client, "host", "") if request.client else ""
+
+    user_agent_hash = _web_presence_hash(user_agent)
+    ip_hash = _web_presence_hash(xff or client_host)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            """
+            INSERT INTO web_presence (
+                visitor_id,
+                user_id,
+                route,
+                is_authenticated,
+                is_admin,
+                active_seconds,
+                visibility,
+                first_seen_at,
+                last_seen_at,
+                user_agent_hash,
+                ip_hash,
+                metadata_json
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(visitor_id) DO UPDATE SET
+                user_id = excluded.user_id,
+                route = excluded.route,
+                is_authenticated = excluded.is_authenticated,
+                is_admin = excluded.is_admin,
+                active_seconds = MAX(web_presence.active_seconds, excluded.active_seconds),
+                visibility = excluded.visibility,
+                last_seen_at = excluded.last_seen_at,
+                user_agent_hash = excluded.user_agent_hash,
+                ip_hash = excluded.ip_hash,
+                metadata_json = excluded.metadata_json
+            """,
+            (
+                visitor_id,
+                user_id,
+                route,
+                is_authenticated,
+                is_admin,
+                active_seconds,
+                visibility,
+                now,
+                now,
+                user_agent_hash,
+                ip_hash,
+                json.dumps(metadata),
+            ),
+        )
+        conn.commit()
+
+    return {
+        "ok": True,
+        "visitor_id": visitor_id,
+        "user_id": user_id,
+        "is_authenticated": bool(is_authenticated),
+        "is_admin": bool(is_admin),
+        "route": route,
+        "active_seconds": active_seconds,
+        "seen_at": now,
+    }
+
+
+def _web_presence_summary():
+    _web_presence_init_tables()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM web_presence
+            ORDER BY last_seen_at DESC
+            LIMIT 1000
+            """
+        ).fetchall()
+
+    active_window = int(os.getenv("WEB_PRESENCE_ACTIVE_WINDOW_SECONDS", "180"))
+    anon_wake_seconds = int(os.getenv("WEB_PRESENCE_ANON_WAKE_SECONDS", "15"))
+
+    active_rows = []
+    visible_rows = []
+    auth_rows = []
+    admin_rows = []
+    anon_intent_rows = []
+
+    for row in rows:
+        age = _web_presence_seconds_ago(row["last_seen_at"])
+        is_active = age <= active_window
+        is_visible = str(row["visibility"] or "").lower() != "hidden"
+
+        if is_active:
+            active_rows.append(row)
+
+        if is_active and is_visible:
+            visible_rows.append(row)
+
+        if is_active and is_visible and int(row["is_authenticated"] or 0) == 1:
+            auth_rows.append(row)
+
+        if is_active and is_visible and int(row["is_admin"] or 0) == 1:
+            admin_rows.append(row)
+
+        if (
+            is_active
+            and is_visible
+            and int(row["is_authenticated"] or 0) == 0
+            and int(row["active_seconds"] or 0) >= anon_wake_seconds
+        ):
+            anon_intent_rows.append(row)
+
+    last_visitor_seen_at = rows[0]["last_seen_at"] if rows else None
+
+    logged_in_rows = [
+        row for row in rows
+        if int(row["is_authenticated"] or 0) == 1
+    ]
+    last_logged_in_seen_at = logged_in_rows[0]["last_seen_at"] if logged_in_rows else None
+
+    return {
+        "active_window_seconds": active_window,
+        "anonymous_wake_after_seconds": anon_wake_seconds,
+        "total_seen": len(rows),
+        "active_total": len(active_rows),
+        "active_visible": len(visible_rows),
+        "active_authenticated": len(auth_rows),
+        "active_admin": len(admin_rows),
+        "anonymous_wake_intent": len(anon_intent_rows),
+        "last_visitor_seen_at": last_visitor_seen_at,
+        "last_visitor_seen_seconds_ago": _web_presence_seconds_ago(last_visitor_seen_at) if last_visitor_seen_at else None,
+        "last_logged_in_seen_at": last_logged_in_seen_at,
+        "last_logged_in_seen_seconds_ago": _web_presence_seconds_ago(last_logged_in_seen_at) if last_logged_in_seen_at else None,
+    }
+
+
+def _web_presence_job_summary():
+    # Best-effort placeholder. We will wire this to the real queue tables next.
+    # Keep conservative defaults.
+    return {
+        "queued": 0,
+        "running": 0,
+        "source": "placeholder",
+    }
+
+
+def _web_presence_power_decision():
+    presence = _web_presence_summary()
+    jobs = _web_presence_job_summary()
+
+    container_idle_seconds = int(os.getenv("WEB_POWER_CONTAINER_IDLE_SECONDS", "600"))
+    host_idle_seconds = int(os.getenv("WEB_POWER_HOST_IDLE_SECONDS", "1500"))
+    min_host_on_seconds = int(os.getenv("WEB_POWER_MIN_HOST_ON_SECONDS", "1200"))
+    wake_debounce_seconds = int(os.getenv("WEB_POWER_WAKE_DEBOUNCE_SECONDS", "60"))
+
+    queued_or_running = (jobs["queued"] + jobs["running"]) > 0
+    active_authenticated = presence["active_authenticated"] > 0
+    active_admin = presence["active_admin"] > 0
+    anonymous_wake_intent = presence["anonymous_wake_intent"] > 0
+    active_any = presence["active_visible"] > 0
+
+    actions = []
+    reasons = []
+
+    if queued_or_running:
+        actions.extend(["keep_host_online", "keep_required_containers_online"])
+        reasons.append("Jobs are queued or running.")
+
+    elif active_authenticated:
+        actions.extend(["wake_host_if_needed", "start_core_containers_if_needed"])
+        reasons.append("At least one logged-in user is active.")
+
+    elif anonymous_wake_intent:
+        actions.append("wake_host_if_needed")
+        reasons.append("Anonymous visitor stayed active long enough to show intent.")
+
+    elif active_any:
+        actions.append("keep_public_wrapper_only")
+        reasons.append("Visitors are present but have not triggered wake intent.")
+
+    else:
+        last_login_age = presence["last_logged_in_seen_seconds_ago"]
+        last_visitor_age = presence["last_visitor_seen_seconds_ago"]
+
+        if last_login_age is not None and last_login_age >= container_idle_seconds:
+            actions.append("stop_core_containers_if_no_jobs")
+            reasons.append(f"No logged-in users for at least {container_idle_seconds} seconds.")
+
+        if last_visitor_age is not None and last_visitor_age >= host_idle_seconds:
+            actions.append("shutdown_host_if_min_on_elapsed_and_no_jobs")
+            reasons.append(f"No visitors for at least {host_idle_seconds} seconds.")
+
+        if not actions:
+            actions.append("no_action")
+            reasons.append("Idle grace periods have not elapsed.")
+
+    # Admin is a blocker for shutdown/stop decisions.
+    if active_admin and any(a.startswith("stop_") or a.startswith("shutdown_") for a in actions):
+        actions = ["shutdown_blocked"]
+        reasons.append("Admin is active.")
+
+    return {
+        "ok": True,
+        "dry_run": True,
+        "execute": False,
+        "policy": {
+            "anonymous_wake_after_seconds": presence["anonymous_wake_after_seconds"],
+            "container_idle_seconds": container_idle_seconds,
+            "host_idle_seconds": host_idle_seconds,
+            "min_host_on_seconds": min_host_on_seconds,
+            "wake_debounce_seconds": wake_debounce_seconds,
+            "note": "There is no minimum host-off time. New users can trigger wake immediately.",
+        },
+        "presence": presence,
+        "jobs": jobs,
+        "actions": actions,
+        "reasons": reasons,
+    }
+
+
+@app.get("/system/presence/power-policy")
+async def system_web_presence_power_policy(request: Request):
+    return _web_presence_power_decision()
+

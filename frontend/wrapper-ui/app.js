@@ -3574,3 +3574,102 @@ function fastHandleLogoutClick(event) {
 document.addEventListener("submit", fastHandleAuthSubmit, true);
 document.addEventListener("click", fastHandleLogoutClick, true);
 
+
+// ============================================================
+// WEB_PRESENCE_CLIENT_V1
+// Sends anonymous/logged-in web presence for power policy.
+// Anonymous visitors can request host wake after 15s active.
+// Logged-in users indicate core containers should be online.
+// ============================================================
+
+const WEB_PRESENCE_VISITOR_KEY = "ahVisitorId";
+const WEB_PRESENCE_STARTED_AT = Date.now();
+let webPresenceLastSentAt = 0;
+let webPresenceInFlight = null;
+
+function getWebPresenceVisitorId() {
+  let id = localStorage.getItem(WEB_PRESENCE_VISITOR_KEY);
+
+  if (!id) {
+    id = "v-" + crypto.randomUUID();
+    localStorage.setItem(WEB_PRESENCE_VISITOR_KEY, id);
+  }
+
+  return id;
+}
+
+function getWebPresenceActiveSeconds() {
+  return Math.max(0, Math.floor((Date.now() - WEB_PRESENCE_STARTED_AT) / 1000));
+}
+
+async function sendWebPresence(reason = "") {
+  if (!pageIsActive()) return;
+
+  const activeSeconds = getWebPresenceActiveSeconds();
+
+  // Anonymous visitors only signal wake intent after 15 seconds.
+  // Logged-in users can signal immediately.
+  if (!authState?.token && activeSeconds < 15) {
+    return;
+  }
+
+  if (webPresenceInFlight) {
+    return webPresenceInFlight;
+  }
+
+  const now = Date.now();
+
+  // Debounce normal presence sends.
+  if (reason !== "force" && now - webPresenceLastSentAt < 55_000) {
+    return;
+  }
+
+  webPresenceLastSentAt = now;
+
+  webPresenceInFlight = api("/presence/web", {
+    method: "POST",
+    body: JSON.stringify({
+      visitor_id: getWebPresenceVisitorId(),
+      route: location.pathname,
+      active_seconds: activeSeconds,
+      visibility: document.visibilityState,
+      metadata: {
+        reason,
+        logged_in: Boolean(authState?.token),
+      },
+    }),
+  })
+    .catch((err) => {
+      console.warn("[presence] web presence failed", err);
+    })
+    .finally(() => {
+      webPresenceInFlight = null;
+    });
+
+  return webPresenceInFlight;
+}
+
+setTimeout(() => {
+  sendWebPresence("15-second-intent");
+}, 15_000);
+
+setInterval(() => {
+  sendWebPresence("interval");
+}, 60_000);
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "hidden") {
+    sendWebPresence("force");
+  }
+});
+
+// Strong signal when user opens auth modal or clicks login/register.
+document.addEventListener("click", (event) => {
+  const target = event.target?.closest?.("button, a");
+  const text = target?.textContent?.toLowerCase?.() || "";
+
+  if (text.includes("login") || text.includes("log in") || text.includes("register")) {
+    sendWebPresence("force");
+  }
+}, true);
+
