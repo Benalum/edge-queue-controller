@@ -2296,10 +2296,9 @@ async function loadSystemStatus() {
     };
   }
 
-  await loadAccountCredits({ deep: location.pathname === "/credits" });
-
-  // Admin infrastructure now loads only inside the Admin page via cleanLoadAdminData().
-  // Avoid polling admin-status on every normal page/status tick.
+  // Keep system polling lightweight.
+  // Credits/GPU/rewards load only on /credits, after login, or after credit-changing actions.
+  // Admin infrastructure loads only inside the Admin page via cleanLoadAdminData().
   adminStatus = null;
 
   renderPage();
@@ -3397,8 +3396,12 @@ function forceRefreshAfterOperation(reason = "") {
         await loadSystemStatus();
       }
 
-      if (path === "/credits" && typeof loadAccountCredits === "function") {
-        await loadAccountCredits();
+      if (typeof refreshHeaderCredits === "function") {
+        await refreshHeaderCredits("force-operation");
+      } else if (typeof loadAccountCredits === "function") {
+        await loadAccountCredits({
+          deep: path === "/credits",
+        });
       }
 
       if (path === "/support" && typeof cleanLoadSupportTickets === "function") {
@@ -3415,4 +3418,46 @@ function forceRefreshAfterOperation(reason = "") {
       console.warn("[cache] force refresh failed", err);
     });
 }
+
+
+
+// ============================================================
+// HEADER_CREDIT_REFRESH_V1
+// Keeps header credits fresh without tying credits to system polling.
+// ============================================================
+
+let headerCreditRefreshInFlight = null;
+
+async function refreshHeaderCredits(reason = "") {
+  if (!authState?.token) return;
+
+  if (headerCreditRefreshInFlight) {
+    return headerCreditRefreshInFlight;
+  }
+
+  headerCreditRefreshInFlight = Promise.resolve()
+    .then(async () => {
+      if (typeof loadAccountCredits === "function") {
+        await loadAccountCredits({
+          deep: location.pathname === "/credits",
+        });
+      }
+    })
+    .catch((err) => {
+      console.warn("[credits] header refresh failed", reason, err);
+    })
+    .finally(() => {
+      headerCreditRefreshInFlight = null;
+    });
+
+  return headerCreditRefreshInFlight;
+}
+
+setInterval(() => {
+  refreshHeaderCredits("interval");
+}, 60_000);
+
+setTimeout(() => {
+  refreshHeaderCredits("startup");
+}, 800);
 
