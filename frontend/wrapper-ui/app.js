@@ -2824,6 +2824,8 @@ async function handleVerifyEmailRoute() {
 
   if (!token) {
     showPageNotice("Verification link is missing a token.", true);
+    window.history.replaceState({}, "", "/login");
+    openAuthModal("login");
     return true;
   }
 
@@ -2832,21 +2834,50 @@ async function handleVerifyEmailRoute() {
   try {
     const data = await api(`/auth/verify-email?token=${encodeURIComponent(token)}`);
 
-    showPageNotice("Email verified. You can now log in.");
-    window.history.replaceState({}, "", "/login");
+    const session = data?.session || {};
+    const accessToken = data?.access_token || session?.access_token || "";
+    const user = data?.user || null;
 
+    if (accessToken) {
+      authState.token = accessToken;
+      authState.user = user;
+      saveAuthState();
+
+      showPageNotice("Email verified. You are signed in.");
+      window.history.replaceState({}, "", "/");
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 700);
+
+      return true;
+    }
+
+    showPageNotice("Email verified. Please log in.");
+    window.history.replaceState({}, "", "/login");
     openAuthModal("login");
 
-    const userEmail = data?.user?.email || loadPendingVerificationEmail();
+    const userEmail = user?.email || loadPendingVerificationEmail();
     if ($("authEmail") && userEmail) {
       $("authEmail").value = userEmail;
     }
 
     setEmailVerificationMessage("Email verified. Log in to continue.");
+
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 900);
   } catch (err) {
-    showPageNotice(err.message || "Email verification failed.", true);
+    const message = err.message || "Email verification failed.";
+
+    showPageNotice(message, true);
+    window.history.replaceState({}, "", "/login");
     openAuthModal("login");
-    setEmailVerificationMessage(err.message || "Email verification failed.", true);
+    setEmailVerificationMessage(message, true);
+
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1200);
   }
 
   return true;

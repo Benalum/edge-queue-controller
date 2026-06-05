@@ -41,10 +41,9 @@ def email_verification_base_url() -> str:
 
 
 def email_verification_url(token: str) -> str:
-    # Use the API verification endpoint directly so email links do not depend
-    # on frontend route handling. The API response verifies the account and
-    # returns a session payload.
-    return f"{email_verification_base_url()}/api/auth/verify-email?token={quote(str(token))}"
+    # Send users to the browser route. The frontend calls the API verification
+    # endpoint, stores the returned session when present, then redirects.
+    return f"{email_verification_base_url()}/verify-email?token={quote(str(token))}"
 
 
 def email_verification_debug_return_url() -> bool:
