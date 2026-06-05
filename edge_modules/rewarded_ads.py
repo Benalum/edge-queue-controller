@@ -169,8 +169,7 @@ def ad_reward_claim_for_user(
     now_iso,
     init_tables,
     credit_pool_summary,
-    credit_pool_add_ledger,
-    credit_pool_sync_legacy_total,
+    credit_pool_grant_free_to_user,
     ad_hash,
     credit_json_dumps,
 ):
@@ -242,16 +241,6 @@ def ad_reward_claim_for_user(
 
         conn.execute(
             """
-            UPDATE app_users
-            SET free_credit_balance = free_credit_balance + ?,
-                updated_at = ?
-            WHERE id = ?
-            """,
-            (credits, now, user_id),
-        )
-
-        conn.execute(
-            """
             INSERT INTO ad_reward_events (
                 user_id,
                 provider,
@@ -278,22 +267,21 @@ def ad_reward_claim_for_user(
             ),
         )
 
-        credit_pool_add_ledger(
+        credit_pool_grant_free_to_user(
             conn,
-            user_id,
-            credits,
-            0,
-            f"ad_reward:{provider}",
-            "local",
-            {
+            user_id=user_id,
+            amount=credits,
+            reason=f"ad_reward:{provider}",
+            metadata={
                 "provider": provider,
                 "reward_event_id": reward_event_id,
                 "credit_pool": "free",
                 "metadata": metadata,
             },
+            now_iso=now_iso,
+            credit_json_dumps=credit_json_dumps,
         )
 
-        credit_pool_sync_legacy_total(conn, user_id)
         conn.commit()
 
     summary = credit_pool_summary(user_id)

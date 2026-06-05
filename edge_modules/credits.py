@@ -124,6 +124,45 @@ def credit_pool_find_reservation(conn, user_id: int, payload):
     return row
 
 
+
+
+def credit_pool_grant_free_to_user_on_conn(
+    conn,
+    *,
+    user_id: int,
+    amount: int,
+    reason: str,
+    metadata,
+    now_iso,
+    credit_json_dumps,
+):
+    now = now_iso()
+
+    conn.execute(
+        """
+        UPDATE app_users
+        SET free_credit_balance = free_credit_balance + ?,
+            updated_at = ?
+        WHERE id = ?
+        """,
+        (int(amount), now, int(user_id)),
+    )
+
+    credit_pool_add_ledger(
+        conn,
+        int(user_id),
+        int(amount),
+        0,
+        str(reason),
+        "local",
+        metadata,
+        now_iso=now_iso,
+        credit_json_dumps=credit_json_dumps,
+    )
+
+    credit_pool_sync_legacy_total(conn, int(user_id), now_iso=now_iso)
+
+
 def credit_pool_grant_free_to_email(
     *,
     db_path,

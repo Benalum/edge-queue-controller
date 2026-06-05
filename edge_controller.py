@@ -8217,6 +8217,7 @@ from edge_modules.credits import (
     credit_pool_add_ledger as _credit_pool_add_ledger_impl,
     credit_pool_find_reservation as _credit_pool_find_reservation_impl,
     credit_pool_grant_free_to_email as _credit_pool_grant_free_to_email_impl,
+    credit_pool_grant_free_to_user_on_conn as _credit_pool_grant_free_to_user_on_conn_impl,
     credit_pool_grant_paid_to_email as _credit_pool_grant_paid_to_email_impl,
     credit_pool_sync_legacy_total as _credit_pool_sync_legacy_total_impl,
 )
@@ -9619,8 +9620,7 @@ async def system_ads_reward_claim(request: Request):
         now_iso=_auth_now_iso,
         init_tables=_ad_reward_init_tables,
         credit_pool_summary=_credit_pool_summary,
-        credit_pool_add_ledger=_credit_pool_add_ledger,
-        credit_pool_sync_legacy_total=_credit_pool_sync_legacy_total,
+        credit_pool_grant_free_to_user=_credit_pool_grant_free_to_user_on_conn_impl,
         ad_hash=_ad_hash,
         credit_json_dumps=_credit_json_dumps,
     )
