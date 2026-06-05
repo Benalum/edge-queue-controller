@@ -11,6 +11,7 @@ import urllib.request
 CONTROLLER = os.getenv("EDGE_CONTROLLER_URL", "http://127.0.0.1:7070")
 GATEWAY = os.getenv("EDGE_PUBLIC_GATEWAY_URL", "http://127.0.0.1:7071")
 CT101_FRONTEND = os.getenv("CT101_FRONTEND", "http://100.88.245.33:3010")
+CT101_API = os.getenv("CT101_API", "http://100.88.245.33:8088")
 PORT = int(os.getenv("WRAPPER_UI_PORT", "8787"))
 EDGE_TRUSTED_PROXY_SECRET = os.getenv("EDGE_TRUSTED_PROXY_SECRET", "")
 
@@ -34,8 +35,10 @@ def map_api(path):
     if path in controller_auth_exact:
         return CONTROLLER, controller_auth_exact[path]
 
+    # FAST_BACKEND_PROXY_V2
+    # Send CT101 app API calls directly to FastAPI, not through Next.
     if path.startswith("/api/backend/"):
-        return CT101_FRONTEND, path
+        return CT101_API, "/api/" + path.split("/api/backend/", 1)[1]
     controller_exact = {
         "/api/me": "/system/session/me",
         "/api/session/presence": "/system/session/presence",
@@ -159,8 +162,9 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         except Exception:
             return None
 
-    def _inject_trusted_edge_headers(self, headers, upstream_path):
-        if not upstream_path.startswith("/api/backend/"):
+    def _inject_trusted_edge_headers(self, headers, upstream_path, original_path=None):
+        auth_bridge_path = original_path or upstream_path
+        if not auth_bridge_path.startswith("/api/backend/"):
             return
 
         if not EDGE_TRUSTED_PROXY_SECRET:
@@ -176,7 +180,7 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         headers["X-Edge-User-Is-Admin"] = "true" if user.get("is_admin") else "false"
 
 
-    def _proxy_to_backend(self, backend, upstream_path, query=""):
+    def _proxy_to_backend(self, backend, upstream_path, query="", original_path=None):
         upstream_url = backend + upstream_path
         if query:
             upstream_url += "?" + query
@@ -210,7 +214,7 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             if token:
                 headers["Authorization"] = f"Bearer {token}"
 
-        self._inject_trusted_edge_headers(headers, upstream_path)
+        self._inject_trusted_edge_headers(headers, upstream_path, original_path=original_path)
 
         req = urllib.request.Request(
             upstream_url,
@@ -271,7 +275,7 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
     def _proxy_api(self):
         parsed = urlparse(self.path)
         backend, upstream_path = map_api(parsed.path)
-        return self._proxy_to_backend(backend, upstream_path, parsed.query)
+        return self._proxy_to_backend(backend, upstream_path, parsed.query, original_path=parsed.path)
 
     def _serve_wrapper_or_static(self):
         parsed = urlparse(self.path)

@@ -501,7 +501,7 @@ async def tick():
                 readiness_result = await power_execute_wake_and_start_worker(
                     target_name=target_name,
                     confirm="WAKE_AND_START_WORKER",
-                    pause_after_start_minutes=10,
+                    pause_after_start_minutes=web_presence_start_pause_minutes,
                     wait_worker_seconds=180,
                     wait_registry_seconds=180,
                 )
@@ -3092,6 +3092,28 @@ async def power_auto_tick():
     web_host_required = bool(web_desired_state.get("host_required"))
     web_container_required = bool(web_desired_state.get("container_required"))
 
+    # WEB_PRESENCE_CONTAINER_START_DEMAND_V1
+    # Logged-in/admin web presence means CT101 is required, not just PVESO.
+    # Reuse the existing worker start path by treating container_required
+    # as start demand even when there are no queued jobs.
+    if web_container_required and not queue_demand.get("has_start_demand"):
+        queue_demand["has_start_demand"] = True
+        queue_demand["reason"] = "web_presence_container_required"
+        queue_demand["source"] = "web_presence_power_policy"
+        queue_demand["web_presence_container_required"] = True
+
+        # Queue auto-start can remain off for normal jobs, but authenticated
+        # web presence must be allowed to start the core CT101 app container.
+        auto_start_workers = True
+
+    # WEB_PRESENCE_NO_START_PAUSE_V1
+    # Web presence needs CT101 available immediately. Do not create a temporary
+    # automation pause after web-presence start/recovery, because that pause can
+    # block a follow-up start if CT101 is manually stopped or crashes.
+    web_presence_start_pause_minutes = (
+        0 if queue_demand.get("web_presence_container_required") else 10
+    )
+
     # Extra safety: after a wake request, keep the host alive during the boot grace window.
     # This prevents the old /power/auto/tick path from shutting pveso down before services
     # have had time to start or before the user can actually use the site.
@@ -3151,7 +3173,7 @@ async def power_auto_tick():
                 start_result = await power_execute_wake_and_start_worker(
                     target_name="llms_ollama",
                     confirm="WAKE_AND_START_WORKER",
-                    pause_after_start_minutes=10,
+                    pause_after_start_minutes=web_presence_start_pause_minutes,
                     wait_worker_seconds=180,
                     wait_registry_seconds=180,
                 )
@@ -3210,7 +3232,7 @@ async def power_auto_tick():
                 start_result = await power_execute_wake_and_start_worker(
                     target_name="llms_ollama",
                     confirm="WAKE_AND_START_WORKER",
-                    pause_after_start_minutes=10,
+                    pause_after_start_minutes=web_presence_start_pause_minutes,
                     wait_worker_seconds=180,
                     wait_registry_seconds=180,
                 )
@@ -12140,6 +12162,16 @@ def _web_presence_power_decision():
     active_authenticated = presence["active_authenticated"] > 0
     active_admin = presence["active_admin"] > 0
     anonymous_wake_intent = presence["anonymous_wake_intent"] > 0
+
+    # RECENT_AUTH_CONTAINER_REQUIRED_V1
+    # Private app pages live inside CT101. If CT101 stops, the private page can
+    # no longer send heartbeats, so use the broader container idle window as a
+    # grace period for recently logged-in users.
+    last_logged_in_seen_seconds_ago = presence.get("last_logged_in_seen_seconds_ago")
+    recent_authenticated = (
+        last_logged_in_seen_seconds_ago is not None
+        and last_logged_in_seen_seconds_ago <= container_idle_seconds
+    )
     active_any = presence["active_visible"] > 0
 
     actions = []
@@ -12158,7 +12190,7 @@ def _web_presence_power_decision():
         actions.extend(["keep_host_online", "keep_required_containers_online"])
         reasons.append("Jobs are queued or running.")
 
-    elif active_authenticated:
+    elif active_authenticated or recent_authenticated:
         # Strongest user-experience rule:
         # if a logged-in user is recently active, the host should never remain offline.
         # It should be online or actively booting, and core app containers should be online/starting.
@@ -12221,10 +12253,10 @@ def _web_presence_power_decision():
             "container_required": container_required,
             "desired_host_state": desired_host_state,
             "desired_container_state": desired_container_state,
-            "shutdown_blocked": bool(active_admin or active_authenticated or queued_or_running),
+            "shutdown_blocked": bool(active_admin or active_authenticated or recent_authenticated or queued_or_running),
             "shutdown_block_reason": (
                 "admin_active" if active_admin
-                else "logged_in_user_active" if active_authenticated
+                else "logged_in_user_active" if (active_authenticated or recent_authenticated)
                 else "job_active" if queued_or_running
                 else None
             ),
