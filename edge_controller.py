@@ -3092,6 +3092,22 @@ async def power_auto_tick():
     web_host_required = bool(web_desired_state.get("host_required"))
     web_container_required = bool(web_desired_state.get("container_required"))
 
+    # Extra safety: after a wake request, keep the host alive during the boot grace window.
+    # This prevents the old /power/auto/tick path from shutting pveso down before services
+    # have had time to start or before the user can actually use the site.
+    try:
+        booting_marker = _system_read_booting_marker()
+    except Exception as e:
+        booting_marker = {
+            "active": False,
+            "error": str(e),
+        }
+
+    boot_grace_active = bool(
+        isinstance(booting_marker, dict)
+        and booting_marker.get("active")
+    )
+
     container_plans = stop_plan.get("container_stop_plans", [])
     eligible_container_plans = [
         plan for plan in container_plans
@@ -3248,14 +3264,15 @@ async def power_auto_tick():
                 "queue_demand": queue_demand,
             }
         )
-    elif web_host_required or web_container_required:
+    elif web_host_required or web_container_required or boot_grace_active:
         actions.append(
             {
                 "area": "worker_stop",
-                "action": "skip_worker_stop_due_to_web_presence",
+                "action": "skip_worker_stop_due_to_web_presence_or_boot_grace",
                 "executed": False,
-                "reason": "Active web presence requires the host, so worker stop is skipped.",
+                "reason": "Active web presence or boot grace requires the host, so worker stop is skipped.",
                 "web_presence_policy": web_power_policy,
+                "booting_marker": booting_marker,
                 "plans": container_plans,
             }
         )
@@ -3309,14 +3326,15 @@ async def power_auto_tick():
     # ------------------------------------------------------------
     # Host shutdown automation decision
     # ------------------------------------------------------------
-    if web_host_required:
+    if web_host_required or boot_grace_active:
         actions.append(
             {
                 "area": "host_shutdown",
-                "action": "skip_host_shutdown_due_to_web_presence",
+                "action": "skip_host_shutdown_due_to_web_presence_or_boot_grace",
                 "executed": False,
-                "reason": "Active web presence requires the host, so host shutdown is skipped.",
+                "reason": "Active web presence or boot grace requires the host, so host shutdown is skipped.",
                 "web_presence_policy": web_power_policy,
+                "booting_marker": booting_marker,
                 "would_run": host_plan.get("would_run"),
             }
         )
