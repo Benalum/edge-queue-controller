@@ -90,9 +90,22 @@ def map_api(path):
 
 class SPAProxyHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
-        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-        self.send_header("Pragma", "no-cache")
-        self.send_header("Expires", "0")
+        # NEXT_STATIC_CACHE_V1
+        # Private HTML/API stays no-store, but Next static chunks should cache.
+        try:
+            path = urlparse(self.path).path or "/"
+        except Exception:
+            path = ""
+
+        if path.startswith("/_next/static/"):
+            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
+        elif path.startswith("/_next/image"):
+            self.send_header("Cache-Control", "public, max-age=3600")
+        else:
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
+
         return super().end_headers()
 
     def _auth_route_token(self):
