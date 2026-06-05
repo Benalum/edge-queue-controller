@@ -192,6 +192,53 @@ function setSystemHeaderState() {
   if (text) text.textContent = "System";
 }
 
+function normalizeCreditsPayload(payload) {
+  const user = payload?.user || authState.user || {};
+  const credits = payload?.credits || {};
+
+  const available =
+    credits.available ??
+    credits.total_available ??
+    user.credit_balance ??
+    0;
+
+  const free =
+    credits.free_available ??
+    credits.free ??
+    available ??
+    0;
+
+  const paid =
+    credits.paid_available ??
+    credits.paid ??
+    0;
+
+  const reserved =
+    credits.reserved ??
+    credits.total_reserved ??
+    0;
+
+  return {
+    available: Number(available || 0),
+    free: Number(free || 0),
+    paid: Number(paid || 0),
+    reserved: Number(reserved || 0),
+    plan: credits.plan || user.plan || "free",
+    billing_status: credits.billing_status || user.billing_status || "none",
+  };
+}
+
+function forceSyncAccountUi() {
+  const adminLink = document.getElementById("adminNavLink");
+  const supportLink = document.querySelector('[data-route="/support"]');
+  const isAdmin = Boolean(authState?.user?.is_admin || authState?.user?.role === "admin");
+
+  if (adminLink) adminLink.classList.toggle("hidden", !isAdmin);
+  if (supportLink) supportLink.classList.toggle("hidden", isAdmin);
+
+  renderCreditsPill?.();
+}
+
 function formatNumber(value) {
   const n = Number(value || 0);
   if (!Number.isFinite(n)) return "0";
@@ -204,6 +251,7 @@ function renderCreditsPill() {
 
   const loggedIn = Boolean(authState.token);
   const user = authState.user || {};
+  const normalizedCredits = normalizeCreditsPayload(accountCredits);
   const pools = accountCredits?.credits || {};
 
   pill.classList.toggle("hidden", !loggedIn);
@@ -1616,9 +1664,10 @@ function renderCreditsPage() {
   const user = live.user || authState.user || {};
   const credits = live.credits || {};
 
-  const freeAvailable = credits.free_available ?? 0;
-  const paidAvailable = credits.paid_available ?? 0;
-  const totalAvailable = credits.total_available ?? credits.available ?? user.credit_balance ?? 0;
+  const normalizedCredits = normalizeCreditsPayload(live);
+  const freeAvailable = credits.free_available ?? normalizedCredits.free ?? 0;
+  const paidAvailable = credits.paid_available ?? normalizedCredits.paid ?? 0;
+  const totalAvailable = credits.total_available ?? credits.available ?? normalizedCredits.available ?? user.credit_balance ?? 0;
 
   const freeReserved = credits.free_reserved ?? 0;
   const paidReserved = credits.paid_reserved ?? 0;
@@ -3875,6 +3924,7 @@ async function wrapperStartupAuthRefresh() {
   if (!authState.token) {
     renderCreditsPill();
     cleanSyncNav?.();
+    forceSyncAccountUi();
     return;
   }
 
@@ -3893,6 +3943,7 @@ async function wrapperStartupAuthRefresh() {
 
     renderCreditsPill();
     cleanSyncNav?.();
+    forceSyncAccountUi();
     renderPage();
     sendWebPresence?.("force");
   } catch (err) {
@@ -3902,6 +3953,7 @@ async function wrapperStartupAuthRefresh() {
     localStorage.removeItem("edgeStudyToken");
     renderCreditsPill();
     cleanSyncNav?.();
+    forceSyncAccountUi();
     renderPage();
   }
 }
