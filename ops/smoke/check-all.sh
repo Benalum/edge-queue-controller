@@ -28,6 +28,10 @@ echo "=== extracted helper behavior ==="
 ops/smoke/check-extracted-helper-behavior.sh
 
 echo
+echo "=== email verification auth behavior ==="
+ops/smoke/check-email-verification-auth.sh
+
+echo
 echo "=== rewarded ad status behavior ==="
 ops/smoke/check-rewarded-ad-status-behavior.sh
 

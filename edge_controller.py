@@ -5564,6 +5564,13 @@ import base64 as _auth_base64
 import hashlib as _auth_hashlib
 import secrets as _auth_secrets
 from datetime import timedelta as _auth_timedelta
+from edge_modules.email_verification import (
+    email_verification_expires_at as _email_verification_expires_at,
+    email_verification_hash as _email_verification_hash,
+    email_verification_token as _email_verification_token,
+    email_verification_url as _email_verification_url,
+    send_email_verification as _send_email_verification,
+)
 
 
 def _auth_now_iso():
@@ -5599,6 +5606,24 @@ def _auth_init_tables():
                 last_seen_at TEXT,
                 user_agent TEXT,
                 FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS pending_email_signups (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL UNIQUE,
+                display_name TEXT,
+                password_hash TEXT NOT NULL,
+                token_hash TEXT NOT NULL UNIQUE,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                consumed_at TEXT,
+                sent_count INTEGER NOT NULL DEFAULT 0,
+                last_sent_at TEXT
             )
             """
         )
@@ -5669,6 +5694,213 @@ def _auth_public_user(row):
         "updated_at": data.get("updated_at"),
         "last_login_at": data.get("last_login_at"),
     }
+
+
+
+
+def _auth_pending_signup_response(email: str, delivery):
+    response = {
+        "ok": True,
+        "verification_required": True,
+        "email": email,
+        "message": "Check your email to finish creating your account.",
+        "email_delivery": delivery.get("delivery") if isinstance(delivery, dict) else None,
+    }
+
+    if isinstance(delivery, dict) and delivery.get("debug_verify_url"):
+        response["debug_verify_url"] = delivery["debug_verify_url"]
+
+    return response
+
+
+def _auth_create_or_update_pending_signup(email: str, password_hash: str, display_name=None):
+    _auth_init_tables()
+
+    now = _auth_now_iso()
+    token = _email_verification_token()
+    token_hash = _email_verification_hash(token)
+    expires_at = _email_verification_expires_at(now)
+
+    with db() as conn:
+        existing_user = conn.execute(
+            """
+            SELECT id
+            FROM app_users
+            WHERE email = ?
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+
+        if existing_user:
+            # Do not reveal whether the account exists. Return a no-op verification response.
+            return None, None, {
+                "sent": False,
+                "delivery": "existing_account_noop",
+                "debug_verify_url": None,
+            }
+
+        conn.execute(
+            """
+            INSERT INTO pending_email_signups (
+                email,
+                display_name,
+                password_hash,
+                token_hash,
+                created_at,
+                updated_at,
+                expires_at,
+                consumed_at,
+                sent_count,
+                last_sent_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 1, ?)
+            ON CONFLICT(email) DO UPDATE SET
+                display_name = excluded.display_name,
+                password_hash = excluded.password_hash,
+                token_hash = excluded.token_hash,
+                updated_at = excluded.updated_at,
+                expires_at = excluded.expires_at,
+                consumed_at = NULL,
+                sent_count = pending_email_signups.sent_count + 1,
+                last_sent_at = excluded.last_sent_at
+            """,
+            (
+                email,
+                display_name,
+                password_hash,
+                token_hash,
+                now,
+                now,
+                expires_at,
+                now,
+            ),
+        )
+
+    verify_url = _email_verification_url(token)
+    delivery = _send_email_verification(email, verify_url)
+    return token, verify_url, delivery
+
+
+def _auth_complete_email_verification(token: str):
+    _auth_init_tables()
+
+    token = str(token or "").strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="Verification token is required.")
+
+    token_hash = _email_verification_hash(token)
+    now = _auth_now_iso()
+
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+
+        pending = conn.execute(
+            """
+            SELECT *
+            FROM pending_email_signups
+            WHERE token_hash = ?
+              AND consumed_at IS NULL
+            LIMIT 1
+            """,
+            (token_hash,),
+        ).fetchone()
+
+        if not pending:
+            raise HTTPException(status_code=400, detail="Invalid or already used verification link.")
+
+        if str(pending["expires_at"]) <= now:
+            raise HTTPException(status_code=400, detail="Verification link expired. Please register again.")
+
+        existing_user = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE email = ?
+            LIMIT 1
+            """,
+            (pending["email"],),
+        ).fetchone()
+
+        if existing_user:
+            conn.execute(
+                """
+                UPDATE pending_email_signups
+                SET consumed_at = ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (now, now, pending["id"]),
+            )
+            conn.commit()
+            return existing_user, False
+
+        cur = conn.execute(
+            """
+            INSERT INTO app_users (
+                email,
+                display_name,
+                password_hash,
+                status,
+                created_at,
+                updated_at,
+                last_login_at
+            )
+            VALUES (?, ?, ?, 'active', ?, ?, NULL)
+            """,
+            (
+                pending["email"],
+                pending["display_name"],
+                pending["password_hash"],
+                now,
+                now,
+            ),
+        )
+
+        user_id = cur.lastrowid
+
+        conn.execute(
+            """
+            UPDATE pending_email_signups
+            SET consumed_at = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (now, now, pending["id"]),
+        )
+
+        user = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        conn.commit()
+
+    return user, True
+
+
+def _auth_pending_signup_exists(email: str) -> bool:
+    _auth_init_tables()
+    now = _auth_now_iso()
+
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT id
+            FROM pending_email_signups
+            WHERE email = ?
+              AND consumed_at IS NULL
+              AND expires_at > ?
+            LIMIT 1
+            """,
+            (email, now),
+        ).fetchone()
+
+    return bool(row)
 
 
 def _auth_create_session(user_id: int, request: Request):
@@ -5769,77 +6001,98 @@ def _auth_current_user_from_request(request: Request):
 
 @app.post("/public/auth/register")
 async def public_auth_register(request: Request):
-    await _require_public_api_key(request)
     _auth_init_tables()
 
     try:
         payload = await request.json()
     except Exception:
-        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+        payload = {}
 
-    email = _auth_normalize_email(payload.get("email") if isinstance(payload, dict) else "")
-    password = payload.get("password") if isinstance(payload, dict) else None
-    display_name = payload.get("display_name") if isinstance(payload, dict) else None
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    email = _auth_normalize_email(payload.get("email") or "")
+    password = str(payload.get("password") or "")
+    display_name = str(payload.get("display_name") or "").strip() or None
 
     if not email or "@" not in email:
         raise HTTPException(status_code=400, detail="Valid email is required.")
 
-    if not isinstance(password, str) or len(password) < 10:
-        raise HTTPException(status_code=400, detail="Password must be at least 10 characters.")
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters.")
 
-    if display_name is not None:
-        display_name = str(display_name).strip()[:120] or None
-
-    now = _auth_now_iso()
     password_hash = _auth_hash_password(password)
+    _, _, delivery = _auth_create_or_update_pending_signup(email, password_hash, display_name)
 
-    try:
-        with db() as conn:
-            cur = conn.execute(
-                """
-                INSERT INTO app_users (
-                    email,
-                    display_name,
-                    password_hash,
-                    status,
-                    created_at,
-                    updated_at,
-                    last_login_at
-                )
-                VALUES (?, ?, ?, 'active', ?, ?, ?)
-                """,
-                (
-                    email,
-                    display_name,
-                    password_hash,
-                    now,
-                    now,
-                    now,
-                ),
-            )
+    return _auth_pending_signup_response(email, delivery)
 
-            user_id = cur.lastrowid
 
-            row = conn.execute(
-                """
-                SELECT *
-                FROM app_users
-                WHERE id = ?
-                """,
-                (user_id,),
-            ).fetchone()
-    except Exception as e:
-        if "UNIQUE" in str(e).upper():
-            raise HTTPException(status_code=409, detail="An account with that email already exists.")
-        raise
 
-    session = _auth_create_session(user_id=int(user_id), request=request)
+
+
+
+
+@app.get("/public/auth/verify-email")
+async def public_auth_verify_email(token: str, request: Request):
+    user, created = _auth_complete_email_verification(token)
+    session = _auth_create_session(int(user["id"]), request)
 
     return {
         "ok": True,
-        "user": _auth_public_user(row),
+        "verified": True,
+        "created": bool(created),
+        "user": _auth_public_user(user),
         "session": session,
+        **session,
     }
+
+
+@app.post("/public/auth/resend-verification")
+async def public_auth_resend_verification(request: Request):
+    _auth_init_tables()
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    email = _auth_normalize_email(payload.get("email") or "")
+
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Valid email is required.")
+
+    with db() as conn:
+        pending = conn.execute(
+            """
+            SELECT *
+            FROM pending_email_signups
+            WHERE email = ?
+              AND consumed_at IS NULL
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+
+    if not pending:
+        return _auth_pending_signup_response(
+            email,
+            {
+                "sent": False,
+                "delivery": "no_pending_signup_noop",
+                "debug_verify_url": None,
+            },
+        )
+
+    _, _, delivery = _auth_create_or_update_pending_signup(
+        email,
+        pending["password_hash"],
+        pending["display_name"],
+    )
+
+    return _auth_pending_signup_response(email, delivery)
 
 
 @app.post("/public/auth/login")
@@ -5870,7 +6123,12 @@ async def public_auth_login(request: Request):
             (email,),
         ).fetchone()
 
-    if not row or not _auth_verify_password(password, row["password_hash"]):
+    if not row:
+        if _auth_pending_signup_exists(email):
+            raise HTTPException(status_code=403, detail="Email verification required. Check your email to finish creating your account.")
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+
+    if not _auth_verify_password(password, row["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     now = _auth_now_iso()
@@ -7917,7 +8175,12 @@ async def system_session_login(request: Request):
             (email,),
         ).fetchone()
 
-        if not row or not _auth_verify_password(password, row["password_hash"]):
+        if not row:
+            if _auth_pending_signup_exists(email):
+                raise HTTPException(status_code=403, detail="Email verification required. Check your email to finish creating your account.")
+            raise HTTPException(status_code=401, detail="Invalid email or password.")
+
+        if not _auth_verify_password(password, row["password_hash"]):
             raise HTTPException(status_code=401, detail="Invalid email or password.")
 
         now = _auth_now_iso()
@@ -7958,57 +8221,25 @@ async def system_session_register(request: Request):
     except Exception:
         payload = {}
 
-    email = _auth_normalize_email(payload.get("email") if isinstance(payload, dict) else "")
-    password = payload.get("password") if isinstance(payload, dict) else ""
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    email = _auth_normalize_email(payload.get("email") or "")
+    password = str(payload.get("password") or "")
+    display_name = str(payload.get("display_name") or "").strip() or None
 
     if not email or "@" not in email:
         raise HTTPException(status_code=400, detail="Valid email is required.")
 
-    if not isinstance(password, str) or len(password) < 8:
+    if len(password) < 8:
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters.")
 
-    now = _auth_now_iso()
     password_hash = _auth_hash_password(password)
+    _, _, delivery = _auth_create_or_update_pending_signup(email, password_hash, display_name)
 
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            conn.row_factory = sqlite3.Row
-            cur = conn.execute(
-                """
-                INSERT INTO app_users (
-                    email,
-                    password_hash,
-                    status,
-                    created_at,
-                    updated_at,
-                    last_login_at
-                )
-                VALUES (?, ?, 'active', ?, ?, ?)
-                """,
-                (email, password_hash, now, now, now),
-            )
-            user_id = cur.lastrowid
-            conn.commit()
+    return _auth_pending_signup_response(email, delivery)
 
-            row = conn.execute(
-                """
-                SELECT *
-                FROM app_users
-                WHERE id = ?
-                """,
-                (user_id,),
-            ).fetchone()
 
-    except sqlite3.IntegrityError:
-        raise HTTPException(status_code=409, detail="An account with that email already exists.")
-
-    session = _auth_create_session(user_id=int(user_id), request=request)
-
-    return {
-        "ok": True,
-        "user": _auth_public_user(row),
-        "session": session,
-    }
 
 
 @app.post("/system/session/logout")
