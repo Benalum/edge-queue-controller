@@ -60,3 +60,58 @@ def ad_reward_counts(conn, user_id: int, now_iso: str):
 
     return int(daily or 0), int(monthly or 0), last["created_at"] if last else None
 
+
+
+def ad_reward_status_for_user(user_id: int, *, db_path: str, init_tables, now_iso):
+    import os
+    import sqlite3
+
+    init_tables()
+    settings = ad_reward_settings()
+    now = now_iso()
+
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        daily, monthly, last_claim_at = ad_reward_counts(conn, user_id, now_iso())
+
+    cooldown_remaining = 0
+    if last_claim_at:
+        elapsed = max(0, int(ad_iso_to_epoch(now) - ad_iso_to_epoch(last_claim_at)))
+        cooldown_remaining = max(0, settings["cooldown_seconds"] - elapsed)
+
+    can_claim = True
+    blocked_reason = None
+
+    if daily >= settings["daily_limit"]:
+        can_claim = False
+        blocked_reason = "Daily rewarded-ad limit reached."
+    elif monthly >= settings["monthly_limit"]:
+        can_claim = False
+        blocked_reason = "Monthly rewarded-ad limit reached."
+    elif cooldown_remaining > 0:
+        can_claim = False
+        blocked_reason = f"Reward cooldown active. Try again in {cooldown_remaining} seconds."
+
+    return {
+        "ok": True,
+        "can_claim": can_claim,
+        "blocked_reason": blocked_reason,
+        "reward_credits": settings["reward_credits"],
+        "credit_pool": "free",
+        "credit_rule": "Ad rewards grant free/local credits only.",
+        "mock_enabled": str(os.getenv("AD_REWARD_MOCK_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on"),
+        "provider_verification_enabled": str(os.getenv("AD_REWARD_PROVIDER_VERIFICATION_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on"),
+        "daily": {
+            "used": daily,
+            "limit": settings["daily_limit"],
+        },
+        "monthly": {
+            "used": monthly,
+            "limit": settings["monthly_limit"],
+        },
+        "cooldown": {
+            "seconds": settings["cooldown_seconds"],
+            "remaining_seconds": cooldown_remaining,
+            "last_claim_at": last_claim_at,
+        },
+    }

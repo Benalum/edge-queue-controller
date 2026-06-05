@@ -8275,6 +8275,7 @@ from edge_modules.rewarded_ads import (
     ad_request_ip as _ad_request_ip,
     ad_reward_counts as _ad_reward_counts,
     ad_reward_settings as _ad_reward_settings,
+    ad_reward_status_for_user as _ad_reward_status_for_user,
 )
 
 
@@ -9777,64 +9778,16 @@ def _ad_reward_init_tables():
 
 
 
-def _ad_reward_status_for_user(user_id: int):
-    _ad_reward_init_tables()
-    settings = _ad_reward_settings()
-    now_iso = _auth_now_iso()
-    now_epoch = _ad_iso_to_epoch(now_iso)
-
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        daily, monthly, last_claim_at = _ad_reward_counts(conn, user_id, _auth_now_iso())
-
-    cooldown_remaining = 0
-    if last_claim_at:
-        elapsed = max(0, now_epoch - _ad_iso_to_epoch(last_claim_at))
-        cooldown_remaining = max(0, int(settings["cooldown_seconds"] - elapsed))
-
-    can_claim = (
-        daily < settings["daily_limit"]
-        and monthly < settings["monthly_limit"]
-        and cooldown_remaining <= 0
-    )
-
-    blocked_reason = None
-    if daily >= settings["daily_limit"]:
-        blocked_reason = "Daily rewarded-ad limit reached."
-    elif monthly >= settings["monthly_limit"]:
-        blocked_reason = "Monthly rewarded-ad limit reached."
-    elif cooldown_remaining > 0:
-        blocked_reason = f"Reward cooldown active. Try again in {cooldown_remaining} seconds."
-
-    return {
-        "ok": True,
-        "can_claim": can_claim,
-        "blocked_reason": blocked_reason,
-        "reward_credits": settings["reward_credits"],
-        "credit_pool": "free",
-        "credit_rule": "Ad rewards grant free/local credits only.",
-        "mock_enabled": str(os.getenv("AD_REWARD_MOCK_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on"),
-        "provider_verification_enabled": str(os.getenv("AD_REWARD_PROVIDER_VERIFICATION_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on"),
-        "daily": {
-            "used": daily,
-            "limit": settings["daily_limit"],
-        },
-        "monthly": {
-            "used": monthly,
-            "limit": settings["monthly_limit"],
-        },
-        "cooldown": {
-            "seconds": settings["cooldown_seconds"],
-            "remaining_seconds": cooldown_remaining,
-            "last_claim_at": last_claim_at,
-        },
-    }
-
 
 @app.get("/system/ads/reward/status")
 async def system_ads_reward_status(request: Request):
     row = _credit_pool_user_row(request)
-    return _ad_reward_status_for_user(int(row["id"]))
+    return _ad_reward_status_for_user(
+        int(row["id"]),
+        db_path=DB_PATH,
+        init_tables=_ad_reward_init_tables,
+        now_iso=_auth_now_iso,
+    )
 
 
 @app.post("/system/ads/reward/claim")
@@ -9899,7 +9852,12 @@ async def system_ads_reward_claim(request: Request):
                 "credits_granted": 0,
                 "detail": "Reward event was already claimed.",
             }
-            summary["reward_status"] = _ad_reward_status_for_user(user_id)
+            summary["reward_status"] = _ad_reward_status_for_user(
+                user_id,
+                db_path=DB_PATH,
+                init_tables=_ad_reward_init_tables,
+                now_iso=_auth_now_iso,
+            )
             return summary
 
         daily, monthly, last_claim_at = _ad_reward_counts(conn, user_id, _auth_now_iso())
@@ -9986,7 +9944,12 @@ async def system_ads_reward_claim(request: Request):
         "credit_pool": "free",
         "detail": "Reward granted as free/local credits.",
     }
-    summary["reward_status"] = _ad_reward_status_for_user(user_id)
+    summary["reward_status"] = _ad_reward_status_for_user(
+                user_id,
+                db_path=DB_PATH,
+                init_tables=_ad_reward_init_tables,
+                now_iso=_auth_now_iso,
+            )
     return summary
 
 
