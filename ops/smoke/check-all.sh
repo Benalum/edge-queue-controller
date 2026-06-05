@@ -32,6 +32,10 @@ echo "=== email verification auth behavior ==="
 ops/smoke/check-email-verification-auth.sh
 
 echo
+echo "=== email verification API aliases ==="
+ops/smoke/check-email-verification-api-aliases.sh
+
+echo
 echo "=== rewarded ad status behavior ==="
 ops/smoke/check-rewarded-ad-status-behavior.sh
 

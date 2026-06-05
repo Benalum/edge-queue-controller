@@ -6095,6 +6095,19 @@ async def public_auth_resend_verification(request: Request):
     return _auth_pending_signup_response(email, delivery)
 
 
+
+
+
+@app.get("/api/auth/verify-email")
+async def api_auth_verify_email(token: str, request: Request):
+    return await public_auth_verify_email(token, request)
+
+
+@app.post("/api/auth/resend-verification")
+async def api_auth_resend_verification(request: Request):
+    return await public_auth_resend_verification(request)
+
+
 @app.post("/public/auth/login")
 async def public_auth_login(request: Request):
     await _require_public_api_key(request)
