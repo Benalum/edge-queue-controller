@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 
+from edge_modules.credit_helpers import ad_iso_to_epoch
+
 
 def ad_reward_settings():
     return {
