@@ -82,6 +82,11 @@ with tempfile.TemporaryDirectory() as tmp:
         edge_controller.DB_PATH = db_path
         edge_controller._auth_now_iso = lambda: "2026-06-05T12:00:00+00:00"
 
+        # Build the base controller schema first. _ad_reward_init_tables()
+        # depends on account/auth init, and auth init expects the jobs table
+        # created by init_db().
+        edge_controller.init_db()
+
         os.environ["AD_REWARD_FREE_CREDITS"] = "5"
         os.environ["AD_REWARD_DAILY_LIMIT"] = "5"
         os.environ["AD_REWARD_MONTHLY_LIMIT"] = "100"
