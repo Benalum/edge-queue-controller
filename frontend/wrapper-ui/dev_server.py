@@ -1,5 +1,6 @@
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import os
 from urllib.parse import urlparse
 import urllib.request
 import urllib.error
@@ -122,6 +123,95 @@ def map_api(path):
 
 
 class SPAProxyHandler(SimpleHTTPRequestHandler):
+    # FORCE_SPA_PUBLIC_ROUTES_V2
+    def _maybe_rewrite_spa_route(self):
+        from urllib.parse import urlparse
+
+        parsed = urlparse(self.path)
+        route_path = parsed.path or "/"
+
+        # These are browser pages owned by the wrapper SPA.
+        spa_routes = {
+            "/",
+            "/study",
+            "/companion",
+            "/calendar",
+            "/profile",
+            "/system",
+        }
+
+        if route_path in spa_routes:
+            self.path = "/index.html"
+            return True
+
+        return False
+
+    def do_HEAD(self):
+        original_path = self.path
+        self._maybe_rewrite_spa_route()
+        try:
+            return super().do_HEAD()
+        finally:
+            self.path = original_path
+
+    def do_GET(self):
+        original_path = self.path
+
+        # Do not rewrite API/proxy routes.
+        from urllib.parse import urlparse
+        route_path = urlparse(self.path).path or "/"
+        if (
+            route_path.startswith("/api/")
+            or route_path.startswith("/public/")
+            or route_path.startswith("/system/")
+        ):
+            return super().do_GET()
+
+        self._maybe_rewrite_spa_route()
+        try:
+            return super().do_GET()
+        finally:
+            self.path = original_path
+
+    # SPA_FALLBACK_DEEP_ROUTES_V1
+    def send_head(self):
+        """
+        Serve index.html for wrapper app routes like /study, /companion,
+        /calendar, /profile, and /system so local dev matches Cloudflare Pages.
+        API/proxy routes and real static files still use normal handling.
+        """
+        import os
+        from urllib.parse import urlparse
+
+        parsed = urlparse(self.path)
+        route_path = parsed.path or "/"
+
+        # API/proxy routes should not be rewritten to index.html.
+        if (
+            route_path.startswith("/api/")
+            or route_path.startswith("/public/")
+            or route_path.startswith("/system/")
+        ):
+            return super().send_head()
+
+        translated = self.translate_path(route_path)
+
+        # Existing files/directories should be served normally.
+        if os.path.exists(translated):
+            return super().send_head()
+
+        # Browser SPA routes without file extensions should serve index.html.
+        basename = os.path.basename(route_path)
+        if "." not in basename:
+            old_path = self.path
+            self.path = "/index.html"
+            try:
+                return super().send_head()
+            finally:
+                self.path = old_path
+
+        return super().send_head()
+
     def _proxy_api(self):
         parsed = urlparse(self.path)
         backend, upstream_path = map_api(parsed.path)
@@ -206,6 +296,11 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    # WRAPPER_UI_ROOT_CHDIR_V1
+    # Serve static files from this script's folder, no matter what systemd's
+    # WorkingDirectory is.
+    os.chdir(Path(__file__).resolve().parent)
+
     print(f"Serving wrapper UI at http://127.0.0.1:{PORT}")
     print("Auth/me routes      -> controller 7070 /system/session/*")
     print("Credits routes      -> controller 7070 /system/credits/*")
