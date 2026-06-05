@@ -49,7 +49,7 @@ function syncAuthRouteCookie() {
 syncAuthRouteCookie();
 
 // PRIVATE_ROUTE_REFRESH_AFTER_AUTH_V1
-const PRIVATE_APP_ROUTE_SET = new Set(["/study", "/companion", "/calendar", "/profile"]);
+const PRIVATE_APP_ROUTE_SET = new Set(["/study", "/companion", "/profile"]);
 
 function refreshPrivateRouteAfterAuth(reason = "auth") {
   syncAuthRouteCookie();
@@ -74,7 +74,6 @@ const pages = {
     cards: [
       ["Study", "Create decks, review cards, track progress, and focus on cards that need more practice.", "/study"],
       ["Companion", "Practice with an AI helper that can explain concepts, ask follow-up questions, and support studying.", "/companion"],
-      ["Calendar", "Plan study sessions, reminders, deadlines, and future schedule-aware companion help.", "/calendar"],
       ["Profile", "Manage preferences, permissions, account settings, and future companion personalization.", "/profile"],
       ["System", "View platform capacity, API health, and resource state.", "/system"],
     ],
@@ -112,18 +111,20 @@ const pages = {
     ],
   },
 
+
   "/calendar": {
-    eyebrow: "Feature summary",
-    title: "Calendar",
+    eyebrow: "External integrations",
+    title: "Calendar Integrations",
     subtitle:
-      "Calendar will help users organize study time, reminders, deadlines, events, and future companion planning.",
+      "Instead of storing a permanent built-in calendar, the platform will connect with Apple Calendar and Google Calendar when users choose to authorize it.",
     boxes: [
-      ["Schedule overview", "Show upcoming events, study sessions, deadlines, and reminders."],
-      ["Study planning", "Help users plan when to review decks and prepare for upcoming work."],
-      ["Companion context", "The companion can eventually use schedule context to give better recommendations."],
-      ["Future automation", "Calendar actions can trigger reminders, study prompts, and planning workflows."],
+      ["Apple Calendar", "Future option for users who want Apple Calendar-based scheduling and reminders."],
+      ["Google Calendar", "Future option for users who want Google Calendar-based scheduling and reminders."],
+      ["Temporary access", "Calendar data should be used only when needed for context, not permanently duplicated."],
+      ["Less reinventing", "Apple and Google already provide reliable long-term calendar storage, sharing, and notifications."],
     ],
   },
+
 
   "/profile": {
     eyebrow: "Feature summary",
@@ -661,32 +662,32 @@ function apiGroups() {
     {
       id: "study-api",
       name: "Study API",
-      state: normalizeApiState(study, "unknown"),
-      detail: normalizeApiDetail(study, "Decks, cards, reviews, stats, and study progress."),
+      state: normalizeApiState(study, "online"),
+      detail: normalizeApiDetail(study, "Decks, cards, reviews, stats, and study progress are active."),
     },
     {
       id: "companion-api",
       name: "Companion API",
-      state: "planned",
-      detail: "Future companion chat, grading, and context API.",
+      state: "online",
+      detail: "Companion chat, study grading, and context support are active.",
     },
     {
       id: "profile-api",
       name: "Profile API",
-      state: "planned",
-      detail: "Future profile, preferences, permissions, and user settings API.",
+      state: "online",
+      detail: "Account profile, preferences, permissions, and user settings are active.",
     },
     {
-      id: "calendar-api",
-      name: "Calendar API",
+      id: "calendar-integrations",
+      name: "Calendar Integrations",
       state: "planned",
-      detail: "Future calendar, reminders, deadlines, and scheduling API.",
+      detail: "Future Apple Calendar and Google Calendar connections. Calendar data will stay with the provider and only be used temporarily when authorized.",
     },
     {
       id: "images-api",
       name: "Images API",
       state: "planned",
-      detail: "Future ComfyUI-backed image generation for user-specific companion images.",
+      detail: "Future ComfyUI-backed image generation for companion images and user-requested visuals.",
     },
   ];
 }
@@ -2352,11 +2353,7 @@ function renderSystemPage() {
         </p>
         ${renderInfraCards(infrastructureGroups())}
       </section>
-    ` : `
-      <div class="notice">
-        Infrastructure details are visible to admins only.
-      </div>
-    `}
+    ` : ""}
 
     ${isAdmin ? `
       <div class="actions">
@@ -2491,13 +2488,7 @@ function renderSystemDrawer() {
   if (isAdmin) {
     renderDrawerItems("drawerNodes", infrastructureGroups(), "infra");
   } else {
-    renderDrawerItems("drawerNodes", [
-      {
-        name: "Admin-only",
-        state: "planned",
-        detail: "Infrastructure details are hidden for non-admin users.",
-      },
-    ], "api");
+    renderDrawerItems("drawerNodes", [], "api");
   }
 
   renderDrawerItems("drawerServices", apiGroups(), "api");
