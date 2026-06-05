@@ -18,13 +18,27 @@ def email_verification_hash(token: str) -> str:
     return hashlib.sha256(str(token).encode("utf-8")).hexdigest()
 
 
-def email_verification_hours() -> int:
+def email_verification_minutes() -> int:
+    raw_minutes = os.getenv("EMAIL_VERIFICATION_TOKEN_MINUTES")
+    if raw_minutes is not None and str(raw_minutes).strip():
+        try:
+            minutes = int(raw_minutes)
+        except Exception:
+            minutes = 15
+        return max(5, min(minutes, 10080))
+
     try:
         hours = int(os.getenv("EMAIL_VERIFICATION_TOKEN_HOURS", "24"))
     except Exception:
         hours = 24
 
-    return max(1, min(hours, 168))
+    return max(5, min(hours * 60, 10080))
+
+
+def email_verification_hours() -> int:
+    # Backward-compatible helper for old callers. Expiration is minute-based.
+    minutes = email_verification_minutes()
+    return max(1, (minutes + 59) // 60)
 
 
 def email_verification_expires_at(now_iso: str) -> str:
@@ -33,7 +47,7 @@ def email_verification_expires_at(now_iso: str) -> str:
     except Exception:
         now = datetime.now(timezone.utc)
 
-    return (now + timedelta(hours=email_verification_hours())).isoformat()
+    return (now + timedelta(minutes=email_verification_minutes())).isoformat()
 
 
 def email_verification_base_url() -> str:
@@ -100,7 +114,7 @@ Click this link to finish creating your account:
 
 {verify_url}
 
-This link expires in {email_verification_hours()} hours.
+This link expires in {email_verification_minutes()} minutes.
 
 If you did not request this, you can ignore this email.
 """
@@ -112,7 +126,7 @@ If you did not request this, you can ignore this email.
   <body>
     <p>Verify your email address to finish creating your account.</p>
     <p><a href="{verify_url}">Verify email address</a></p>
-    <p>This link expires in {email_verification_hours()} hours.</p>
+    <p>This link expires in {email_verification_minutes()} minutes.</p>
     <p>If you did not request this, you can ignore this email.</p>
   </body>
 </html>
@@ -136,13 +150,27 @@ If you did not request this, you can ignore this email.
     return result
 
 
-def password_reset_hours() -> int:
+def password_reset_minutes() -> int:
+    raw_minutes = os.getenv("PASSWORD_RESET_TOKEN_MINUTES")
+    if raw_minutes is not None and str(raw_minutes).strip():
+        try:
+            minutes = int(raw_minutes)
+        except Exception:
+            minutes = 15
+        return max(5, min(minutes, 1440))
+
     try:
         hours = int(os.getenv("PASSWORD_RESET_TOKEN_HOURS", "1"))
     except Exception:
         hours = 1
 
-    return max(1, min(hours, 24))
+    return max(5, min(hours * 60, 1440))
+
+
+def password_reset_hours() -> int:
+    # Backward-compatible helper for old callers. Expiration is minute-based.
+    minutes = password_reset_minutes()
+    return max(1, (minutes + 59) // 60)
 
 
 def password_reset_expires_at(now_iso: str) -> str:
@@ -151,7 +179,7 @@ def password_reset_expires_at(now_iso: str) -> str:
     except Exception:
         now = datetime.now(timezone.utc)
 
-    return (now + timedelta(hours=password_reset_hours())).isoformat()
+    return (now + timedelta(minutes=password_reset_minutes())).isoformat()
 
 
 def password_reset_url(token: str) -> str:
@@ -203,7 +231,7 @@ Click this link to reset your password:
 
 {reset_url}
 
-This link expires in {password_reset_hours()} hour(s).
+This link expires in {password_reset_minutes()} minutes.
 
 If you did not request this, you can ignore this email.
 """
@@ -215,7 +243,7 @@ If you did not request this, you can ignore this email.
   <body>
     <p>Click the link below to reset your password.</p>
     <p><a href="{reset_url}">Reset password</a></p>
-    <p>This link expires in {password_reset_hours()} hour(s).</p>
+    <p>This link expires in {password_reset_minutes()} minutes.</p>
     <p>If you did not request this, you can ignore this email.</p>
   </body>
 </html>

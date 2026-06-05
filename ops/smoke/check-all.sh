@@ -32,6 +32,10 @@ echo "=== email verification auth behavior ==="
 ops/smoke/check-email-verification-auth.sh
 
 echo
+echo "=== auth token expiration config ==="
+ops/smoke/check-auth-token-expiration-config.sh
+
+echo
 echo "=== email verification API aliases ==="
 ops/smoke/check-email-verification-api-aliases.sh
 
