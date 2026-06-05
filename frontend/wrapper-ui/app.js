@@ -1291,45 +1291,15 @@ async function adminGrantCredits() {
 }
 
 async function loadAdminPanelData() {
-  adminUsers = null;
-  adminTickets = null;
-  adminSystemStatus = null;
-
-  if (!authState.token || !authState.user?.is_admin) {
-    return;
-  }
-
-  try {
-    adminUsers = await cachedApi("/admin/users", { method: "GET" }, AH_CACHE_TTL.ADMIN_USERS);
-  } catch {
-    adminUsers = null;
-  }
-
-  try {
-    adminTickets = await cachedApi("/admin/support/tickets", { method: "GET" }, AH_CACHE_TTL.ADMIN_SUPPORT);
-  } catch {
-    adminTickets = null;
-  }
-
-  try {
-    adminSystemStatus = await cachedApi("/system/admin-status", { method: "GET" }, AH_CACHE_TTL.ADMIN_SYSTEM);
-  } catch {
-    adminSystemStatus = null;
-  }
+  // Legacy admin loader disabled.
+  // Active Admin page uses cleanLoadAdminData().
+  return;
 }
 
 async function loadSupportData() {
-  supportTickets = null;
-
-  if (!authState.token) {
-    return;
-  }
-
-  try {
-    supportTickets = await cachedApi("/support/tickets", { method: "GET" }, AH_CACHE_TTL.SUPPORT_TICKETS);
-  } catch {
-    supportTickets = null;
-  }
+  // Legacy support loader disabled.
+  // Active Support page uses cleanLoadSupportTickets().
+  return;
 }
 
 async function loadSupportThread(ticketId) {
@@ -2068,8 +2038,7 @@ function renderPage() {
       ${page.cards ? renderCards(page.cards) : ""}
       ${page.boxes?.length ? renderBoxes(page.boxes) : ""}
       ${isCredits ? renderCreditsPage() : ""}
-      ${isAdmin ? renderAdminPage() : ""}
-      ${isSupport ? renderSupportPage() : ""}
+      ${""}
       ${isSystem ? renderSystemPage() : ""}
     </section>
   `;
