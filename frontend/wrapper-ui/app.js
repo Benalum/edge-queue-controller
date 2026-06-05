@@ -309,6 +309,12 @@ function ahInvalidateCache(matchers = []) {
 function ahInvalidateForMutation(path) {
   const p = String(path || "");
 
+  // Presence is a lightweight heartbeat. It should keep online status fresh,
+  // but it should NOT wipe cached page data.
+  if (p.includes("/session/presence")) {
+    return;
+  }
+
   if (p.includes("/support/")) {
     ahInvalidateCache([
       "/support/tickets",
@@ -2509,6 +2515,18 @@ async function cleanHeartbeat() {
 
   try {
     await api("/session/presence", { method: "POST" });
+
+    // Only the Admin page needs online-user data refreshed after presence.
+    if (location.pathname === "/admin" && cleanIsAdmin()) {
+      ahInvalidateCache(["/admin/users"]);
+      cleanAdminUsers = await cachedApi(
+        "/admin/users",
+        { method: "GET" },
+        AH_CACHE_TTL.ADMIN_USERS,
+        { force: true }
+      );
+      renderPage();
+    }
   } catch {
     // ignore presence errors
   }
