@@ -32,6 +32,10 @@ echo "=== rewarded ad status behavior ==="
 ops/smoke/check-rewarded-ad-status-behavior.sh
 
 echo
+echo "=== rewarded ad claim behavior ==="
+ops/smoke/check-rewarded-ad-claim-behavior.sh
+
+echo
 echo "=== duplicate route registrations ==="
 ops/smoke/check-duplicate-routes.sh
 
