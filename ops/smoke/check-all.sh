@@ -40,6 +40,10 @@ echo "=== change password auth behavior ==="
 ops/smoke/check-change-password-auth.sh
 
 echo
+echo "=== password reset auth behavior ==="
+ops/smoke/check-password-reset-auth.sh
+
+echo
 echo "=== public gateway email verification routes ==="
 ops/smoke/check-public-gateway-email-verification-routes.sh
 

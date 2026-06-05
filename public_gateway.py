@@ -32,6 +32,8 @@ def is_allowed_public_route(method: str, path: str) -> bool:
         "/public/auth/login",
         "/public/auth/logout",
         "/public/auth/change-password",
+        "/public/auth/forgot-password",
+        "/public/auth/reset-password",
     }:
         return True
 

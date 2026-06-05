@@ -5569,7 +5569,10 @@ from edge_modules.email_verification import (
     email_verification_hash as _email_verification_hash,
     email_verification_token as _email_verification_token,
     email_verification_url as _email_verification_url,
+    password_reset_expires_at as _password_reset_expires_at,
+    password_reset_url as _password_reset_url,
     send_email_verification as _send_email_verification,
+    send_password_reset_email as _send_password_reset_email,
 )
 
 
@@ -5624,6 +5627,24 @@ def _auth_init_tables():
                 consumed_at TEXT,
                 sent_count INTEGER NOT NULL DEFAULT 0,
                 last_sent_at TEXT
+            )
+            """
+        )
+
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                email TEXT NOT NULL,
+                token_hash TEXT NOT NULL UNIQUE,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                consumed_at TEXT,
+                sent_count INTEGER NOT NULL DEFAULT 1,
+                last_sent_at TEXT,
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
             )
             """
         )
@@ -5904,6 +5925,194 @@ def _auth_pending_signup_exists(email: str) -> bool:
 
 
 
+
+
+
+def _auth_password_reset_response(email: str, delivery=None):
+    response = {
+        "ok": True,
+        "message": "If that email exists, a password reset link has been sent.",
+        "email": email,
+    }
+
+    if isinstance(delivery, dict) and delivery.get("debug_reset_url"):
+        response["debug_reset_url"] = delivery["debug_reset_url"]
+
+    if isinstance(delivery, dict):
+        response["email_delivery"] = delivery.get("delivery")
+
+    return response
+
+
+def _auth_create_password_reset(email: str):
+    _auth_init_tables()
+
+    email = _auth_normalize_email(email)
+    now = _auth_now_iso()
+
+    with db() as conn:
+        user = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE email = ?
+              AND status = 'active'
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+
+        if not user:
+            return None, None, {
+                "sent": False,
+                "delivery": "no_account_noop",
+                "debug_reset_url": None,
+            }
+
+        token = _email_verification_token()
+        token_hash = _email_verification_hash(token)
+        expires_at = _password_reset_expires_at(now)
+
+        conn.execute(
+            """
+            UPDATE password_reset_tokens
+            SET consumed_at = ?
+            WHERE user_id = ?
+              AND consumed_at IS NULL
+            """,
+            (now, int(user["id"])),
+        )
+
+        conn.execute(
+            """
+            INSERT INTO password_reset_tokens (
+                user_id,
+                email,
+                token_hash,
+                created_at,
+                expires_at,
+                consumed_at,
+                sent_count,
+                last_sent_at
+            )
+            VALUES (?, ?, ?, ?, ?, NULL, 1, ?)
+            """,
+            (
+                int(user["id"]),
+                email,
+                token_hash,
+                now,
+                expires_at,
+                now,
+            ),
+        )
+
+    reset_url = _password_reset_url(token)
+    delivery = _send_password_reset_email(email, reset_url)
+    return token, reset_url, delivery
+
+
+def _auth_reset_password_with_token(token: str, new_password: str):
+    _auth_init_tables()
+
+    token = str(token or "").strip()
+    new_password = str(new_password or "")
+
+    if not token:
+        raise HTTPException(status_code=400, detail="Reset token is required.")
+
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters.")
+
+    token_hash = _email_verification_hash(token)
+    password_hash = _auth_hash_password(new_password)
+    now = _auth_now_iso()
+
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM password_reset_tokens
+            WHERE token_hash = ?
+              AND consumed_at IS NULL
+            LIMIT 1
+            """,
+            (token_hash,),
+        ).fetchone()
+
+        if not row:
+            raise HTTPException(status_code=400, detail="Invalid or already used reset link.")
+
+        if str(row["expires_at"]) <= now:
+            raise HTTPException(status_code=400, detail="Reset link expired. Please request a new password reset.")
+
+        user = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+              AND status = 'active'
+            LIMIT 1
+            """,
+            (int(row["user_id"]),),
+        ).fetchone()
+
+        if not user:
+            raise HTTPException(status_code=400, detail="Invalid reset link.")
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET password_hash = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                password_hash,
+                now,
+                int(row["user_id"]),
+            ),
+        )
+
+        conn.execute(
+            """
+            UPDATE password_reset_tokens
+            SET consumed_at = ?
+            WHERE id = ?
+            """,
+            (
+                now,
+                int(row["id"]),
+            ),
+        )
+
+        conn.execute(
+            """
+            UPDATE user_sessions
+            SET revoked_at = ?
+            WHERE user_id = ?
+              AND revoked_at IS NULL
+            """,
+            (
+                now,
+                int(row["user_id"]),
+            ),
+        )
+
+        updated = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (int(row["user_id"]),),
+        ).fetchone()
+
+        conn.commit()
+
+    return updated
 
 def _auth_change_password_for_user(user_id: int, current_password: str, new_password: str, keep_token: str | None = None):
     _auth_init_tables()
@@ -6284,6 +6493,97 @@ async def public_me(request: Request):
 
 
 
+
+
+
+
+
+@app.post("/public/auth/forgot-password")
+async def public_auth_forgot_password(request: Request):
+    await _require_public_api_key(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    email = _auth_normalize_email(payload.get("email") or "")
+
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Valid email is required.")
+
+    _, _, delivery = _auth_create_password_reset(email)
+
+    return _auth_password_reset_response(email, delivery)
+
+
+@app.post("/public/auth/reset-password")
+async def public_auth_reset_password(request: Request):
+    await _require_public_api_key(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    token = payload.get("token") or ""
+    new_password = payload.get("new_password") or ""
+
+    user = _auth_reset_password_with_token(token, new_password)
+
+    return {
+        "ok": True,
+        "message": "Password reset. You can now log in.",
+        "user": _auth_public_user(user),
+    }
+
+
+@app.post("/system/session/forgot-password")
+async def system_session_forgot_password(request: Request):
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    email = _auth_normalize_email(payload.get("email") or "")
+
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Valid email is required.")
+
+    _, _, delivery = _auth_create_password_reset(email)
+
+    return _auth_password_reset_response(email, delivery)
+
+
+@app.post("/system/session/reset-password")
+async def system_session_reset_password(request: Request):
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    token = payload.get("token") or ""
+    new_password = payload.get("new_password") or ""
+
+    user = _auth_reset_password_with_token(token, new_password)
+
+    return {
+        "ok": True,
+        "message": "Password reset. You can now log in.",
+        "user": _auth_public_user(user),
+    }
 
 
 @app.post("/public/auth/change-password")
