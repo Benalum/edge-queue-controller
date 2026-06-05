@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 
 from edge_modules.credit_helpers import ad_iso_to_epoch
 
@@ -21,6 +22,32 @@ def ad_request_ip(request):
     client = getattr(request, "client", None)
     return getattr(client, "host", "") or ""
 
+
+
+def ad_reward_init_tables(db_path: str, credit_pool_init_tables):
+    credit_pool_init_tables()
+
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS ad_reward_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                provider TEXT NOT NULL,
+                reward_event_id TEXT,
+                status TEXT NOT NULL DEFAULT 'granted',
+                credits_granted INTEGER NOT NULL DEFAULT 0,
+                credit_pool TEXT NOT NULL DEFAULT 'free',
+                ip_hash TEXT,
+                user_agent_hash TEXT,
+                metadata_json TEXT,
+                created_at TEXT NOT NULL,
+                UNIQUE(provider, reward_event_id),
+                FOREIGN KEY(user_id) REFERENCES app_users(id)
+            )
+            """
+        )
+        conn.commit()
 
 def ad_reward_counts(conn, user_id: int, now_iso: str):
     day_prefix = now_iso[:10]

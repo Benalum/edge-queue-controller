@@ -8222,6 +8222,7 @@ from edge_modules.credit_helpers import (
 from edge_modules.rewarded_ads import (
     ad_request_ip as _ad_request_ip,
     ad_reward_counts as _ad_reward_counts,
+    ad_reward_init_tables as _rewarded_ad_init_tables_impl,
     ad_reward_settings as _ad_reward_settings,
     ad_reward_status_for_user as _ad_reward_status_for_user,
 )
@@ -9696,29 +9697,11 @@ import hashlib as _ad_hashlib
 
 
 def _ad_reward_init_tables():
-    _credit_pool_init_tables()
+    return _rewarded_ad_init_tables_impl(
+        db_path=DB_PATH,
+        credit_pool_init_tables=_credit_pool_init_tables,
+    )
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS ad_reward_events (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                provider TEXT NOT NULL,
-                reward_event_id TEXT,
-                status TEXT NOT NULL DEFAULT 'granted',
-                credits_granted INTEGER NOT NULL DEFAULT 0,
-                credit_pool TEXT NOT NULL DEFAULT 'free',
-                ip_hash TEXT,
-                user_agent_hash TEXT,
-                metadata_json TEXT,
-                created_at TEXT NOT NULL,
-                UNIQUE(provider, reward_event_id),
-                FOREIGN KEY(user_id) REFERENCES app_users(id)
-            )
-            """
-        )
-        conn.commit()
 
 
 
