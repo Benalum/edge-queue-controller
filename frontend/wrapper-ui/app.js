@@ -2426,7 +2426,9 @@ async function cleanHeartbeat() {
   if (!pageIsActive()) return;
 
   try {
-    await api("/session/presence", { method: "POST" });
+    // Session presence used to require a bearer token.
+    // Web presence below is cookie-aware and handles anonymous/logged-in users.
+    await sendWebPresence({ force: true });
   } catch {
     // ignore presence errors
   }
