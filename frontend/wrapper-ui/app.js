@@ -22,6 +22,7 @@ let googleRewardedLoading = false;
 let googleRewardedGranted = false;
 let googleRewardedMessage = "";
 let authMode = "login";
+let pendingVerificationEmail = "";
 
 const authState = {
   token: localStorage.getItem("edgeStudyToken") || "",
@@ -2644,6 +2645,192 @@ async function loadSystemStatus() {
   }
 }
 
+
+function emailVerificationMessageElement() {
+  const authForm = $("authForm");
+  if (!authForm) return null;
+
+  let el = $("authVerificationMessage");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "authVerificationMessage";
+    el.className = "notice";
+    el.style.marginTop = "12px";
+    el.style.whiteSpace = "normal";
+
+    const submitBtn = $("authSubmitBtn");
+    if (submitBtn && submitBtn.parentNode) {
+      submitBtn.parentNode.insertBefore(el, submitBtn.nextSibling);
+    } else {
+      authForm.appendChild(el);
+    }
+  }
+
+  return el;
+}
+
+function setEmailVerificationMessage(message, isError = false) {
+  const el = emailVerificationMessageElement();
+  if (!el) return;
+
+  el.textContent = message || "";
+  el.classList.toggle("error", Boolean(isError));
+  el.hidden = !message;
+}
+
+function clearEmailVerificationMessage() {
+  const el = $("authVerificationMessage");
+  if (el) {
+    el.textContent = "";
+    el.hidden = true;
+  }
+}
+
+function rememberPendingVerificationEmail(email) {
+  pendingVerificationEmail = String(email || "").trim().toLowerCase();
+
+  if (pendingVerificationEmail) {
+    try {
+      sessionStorage.setItem("pendingVerificationEmail", pendingVerificationEmail);
+    } catch {}
+  }
+}
+
+function loadPendingVerificationEmail() {
+  if (pendingVerificationEmail) return pendingVerificationEmail;
+
+  try {
+    pendingVerificationEmail = sessionStorage.getItem("pendingVerificationEmail") || "";
+  } catch {
+    pendingVerificationEmail = "";
+  }
+
+  return pendingVerificationEmail;
+}
+
+function isVerificationRequiredResponse(data) {
+  return Boolean(data && data.verification_required);
+}
+
+async function handleVerificationRequiredResponse(data) {
+  const email =
+    data?.email ||
+    (typeof authEmail !== "undefined" ? authEmail : "") ||
+    $("authEmail")?.value ||
+    "";
+
+  rememberPendingVerificationEmail(email);
+
+  setAuthMode("login");
+
+  const authEmailInput = $("authEmail");
+  if (authEmailInput && pendingVerificationEmail) {
+    authEmailInput.value = pendingVerificationEmail;
+  }
+
+  setEmailVerificationMessage(
+    data?.message || "Check your email to finish creating your account."
+  );
+
+  const resendBtn = $("resendVerificationBtn");
+  if (resendBtn) {
+    resendBtn.hidden = false;
+  }
+}
+
+async function resendVerificationEmail() {
+  const email = loadPendingVerificationEmail() || $("authEmail")?.value || "";
+
+  if (!email || !email.includes("@")) {
+    setEmailVerificationMessage("Enter your email address first.", true);
+    return;
+  }
+
+  const btn = $("resendVerificationBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+  }
+
+  try {
+    const data = await api("/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+
+    rememberPendingVerificationEmail(data?.email || email);
+    setEmailVerificationMessage(
+      data?.message || "Verification email sent. Check your inbox."
+    );
+  } catch (err) {
+    setEmailVerificationMessage(err.message || "Could not resend verification email.", true);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Resend verification email";
+    }
+  }
+}
+
+function showPageNotice(message, isError = false) {
+  let el = $("pageNotice");
+
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "pageNotice";
+    el.className = "notice";
+    el.style.margin = "16px auto";
+    el.style.maxWidth = "860px";
+
+    const main = document.querySelector("main") || document.body;
+    main.insertBefore(el, main.firstChild);
+  }
+
+  el.textContent = message || "";
+  el.classList.toggle("error", Boolean(isError));
+  el.hidden = !message;
+}
+
+async function handleVerifyEmailRoute() {
+  const url = new URL(window.location.href);
+
+  if (url.pathname !== "/verify-email") {
+    return false;
+  }
+
+  const token = url.searchParams.get("token") || "";
+
+  if (!token) {
+    showPageNotice("Verification link is missing a token.", true);
+    return true;
+  }
+
+  showPageNotice("Verifying your email address...");
+
+  try {
+    const data = await api(`/auth/verify-email?token=${encodeURIComponent(token)}`);
+
+    showPageNotice("Email verified. You can now log in.");
+    window.history.replaceState({}, "", "/login");
+
+    openAuthModal("login");
+
+    const userEmail = data?.user?.email || loadPendingVerificationEmail();
+    if ($("authEmail") && userEmail) {
+      $("authEmail").value = userEmail;
+    }
+
+    setEmailVerificationMessage("Email verified. Log in to continue.");
+  } catch (err) {
+    showPageNotice(err.message || "Email verification failed.", true);
+    openAuthModal("login");
+    setEmailVerificationMessage(err.message || "Email verification failed.", true);
+  }
+
+  return true;
+}
+
+
 function setAuthMode(mode) {
   authMode = mode === "register" ? "register" : "login";
 
@@ -2653,7 +2840,10 @@ function setAuthMode(mode) {
       ? "Create an account to use platform services."
       : "Sign in to access your dashboard and future live services.";
 
-  $("authSubmitBtn").textContent = authMode === "register" ? "Register" : "Login";
+  $("authSubmitBtn").textContent = authMode === "register" ? "Send verification email" : "Login";
+  if (authMode === "register") {
+    clearEmailVerificationMessage();
+  }
   $("loginTabBtn").classList.toggle("active", authMode === "login");
   $("registerTabBtn").classList.toggle("active", authMode === "register");
 }
@@ -2676,13 +2866,19 @@ async function handleAuthSubmit(event) {
   const password = $("authPassword").value;
 
   $("authSubmitBtn").disabled = true;
-  $("authSubmitBtn").textContent = authMode === "register" ? "Registering..." : "Logging in...";
+  $("authSubmitBtn").textContent = authMode === "register" ? "Sending..." : "Logging in...";
 
   try {
     const data = await api(authMode === "register" ? "/auth/register" : "/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
+
+    if (authMode === "register" && isVerificationRequiredResponse(data)) {
+      await handleVerificationRequiredResponse(data);
+      return;
+    }
+
 
     const token =
       data.token ||
@@ -2788,6 +2984,7 @@ $("logoutBtn").addEventListener("click", logout);
 $("authCloseBtn").addEventListener("click", closeAuthModal);
 $("loginTabBtn").addEventListener("click", () => setAuthMode("login"));
 $("registerTabBtn").addEventListener("click", () => setAuthMode("register"));
+$("resendVerificationBtn")?.addEventListener("click", resendVerificationEmail);
 $("authForm").addEventListener("submit", handleAuthSubmit);
 
 renderPage();
@@ -4030,7 +4227,7 @@ async function fastHandleAuthSubmit(event) {
 
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.textContent = mode === "register" ? "Registering..." : "Logging in...";
+    submitBtn.textContent = mode === "register" ? "Sending..." : "Logging in...";
   }
 
   fastSetAuthMessage("");
@@ -4079,7 +4276,7 @@ async function fastHandleAuthSubmit(event) {
 
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = mode === "register" ? "Register" : "Login";
+      submitBtn.textContent = mode === "register" ? "Send verification email" : "Login";
     }
   }
 }
@@ -4394,3 +4591,12 @@ document.addEventListener("click", (event) => {
   event.preventDefault();
   location.href = target.toString();
 }, true);
+
+(async function bootEmailVerificationRoute() {
+  try {
+    await handleVerifyEmailRoute();
+  } catch (err) {
+    console.warn("Email verification route handling failed", err);
+  }
+})();
+
