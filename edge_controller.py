@@ -12323,6 +12323,68 @@ def _web_power_policy_log_event(action: str, status: str, reason: str = "", resu
         conn.commit()
 
 
+
+def _web_power_policy_pveso_state():
+    """
+    Best-effort pveso state check for web presence power policy.
+
+    Returns:
+      online  -> do not send WoL
+      booting -> do not send WoL
+      offline -> WoL may be useful
+      unknown -> WoL may be useful, but include detail
+    """
+    try:
+        booting_marker = _system_read_booting_marker()
+    except Exception as e:
+        booting_marker = {
+            "active": False,
+            "error": str(e),
+        }
+
+    try:
+        host = _SYSTEM_PVESO_HOST
+    except Exception:
+        host = "pveso"
+
+    try:
+        tcp_ssh = _system_tcp_check(host, 22, timeout=2)
+    except Exception as e:
+        tcp_ssh = {
+            "ok": False,
+            "error": str(e),
+        }
+
+    if tcp_ssh.get("ok"):
+        try:
+            ssh = _system_ssh_check()
+        except Exception as e:
+            ssh = {
+                "ok": False,
+                "stderr": str(e),
+            }
+
+        if ssh.get("ok"):
+            return {
+                "state": "online",
+                "detail": "pveso SSH is reachable.",
+            }
+
+    if booting_marker.get("active"):
+        return {
+            "state": "booting",
+            "detail": f"Boot marker active. About {booting_marker.get('remaining_seconds')} seconds remaining.",
+            "booting_marker": booting_marker,
+        }
+
+    return {
+        "state": "offline",
+        "detail": "pveso is not reachable and no boot marker is active.",
+        "tcp_ssh": tcp_ssh,
+        "booting_marker": booting_marker,
+    }
+
+
 @app.post("/system/presence/apply-power-policy")
 async def system_apply_web_presence_power_policy(request: Request):
     decision = _web_presence_power_decision()
@@ -12375,38 +12437,54 @@ async def system_apply_web_presence_power_policy(request: Request):
             )
 
         else:
-            # Reuse existing pveso boot path because it sends WoL and marks booting.
-            wake_result = system_boot_pveso({
-                "source": "web_presence_power_policy",
-                "decision": {
-                    "actions": actions,
-                    "reasons": decision.get("reasons") or [],
-                    "desired_state": decision.get("desired_state") or {},
-                },
-            })
+            pveso_state = _web_power_policy_pveso_state()
+            results["pveso_state_before_wake"] = pveso_state
 
-            results["wake_host_if_needed"] = wake_result
-
-            if wake_result.get("boot_sent"):
-                executed.append("wake_host_if_needed")
-                _web_power_policy_log_event(
-                    "wake_host_if_needed",
-                    "executed",
-                    "Wake sent by web presence power policy.",
-                    wake_result,
-                )
-            else:
-                blocked.append({
+            if pveso_state.get("state") in ("online", "booting"):
+                skipped.append({
                     "action": "wake_host_if_needed",
-                    "reason": wake_result.get("error") or wake_result.get("detail") or "Wake was not sent.",
-                    "result": wake_result,
+                    "reason": f"pveso is already {pveso_state.get('state')}.",
+                    "pveso_state": pveso_state,
                 })
                 _web_power_policy_log_event(
                     "wake_host_if_needed",
-                    "blocked",
-                    "Wake was not sent.",
-                    wake_result,
+                    "skipped",
+                    f"pveso is already {pveso_state.get('state')}.",
+                    pveso_state,
                 )
+            else:
+                # Reuse existing pveso boot path because it sends WoL and marks booting.
+                wake_result = system_boot_pveso({
+                    "source": "web_presence_power_policy",
+                    "decision": {
+                        "actions": actions,
+                        "reasons": decision.get("reasons") or [],
+                        "desired_state": decision.get("desired_state") or {},
+                    },
+                })
+
+                results["wake_host_if_needed"] = wake_result
+
+                if wake_result.get("boot_sent"):
+                    executed.append("wake_host_if_needed")
+                    _web_power_policy_log_event(
+                        "wake_host_if_needed",
+                        "executed",
+                        "Wake sent by web presence power policy.",
+                        wake_result,
+                    )
+                else:
+                    blocked.append({
+                        "action": "wake_host_if_needed",
+                        "reason": wake_result.get("error") or wake_result.get("detail") or "Wake was not sent.",
+                        "result": wake_result,
+                    })
+                    _web_power_policy_log_event(
+                        "wake_host_if_needed",
+                        "blocked",
+                        "Wake was not sent.",
+                        wake_result,
+                    )
 
     dry_run_only_actions = [
         "start_core_containers_if_needed",
