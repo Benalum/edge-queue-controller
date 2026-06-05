@@ -4,6 +4,7 @@ const ALLOWED_ROUTES = [
   { method: "POST", pattern: /^\/api\/auth\/resend-verification$/ },
   { method: "POST", pattern: /^\/api\/auth\/login$/ },
   { method: "POST", pattern: /^\/api\/auth\/logout$/ },
+  { method: "POST", pattern: /^\/api\/auth\/change-password$/ },
   { method: "GET",  pattern: /^\/api\/me$/ },
 
   { method: "GET",  pattern: /^\/api\/status$/ },

@@ -5903,6 +5903,99 @@ def _auth_pending_signup_exists(email: str) -> bool:
     return bool(row)
 
 
+
+
+def _auth_change_password_for_user(user_id: int, current_password: str, new_password: str, keep_token: str | None = None):
+    _auth_init_tables()
+
+    current_password = str(current_password or "")
+    new_password = str(new_password or "")
+
+    if not current_password:
+        raise HTTPException(status_code=400, detail="Current password is required.")
+
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters.")
+
+    if current_password == new_password:
+        raise HTTPException(status_code=400, detail="New password must be different from the current password.")
+
+    keep_token_hash = _auth_hash_token(keep_token) if keep_token else None
+    new_password_hash = _auth_hash_password(new_password)
+    now = _auth_now_iso()
+
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+              AND status = 'active'
+            LIMIT 1
+            """,
+            (int(user_id),),
+        ).fetchone()
+
+        if not row:
+            raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+        if not _auth_verify_password(current_password, row["password_hash"]):
+            raise HTTPException(status_code=401, detail="Current password is incorrect.")
+
+        conn.execute(
+            """
+            UPDATE app_users
+            SET password_hash = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                new_password_hash,
+                now,
+                int(user_id),
+            ),
+        )
+
+        if keep_token_hash:
+            conn.execute(
+                """
+                UPDATE user_sessions
+                SET revoked_at = ?
+                WHERE user_id = ?
+                  AND revoked_at IS NULL
+                  AND token_hash != ?
+                """,
+                (
+                    now,
+                    int(user_id),
+                    keep_token_hash,
+                ),
+            )
+        else:
+            conn.execute(
+                """
+                UPDATE user_sessions
+                SET revoked_at = ?
+                WHERE user_id = ?
+                  AND revoked_at IS NULL
+                """,
+                (
+                    now,
+                    int(user_id),
+                ),
+            )
+
+        updated = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (int(user_id),),
+        ).fetchone()
+
+    return updated
+
 def _auth_create_session(user_id: int, request: Request):
     _auth_init_tables()
 
@@ -6187,6 +6280,71 @@ async def public_me(request: Request):
     return {
         "ok": True,
         "user": _auth_public_user(row),
+    }
+
+
+
+
+
+@app.post("/public/auth/change-password")
+async def public_auth_change_password(request: Request):
+    await _require_public_api_key(request)
+
+    user = _auth_current_user_from_request(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    current_password = payload.get("current_password") or ""
+    new_password = payload.get("new_password") or ""
+    keep_token = _auth_get_bearer_token(request)
+
+    updated = _auth_change_password_for_user(
+        int(user["id"]),
+        current_password,
+        new_password,
+        keep_token=keep_token,
+    )
+
+    return {
+        "ok": True,
+        "message": "Password changed.",
+        "user": _auth_public_user(updated),
+    }
+
+
+@app.post("/system/session/change-password")
+async def system_session_change_password(request: Request):
+    user = _auth_current_user_from_request(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    current_password = payload.get("current_password") or ""
+    new_password = payload.get("new_password") or ""
+    keep_token = _auth_get_bearer_token(request)
+
+    updated = _auth_change_password_for_user(
+        int(user["id"]),
+        current_password,
+        new_password,
+        keep_token=keep_token,
+    )
+
+    return {
+        "ok": True,
+        "message": "Password changed.",
+        "user": _auth_public_user(updated),
     }
 
 
