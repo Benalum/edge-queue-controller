@@ -123,6 +123,13 @@ def map_api(path):
 
 
 class SPAProxyHandler(SimpleHTTPRequestHandler):
+    # WRAPPER_NO_STORE_STATIC_V1
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        return super().end_headers()
+
     # FORCE_SPA_PUBLIC_ROUTES_V2
     def _maybe_rewrite_spa_route(self):
         from urllib.parse import urlparse

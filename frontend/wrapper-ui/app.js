@@ -3906,6 +3906,14 @@ async function wrapperStartupAuthRefresh() {
   }
 }
 
-window.addEventListener("load", () => {
-  wrapperStartupAuthRefresh();
-});
+function runWrapperStartupAuthRefreshNow() {
+  setTimeout(() => {
+    wrapperStartupAuthRefresh();
+  }, 0);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", runWrapperStartupAuthRefreshNow, { once: true });
+} else {
+  runWrapperStartupAuthRefreshNow();
+}
