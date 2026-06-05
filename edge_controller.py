@@ -8273,6 +8273,7 @@ from edge_modules.credit_helpers import (
 )
 from edge_modules.rewarded_ads import (
     ad_request_ip as _ad_request_ip,
+    ad_reward_counts as _ad_reward_counts,
     ad_reward_settings as _ad_reward_settings,
 )
 
@@ -9773,47 +9774,6 @@ def _ad_reward_init_tables():
 
 
 
-
-def _ad_reward_counts(conn, user_id: int):
-    now = _auth_now_iso()
-    day_prefix = now[:10]
-    month_prefix = now[:7]
-
-    daily = conn.execute(
-        """
-        SELECT COUNT(*) AS count
-        FROM ad_reward_events
-        WHERE user_id = ?
-          AND status = 'granted'
-          AND created_at LIKE ?
-        """,
-        (user_id, f"{day_prefix}%"),
-    ).fetchone()["count"]
-
-    monthly = conn.execute(
-        """
-        SELECT COUNT(*) AS count
-        FROM ad_reward_events
-        WHERE user_id = ?
-          AND status = 'granted'
-          AND created_at LIKE ?
-        """,
-        (user_id, f"{month_prefix}%"),
-    ).fetchone()["count"]
-
-    last = conn.execute(
-        """
-        SELECT created_at
-        FROM ad_reward_events
-        WHERE user_id = ?
-          AND status = 'granted'
-        ORDER BY id DESC
-        LIMIT 1
-        """,
-        (user_id,),
-    ).fetchone()
-
-    return int(daily or 0), int(monthly or 0), last["created_at"] if last else None
 
 
 
