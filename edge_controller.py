@@ -12348,14 +12348,24 @@ def _web_power_policy_pveso_state():
         host = "pveso"
 
     try:
-        tcp_ssh = _system_tcp_check(host, 22, timeout=2)
+        raw_tcp_ssh = _system_tcp_check(host, 22, timeout=2)
     except Exception as e:
-        tcp_ssh = {
+        raw_tcp_ssh = {
             "ok": False,
             "error": str(e),
         }
 
-    if tcp_ssh.get("ok"):
+    if isinstance(raw_tcp_ssh, dict):
+        tcp_ssh = raw_tcp_ssh
+        tcp_ssh_ok = bool(raw_tcp_ssh.get("ok"))
+    else:
+        tcp_ssh_ok = bool(raw_tcp_ssh)
+        tcp_ssh = {
+            "ok": tcp_ssh_ok,
+            "raw": raw_tcp_ssh,
+        }
+
+    if tcp_ssh_ok:
         try:
             ssh = _system_ssh_check()
         except Exception as e:
@@ -12364,10 +12374,12 @@ def _web_power_policy_pveso_state():
                 "stderr": str(e),
             }
 
-        if ssh.get("ok"):
+        if isinstance(ssh, dict) and ssh.get("ok"):
             return {
                 "state": "online",
                 "detail": "pveso SSH is reachable.",
+                "tcp_ssh": tcp_ssh,
+                "ssh": ssh,
             }
 
     if booting_marker.get("active"):
