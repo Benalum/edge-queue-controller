@@ -7654,6 +7654,15 @@ def _system_laptop_specs():
     }
 
 
+@app.get("/system/local-health")
+def system_local_health():
+    return {
+        "ok": True,
+        "service": "edge-queue-controller",
+        "detail": "Local controller process is responding.",
+    }
+
+
 @app.get("/system/status")
 def system_status():
     """
@@ -7743,6 +7752,7 @@ def system_status():
     # through /api/backend/... while the direct FastAPI path may be different.
     # Try several safe candidates and mark it online if any respond.
     study_candidates = [
+        "http://127.0.0.1:7070/system/local-health",
         "http://127.0.0.1:7070/health",
         "http://127.0.0.1:7070/public/study/progress",
         "http://127.0.0.1:7070/public/study/decks",
