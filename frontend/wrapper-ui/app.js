@@ -2646,9 +2646,31 @@ async function loadSystemStatus() {
 }
 
 
+
+function ensureResendVerificationButton() {
+  const authForm = $("authForm");
+  if (!authForm) return null;
+
+  let btn = $("resendVerificationBtn");
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.id = "resendVerificationBtn";
+    btn.className = "ghost-btn";
+    btn.type = "button";
+    btn.hidden = true;
+    btn.textContent = "Resend verification email";
+    btn.addEventListener("click", resendVerificationEmail);
+    authForm.appendChild(btn);
+  }
+
+  return btn;
+}
+
 function emailVerificationMessageElement() {
   const authForm = $("authForm");
   if (!authForm) return null;
+
+  ensureResendVerificationButton();
 
   let el = $("authVerificationMessage");
   if (!el) {
@@ -2849,6 +2871,7 @@ function setAuthMode(mode) {
 }
 
 function openAuthModal(mode = "login") {
+  ensureResendVerificationButton();
   setAuthMode(mode);
   $("authMessage").classList.add("hidden");
   $("authModal").classList.remove("hidden");
