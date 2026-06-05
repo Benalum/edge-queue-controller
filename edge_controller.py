@@ -12387,6 +12387,43 @@ def _web_power_policy_pveso_state():
 
 @app.post("/system/presence/apply-power-policy")
 async def system_apply_web_presence_power_policy(request: Request):
+    try:
+        return await _system_apply_web_presence_power_policy_impl(request)
+    except Exception as e:
+        error_payload = {
+            "ok": False,
+            "phase": "wake_only",
+            "execute_flags": {
+                "wake": _web_power_parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_WAKE"), False),
+                "containers": _web_power_parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_CONTAINERS"), False),
+                "shutdown": _web_power_parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_SHUTDOWN"), False),
+            },
+            "executed": [],
+            "skipped": [],
+            "blocked": [
+                {
+                    "action": "apply_power_policy",
+                    "reason": "Unhandled exception while applying web power policy.",
+                    "error": str(e),
+                }
+            ],
+            "results": {},
+        }
+
+        try:
+            _web_power_policy_log_event(
+                "apply_power_policy",
+                "blocked",
+                "Unhandled exception while applying web power policy.",
+                error_payload,
+            )
+        except Exception:
+            pass
+
+        return error_payload
+
+
+async def _system_apply_web_presence_power_policy_impl(request: Request):
     decision = _web_presence_power_decision()
 
     execute_wake = _web_power_parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_WAKE"), False)
