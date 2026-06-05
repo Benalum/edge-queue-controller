@@ -12504,6 +12504,7 @@ async def _system_apply_web_presence_power_policy_impl(request: Request):
             else:
                 # Reuse existing pveso boot path because it sends WoL and marks booting.
                 wake_result = system_boot_pveso({
+                    "confirm": "BOOT_PVESO",
                     "source": "web_presence_power_policy",
                     "decision": {
                         "actions": actions,
