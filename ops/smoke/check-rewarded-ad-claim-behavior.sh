@@ -251,6 +251,125 @@ async def scenario_daily_limit_blocks():
         assert detail == "Daily rewarded-ad limit reached."
 
 
+
+async def scenario_google_provider_guards():
+    with tempfile.TemporaryDirectory() as tmp:
+        edge_controller.DB_PATH = Path(tmp) / "reward-claim-google.sqlite3"
+        now = ["2026-06-05T12:00:00+00:00"]
+        edge_controller._auth_now_iso = lambda: now[0]
+
+        edge_controller.init_db()
+        edge_controller._ad_reward_init_tables()
+
+        with sqlite3.connect(edge_controller.DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            insert_test_user(conn)
+
+        edge_controller._credit_pool_user_row = lambda request: {"id": 1}
+
+        os.environ["AD_REWARD_MOCK_ENABLED"] = "false"
+        os.environ["AD_REWARD_FREE_CREDITS"] = "5"
+        os.environ["AD_REWARD_DAILY_LIMIT"] = "5"
+        os.environ["AD_REWARD_MONTHLY_LIMIT"] = "100"
+        os.environ["AD_REWARD_COOLDOWN_SECONDS"] = "0"
+
+        # Unknown provider must never grant.
+        detail = await expect_http(
+            400,
+            {
+                "provider": "unknown_provider",
+                "reward_event_id": "unknown-1",
+            },
+        )
+        assert "Unsupported rewarded-ad provider" in detail
+
+        # google_gpt blocked when provider is not configured.
+        os.environ["AD_REWARD_PROVIDER"] = "none"
+        os.environ["AD_REWARD_GOOGLE_GPT_ENABLED"] = "false"
+        os.environ["AD_REWARD_GOOGLE_GPT_AD_UNIT_PATH"] = ""
+        os.environ["AD_REWARD_CLIENT_CLAIM_ENABLED"] = "false"
+        os.environ["AD_REWARD_PROVIDER_VERIFICATION_ENABLED"] = "false"
+
+        detail = await expect_http(
+            403,
+            {
+                "provider": "google_gpt",
+                "reward_event_id": "google-not-configured-1",
+            },
+        )
+        assert "No rewarded-ad provider is configured" in detail
+
+        # google_gpt blocked when configured but client claims disabled.
+        os.environ["AD_REWARD_PROVIDER"] = "google_gpt"
+        os.environ["AD_REWARD_GOOGLE_GPT_ENABLED"] = "true"
+        os.environ["AD_REWARD_GOOGLE_GPT_AD_UNIT_PATH"] = "/1234567/test_rewarded"
+        os.environ["AD_REWARD_CLIENT_CLAIM_ENABLED"] = "false"
+        os.environ["AD_REWARD_PROVIDER_VERIFICATION_ENABLED"] = "false"
+
+        detail = await expect_http(
+            403,
+            {
+                "provider": "google_gpt",
+                "reward_event_id": "google-client-disabled-1",
+            },
+        )
+        assert "client claims are disabled" in detail
+
+        # google_gpt blocked if provider verification is requested but not implemented.
+        os.environ["AD_REWARD_CLIENT_CLAIM_ENABLED"] = "true"
+        os.environ["AD_REWARD_PROVIDER_VERIFICATION_ENABLED"] = "true"
+
+        detail = await expect_http(
+            501,
+            {
+                "provider": "google_gpt",
+                "reward_event_id": "google-verifier-missing-1",
+            },
+        )
+        assert "provider verification is not implemented" in detail
+
+        # google_gpt can grant free/local credits only when explicitly client-enabled.
+        os.environ["AD_REWARD_PROVIDER_VERIFICATION_ENABLED"] = "false"
+
+        result = await run_claim(
+            {
+                "provider": "google_gpt",
+                "reward_event_id": "google-grant-1",
+                "metadata": {"reward_source": "smoke"},
+            }
+        )
+
+        assert result["ad_reward"]["ok"] is True
+        assert result["ad_reward"]["duplicate"] is False
+        assert result["ad_reward"]["provider"] == "google_gpt"
+        assert result["ad_reward"]["credits_granted"] == 5
+        assert result["ad_reward"]["credit_pool"] == "free"
+
+        with sqlite3.connect(edge_controller.DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            total, free, paid = user_balances(conn)
+            assert free == 5, free
+            assert paid == 9, paid
+            assert total == 14, total
+
+        duplicate = await run_claim(
+            {
+                "provider": "google_gpt",
+                "reward_event_id": "google-grant-1",
+            }
+        )
+
+        assert duplicate["ad_reward"]["duplicate"] is True
+        assert duplicate["ad_reward"]["credits_granted"] == 0
+
+        with sqlite3.connect(edge_controller.DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            total, free, paid = user_balances(conn)
+            assert free == 5, free
+            assert paid == 9, paid
+            assert total == 14, total
+
+
 async def main():
     original_db_path = edge_controller.DB_PATH
     original_now_iso = edge_controller._auth_now_iso
@@ -261,12 +380,18 @@ async def main():
         "AD_REWARD_DAILY_LIMIT",
         "AD_REWARD_MONTHLY_LIMIT",
         "AD_REWARD_COOLDOWN_SECONDS",
+        "AD_REWARD_PROVIDER",
+        "AD_REWARD_GOOGLE_GPT_ENABLED",
+        "AD_REWARD_GOOGLE_GPT_AD_UNIT_PATH",
+        "AD_REWARD_CLIENT_CLAIM_ENABLED",
+        "AD_REWARD_PROVIDER_VERIFICATION_ENABLED",
     ]}
 
     try:
         await scenario_mock_disabled_blocks()
         await scenario_grant_duplicate_and_cooldown()
         await scenario_daily_limit_blocks()
+        await scenario_google_provider_guards()
     finally:
         edge_controller.DB_PATH = original_db_path
         edge_controller._auth_now_iso = original_now_iso

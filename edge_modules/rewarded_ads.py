@@ -186,6 +186,46 @@ def ad_reward_status_for_user(user_id: int, *, db_path: str, init_tables, now_is
     }
 
 
+
+
+def ad_reward_validate_claim_provider(provider: str):
+    provider = str(provider or "").strip().lower()
+
+    if provider == "mock_rewarded_ad":
+        mock_enabled = str(os.getenv("AD_REWARD_MOCK_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on")
+        if not mock_enabled:
+            raise HTTPException(
+                status_code=403,
+                detail="Mock rewarded ads are disabled. Real provider verification is required.",
+            )
+        return
+
+    if provider == "google_gpt":
+        provider_config = ad_reward_provider_config()
+
+        if provider_config["provider"] != "google_gpt" or not provider_config["ready"]:
+            raise HTTPException(
+                status_code=403,
+                detail=provider_config["detail"] or "Google rewarded ads are not configured.",
+            )
+
+        if not provider_config["client_claim_enabled"]:
+            raise HTTPException(
+                status_code=403,
+                detail="Google rewarded-ad client claims are disabled.",
+            )
+
+        if provider_config["provider_verification_enabled"]:
+            raise HTTPException(
+                status_code=501,
+                detail="Google rewarded-ad provider verification is not implemented for web claims yet.",
+            )
+
+        return
+
+    raise HTTPException(status_code=400, detail="Unsupported rewarded-ad provider.")
+
+
 def parse_reward_claim_payload(payload):
     if not isinstance(payload, dict):
         payload = {}
@@ -212,12 +252,7 @@ def ad_reward_claim_for_user(
 ):
     provider, reward_event_id, metadata = parse_reward_claim_payload(payload)
 
-    mock_enabled = str(os.getenv("AD_REWARD_MOCK_ENABLED", "false")).strip().lower() in ("1", "true", "yes", "on")
-    if provider == "mock_rewarded_ad" and not mock_enabled:
-        raise HTTPException(
-            status_code=403,
-            detail="Mock rewarded ads are disabled. Real provider verification is required.",
-        )
+    ad_reward_validate_claim_provider(provider)
 
     settings = ad_reward_settings()
     credits = int(settings["reward_credits"])
