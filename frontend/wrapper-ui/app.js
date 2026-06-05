@@ -1162,6 +1162,9 @@ async function stopMockGpuSession(sessionToken) {
   }
 }
 
+// Shared Credits/Admin tool.
+// Used by /credits for admin credit grants.
+// Do NOT remove with legacy support/admin page code.
 function renderAdminCreditGrant() {
   const user = authState.user || {};
 
