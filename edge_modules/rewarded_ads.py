@@ -20,36 +20,43 @@ def ad_request_ip(request):
     return getattr(client, "host", "") or ""
 
 
-def ad_reward_counts(conn, user_id: int):
+def ad_reward_counts(conn, user_id: int, now_iso: str):
+    day_prefix = now_iso[:10]
+    month_prefix = now_iso[:7]
+
     daily = conn.execute(
         """
-        SELECT COUNT(*) AS c
+        SELECT COUNT(*) AS count
         FROM ad_reward_events
         WHERE user_id = ?
-          AND created_at >= datetime('now', 'start of day')
+          AND status = 'granted'
+          AND created_at LIKE ?
         """,
-        (user_id,),
-    ).fetchone()["c"]
+        (user_id, f"{day_prefix}%"),
+    ).fetchone()["count"]
 
     monthly = conn.execute(
         """
-        SELECT COUNT(*) AS c
+        SELECT COUNT(*) AS count
         FROM ad_reward_events
         WHERE user_id = ?
-          AND created_at >= datetime('now', 'start of month')
+          AND status = 'granted'
+          AND created_at LIKE ?
         """,
-        (user_id,),
-    ).fetchone()["c"]
+        (user_id, f"{month_prefix}%"),
+    ).fetchone()["count"]
 
     last = conn.execute(
         """
         SELECT created_at
         FROM ad_reward_events
         WHERE user_id = ?
-        ORDER BY created_at DESC
+          AND status = 'granted'
+        ORDER BY id DESC
         LIMIT 1
         """,
         (user_id,),
     ).fetchone()
 
     return int(daily or 0), int(monthly or 0), last["created_at"] if last else None
+

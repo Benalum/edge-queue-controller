@@ -9785,7 +9785,7 @@ def _ad_reward_status_for_user(user_id: int):
 
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
-        daily, monthly, last_claim_at = _ad_reward_counts(conn, user_id)
+        daily, monthly, last_claim_at = _ad_reward_counts(conn, user_id, _auth_now_iso())
 
     cooldown_remaining = 0
     if last_claim_at:
@@ -9902,7 +9902,7 @@ async def system_ads_reward_claim(request: Request):
             summary["reward_status"] = _ad_reward_status_for_user(user_id)
             return summary
 
-        daily, monthly, last_claim_at = _ad_reward_counts(conn, user_id)
+        daily, monthly, last_claim_at = _ad_reward_counts(conn, user_id, _auth_now_iso())
         now_epoch = _ad_iso_to_epoch(now)
 
         cooldown_remaining = 0
