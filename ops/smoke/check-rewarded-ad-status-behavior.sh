@@ -96,8 +96,16 @@ with tempfile.TemporaryDirectory() as tmp:
 
         edge_controller._ad_reward_init_tables()
 
+        def reward_status(user_id: int):
+            return edge_controller._ad_reward_status_for_user(
+                user_id,
+                db_path=edge_controller.DB_PATH,
+                init_tables=edge_controller._ad_reward_init_tables,
+                now_iso=edge_controller._auth_now_iso,
+            )
+
         # No prior claims: should be available.
-        status = edge_controller._ad_reward_status_for_user(1)
+        status = reward_status(1)
 
         assert status["ok"] is True
         assert status["can_claim"] is True
@@ -125,7 +133,7 @@ with tempfile.TemporaryDirectory() as tmp:
             )
             conn.commit()
 
-        status = edge_controller._ad_reward_status_for_user(1)
+        status = reward_status(1)
         assert status["can_claim"] is True
         assert status["daily"]["used"] == 0
         assert status["monthly"]["used"] == 0
@@ -142,7 +150,7 @@ with tempfile.TemporaryDirectory() as tmp:
             )
             conn.commit()
 
-        status = edge_controller._ad_reward_status_for_user(1)
+        status = reward_status(1)
         assert status["can_claim"] is False
         assert status["daily"]["used"] == 1
         assert status["monthly"]["used"] == 1
@@ -154,7 +162,7 @@ with tempfile.TemporaryDirectory() as tmp:
         os.environ["AD_REWARD_COOLDOWN_SECONDS"] = "0"
         os.environ["AD_REWARD_DAILY_LIMIT"] = "1"
 
-        status = edge_controller._ad_reward_status_for_user(1)
+        status = reward_status(1)
         assert status["can_claim"] is False
         assert status["daily"] == {"used": 1, "limit": 1}
         assert status["blocked_reason"] == "Daily rewarded-ad limit reached."
