@@ -206,3 +206,27 @@ Controller owns billing, credits, public wrapper auth/session, power, system sta
 CT101 owns study, companion, calendar, jobs, workers, and private app APIs.
 
 Do not duplicate ownership.
+
+## CT101 idle shutdown policy
+
+CT101 should only be stopped after both conditions are true:
+
+- no active authenticated web presence for 30 minutes
+- no pending/running queue work for 30 minutes
+
+Current systemd override:
+
+- EDGE_IDLE_CONTAINER_SECONDS=1800
+- WEB_POWER_CONTAINER_IDLE_SECONDS=1800
+- EDGE_IDLE_HOST_SECONDS=1800
+- WEB_POWER_HOST_IDLE_SECONDS=1800
+
+The policy lives in:
+
+    /etc/systemd/system/edge-queue-controller.service.d/180-ct101-idle-policy.conf
+
+After changing it, run:
+
+    sudo systemctl daemon-reload
+    sudo systemctl restart edge-queue-controller
+    ops/smoke/check-all.sh
