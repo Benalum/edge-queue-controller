@@ -36,6 +36,10 @@ echo "=== rewarded ad claim behavior ==="
 ops/smoke/check-rewarded-ad-claim-behavior.sh
 
 echo
+echo "=== credit pool lifecycle behavior ==="
+ops/smoke/check-credit-pool-lifecycle.sh
+
+echo
 echo "=== duplicate route registrations ==="
 ops/smoke/check-duplicate-routes.sh
 
