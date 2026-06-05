@@ -2364,6 +2364,14 @@ setInterval(loadSystemStatus, 60000);
 
 // ============================================================
 
+
+// ============================================================
+// ACTIVE_SUPPORT_AND_ADMIN_UI
+// Current active /support and /admin page implementation.
+// This is the active layer. Do not replace with old legacy
+// renderSupportPage()/renderAdminPage() functions.
+// ============================================================
+
 // CLEAN_ADMIN_SUPPORT_PAGES_V4
 // Keeps old header. Adds working /admin and /support pages.
 // Moves admin-only infrastructure from /system to /admin.
@@ -3380,6 +3388,15 @@ setTimeout(() => {
 
 
 // ============================================================
+
+// ============================================================
+// FAST_AUTH_AND_SESSION_UI
+// Current login/logout UI path.
+// Login renders immediately after auth + /me.
+// Logout clears local state immediately and revokes server session
+// in the background via /auth/logout -> /system/session/logout-safe.
+// ============================================================
+
 // FAST_AUTH_PATCH_V1
 // Makes login/logout feel instant.
 // Login: auth -> /me -> render now -> refresh page data in background.
