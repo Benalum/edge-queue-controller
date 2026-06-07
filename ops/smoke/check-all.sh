@@ -64,6 +64,10 @@ echo "=== credit pool lifecycle behavior ==="
 ops/smoke/check-credit-pool-lifecycle.sh
 
 echo
+echo "=== companion helper definitions ==="
+ops/smoke/check-companion-helper-duplicates.sh
+
+echo
 echo "=== duplicate route registrations ==="
 ops/smoke/check-duplicate-routes.sh
 
@@ -82,6 +86,14 @@ ops/smoke/check-rewarded-ad-deploy-config.sh
 echo
 echo "=== credit ownership ==="
 ops/smoke/check-credit-ownership.sh
+
+echo
+echo "=== wrapper auth/proxy contract ==="
+ops/smoke/check-wrapper-auth-proxy-contract.sh
+
+echo
+echo "=== route ownership contract ==="
+ops/smoke/check-route-ownership-contract.sh
 
 echo
 echo "=== public route map consistency ==="

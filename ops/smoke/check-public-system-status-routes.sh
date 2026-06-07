@@ -37,6 +37,8 @@ echo "=== Stage 2A: Public system status route markers ==="
 check_marker "public_gateway.py" "/system/status" "public_gateway.py contains /system/status"
 check_marker "public_gateway.py" "/system/public-status" "public_gateway.py contains /system/public-status"
 check_marker "public_gateway.py" "/system/admin-status" "public_gateway.py contains /system/admin-status"
+check_marker "public_gateway.py" "SYSTEM_STATUS_HEAD_SUPPORT_V1" "public_gateway.py documents HEAD support for system status routes"
+check_marker "public_gateway.py" 'method in {"GET", "HEAD"}' "public_gateway.py accepts HEAD for system status routes"
 
 check_marker "cloudflare/edge-public-proxy/src/index.js" "/api/system" "edge-public-proxy/src/index.js contains /api/system"
 check_marker "cloudflare/edge-public-proxy/src/index.js" "/system/" "edge-public-proxy/src/index.js contains /system/"

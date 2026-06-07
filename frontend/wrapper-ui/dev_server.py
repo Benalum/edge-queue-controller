@@ -28,6 +28,14 @@ def map_api(path):
         "/api/auth/login": "/system/session/login",
         "/api/auth/register": "/system/session/register",
         "/api/auth/logout": "/system/session/logout-safe",
+        # AUTH_EXTRA_CONTROLLER_ROUTES_V1
+        # Keep browser auth flows on the controller instead of falling through
+        # to the public gateway's generic /api -> / path rewrite.
+        "/api/auth/forgot-password": "/system/session/forgot-password",
+        "/api/auth/reset-password": "/system/session/reset-password",
+        "/api/auth/change-password": "/system/session/change-password",
+        "/api/auth/verify-email": "/api/auth/verify-email",
+        "/api/auth/resend-verification": "/api/auth/resend-verification",
         "/api/account/credits": "/system/account/credits",
         "/api/account/credit-pools": "/system/account/credit-pools",
     }
@@ -206,10 +214,13 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             if value:
                 headers[name] = value
 
-        # BACKEND_COOKIE_TO_BEARER_V1
+        # BACKEND_COOKIE_TO_BEARER_ORIGINAL_PATH_V1
         # Browser has edgeStudyToken as a cookie for same-domain routing.
-        # CT101 /api/backend routes need Authorization so FastAPI can authenticate.
-        if upstream_path.startswith("/api/backend/") and not headers.get("Authorization"):
+        # CT101 backend requests arrive at the wrapper as /api/backend/*, then
+        # map_api() rewrites them to CT101's real /api/* path. Use the original
+        # browser path so cookie-to-bearer auth still happens after mapping.
+        auth_source_path = original_path or upstream_path
+        if auth_source_path.startswith("/api/backend/") and not headers.get("Authorization"):
             token = self._auth_route_token()
             if token:
                 headers["Authorization"] = f"Bearer {token}"
