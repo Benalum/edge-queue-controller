@@ -36,12 +36,28 @@ require_fixed() {
 require_file docs/queued-chat-route-skeleton.md
 require_file edge_controller.py
 
-require_fixed edge_controller.py "Stage 5F-7: disabled-by-default queued chat route skeleton" "route marker"
+if grep -F -n "Stage 5F-7: disabled-by-default queued chat route skeleton" edge_controller.py >/dev/null 2>&1; then
+  echo "OK: route marker"
+elif grep -F -n "Stage 5F-9: synthetic-only queued chat route wiring" edge_controller.py >/dev/null 2>&1; then
+  echo "OK: route marker"
+else
+  echo "FAIL: missing route marker"
+  exit 1
+fi
 require_fixed edge_controller.py '@app.post("/api/chat/queued")' "POST route"
 require_fixed edge_controller.py '@app.get("/api/chat/queued/{job_id}")' "GET route"
 require_fixed edge_controller.py "LAPTOP_CHAT_QUEUE_ENABLED" "feature flag"
 require_fixed edge_controller.py "feature_disabled" "disabled marker"
-require_fixed edge_controller.py "not_implemented_stage_5f7" "enabled skeleton marker"
+if grep -F -n "not_implemented_stage_5f7" edge_controller.py >/dev/null 2>&1; then
+  echo "OK: enabled skeleton marker"
+elif grep -F -n "synthetic_only_required_stage_5f9" edge_controller.py >/dev/null 2>&1; then
+  echo "OK: enabled skeleton marker"
+else
+  echo "FAIL: missing enabled skeleton marker"
+  echo "  file: edge_controller.py"
+  echo "  text: not_implemented_stage_5f7 or synthetic_only_required_stage_5f9"
+  exit 1
+fi
 require_fixed docs/queued-chat-route-skeleton.md "does not change production chat behavior" "no production behavior change"
 require_fixed docs/queued-chat-route-skeleton.md "create real production chat jobs" "no real jobs"
 
@@ -133,11 +149,13 @@ if [ "$enabled_get_code" != "501" ]; then
   exit 1
 fi
 
-grep -q "not_implemented_stage_5f7" "$enabled_get_body" || {
-  echo "FAIL: enabled GET missing not_implemented_stage_5f7"
+if grep -q "not_implemented_stage_5f7" "$enabled_get_body" || grep -q "synthetic_only_required_stage_5f9" "$enabled_get_body"; then
+  true
+else
+  echo "FAIL: enabled GET missing expected 501 marker"
   cat "$enabled_get_body"
   exit 1
-}
+fi
 
 enabled_post_body="$(mktemp)"
 enabled_post_code="$(curl -s -o "$enabled_post_body" -w "%{http_code}" \
@@ -151,11 +169,13 @@ if [ "$enabled_post_code" != "501" ]; then
   exit 1
 fi
 
-grep -q "not_implemented_stage_5f7" "$enabled_post_body" || {
-  echo "FAIL: enabled POST missing not_implemented_stage_5f7"
+if grep -q "not_implemented_stage_5f7" "$enabled_post_body" || grep -q "synthetic_only_required_stage_5f9" "$enabled_post_body"; then
+  true
+else
+  echo "FAIL: enabled POST missing expected 501 marker"
   cat "$enabled_post_body"
   exit 1
-}
+fi
 
 echo "OK: queued chat routes return enabled skeleton response"
 

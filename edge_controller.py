@@ -13470,77 +13470,182 @@ async def s5e16_laptop_queue_recover(
     }
 
 
-# === Stage 5F-7: disabled-by-default queued chat route skeleton ===
+# === Stage 5F-9: synthetic-only queued chat route wiring ===
 #
-# Additive route skeleton only.
-# No production chat behavior changes.
-# No real jobs are created.
-# No assistant messages are persisted.
+# Additive synthetic/test route wiring only.
+# No default production chat behavior changes.
+# No real production jobs are created.
+# No assistant messages are persisted by these routes.
 
-import os as _s5f7_os
+import json as _s5f9_json
+import os as _s5f9_os
 
-from fastapi import HTTPException as _S5F7_HTTPException
-from pydantic import BaseModel as _S5F7_BaseModel
+from fastapi import Header as _S5F9_Header
+from fastapi import HTTPException as _S5F9_HTTPException
+from pydantic import BaseModel as _S5F9_BaseModel
+
+from edge_modules.chat_queue_creation import (
+    ChatQueueCreationError as _S5F9_ChatQueueCreationError,
+    create_synthetic_queued_chat_job as _s5f9_create_synthetic_queued_chat_job,
+)
+from edge_modules.chat_queue_persistence import (
+    _psql_at as _s5f9_psql_at,
+    _sql_literal as _s5f9_sql_literal,
+)
 
 
-class _S5F7QueuedChatRequest(_S5F7_BaseModel):
+class _S5F9QueuedChatRequest(_S5F9_BaseModel):
     message: str | None = None
     chat_id: str | None = None
     requested_model: str | None = None
 
 
-def _s5f7_laptop_chat_queue_enabled() -> bool:
-    return _s5f7_os.environ.get("LAPTOP_CHAT_QUEUE_ENABLED", "").strip() == "1"
+def _s5f9_laptop_chat_queue_enabled() -> bool:
+    return _s5f9_os.environ.get("LAPTOP_CHAT_QUEUE_ENABLED", "").strip() == "1"
 
 
-def _s5f7_raise_feature_disabled() -> None:
-    raise _S5F7_HTTPException(
+def _s5f9_laptop_chat_queue_synthetic_only() -> bool:
+    return _s5f9_os.environ.get("LAPTOP_CHAT_QUEUE_SYNTHETIC_ONLY", "").strip() == "1"
+
+
+def _s5f9_raise_feature_disabled() -> None:
+    raise _S5F9_HTTPException(
         status_code=404,
         detail={
             "ok": False,
             "error": "feature_disabled",
             "feature": "laptop_queued_chat",
-            "stage": "5f7",
+            "stage": "5f9",
             "message": "Laptop queued chat route is disabled.",
         },
     )
 
 
-@app.post("/api/chat/queued")
-async def s5f7_create_queued_chat(request: _S5F7QueuedChatRequest):
-    if not _s5f7_laptop_chat_queue_enabled():
-        _s5f7_raise_feature_disabled()
-
-    raise _S5F7_HTTPException(
-        status_code=501,
-        detail={
-            "ok": False,
-            "error": "not_implemented_stage_5f7",
-            "feature": "laptop_queued_chat",
-            "stage": "5f7",
-            "message": "Queued chat route skeleton is enabled, but job creation is not implemented yet.",
-            "would_accept": {
-                "message": request.message,
-                "chat_id": request.chat_id,
-                "requested_model": request.requested_model,
+def _s5f9_require_synthetic_mode() -> None:
+    if not _s5f9_laptop_chat_queue_synthetic_only():
+        raise _S5F9_HTTPException(
+            status_code=501,
+            detail={
+                "ok": False,
+                "error": "synthetic_only_required_stage_5f9",
+                "feature": "laptop_queued_chat",
+                "stage": "5f9",
+                "message": "Queued chat is not implemented for production jobs yet.",
             },
-        },
-    )
+        )
+
+
+@app.post("/api/chat/queued")
+async def s5f9_create_queued_chat(
+    request: _S5F9QueuedChatRequest,
+    x_synthetic_user_id: str | None = _S5F9_Header(default=None, alias="X-Synthetic-User-Id"),
+):
+    if not _s5f9_laptop_chat_queue_enabled():
+        _s5f9_raise_feature_disabled()
+
+    _s5f9_require_synthetic_mode()
+
+    if not x_synthetic_user_id:
+        raise _S5F9_HTTPException(
+            status_code=400,
+            detail={
+                "ok": False,
+                "error": "missing_synthetic_user_id",
+                "stage": "5f9",
+            },
+        )
+
+    try:
+        queued = _s5f9_create_synthetic_queued_chat_job(
+            authenticated_user_id=x_synthetic_user_id,
+            message=request.message or "",
+            chat_id=request.chat_id,
+            requested_model=request.requested_model or "synthetic",
+        )
+    except _S5F9_ChatQueueCreationError as exc:
+        raise _S5F9_HTTPException(
+            status_code=400,
+            detail={
+                "ok": False,
+                "error": "queued_chat_creation_failed",
+                "stage": "5f9",
+                "message": str(exc),
+            },
+        ) from exc
+
+    return {
+        "ok": True,
+        "stage": "5f9",
+        "synthetic_only": True,
+        "job_id": queued.job_id,
+        "status": queued.status,
+        "chat_id": queued.chat_id,
+        "user_message_id": queued.user_message_id,
+        "payload_json": queued.payload_json,
+    }
 
 
 @app.get("/api/chat/queued/{job_id}")
-async def s5f7_get_queued_chat_status(job_id: str):
-    if not _s5f7_laptop_chat_queue_enabled():
-        _s5f7_raise_feature_disabled()
+async def s5f9_get_queued_chat_status(job_id: str):
+    if not _s5f9_laptop_chat_queue_enabled():
+        _s5f9_raise_feature_disabled()
 
-    raise _S5F7_HTTPException(
-        status_code=501,
-        detail={
-            "ok": False,
-            "error": "not_implemented_stage_5f7",
-            "feature": "laptop_queued_chat",
-            "stage": "5f7",
-            "message": "Queued chat status skeleton is enabled, but status lookup is not implemented yet.",
-            "job_id": job_id,
-        },
+    _s5f9_require_synthetic_mode()
+
+    if not job_id.startswith("s5f8-job-"):
+        raise _S5F9_HTTPException(
+            status_code=400,
+            detail={
+                "ok": False,
+                "error": "non_synthetic_job_refused",
+                "stage": "5f9",
+            },
+        )
+
+    raw = _s5f9_psql_at(
+        f"""
+        SELECT COALESCE(
+          (
+            SELECT row_to_json(j)::text
+            FROM (
+              SELECT
+                id AS job_id,
+                user_id,
+                job_type,
+                status,
+                requested_model,
+                payload_json,
+                result_json,
+                error_text,
+                created_at,
+                updated_at,
+                started_at,
+                finished_at
+              FROM app_jobs
+              WHERE id = {_s5f9_sql_literal(job_id)}
+            ) j
+          ),
+          ''
+        );
+        """
     )
+
+    if not raw:
+        raise _S5F9_HTTPException(
+            status_code=404,
+            detail={
+                "ok": False,
+                "error": "job_not_found",
+                "stage": "5f9",
+                "job_id": job_id,
+            },
+        )
+
+    job = _s5f9_json.loads(raw)
+
+    return {
+        "ok": True,
+        "stage": "5f9",
+        "synthetic_only": True,
+        "job": job,
+    }
