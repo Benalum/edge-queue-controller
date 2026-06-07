@@ -13492,12 +13492,21 @@ from edge_modules.chat_queue_persistence import (
     _psql_at as _s5f9_psql_at,
     _sql_literal as _s5f9_sql_literal,
 )
+from edge_modules.chat_queue_session_auth import (
+    QueuedChatSessionAuthError as _S5F17_QueuedChatSessionAuthError,
+    reject_client_provided_user_id as _s5f17_reject_client_provided_user_id,
+    resolve_authenticated_user_from_session_token as _s5f17_resolve_authenticated_user_from_session_token,
+)
 
 
 class _S5F9QueuedChatRequest(_S5F9_BaseModel):
     message: str | None = None
     chat_id: str | None = None
     requested_model: str | None = None
+    # Stage 5F-17: explicitly capture forbidden client user fields
+    # so real-user queued chat can reject them instead of silently ignoring them.
+    user_id: str | None = None
+    authenticated_user_id: str | None = None
 
 
 def _s5f9_laptop_chat_queue_enabled() -> bool:
@@ -13557,9 +13566,50 @@ def _s5f9_require_synthetic_mode() -> None:
 async def s5f9_create_queued_chat(
     request: _S5F9QueuedChatRequest,
     x_synthetic_user_id: str | None = _S5F9_Header(default=None, alias="X-Synthetic-User-Id"),
+    x_queued_chat_session_token: str | None = _S5F9_Header(default=None, alias="X-Queued-Chat-Session-Token"),
 ):
     if not _s5f9_laptop_chat_queue_enabled():
         _s5f9_raise_feature_disabled()
+
+    if not _s5f9_laptop_chat_queue_synthetic_only() and _s5f14_laptop_chat_queue_real_users_enabled():
+        try:
+            guard_payload = request.model_dump(exclude_none=True)
+
+            # Stage 5F-17: Pydantic includes optional fields as None by default.
+            # Only reject forbidden user fields when the client actually sent them.
+            request_fields = getattr(request, "model_fields_set", set())
+            if "user_id" in request_fields:
+                guard_payload["user_id"] = request.user_id
+            if "authenticated_user_id" in request_fields:
+                guard_payload["authenticated_user_id"] = request.authenticated_user_id
+
+            _s5f17_reject_client_provided_user_id(guard_payload)
+            auth_user = _s5f17_resolve_authenticated_user_from_session_token(
+                session_token=x_queued_chat_session_token
+            )
+        except _S5F17_QueuedChatSessionAuthError as exc:
+            raise _S5F9_HTTPException(
+                status_code=401,
+                detail={
+                    "ok": False,
+                    "error": "queued_chat_session_auth_failed_stage_5f17",
+                    "feature": "laptop_queued_chat",
+                    "stage": "5f17",
+                    "message": str(exc),
+                },
+            ) from exc
+
+        raise _S5F9_HTTPException(
+            status_code=501,
+            detail={
+                "ok": False,
+                "error": "real_user_job_creation_not_wired_stage_5f17",
+                "feature": "laptop_queued_chat",
+                "stage": "5f17",
+                "authenticated_user_id": auth_user.user_id,
+                "message": "Session auth resolved, but real-user queued job creation is not wired yet.",
+            },
+        )
 
     _s5f9_require_synthetic_mode()
 
@@ -13607,6 +13657,18 @@ async def s5f9_create_queued_chat(
 async def s5f9_get_queued_chat_status(job_id: str):
     if not _s5f9_laptop_chat_queue_enabled():
         _s5f9_raise_feature_disabled()
+
+    if not _s5f9_laptop_chat_queue_synthetic_only() and _s5f14_laptop_chat_queue_real_users_enabled():
+        raise _S5F9_HTTPException(
+            status_code=501,
+            detail={
+                "ok": False,
+                "error": "real_user_status_not_wired_stage_5f17",
+                "feature": "laptop_queued_chat",
+                "stage": "5f17",
+                "message": "Real-user queued chat status auth is not wired yet.",
+            },
+        )
 
     _s5f9_require_synthetic_mode()
 

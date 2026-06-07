@@ -77,32 +77,46 @@ post_code="$(curl -s -o "$post_body" -w "%{http_code}" \
   -H 'Content-Type: application/json' \
   -d '{"message":"real user should not be wired yet"}')"
 
-if [ "$post_code" != "501" ]; then
-  echo "FAIL: real-user placeholder POST expected 501, got $post_code"
+if [ "$post_code" = "501" ]; then
+  grep -q "session_auth_not_wired_stage_5f14" "$post_body" || {
+    echo "FAIL: POST 501 missing session_auth_not_wired_stage_5f14"
+    cat "$post_body"
+    exit 1
+  }
+elif [ "$post_code" = "401" ]; then
+  grep -q "queued_chat_session_auth_failed_stage_5f17" "$post_body" || {
+    echo "FAIL: POST 401 missing queued_chat_session_auth_failed_stage_5f17"
+    cat "$post_body"
+    exit 1
+  }
+else
+  echo "FAIL: real-user placeholder POST expected 501 or 401, got $post_code"
   cat "$post_body"
   exit 1
 fi
-
-grep -q "session_auth_not_wired_stage_5f14" "$post_body" || {
-  echo "FAIL: POST missing session_auth_not_wired_stage_5f14"
-  cat "$post_body"
-  exit 1
-}
 
 get_body="$(mktemp)"
 get_code="$(curl -s -o "$get_body" -w "%{http_code}" "$BASE_URL/api/chat/queued/not-a-real-job")"
 
-if [ "$get_code" != "501" ]; then
-  echo "FAIL: real-user placeholder GET expected 501, got $get_code"
+if [ "$get_code" = "501" ]; then
+  if grep -q "session_auth_not_wired_stage_5f14" "$get_body" || grep -q "real_user_status_not_wired_stage_5f17" "$get_body"; then
+    true
+  else
+    echo "FAIL: GET 501 missing expected not-wired marker"
+    cat "$get_body"
+    exit 1
+  fi
+elif [ "$get_code" = "401" ]; then
+  grep -q "queued_chat_session_auth_failed_stage_5f17" "$get_body" || {
+    echo "FAIL: GET 401 missing queued_chat_session_auth_failed_stage_5f17"
+    cat "$get_body"
+    exit 1
+  }
+else
+  echo "FAIL: real-user placeholder GET expected 501 or 401, got $get_code"
   cat "$get_body"
   exit 1
 fi
-
-grep -q "session_auth_not_wired_stage_5f14" "$get_body" || {
-  echo "FAIL: GET missing session_auth_not_wired_stage_5f14"
-  cat "$get_body"
-  exit 1
-}
 
 echo "OK: real-user queued chat route refuses until session auth is wired"
 
