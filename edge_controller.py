@@ -12904,9 +12904,9 @@ class _S5E4CleanupRequest(_S5E4_BaseModel):
 
 @app.get("/internal/laptop-queue/summary")
 async def s5e4_laptop_queue_summary(
-    _: None = _S5E4_Header(default=None, alias="X-Laptop-Queue-Token"),
+    x_laptop_queue_token: str | None = _S5E4_Header(default=None, alias="X-Laptop-Queue-Token"),
 ):
-    _s5e4_require_internal_queue_token(_)
+    _s5e4_require_internal_queue_token(x_laptop_queue_token)
     client = _s5e4_queue_client()
 
     try:
