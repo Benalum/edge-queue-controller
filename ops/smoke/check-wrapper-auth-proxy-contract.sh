@@ -82,7 +82,9 @@ if path.exists():
     required_markers = [
         # AUTH_ROUTE_COOKIE_V1 was an older marker name. The actual contract is
         # covered above by map_api() route assertions for /api/auth/* and /api/me.
-        "BACKEND_COOKIE_TO_BEARER_V1",
+        "BACKEND_COOKIE_TO_BEARER_ORIGINAL_PATH_V1",
+        "auth_source_path = original_path or upstream_path",
+        'auth_source_path.startswith("/api/backend/")',
         "EDGE_USER_HEADER_BRIDGE_V1",
         "edgeStudyToken",
         "Authorization",
@@ -109,6 +111,11 @@ if path.exists():
     require(
         'headers["Authorization"] = f"Bearer {token}"' in source,
         "Wrapper must convert edgeStudyToken cookie to Authorization bearer for CT101 backend requests",
+    )
+
+    require(
+        'upstream_path.startswith("/api/backend/")' not in source,
+        "Wrapper must not check rewritten upstream_path for /api/backend/* cookie-to-bearer auth",
     )
 
 if errors:

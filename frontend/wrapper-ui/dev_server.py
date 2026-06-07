@@ -206,10 +206,13 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             if value:
                 headers[name] = value
 
-        # BACKEND_COOKIE_TO_BEARER_V1
+        # BACKEND_COOKIE_TO_BEARER_ORIGINAL_PATH_V1
         # Browser has edgeStudyToken as a cookie for same-domain routing.
-        # CT101 /api/backend routes need Authorization so FastAPI can authenticate.
-        if upstream_path.startswith("/api/backend/") and not headers.get("Authorization"):
+        # CT101 backend requests arrive at the wrapper as /api/backend/*, then
+        # map_api() rewrites them to CT101's real /api/* path. Use the original
+        # browser path so cookie-to-bearer auth still happens after mapping.
+        auth_source_path = original_path or upstream_path
+        if auth_source_path.startswith("/api/backend/") and not headers.get("Authorization"):
             token = self._auth_route_token()
             if token:
                 headers["Authorization"] = f"Bearer {token}"
