@@ -83,6 +83,8 @@ Stage 2B prepares a future additive `normalized` status block using grouped infr
 
 **Stage 2B-2 note:** The controller may now add the runtime `normalized` payload additively. UI consumption remains postponed until Stage 2C.
 
+**Stage 2C note:** The wrapper UI may now prefer normalized status groups when present, while retaining fallback to legacy `apis`, `services`, and `nodes` payload fields.
+
 No route names should change during Stage 2B. Existing payload fields remain backward-compatible, including:
 
 - `ok`

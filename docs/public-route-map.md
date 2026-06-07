@@ -96,6 +96,8 @@ Runtime implementation is postponed to Stage 2B-2. UI consumption is postponed t
 
 **Stage 2B-2 note:** Runtime responses may now include the additive `normalized` block. UI consumption remains postponed to Stage 2C, and existing fields and route names remain backward-compatible.
 
+**Stage 2C note:** The public wrapper may consume `normalized.platform` for public service status and `normalized.infrastructure` for admin-only infrastructure views, with fallback to the legacy `apis`, `services`, and `nodes` fields.
+
 Existing system status response fields must remain backward-compatible:
 
 - `ok`

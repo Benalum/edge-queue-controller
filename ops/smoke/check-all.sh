@@ -100,4 +100,8 @@ echo "=== system status normalized runtime shape ==="
 ops/smoke/check-system-status-normalized-runtime.sh
 
 echo
+echo "=== system status UI normalized fallback ==="
+ops/smoke/check-system-status-ui-normalized-fallback.sh
+
+echo
 echo "PASS: all controller smoke checks passed"

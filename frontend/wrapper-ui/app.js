@@ -568,6 +568,96 @@ function serviceById(id) {
   );
 }
 
+const NORMALIZED_INFRASTRUCTURE_IDS = [
+  "controller-node",
+  "server-nodes",
+  "cpu-nodes",
+  "gpu-nodes",
+  "storage-nodes",
+];
+
+const NORMALIZED_PLATFORM_IDS = [
+  "backend-api",
+  "frontend-wrapper",
+  "queue",
+  "workers",
+  "power-automation",
+];
+
+const NORMALIZED_INFRASTRUCTURE_DETAILS = {
+  "controller-node": "Always-on laptop/main controller.",
+  "server-nodes": "Configured Proxmox server nodes.",
+  "cpu-nodes": "CPU processing containers currently configured.",
+  "gpu-nodes": "Future GPU processing containers for image/video jobs.",
+  "storage-nodes": "Future NAS/storage stations.",
+};
+
+const NORMALIZED_PLATFORM_DETAILS = {
+  "backend-api": "Backend API and controller services.",
+  "frontend-wrapper": "Public wrapper and browser experience.",
+  queue: "Job queue and scheduling surface.",
+  workers: "Worker capacity and processing services.",
+  "power-automation": "Power automation status.",
+};
+
+function getNormalizedStatus(source = lastStatus) {
+  const normalized = source?.normalized;
+  if (!normalized || typeof normalized !== "object" || Array.isArray(normalized)) return null;
+  return normalized;
+}
+
+function normalizedItems(source, key, requiredIds) {
+  const normalized = getNormalizedStatus(source);
+  const items = normalized?.[key];
+
+  if (!Array.isArray(items) || !items.length) return null;
+
+  const valid = items.filter((item) => (
+    item &&
+    typeof item === "object" &&
+    typeof item.id === "string" &&
+    item.id
+  ));
+
+  if (!valid.length) return null;
+
+  const ids = new Set(valid.map((item) => item.id));
+  if (!requiredIds.every((id) => ids.has(id))) return null;
+
+  return valid;
+}
+
+function normalizedInfrastructureGroups(source = lastStatus) {
+  const items = normalizedItems(source, "infrastructure", NORMALIZED_INFRASTRUCTURE_IDS);
+  if (!items) return null; // Fallback to infrastructureGroups() when normalized.infrastructure is unavailable.
+
+  return items.map((item) => {
+    const members = Array.isArray(item.members) ? item.members : [];
+    const state = item.state || "unknown";
+
+    return {
+      id: item.id,
+      name: item.name || item.id,
+      state,
+      counts: statusCounts(members.map(() => state)),
+      detail: item.detail || NORMALIZED_INFRASTRUCTURE_DETAILS[item.id] || "",
+      members,
+    };
+  });
+}
+
+function normalizedPlatformGroups(source = lastStatus) {
+  const items = normalizedItems(source, "platform", NORMALIZED_PLATFORM_IDS);
+  if (!items) return null; // Fallback to apiGroups() when normalized.platform is unavailable.
+
+  return items.map((item) => ({
+    id: item.id,
+    name: item.name || item.id,
+    state: item.state || "unknown",
+    detail: item.detail || NORMALIZED_PLATFORM_DETAILS[item.id] || "",
+  }));
+}
+
 function statusCounts(states) {
   const counts = {
     total: states.length,
@@ -2354,6 +2444,8 @@ function renderCreditsPage() {
 
 function renderSystemPage() {
   const isAdmin = Boolean(adminStatus?.admin);
+  const platformGroups = normalizedPlatformGroups() || apiGroups();
+  const infraGroups = normalizedInfrastructureGroups() || infrastructureGroups();
 
   return `
     <section class="system-section">
@@ -2361,7 +2453,7 @@ function renderSystemPage() {
       <p class="section-copy">
         Public users can see whether platform API areas are online, degraded, offline, or planned.
       </p>
-      ${renderApiCards(apiGroups())}
+      ${renderApiCards(platformGroups)}
     </section>
 
     ${isAdmin ? `
@@ -2370,7 +2462,7 @@ function renderSystemPage() {
         <p class="section-copy">
           Admin-only view of controller, server, CPU, GPU, and storage node capacity.
         </p>
-        ${renderInfraCards(infrastructureGroups())}
+        ${renderInfraCards(infraGroups)}
       </section>
     ` : ""}
 
@@ -2500,17 +2592,19 @@ function renderDrawerItems(targetId, items, type) {
 
 function renderSystemDrawer() {
   const isAdmin = Boolean(adminStatus?.admin);
+  const platformGroups = normalizedPlatformGroups() || apiGroups();
+  const infraGroups = normalizedInfrastructureGroups() || infrastructureGroups();
 
   $("drawerSummary").textContent =
     `API state: ${titleCase(lastStatus?.overall_state || "unknown")}. Last checked: ${lastStatus?.checked_at || "unknown"}.`;
 
   if (isAdmin) {
-    renderDrawerItems("drawerNodes", infrastructureGroups(), "infra");
+    renderDrawerItems("drawerNodes", infraGroups, "infra");
   } else {
     renderDrawerItems("drawerNodes", [], "api");
   }
 
-  renderDrawerItems("drawerServices", apiGroups(), "api");
+  renderDrawerItems("drawerServices", platformGroups, "api");
 }
 
 function openSystemDrawer() {
@@ -3584,6 +3678,35 @@ function cleanWorstState(nodes) {
 
 function cleanRenderInfrastructure() {
   const nodes = cleanAdminSystem?.nodes || [];
+  const normalizedGroups = normalizedInfrastructureGroups(cleanAdminSystem);
+
+  if (normalizedGroups) {
+    return `
+      <section class="system-section">
+        <h2>Infrastructure</h2>
+        <p class="section-copy">
+          Admin-only view of controller, server, CPU, GPU, and storage node capacity.
+        </p>
+
+        <div class="summary-grid">
+          ${normalizedGroups.map((group) => {
+            const memberNodes = (group.members || []).map(() => ({ state: group.state }));
+            return cleanGroupCard(group.name, group.state, memberNodes, group.detail);
+          }).join("")}
+        </div>
+
+        <div class="actions">
+          <button id="cleanToggleAdminSystemDetailsBtn" class="primary-btn" type="button">
+            Open Admin System Panel
+          </button>
+        </div>
+
+        <div id="cleanAdminSystemDetails" class="hidden">
+          ${cleanRenderAdminSystemDetails()}
+        </div>
+      </section>
+    `;
+  }
 
   const controllerNodes = nodes.filter((n) => n.role === "master" || n.id === "master-laptop");
   const serverNodes = nodes.filter((n) => n.role === "compute-host" || n.id === "pveso");
@@ -4822,4 +4945,3 @@ async function handleResetPasswordRoute() {
     console.warn("Password reset route handling failed", err);
   }
 })();
-
