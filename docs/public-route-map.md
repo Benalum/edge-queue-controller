@@ -34,29 +34,36 @@ CT101 must not expose or own credit wallets, credit ledgers, rewarded ads, or /a
 
 ## Controller-owned API routes
 
-| Public/API route | Controller route | Purpose |
+Controller owns the following route prefixes:
+
+| Route prefix | Purpose | Notes |
 |---|---|---|
-| /api/account/credits | /system/account/credits | Account credit summary |
-| /api/account/me | /system/account/me | Current user/session |
-| /api/ads/reward/status | /system/ads/reward/status | Rewarded ad status |
-| /api/ads/reward/claim | /system/ads/reward/claim | Rewarded ad mock/provider claim |
-| /api/system/status | /system/status | Public system status |
-| /api/system/presence/* | controller system presence routes | Web presence/power policy |
-| /api/credits/reserve* | /system/credits/reserve* | Credit reservation |
-| /api/credits/commit* | /system/credits/commit* | Credit commit |
-| /api/credits/refund* | /system/credits/refund* | Credit refund |
+| /system/* | System status, power, presence | Core infrastructure |
+| /public/* | Public gateway compatibility | Legacy/bridge routes |
+| /api/auth/* | Login, logout, registration | Account authentication |
+| /api/account/* | User profile, account settings | Account management |
+| /api/credits/* | Credit reserve, commit, refund | Credit wallet operations |
+| /api/ads/* | Rewarded ad status, claims | Advertising rewards |
+| /api/jobs* | Public job bridge and polling | Public-facing edge job queue |
+
+**All credit-related functionality is controller-owned.** CT101 must never own, expose, or route any credit API or data.
+
+**Source-of-truth APIs:** The `/api/study/*`, `/api/companion/*`, and `/api/calendar/*` routes are CT101 source-of-truth APIs. Controller `/public/study/*` and `/public/companion/*` routes are only legacy public gateway bridges and must not become the authoritative data owner.
 
 ## CT101-owned API routes
 
-| Route | Owner | Purpose |
-|---|---|---|
-| /api/study/* | CT101 | Decks, cards, reviews, progress |
-| /api/calendar/* | CT101 | Local calendar events |
-| /api/companion-profile | CT101 | Companion profile |
-| /api/jobs/* | CT101 | Job queue |
-| /api/workers | CT101 | Worker status |
-| /api/worker-nodes/* | CT101 | Worker node management |
-| /api/public/platform-stats | CT101 | Public platform stats |
+CT101 owns the following route prefixes and behaviors:
+
+| Route/feature | Owner | Purpose | Notes |
+|---|---|---|---|
+| /api/study/* | CT101 | Decks, cards, reviews, progress | CT101 source-of-truth spaced repetition API |
+| /api/calendar/* | CT101 | Local calendar events | CT101 source-of-truth calendar API |
+| /api/companion/* | CT101 | Companion profile and chat | CT101 source-of-truth companion API |
+| /api/worker-nodes/* | CT101 | Worker node management | Worker pool administration |
+| /api/public/platform-stats | CT101 | Public platform stats | Read-only platform metrics |
+| Job execution & scheduler | CT101 | Durable backend job runner, worker management, scheduler | Async task processing, workers, model execution |
+
+**Stage 1 note:** CT101 is not modified in this stage. These route ownerships are documented as they currently exist.
 
 ## Cloudflare Worker translation routes
 
@@ -74,6 +81,33 @@ The public Cloudflare Worker still translates some public `/api/*` routes into c
 | `/api/system/*` | `/system/*` | Controller system routes | System status/power bridge |
 
 These routes are part of the public gateway path and should not be confused with CT101 private `/api/study/*`, `/api/calendar/*`, or `/api/worker-nodes/*`.
+
+## Stage 1: Route ownership stabilization
+
+**Scope:** Documentation and non-destructive validation only. CT101 is not modified in Stage 1.
+
+**Objective:** Clarify route ownership boundaries and document current state to prevent future conflicts.
+
+**Checklist:**
+
+- [x] Document clear controller-owned route prefixes
+- [x] Document clear CT101-owned route prefixes
+- [x] Note that study, companion, calendar private APIs belong to CT101
+- [x] Note that job execution and worker management belong to CT101
+- [x] Confirm all credit functionality is controller-owned
+- [x] Document that duplicate route ownership should be avoided
+- [ ] Validate no controller routes are shadowed by CT101
+- [ ] Validate no CT101 routes are shadowed by controller
+- [ ] Review Cloudflare Worker translation routes for conflicts
+- [ ] Audit public_gateway.py route dispatch logic
+- [ ] Confirm frontend routing matches this map
+- [ ] Run non-destructive controller smoke check
+
+**Notes for subsequent stages:**
+
+- Route conflicts (if found in validation) must be documented, not fixed, in Stage 1.
+- CT101 modification and deployment happens in later stages.
+- When actively running Stage 1 implementation/testing, pause power automation so PVESO/CT101 are not stopped mid-check.
 
 ## Forbidden CT101 routes/tables
 
@@ -97,14 +131,20 @@ This is enforced by:
 
 ## Required checks before route/API changes
 
+**For controller-only Stage 1 work (documentation and validation):**
+
 From controller repo, run:
 
     ops/smoke/check-all.sh
+
+**For CT101 route/API changes (later stages):**
 
 On CT101, run:
 
     cd /opt/ai-platform
     ops/smoke/check-ct101-owned-systems.sh
+
+Note: The CT101 smoke check is required before any CT101 route/API changes, not during this Stage 1 controller-only documentation pass unless explicitly instructed.
 
 ## Rule for new routes
 

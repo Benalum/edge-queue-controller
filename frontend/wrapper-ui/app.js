@@ -199,6 +199,25 @@ function authHeaders(extra = {}) {
   return headers;
 }
 
+/**
+ * Central API wrapper for public wrapper frontend.
+ *
+ * ROUTE OWNERSHIP (Stage 1):
+ * - /auth/* = controller-owned account authentication
+ * - /me = controller-owned current user/session
+ * - /system/* = controller-owned status, power, and account endpoints
+ * - /api/study/* = public wrapper bridge/proxy; CT101 is source-of-truth downstream
+ * - /api/companion/* = public wrapper bridge/proxy; CT101 is source-of-truth downstream
+ * - /api/calendar/* = CT101 source-of-truth downstream
+ * - /credits/* = controller-owned credit wallet and ledger
+ * - /ads/reward/* = controller-owned rewarded ad claims
+ * - /gpu/* = controller-owned GPU credit reservation and session management
+ * - /support/* = controller-owned support tickets
+ *
+ * Note: The wrapper makes fetch calls to /api/* paths, which are translated
+ * by the public gateway (index.js) to /public/* and /system/* controller routes,
+ * or proxied to CT101 /api/* source-of-truth endpoints as appropriate.
+ */
 async function api(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,

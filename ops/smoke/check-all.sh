@@ -84,4 +84,8 @@ echo "=== credit ownership ==="
 ops/smoke/check-credit-ownership.sh
 
 echo
+echo "=== public route map consistency ==="
+ops/smoke/check-public-route-map-consistency.sh
+
+echo
 echo "PASS: all controller smoke checks passed"

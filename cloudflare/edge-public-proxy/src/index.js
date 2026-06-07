@@ -87,31 +87,61 @@ function isAllowed(method, path) {
   });
 }
 
+/**
+ * Stage 1: Route Ownership and Mapping
+ *
+ * This function maps public API routes (/api/*) to controller backend routes.
+ *
+ * OWNERSHIP MODEL:
+ * - Controller-owned public routes are translated to /public/* and /system/* on the edge controller.
+ * - CT101 remains the source of truth for study/companion/calendar private APIs and backend job execution.
+ * - Study/companion routes are proxied as /public/study/* and /public/companion/* for public gateway compatibility.
+ * - These public gateway routes are legacy bridges and must not become the authoritative data owner.
+ * - Do not add direct model routes here; model execution is CT101-owned backend logic.
+ *
+ * ROUTE MAPPING:
+ * - /api/auth/* -> controller /public/auth/* (controller-owned account authentication)
+ * - /api/jobs -> controller /public/jobs (public job bridge only; CT101 owns durable backend job execution)
+ * - /api/study/* -> /public/study/* (public bridge; CT101 is source-of-truth)
+ * - /api/companion/* -> /public/companion/* (public bridge; CT101 is source-of-truth)
+ * - /api/ads/* -> /system/ads/* (controller-owned rewarded ads)
+ * - /api/system/* -> /system/* (controller-owned system status and power)
+ */
 function mapApiPathToBackend(path) {
+  // Controller account authentication routes
   if (path === "/api/status") return "/public/status";
   if (path === "/api/me") return "/public/me";
 
+  // Controller-owned auth: /api/auth/* -> /public/auth/*
   if (path.startsWith("/api/auth/")) {
     return path.replace("/api/auth/", "/public/auth/");
   }
 
+  // Controller public job bridge: /api/jobs -> /public/jobs
+  // (CT101 owns the durable backend job execution and scheduler)
   if (path === "/api/jobs") return "/public/jobs";
   if (/^\/api\/jobs\/[0-9]+$/.test(path)) {
     return path.replace("/api/jobs/", "/public/jobs/");
   }
 
+  // CT101-owned study API, proxied as public bridge: /api/study/* -> /public/study/*
+  // (CT101 is the source-of-truth for study data)
   if (path.startsWith("/api/study/")) {
     return path.replace("/api/study/", "/public/study/");
   }
 
+  // CT101-owned companion API, proxied as public bridge: /api/companion/* -> /public/companion/*
+  // (CT101 is the source-of-truth for companion data)
   if (path.startsWith("/api/companion/")) {
     return path.replace("/api/companion/", "/public/companion/");
   }
 
+  // Controller-owned rewarded ads: /api/ads/* -> /system/ads/*
   if (path.startsWith("/api/ads/")) {
     return path.replace("/api/ads/", "/system/ads/");
   }
 
+  // Controller-owned system status and power: /api/system/* -> /system/*
   if (path.startsWith("/api/system/")) {
     return path.replace("/api/system/", "/system/");
   }

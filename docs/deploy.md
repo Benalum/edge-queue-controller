@@ -11,6 +11,41 @@ The goal is to avoid confusion between:
 - CT101 ai-platform Docker app
 - Cloudflare Worker/public gateway
 
+## Stage 1: Route ownership stabilization
+
+**Purpose:** Stabilize route ownership boundaries and document the current system architecture to prevent future routing conflicts and duplicate implementations.
+
+**Scope:** Documentation, comments, and non-destructive smoke checks only. No runtime behavior changes.
+
+**Key constraints during Stage 1:**
+
+- Do not modify CT101 code or behavior
+- Do not SSH into CT101
+- Do not deploy to Cloudflare
+- Do not change power automation behavior (pause power automation while running Stage 1 checks to prevent PVESO/CT101 from being stopped mid-check)
+- Do not change Wake-on-LAN behavior
+- Do not modify edge_controller.py core logic
+- Do not remove or rewrite routes
+
+**Required check before Stage 1 work:**
+
+From controller repo:
+
+    ops/smoke/check-all.sh
+
+**Before making route/API changes, confirm route ownership:**
+
+Before modifying any route or API endpoint, check that you understand which system owns it by reviewing:
+
+    docs/public-route-map.md
+
+This document defines clear ownership boundaries:
+
+- **Controller** owns: `/system/*`, `/public/*`, `/api/auth/*`, `/api/account/*`, `/api/credits/*`, `/api/ads/*`, `/api/jobs*` (public bridge only)
+- **CT101** owns: `/api/study/*`, `/api/calendar/*`, `/api/companion/*`, `/api/worker-nodes/*`, job execution, scheduler
+
+Do not implement the same route in both systems.
+
 ## Systems
 
 ### Controller repo
