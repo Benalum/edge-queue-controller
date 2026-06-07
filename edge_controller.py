@@ -12793,3 +12793,299 @@ async def _system_apply_web_presence_power_policy_impl(request: Request):
         "blocked": blocked,
         "results": results,
     }
+
+
+# === Stage 5E-4: internal laptop-owned queue facade endpoints ===
+#
+# These endpoints are additive and internal-token protected.
+# They are for synthetic testing only at this stage.
+# They do not connect CT101 workers and do not change production queue behavior.
+
+from typing import Any as _S5E4_Any
+import hmac as _s5e4_hmac
+import os as _s5e4_os
+import time as _s5e4_time
+
+from fastapi import Header as _S5E4_Header
+from fastapi import HTTPException as _S5E4_HTTPException
+from pydantic import BaseModel as _S5E4_BaseModel
+
+from edge_modules.laptop_queue import LaptopQueueClient as _S5E4_LaptopQueueClient
+from edge_modules.laptop_queue import LaptopQueueError as _S5E4_LaptopQueueError
+
+
+_S5E4_TOKEN_ENV_FILE = _s5e4_os.path.expanduser(
+    _s5e4_os.environ.get(
+        "AI_PLATFORM_CONTROLLER_QUEUE_TOKEN_ENV",
+        "~/.config/ai-platform-controller/internal-queue.env",
+    )
+)
+
+
+def _s5e4_load_internal_queue_token() -> str | None:
+    token = _s5e4_os.environ.get("LAPTOP_QUEUE_INTERNAL_TOKEN")
+    if token:
+        return token.strip()
+
+    if not _s5e4_os.path.exists(_S5E4_TOKEN_ENV_FILE):
+        return None
+
+    try:
+        with open(_S5E4_TOKEN_ENV_FILE, "r", encoding="utf-8") as fh:
+            for raw_line in fh:
+                line = raw_line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+
+                key, value = line.split("=", 1)
+                if key.strip() == "LAPTOP_QUEUE_INTERNAL_TOKEN":
+                    return value.strip().strip('"').strip("'")
+    except Exception:
+        return None
+
+    return None
+
+
+def _s5e4_require_internal_queue_token(
+    x_laptop_queue_token: str | None = _S5E4_Header(default=None),
+) -> None:
+    expected = _s5e4_load_internal_queue_token()
+
+    if not expected:
+        raise _S5E4_HTTPException(
+            status_code=503,
+            detail="Laptop queue internal token is not configured.",
+        )
+
+    if not x_laptop_queue_token:
+        raise _S5E4_HTTPException(
+            status_code=401,
+            detail="Missing X-Laptop-Queue-Token header.",
+        )
+
+    if not _s5e4_hmac.compare_digest(str(x_laptop_queue_token), str(expected)):
+        raise _S5E4_HTTPException(
+            status_code=403,
+            detail="Invalid laptop queue token.",
+        )
+
+
+def _s5e4_queue_client() -> _S5E4_LaptopQueueClient:
+    try:
+        return _S5E4_LaptopQueueClient()
+    except _S5E4_LaptopQueueError as exc:
+        raise _S5E4_HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+class _S5E4SyntheticSetupRequest(_S5E4_BaseModel):
+    suffix: str | None = None
+    job_type: str = "ollama_chat"
+    requested_model: str = "stage-5e4-synthetic-model"
+
+
+class _S5E4ClaimRequest(_S5E4_BaseModel):
+    worker_id: str
+    job_type: str | None = None
+
+
+class _S5E4CompleteRequest(_S5E4_BaseModel):
+    worker_id: str
+    ok: bool = True
+    result: dict[str, _S5E4_Any] | None = None
+    error_text: str | None = None
+
+
+class _S5E4CleanupRequest(_S5E4_BaseModel):
+    user_id: str
+    node_id: str
+    worker_id: str
+    job_ids: list[str]
+
+
+@app.get("/internal/laptop-queue/summary")
+async def s5e4_laptop_queue_summary(
+    _: None = _S5E4_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _s5e4_require_internal_queue_token(_)
+    client = _s5e4_queue_client()
+
+    try:
+        grouped = client.psql_at(
+            """
+            SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)::text
+            FROM (
+              SELECT job_type, status, COUNT(*)::int AS count
+              FROM app_jobs
+              GROUP BY job_type, status
+              ORDER BY job_type, status
+            ) t;
+            """
+        )
+        workers = client.psql_at(
+            """
+            SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)::text
+            FROM (
+              SELECT status, COUNT(*)::int AS count
+              FROM app_workers
+              GROUP BY status
+              ORDER BY status
+            ) t;
+            """
+        )
+    except Exception as exc:
+        raise _S5E4_HTTPException(status_code=500, detail=str(exc)) from exc
+
+    import json as _s5e4_json
+
+    return {
+        "ok": True,
+        "job_counts": _s5e4_json.loads(grouped or "[]"),
+        "worker_counts": _s5e4_json.loads(workers or "[]"),
+    }
+
+
+@app.post("/internal/laptop-queue/synthetic/setup")
+async def s5e4_laptop_queue_synthetic_setup(
+    request: _S5E4SyntheticSetupRequest,
+    x_laptop_queue_token: str | None = _S5E4_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _s5e4_require_internal_queue_token(x_laptop_queue_token)
+
+    suffix = request.suffix or f"{int(_s5e4_time.time())}"
+    user_id = f"s5e4-user-{suffix}"
+    node_id = f"s5e4-node-{suffix}"
+    worker_id = f"s5e4-worker-{suffix}"
+    job_ok_id = f"s5e4-job-ok-{suffix}"
+    job_fail_id = f"s5e4-job-fail-{suffix}"
+    job_ids = [job_ok_id, job_fail_id]
+
+    client = _s5e4_queue_client()
+
+    try:
+        client.cleanup_synthetic(
+            user_id=user_id,
+            node_id=node_id,
+            worker_id=worker_id,
+            job_ids=job_ids,
+        )
+
+        client.create_synthetic_user(
+            user_id=user_id,
+            email=f"{user_id}@example.local",
+            display_name="Stage 5E-4 Synthetic User",
+        )
+        client.create_synthetic_worker_node(
+            node_id=node_id,
+            name="Stage 5E-4 Synthetic Node",
+            capabilities={"job_types": [request.job_type]},
+        )
+        client.create_synthetic_worker(
+            worker_id=worker_id,
+            node_id=node_id,
+            name="Stage 5E-4 Synthetic Worker",
+            capabilities={"job_types": [request.job_type]},
+        )
+
+        client.create_job(
+            job_id=job_ok_id,
+            user_id=user_id,
+            job_type=request.job_type,
+            requested_model=request.requested_model,
+            payload={"prompt": "stage 5e4 synthetic success job"},
+        )
+        client.create_job(
+            job_id=job_fail_id,
+            user_id=user_id,
+            job_type=request.job_type,
+            requested_model=request.requested_model,
+            payload={"prompt": "stage 5e4 synthetic failed job"},
+        )
+    except Exception as exc:
+        raise _S5E4_HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return {
+        "ok": True,
+        "ids": {
+            "user_id": user_id,
+            "node_id": node_id,
+            "worker_id": worker_id,
+            "job_ok_id": job_ok_id,
+            "job_fail_id": job_fail_id,
+            "job_ids": job_ids,
+        },
+    }
+
+
+@app.post("/internal/laptop-queue/jobs/claim")
+async def s5e4_laptop_queue_claim_job(
+    request: _S5E4ClaimRequest,
+    x_laptop_queue_token: str | None = _S5E4_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _s5e4_require_internal_queue_token(x_laptop_queue_token)
+    client = _s5e4_queue_client()
+
+    try:
+        job = client.claim_next_job(worker_id=request.worker_id, job_type=request.job_type)
+    except Exception as exc:
+        raise _S5E4_HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return {
+        "ok": True,
+        "job": job,
+    }
+
+
+@app.post("/internal/laptop-queue/jobs/{job_id}/complete")
+async def s5e4_laptop_queue_complete_job(
+    job_id: str,
+    request: _S5E4CompleteRequest,
+    x_laptop_queue_token: str | None = _S5E4_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _s5e4_require_internal_queue_token(x_laptop_queue_token)
+    client = _s5e4_queue_client()
+
+    try:
+        job = client.complete_job(
+            job_id=job_id,
+            worker_id=request.worker_id,
+            ok=request.ok,
+            result=request.result,
+            error_text=request.error_text,
+        )
+    except Exception as exc:
+        raise _S5E4_HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return {
+        "ok": True,
+        "job": job,
+    }
+
+
+@app.post("/internal/laptop-queue/synthetic/cleanup")
+async def s5e4_laptop_queue_synthetic_cleanup(
+    request: _S5E4CleanupRequest,
+    x_laptop_queue_token: str | None = _S5E4_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _s5e4_require_internal_queue_token(x_laptop_queue_token)
+    client = _s5e4_queue_client()
+
+    try:
+        client.cleanup_synthetic(
+            user_id=request.user_id,
+            node_id=request.node_id,
+            worker_id=request.worker_id,
+            job_ids=request.job_ids,
+        )
+        leftovers = client.synthetic_leftover_count(
+            user_id=request.user_id,
+            node_id=request.node_id,
+            worker_id=request.worker_id,
+            job_ids=request.job_ids,
+        )
+    except Exception as exc:
+        raise _S5E4_HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return {
+        "ok": leftovers == 0,
+        "leftover_count": leftovers,
+    }
