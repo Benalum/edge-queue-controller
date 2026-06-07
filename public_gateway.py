@@ -619,10 +619,13 @@ async def _system_public_admin_status_v2(request, call_next):
     path = request.url.path
     method = request.method.upper()
 
-    if method == "GET" and path in ("/system/status", "/system/public-status"):
+    # SYSTEM_STATUS_HEAD_SUPPORT_V1
+    # Health checks and proxies may use HEAD. Treat HEAD like GET here;
+    # response bodies are ignored by HEAD clients, but route/auth behavior stays consistent.
+    if method in {"GET", "HEAD"} and path in ("/system/status", "/system/public-status"):
         return _SystemV2JSONResponse(_system_v2_public_payload(), status_code=200)
 
-    if method == "GET" and path == "/system/admin-status":
+    if method in {"GET", "HEAD"} and path == "/system/admin-status":
         is_admin, email = _system_v2_is_admin(request)
 
         if not is_admin:
