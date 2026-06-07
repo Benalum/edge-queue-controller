@@ -13508,6 +13508,10 @@ def _s5f9_laptop_chat_queue_synthetic_only() -> bool:
     return _s5f9_os.environ.get("LAPTOP_CHAT_QUEUE_SYNTHETIC_ONLY", "").strip() == "1"
 
 
+def _s5f14_laptop_chat_queue_real_users_enabled() -> bool:
+    return _s5f9_os.environ.get("LAPTOP_CHAT_QUEUE_REAL_USERS_ENABLED", "").strip() == "1"
+
+
 def _s5f9_raise_feature_disabled() -> None:
     raise _S5F9_HTTPException(
         status_code=404,
@@ -13522,17 +13526,31 @@ def _s5f9_raise_feature_disabled() -> None:
 
 
 def _s5f9_require_synthetic_mode() -> None:
-    if not _s5f9_laptop_chat_queue_synthetic_only():
+    if _s5f9_laptop_chat_queue_synthetic_only():
+        return
+
+    if _s5f14_laptop_chat_queue_real_users_enabled():
         raise _S5F9_HTTPException(
             status_code=501,
             detail={
                 "ok": False,
-                "error": "synthetic_only_required_stage_5f9",
+                "error": "session_auth_not_wired_stage_5f14",
                 "feature": "laptop_queued_chat",
-                "stage": "5f9",
-                "message": "Queued chat is not implemented for production jobs yet.",
+                "stage": "5f14",
+                "message": "Real-user queued chat guard exists, but session-derived auth is not wired yet.",
             },
         )
+
+    raise _S5F9_HTTPException(
+        status_code=501,
+        detail={
+            "ok": False,
+            "error": "synthetic_only_required_stage_5f9",
+            "feature": "laptop_queued_chat",
+            "stage": "5f9",
+            "message": "Queued chat is not implemented for production jobs yet.",
+        },
+    )
 
 
 @app.post("/api/chat/queued")
