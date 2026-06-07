@@ -72,6 +72,10 @@ echo "=== wrapper companion error UX ==="
 ops/smoke/check-wrapper-companion-error-ux.sh
 
 echo
+echo "=== companion job-first routing ==="
+ops/smoke/check-companion-job-first-routing.sh
+
+echo
 echo "=== companion history HTML guard ==="
 ops/smoke/check-companion-history-html-guard.sh
 
