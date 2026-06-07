@@ -88,6 +88,10 @@ echo "=== credit ownership ==="
 ops/smoke/check-credit-ownership.sh
 
 echo
+echo "=== wrapper auth/proxy contract ==="
+ops/smoke/check-wrapper-auth-proxy-contract.sh
+
+echo
 echo "=== route ownership contract ==="
 ops/smoke/check-route-ownership-contract.sh
 
