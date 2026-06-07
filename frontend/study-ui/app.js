@@ -1039,17 +1039,18 @@ if (companionConfirmWrongBtn) {
     const prompt = buildCompanionPrompt(message);
 
     const attempts = [
+      // COMPANION_JOB_FIRST_V1: prefer queued jobs before direct companion chat to avoid gateway timeouts.
       {
-        url: `${base}/companion/chat`,
-        body: { message, prompt, model: "gemma4:e4b" },
+        url: `${base}/jobs`,
+        body: { job_type: "ollama_chat", prompt, requested_model: "gemma4:e4b" },
       },
       {
         url: `${base}/chat`,
         body: { message, prompt, model: "gemma4:e4b" },
       },
       {
-        url: `${base}/jobs`,
-        body: { job_type: "ollama_chat", prompt, requested_model: "gemma4:e4b" },
+        url: `${base}/companion/chat`,
+        body: { message, prompt, model: "gemma4:e4b" },
       },
     ];
 
