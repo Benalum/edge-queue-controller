@@ -13468,3 +13468,79 @@ async def s5e16_laptop_queue_recover(
         "stale_seconds": stale_seconds,
         "synthetic_prefixes": prefixes,
     }
+
+
+# === Stage 5F-7: disabled-by-default queued chat route skeleton ===
+#
+# Additive route skeleton only.
+# No production chat behavior changes.
+# No real jobs are created.
+# No assistant messages are persisted.
+
+import os as _s5f7_os
+
+from fastapi import HTTPException as _S5F7_HTTPException
+from pydantic import BaseModel as _S5F7_BaseModel
+
+
+class _S5F7QueuedChatRequest(_S5F7_BaseModel):
+    message: str | None = None
+    chat_id: str | None = None
+    requested_model: str | None = None
+
+
+def _s5f7_laptop_chat_queue_enabled() -> bool:
+    return _s5f7_os.environ.get("LAPTOP_CHAT_QUEUE_ENABLED", "").strip() == "1"
+
+
+def _s5f7_raise_feature_disabled() -> None:
+    raise _S5F7_HTTPException(
+        status_code=404,
+        detail={
+            "ok": False,
+            "error": "feature_disabled",
+            "feature": "laptop_queued_chat",
+            "stage": "5f7",
+            "message": "Laptop queued chat route is disabled.",
+        },
+    )
+
+
+@app.post("/api/chat/queued")
+async def s5f7_create_queued_chat(request: _S5F7QueuedChatRequest):
+    if not _s5f7_laptop_chat_queue_enabled():
+        _s5f7_raise_feature_disabled()
+
+    raise _S5F7_HTTPException(
+        status_code=501,
+        detail={
+            "ok": False,
+            "error": "not_implemented_stage_5f7",
+            "feature": "laptop_queued_chat",
+            "stage": "5f7",
+            "message": "Queued chat route skeleton is enabled, but job creation is not implemented yet.",
+            "would_accept": {
+                "message": request.message,
+                "chat_id": request.chat_id,
+                "requested_model": request.requested_model,
+            },
+        },
+    )
+
+
+@app.get("/api/chat/queued/{job_id}")
+async def s5f7_get_queued_chat_status(job_id: str):
+    if not _s5f7_laptop_chat_queue_enabled():
+        _s5f7_raise_feature_disabled()
+
+    raise _S5F7_HTTPException(
+        status_code=501,
+        detail={
+            "ok": False,
+            "error": "not_implemented_stage_5f7",
+            "feature": "laptop_queued_chat",
+            "stage": "5f7",
+            "message": "Queued chat status skeleton is enabled, but status lookup is not implemented yet.",
+            "job_id": job_id,
+        },
+    )
