@@ -46,6 +46,25 @@ Controller owns the following route prefixes:
 | /api/ads/* | Rewarded ad status, claims | Advertising rewards |
 | /api/jobs* | Public job bridge and polling | Public-facing edge job queue |
 
+## System status routes
+
+The controller exposes the following system status endpoints:
+
+- `/system/status` — controller system health summary from `edge_controller.py`.
+- `/system/public-status` — public wrapper status payload used by the public frontend.
+- `/system/admin-status` — admin-only infrastructure status payload.
+- `/public/status` — public job/worker summary payload only; not the same as full system health.
+
+The public gateway path translates:
+
+- `/api/system/status` → `/system/status`
+- `/api/system/public-status` → `/system/public-status`
+- `/api/system/admin-status` → `/system/admin-status`
+
+`/public/status` is a public job/worker summary only, not a full system health response.
+`/system/public-status` is the public wrapper status payload.
+`/system/admin-status` is admin-only infrastructure status.
+
 **All credit-related functionality is controller-owned.** CT101 must never own, expose, or route any credit API or data.
 
 **Source-of-truth APIs:** The `/api/study/*`, `/api/companion/*`, and `/api/calendar/*` routes are CT101 source-of-truth APIs. Controller `/public/study/*` and `/public/companion/*` routes are only legacy public gateway bridges and must not become the authoritative data owner.
@@ -64,6 +83,8 @@ CT101 owns the following route prefixes and behaviors:
 | Job execution & scheduler | CT101 | Durable backend job runner, worker management, scheduler | Async task processing, workers, model execution |
 
 **Stage 1 note:** CT101 is not modified in this stage. These route ownerships are documented as they currently exist.
+
+**Stage 2A note:** This stage documents current system status routes and validates them with read-only smoke checks only. No runtime behavior changes. No CT101 changes. No power automation or Wake-on-LAN changes.
 
 ## Cloudflare Worker translation routes
 

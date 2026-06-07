@@ -88,4 +88,8 @@ echo "=== public route map consistency ==="
 ops/smoke/check-public-route-map-consistency.sh
 
 echo
+echo "=== public system status routes ==="
+ops/smoke/check-public-system-status-routes.sh
+
+echo
 echo "PASS: all controller smoke checks passed"

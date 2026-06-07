@@ -46,6 +46,33 @@ This document defines clear ownership boundaries:
 
 Do not implement the same route in both systems.
 
+## Stage 2A: System status route documentation and validation
+
+**Purpose:** Document current controller/public wrapper system status route expectations and validate them with read-only smoke checks.
+
+**Scope:** Documentation only and read-only smoke checks. No runtime behavior changes.
+
+**Key constraints during Stage 2A:**
+- Do not modify CT101.
+- Do not SSH into CT101.
+- Do not deploy to Cloudflare.
+- Do not change power automation behavior.
+- Do not change Wake-on-LAN behavior.
+- Do not change runtime behavior.
+- Do not change auth behavior.
+- Do not change proxy behavior.
+- Do not remove or rewrite routes.
+- Do not deploy Cloudflare.
+- Do not restart services.
+
+**Required checks before Stage 2A completion:**
+- python3 -m py_compile edge_controller.py public_gateway.py edge_modules/*.py
+- bash ops/smoke/check-public-route-map-consistency.sh
+- bash ops/smoke/check-public-system-status-routes.sh
+- bash ops/smoke/check-all.sh
+
+**Notes:** Stage 2A documents current system status routes and validates their presence. It does not change runtime behavior.
+
 ## Systems
 
 ### Controller repo
