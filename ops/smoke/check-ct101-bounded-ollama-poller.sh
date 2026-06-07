@@ -234,10 +234,7 @@ with open(ids_file, "w", encoding="utf-8") as fh:
 job_ok_id = ids["job_ok_id"]
 
 client = LaptopQueueClient()
-prompt = (
-    "Reply with one short sentence containing the exact phrase "
-    "stage 5e21 ollama smoke passed."
-)
+prompt = "Reply with exactly: OK"
 
 client.psql_run(
     f"""
@@ -293,7 +290,7 @@ REMOTE
 
 echo "Running CT101 bounded Ollama poller"
 
-ssh "$CT_SSH" "pct exec $CT_ID -- env LAPTOP_QUEUE_ENABLED='1' LAPTOP_QUEUE_SYNTHETIC_ONLY='1' LAPTOP_QUEUE_POLL_MODE='bounded' LAPTOP_QUEUE_EXECUTION_MODE='ollama' LAPTOP_QUEUE_BASE_URL='$BASE_URL' LAPTOP_QUEUE_TOKEN_FILE='$CT_TOKEN_FILE' LAPTOP_QUEUE_OLLAMA_BASE_URL='$CT101_OLLAMA_BASE_URL' LAPTOP_QUEUE_OLLAMA_TIMEOUT_SECONDS='240' LAPTOP_QUEUE_OLLAMA_NUM_PREDICT='16' LAPTOP_QUEUE_OLLAMA_MODEL_FALLBACK='$OLLAMA_MODEL' IDS_B64='$IDS_B64' bash -s" <<'REMOTE'
+ssh "$CT_SSH" "pct exec $CT_ID -- env LAPTOP_QUEUE_ENABLED='1' LAPTOP_QUEUE_SYNTHETIC_ONLY='1' LAPTOP_QUEUE_POLL_MODE='bounded' LAPTOP_QUEUE_EXECUTION_MODE='ollama' LAPTOP_QUEUE_BASE_URL='$BASE_URL' LAPTOP_QUEUE_TOKEN_FILE='$CT_TOKEN_FILE' LAPTOP_QUEUE_OLLAMA_BASE_URL='$CT101_OLLAMA_BASE_URL' LAPTOP_QUEUE_OLLAMA_TIMEOUT_SECONDS='240' LAPTOP_QUEUE_OLLAMA_NUM_PREDICT='8' LAPTOP_QUEUE_OLLAMA_MODEL_FALLBACK='$OLLAMA_MODEL' IDS_B64='$IDS_B64' bash -s" <<'REMOTE'
 set -euo pipefail
 
 IDS_JSON="$(printf '%s' "$IDS_B64" | base64 -d)"
