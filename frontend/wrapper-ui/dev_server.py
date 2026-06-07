@@ -15,8 +15,8 @@ CT101_API = os.getenv("CT101_API", "http://100.88.245.33:8088")
 PORT = int(os.getenv("WRAPPER_UI_PORT", "8787"))
 EDGE_TRUSTED_PROXY_SECRET = os.getenv("EDGE_TRUSTED_PROXY_SECRET", "")
 
-FULL_APP_ROUTES = {"/study", "/companion", "/calendar", "/profile"}
-WRAPPER_ROUTES = {"/", "/study", "/companion", "/calendar", "/profile", "/system"}
+FULL_APP_ROUTES = {"/study", "/chat", "/companion", "/calendar", "/profile"}
+WRAPPER_ROUTES = {"/", "/study", "/chat", "/companion", "/calendar", "/profile", "/system"}
 
 
 def map_api(path):

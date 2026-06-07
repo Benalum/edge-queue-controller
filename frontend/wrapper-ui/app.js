@@ -53,7 +53,7 @@ const authState = {
 
 // AUTH_ROUTE_COOKIE_V1
 // Mirror the token into a same-site cookie so the always-on Python wrapper
-// can decide whether /study, /companion, /calendar, and /profile should proxy
+// can decide whether /study, /chat, /companion, /calendar, and /profile should proxy
 // the full CT 101 app or serve public summaries.
 
 // GLOBAL_HTML_ERROR_SANITIZER_V1
@@ -126,7 +126,7 @@ function syncAuthRouteCookie() {
 syncAuthRouteCookie();
 
 // PRIVATE_ROUTE_REFRESH_AFTER_AUTH_V1
-const PRIVATE_APP_ROUTE_SET = new Set(["/study", "/companion", "/profile"]);
+const PRIVATE_APP_ROUTE_SET = new Set(["/study", "/chat", "/companion", "/profile"]);
 
 function refreshPrivateRouteAfterAuth(reason = "auth") {
   syncAuthRouteCookie();
@@ -150,7 +150,7 @@ const pages = {
       "Practice smarter with study tools, guided review, and an AI companion designed to help you focus on what matters most.",
     cards: [
       ["Study", "Create decks, review cards, track progress, and focus on cards that need more practice.", "/study"],
-      ["Companion", "Practice with an AI helper that can explain concepts, ask follow-up questions, and support studying.", "/companion"],
+      ["Chat", "Use AI Chat or switch into Companion mode for study help, explanations, and supportive conversation.", "/chat"],
       ["Profile", "Manage preferences, permissions, account settings, and future companion personalization.", "/profile"],
       ["System", "View platform capacity, API health, and resource state.", "/system"],
     ],
@@ -172,6 +172,20 @@ const pages = {
       ["Review queue", "Practice new, hard, medium, and easy cards in a balanced review flow."],
       ["Progress tracking", "Track accuracy, card difficulty, and review history."],
       ["Future companion support", "The companion can help grade answers and explain difficult concepts."],
+    ],
+  },
+
+
+  "/chat": {
+    eyebrow: "Unified chat",
+    title: "Chat",
+    subtitle:
+      "Chat is the single place for normal AI Chat and Companion mode. Use AI Chat for general local Ollama conversations, or switch to Companion mode for study-aware support.",
+    boxes: [
+      ["AI Chat", "General local-first AI chat with an experimental queued mode."],
+      ["Companion mode", "Supportive companion conversation with study tools and safety boundaries."],
+      ["One entry point", "The Chat tab replaces the separate Companion tab while keeping /companion compatible."],
+      ["Safe migration", "Queued chat stays opt-in and Companion remains synchronous for now."],
     ],
   },
 
