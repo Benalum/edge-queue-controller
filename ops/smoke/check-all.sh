@@ -64,6 +64,10 @@ echo "=== credit pool lifecycle behavior ==="
 ops/smoke/check-credit-pool-lifecycle.sh
 
 echo
+echo "=== companion helper definitions ==="
+ops/smoke/check-companion-helper-duplicates.sh
+
+echo
 echo "=== duplicate route registrations ==="
 ops/smoke/check-duplicate-routes.sh
 
