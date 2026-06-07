@@ -64,6 +64,10 @@ echo "=== credit pool lifecycle behavior ==="
 ops/smoke/check-credit-pool-lifecycle.sh
 
 echo
+echo "=== wrapper companion error UX ==="
+ops/smoke/check-wrapper-companion-error-ux.sh
+
+echo
 echo "=== companion pending UX ==="
 ops/smoke/check-companion-pending-ux.sh
 

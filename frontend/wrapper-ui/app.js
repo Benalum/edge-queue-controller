@@ -1,3 +1,25 @@
+
+// COMPANION_TRANSIENT_GATEWAY_WRAPPER_V1
+function isGatewayHtmlErrorText(value) {
+  const text = String(value || "").trim().toLowerCase();
+  return (
+    text.startsWith("<!doctype html") ||
+    text.startsWith("<html") ||
+    (text.includes("cloudflare") && text.includes("bad gateway")) ||
+    text.includes("error code 502") ||
+    text.includes("error code 503") ||
+    text.includes("error code 504")
+  );
+}
+
+function cleanCompanionErrorMessage(value) {
+  const text = String(value || "");
+  if (isGatewayHtmlErrorText(text)) {
+    return "The companion is still working or the gateway timed out before the browser received the final response. I will not show the raw Cloudflare error page. Refresh in a moment or try again.";
+  }
+  return text;
+}
+
 const API_BASE = "/api";
 
 const $ = (id) => document.getElementById(id);
