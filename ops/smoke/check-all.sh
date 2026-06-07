@@ -92,4 +92,8 @@ echo "=== public system status routes ==="
 ops/smoke/check-public-system-status-routes.sh
 
 echo
+echo "=== system status normalized contract docs ==="
+ops/smoke/check-system-status-normalized-contract.sh
+
+echo
 echo "PASS: all controller smoke checks passed"

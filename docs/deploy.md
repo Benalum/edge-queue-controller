@@ -73,6 +73,27 @@ Do not implement the same route in both systems.
 
 **Notes:** Stage 2A documents current system status routes and validates their presence. It does not change runtime behavior.
 
+## Stage 2B: Normalized grouped status contract preparation
+
+**Purpose:** Prepare the normalized grouped system status contract for future public wrapper and service-health use.
+
+**Scope:** Documentation and read-only smoke-test preparation only. No runtime behavior changes.
+
+Stage 2B prepares a future additive `normalized` status block using grouped infrastructure IDs and platform service IDs. Runtime implementation is postponed until Stage 2B-2. UI consumption is postponed until Stage 2C.
+
+No route names should change during Stage 2B. Existing payload fields remain backward-compatible, including:
+
+- `ok`
+- `checked_at`
+- `overall_state`
+- `nodes`
+- `services`
+- `apis`
+
+**Required checks before Stage 2B-1 completion:**
+- bash ops/smoke/check-system-status-normalized-contract.sh
+- bash ops/smoke/check-all.sh
+
 ## Systems
 
 ### Controller repo

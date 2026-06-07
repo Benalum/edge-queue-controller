@@ -86,6 +86,72 @@ CT101 owns the following route prefixes and behaviors:
 
 **Stage 2A note:** This stage documents current system status routes and validates them with read-only smoke checks only. No runtime behavior changes. No CT101 changes. No power automation or Wake-on-LAN changes.
 
+## Stage 2B: Normalized system status contract preparation
+
+**Scope:** Contract design and read-only documentation validation only. Stage 2B is additive only and must not change runtime behavior.
+
+Stage 2B prepares a future additive `normalized` status block for system status payloads. The future block should let the public wrapper understand infrastructure groups and platform services without hardcoding only the current physical machines and containers.
+
+Runtime implementation is postponed to Stage 2B-2. UI consumption is postponed to Stage 2C. Route names must not change.
+
+Existing system status response fields must remain backward-compatible:
+
+- `ok`
+- `checked_at`
+- `overall_state`
+- `nodes`
+- `services`
+- `apis`
+
+Real machine/container IDs remain specific for debugging:
+
+- `master-laptop`
+- `pveso`
+- `ct-101`
+
+Grouped infrastructure IDs are used for scalable UI and status display:
+
+- `controller-node`
+- `server-nodes`
+- `cpu-nodes`
+- `gpu-nodes`
+- `storage-nodes`
+
+Platform service IDs are used for app/service health:
+
+- `backend-api`
+- `frontend-wrapper`
+- `queue`
+- `workers`
+- `power-automation`
+
+Future optional service IDs may include:
+
+- `gpu-worker`
+- `image-generation`
+- `video-generation`
+
+Initial real-node-to-group mapping:
+
+| Real ID | Grouped infrastructure ID | Notes |
+|---|---|---|
+| `master-laptop` | `controller-node` | Controller laptop/node |
+| `pveso` | `server-nodes` | Real Proxmox/server node |
+| `ct-101` | `cpu-nodes` | Real container/CPU workload node |
+| none yet | `gpu-nodes` | May remain `planned` until active |
+| none yet | `storage-nodes` | May remain `planned` until active |
+
+Allowed normalized states:
+
+- `online`
+- `offline`
+- `booting`
+- `degraded`
+- `error`
+- `unknown`
+- `maintenance`
+- `planned`
+
 ## Cloudflare Worker translation routes
 
 The public Cloudflare Worker still translates some public `/api/*` routes into controller `/public/*` or `/system/*` routes.
