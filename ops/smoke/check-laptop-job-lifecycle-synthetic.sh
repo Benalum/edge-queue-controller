@@ -32,7 +32,7 @@ JOB_OK_ID="s5e2-job-ok-${SUFFIX}"
 JOB_FAIL_ID="s5e2-job-fail-${SUFFIX}"
 
 psql_at() {
-  psql "$DATABASE_URL" -P pager=off -v ON_ERROR_STOP=1 -Atc "$1"
+  psql "$DATABASE_URL" -P pager=off -q -v ON_ERROR_STOP=1 -Atc "$1"
 }
 
 psql_run() {
@@ -172,14 +172,17 @@ fi
 echo "OK: synthetic queued jobs created"
 
 claimed_status="$(psql_at "
-UPDATE app_jobs
-SET status='running',
-    assigned_worker_id='$WORKER_ID',
-    started_at=now(),
-    updated_at=now()
-WHERE id='$JOB_OK_ID'
-  AND status='queued'
-RETURNING status;
+WITH updated AS (
+  UPDATE app_jobs
+  SET status='running',
+      assigned_worker_id='$WORKER_ID',
+      started_at=now(),
+      updated_at=now()
+  WHERE id='$JOB_OK_ID'
+    AND status='queued'
+  RETURNING status
+)
+SELECT status FROM updated;
 ")"
 
 if [ "$claimed_status" != "running" ]; then
@@ -203,15 +206,18 @@ fi
 echo "OK: success job claimed and worker busy"
 
 complete_status="$(psql_at "
-UPDATE app_jobs
-SET status='complete',
-    result_json='{\"reply\":\"synthetic complete reply\",\"model\":\"stage-5e2-synthetic-model\"}'::jsonb,
-    error_text=NULL,
-    finished_at=now(),
-    updated_at=now()
-WHERE id='$JOB_OK_ID'
-  AND status='running'
-RETURNING status;
+WITH updated AS (
+  UPDATE app_jobs
+  SET status='complete',
+      result_json='{\"reply\":\"synthetic complete reply\",\"model\":\"stage-5e2-synthetic-model\"}'::jsonb,
+      error_text=NULL,
+      finished_at=now(),
+      updated_at=now()
+  WHERE id='$JOB_OK_ID'
+    AND status='running'
+  RETURNING status
+)
+SELECT status FROM updated;
 ")"
 
 if [ "$complete_status" != "complete" ]; then
@@ -235,14 +241,17 @@ fi
 echo "OK: success job completed with result_json"
 
 claimed_fail_status="$(psql_at "
-UPDATE app_jobs
-SET status='running',
-    assigned_worker_id='$WORKER_ID',
-    started_at=now(),
-    updated_at=now()
-WHERE id='$JOB_FAIL_ID'
-  AND status='queued'
-RETURNING status;
+WITH updated AS (
+  UPDATE app_jobs
+  SET status='running',
+      assigned_worker_id='$WORKER_ID',
+      started_at=now(),
+      updated_at=now()
+  WHERE id='$JOB_FAIL_ID'
+    AND status='queued'
+  RETURNING status
+)
+SELECT status FROM updated;
 ")"
 
 if [ "$claimed_fail_status" != "running" ]; then
@@ -259,15 +268,18 @@ WHERE id='$WORKER_ID';
 SQL
 
 failed_status="$(psql_at "
-UPDATE app_jobs
-SET status='failed',
-    result_json=NULL,
-    error_text='synthetic failure from Stage 5E-2 smoke',
-    finished_at=now(),
-    updated_at=now()
-WHERE id='$JOB_FAIL_ID'
-  AND status='running'
-RETURNING status;
+WITH updated AS (
+  UPDATE app_jobs
+  SET status='failed',
+      result_json=NULL,
+      error_text='synthetic failure from Stage 5E-2 smoke',
+      finished_at=now(),
+      updated_at=now()
+  WHERE id='$JOB_FAIL_ID'
+    AND status='running'
+  RETURNING status
+)
+SELECT status FROM updated;
 ")"
 
 if [ "$failed_status" != "failed" ]; then
