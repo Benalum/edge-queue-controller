@@ -96,4 +96,8 @@ echo "=== system status normalized contract docs ==="
 ops/smoke/check-system-status-normalized-contract.sh
 
 echo
+echo "=== system status normalized runtime shape ==="
+ops/smoke/check-system-status-normalized-runtime.sh
+
+echo
 echo "PASS: all controller smoke checks passed"

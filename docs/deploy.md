@@ -81,6 +81,8 @@ Do not implement the same route in both systems.
 
 Stage 2B prepares a future additive `normalized` status block using grouped infrastructure IDs and platform service IDs. Runtime implementation is postponed until Stage 2B-2. UI consumption is postponed until Stage 2C.
 
+**Stage 2B-2 note:** The controller may now add the runtime `normalized` payload additively. UI consumption remains postponed until Stage 2C.
+
 No route names should change during Stage 2B. Existing payload fields remain backward-compatible, including:
 
 - `ok`

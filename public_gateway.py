@@ -605,6 +605,7 @@ def _system_v2_public_payload():
         "apis": apis,
         # Keep services alias so older frontend code can still read it.
         "services": apis,
+        "normalized": full.get("normalized"),
     }
 
 
@@ -818,4 +819,3 @@ async def _block_public_ad_reward_routes_until_enabled(request, call_next):
             )
 
     return await call_next(request)
-

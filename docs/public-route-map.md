@@ -94,6 +94,8 @@ Stage 2B prepares a future additive `normalized` status block for system status 
 
 Runtime implementation is postponed to Stage 2B-2. UI consumption is postponed to Stage 2C. Route names must not change.
 
+**Stage 2B-2 note:** Runtime responses may now include the additive `normalized` block. UI consumption remains postponed to Stage 2C, and existing fields and route names remain backward-compatible.
+
 Existing system status response fields must remain backward-compatible:
 
 - `ok`

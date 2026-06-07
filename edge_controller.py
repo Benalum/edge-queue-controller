@@ -8353,6 +8353,107 @@ def _system_laptop_specs():
     }
 
 
+def _system_status_normalized_block(nodes, services):
+    node_by_id = {
+        node.get("id"): node
+        for node in nodes
+        if isinstance(node, dict)
+    }
+    service_by_id = {
+        service.get("id"): service
+        for service in services
+        if isinstance(service, dict)
+    }
+
+    def node_state(node_id, fallback="unknown"):
+        node = node_by_id.get(node_id)
+        if not node:
+            return fallback
+        return node.get("state") or fallback
+
+    def service_state(service_id, fallback="unknown"):
+        service = service_by_id.get(service_id)
+        if not service:
+            return fallback
+        return service.get("state") or fallback
+
+    def master_api_state():
+        master = node_by_id.get("master-laptop")
+        if not isinstance(master, dict):
+            return service_state("backend-api")
+
+        for service in master.get("services") or []:
+            if not isinstance(service, dict):
+                continue
+            if service.get("name") == "edge-queue-controller":
+                return service.get("state") or "unknown"
+
+        return service_state("backend-api")
+
+    return {
+        "schema_version": 1,
+        "infrastructure": [
+            {
+                "id": "controller-node",
+                "name": "Controller Node",
+                "state": node_state("master-laptop"),
+                "members": ["master-laptop"],
+            },
+            {
+                "id": "server-nodes",
+                "name": "Server Nodes",
+                "state": node_state("pveso"),
+                "members": ["pveso"],
+            },
+            {
+                "id": "cpu-nodes",
+                "name": "CPU Nodes",
+                "state": node_state("ct-101"),
+                "members": ["ct-101"],
+            },
+            {
+                "id": "gpu-nodes",
+                "name": "GPU Nodes",
+                "state": "planned",
+                "members": [],
+            },
+            {
+                "id": "storage-nodes",
+                "name": "Storage Nodes",
+                "state": "planned",
+                "members": [],
+            },
+        ],
+        "platform": [
+            {
+                "id": "backend-api",
+                "name": "Backend API",
+                "state": master_api_state(),
+            },
+            {
+                "id": "frontend-wrapper",
+                "name": "Frontend Wrapper",
+                "state": service_state("frontend-wrapper"),
+            },
+            {
+                "id": "queue",
+                "name": "Queue",
+                "state": service_state("queue"),
+            },
+            {
+                "id": "workers",
+                "name": "Workers",
+                "state": node_state("ct-101"),
+            },
+            {
+                "id": "power-automation",
+                "name": "Power Automation",
+                "state": service_state("power-automation"),
+            },
+        ],
+    }
+
+
 @app.get("/system/local-health")
 def system_local_health():
     return {
@@ -8501,16 +8602,19 @@ def system_status():
     else:
         overall_state = "online"
 
+    nodes = [
+        master_node,
+        pveso_node,
+        *workers,
+    ]
+
     return {
         "ok": True,
         "checked_at": checked_at,
         "overall_state": overall_state,
-        "nodes": [
-            master_node,
-            pveso_node,
-            *workers,
-        ],
+        "nodes": nodes,
         "services": services,
+        "normalized": _system_status_normalized_block(nodes, services),
     }
 
 
@@ -12847,4 +12951,3 @@ async def _system_apply_web_presence_power_policy_impl(request: Request):
         "blocked": blocked,
         "results": results,
     }
-
