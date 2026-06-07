@@ -13497,6 +13497,11 @@ from edge_modules.chat_queue_session_auth import (
     reject_client_provided_user_id as _s5f17_reject_client_provided_user_id,
     resolve_authenticated_user_from_session_token as _s5f17_resolve_authenticated_user_from_session_token,
 )
+from edge_modules.chat_queue_real_user_creation import (
+    RealUserQueuedChatCreationError as _S5F19_RealUserQueuedChatCreationError,
+    create_real_user_queued_chat_job as _s5f19_create_real_user_queued_chat_job,
+    real_user_creation_helper_enabled as _s5f19_real_user_creation_helper_enabled,
+)
 
 
 class _S5F9QueuedChatRequest(_S5F9_BaseModel):
@@ -13598,6 +13603,36 @@ async def s5f9_create_queued_chat(
                     "message": str(exc),
                 },
             ) from exc
+
+        if _s5f19_real_user_creation_helper_enabled():
+            try:
+                queued = _s5f19_create_real_user_queued_chat_job(
+                    authenticated_user_id=auth_user.user_id,
+                    payload=guard_payload,
+                )
+            except _S5F19_RealUserQueuedChatCreationError as exc:
+                raise _S5F9_HTTPException(
+                    status_code=400,
+                    detail={
+                        "ok": False,
+                        "error": "real_user_queued_chat_creation_failed_stage_5f19",
+                        "feature": "laptop_queued_chat",
+                        "stage": "5f19",
+                        "message": str(exc),
+                    },
+                ) from exc
+
+            return {
+                "ok": True,
+                "stage": "5f19",
+                "route_source": "stage_5f19_real_user_route",
+                "real_user": True,
+                "job_id": queued.job_id,
+                "status": queued.status,
+                "chat_id": queued.chat_id,
+                "user_message_id": queued.user_message_id,
+                "payload_json": queued.payload_json,
+            }
 
         raise _S5F9_HTTPException(
             status_code=501,
