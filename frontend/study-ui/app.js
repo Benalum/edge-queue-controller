@@ -872,16 +872,57 @@ if (companionConfirmWrongBtn) {
     return "";
   }
 
+  // COMPANION_TRANSIENT_GATEWAY_V1
+  // Cloudflare/proxy errors must never be saved as assistant chat text.
+  // Treat 502/503/504 and HTML error pages as transient gateway failures.
   function getJobId(data) {
-    return data?.id || data?.job?.id || data?.result?.id || null;
+    return data?.job_id || data?.id || data?.job?.id || data?.result?.job_id || data?.result?.id || null;
+  }
+
+  function getPollUrl(data) {
+    return data?.poll_url || data?.job?.poll_url || data?.result?.poll_url || "";
   }
 
   function getJobStatus(data) {
     return data?.status || data?.job?.status || data?.result?.status || "";
   }
 
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function isCloudflareHtml(text) {
+    const value = String(text || "").trim().toLowerCase();
+    return (
+      value.startsWith("<!doctype html") ||
+      value.startsWith("<html") ||
+      value.includes("cloudflare") && value.includes("bad gateway") ||
+      value.includes("error code 502") ||
+      value.includes("error code 503") ||
+      value.includes("error code 504")
+    );
+  }
+
+  function isTransientStatus(status) {
+    return [408, 425, 429, 500, 502, 503, 504].includes(Number(status));
+  }
+
+  function transientGatewayError(message, status = 0) {
+    const err = new Error(message || "Temporary gateway issue while the companion is responding.");
+    err.transient = true;
+    err.status = status;
+    return err;
+  }
+
   async function fetchJson(url, options) {
-    const res = await fetch(url, options);
+    let res;
+
+    try {
+      res = await fetch(url, options);
+    } catch (err) {
+      throw transientGatewayError("Network/proxy connection interrupted while the companion was responding.");
+    }
+
     const text = await res.text();
 
     let data = null;
@@ -892,28 +933,47 @@ if (companionConfirmWrongBtn) {
     }
 
     if (!res.ok) {
-      const message = data?.detail || data?.error || data?.message || text || `${res.status} ${res.statusText}`;
+      if (isTransientStatus(res.status) || isCloudflareHtml(text)) {
+        throw transientGatewayError(
+          `Temporary gateway error ${res.status || ""}. The companion may still be working.`,
+          res.status
+        );
+      }
+
+      const message = data?.detail || data?.error || data?.message || `${res.status} ${res.statusText}`;
       throw new Error(message);
+    }
+
+    if (isCloudflareHtml(text)) {
+      throw transientGatewayError("Temporary Cloudflare gateway page returned instead of JSON.");
     }
 
     return data;
   }
 
-  async function pollJob(jobId) {
+  async function pollJob(jobId, pollUrl = "") {
     const base = getApiBase();
+
+    function normalizePollUrl(path) {
+      if (!path) return "";
+      if (/^https?:\/\//i.test(path)) return path;
+      if (path.startsWith("/public/")) return `${base}${path.replace(/^\/public/, "")}`;
+      if (path.startsWith("/api/")) return `${base}${path.replace(/^\/api/, "")}`;
+      return `${base}${path.startsWith("/") ? path : `/${path}`}`;
+    }
+
     const paths = [
+      normalizePollUrl(pollUrl),
       `${base}/jobs/${jobId}`,
       `${base}/job/${jobId}`,
-    ];
+    ].filter(Boolean);
 
-    for (let attempt = 0; attempt < 24; attempt++) {
+    for (let attempt = 0; attempt < 48; attempt++) {
       for (const url of paths) {
         try {
           const data = await fetchJson(url, { headers: jsonHeaders() });
           const text = extractText(data);
           const status = getJobStatus(data);
-
-          if (text && !/^Job \d+ is queued/i.test(text)) return text;
 
           if (["failed", "error"].includes(String(status).toLowerCase())) {
             throw new Error(data?.last_error || data?.error || `Job ${jobId} failed`);
@@ -922,15 +982,21 @@ if (companionConfirmWrongBtn) {
           if (["forwarded", "done", "complete", "completed", "succeeded", "success"].includes(String(status).toLowerCase()) && text) {
             return text;
           }
+
+          if (text && !/queued|poll|pending|running/i.test(text)) return text;
         } catch (err) {
-          if (attempt > 2) console.warn("Job poll issue:", err);
+          if (!err.transient && attempt > 2) console.warn("Job poll issue:", err);
         }
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 2500));
+      if (attempt === 4) {
+        addCompanionMessage("system", "The companion is still thinking. I am waiting for the queued response instead of showing a gateway error.");
+      }
+
+      await sleep(2500);
     }
 
-    return `Your message was queued as job ${jobId}, but I could not fetch the final answer yet. Check the queue status or try again.`;
+    return `Your message was queued as job ${jobId}, but the browser could not fetch the final answer yet. Refresh in a moment or try again.`;
   }
 
   function buildCompanionPrompt(message) {
@@ -997,22 +1063,26 @@ if (companionConfirmWrongBtn) {
           body: JSON.stringify(attempt.body),
         });
 
-        const directText = extractText(data);
         const jobId = getJobId(data);
+        const pollUrl = getPollUrl(data);
         const status = getJobStatus(data);
-
-        if (directText && !/^Job \d+ is queued/i.test(directText)) return directText;
+        const directText = extractText(data);
 
         if (jobId) {
           if (String(status).toLowerCase() === "queued") {
             addCompanionMessage("system", `Queued with Gemma E4B as job ${jobId}. Waiting for the worker...`);
           }
-          return await pollJob(jobId);
+          return await pollJob(jobId, pollUrl);
         }
 
-        if (directText) return directText;
+        if (directText && !/queued|poll|pending|running/i.test(directText)) return directText;
       } catch (err) {
-        errors.push(`${attempt.url}: ${err.message}`);
+        if (err.transient) {
+          errors.push(`${attempt.url}: temporary gateway issue`);
+          await sleep(1500);
+        } else {
+          errors.push(`${attempt.url}: ${err.message}`);
+        }
       }
     }
 
@@ -1071,11 +1141,15 @@ if (companionConfirmWrongBtn) {
       if (status) status.textContent = "";
     } catch (err) {
       console.error(err);
+      const cleanError = err.transient
+        ? "The companion may still be working, but the gateway timed out before the browser received the final response. I did not save the raw Cloudflare error page. Refresh in a moment or try again."
+        : err.message;
+
       addCompanionMessage(
         "system",
-        "I could not reach the companion endpoint yet. The Study page can still work, but the Worker/API route may need a companion route added.\n\n" + err.message
+        "I could not finish the companion response yet.\n\n" + cleanError
       );
-      if (status) status.textContent = "Companion API route failed.";
+      if (status) status.textContent = err.transient ? "Companion is still pending after a gateway timeout." : "Companion API route failed.";
     } finally {
       if (sendBtn) sendBtn.disabled = false;
     }

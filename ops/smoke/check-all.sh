@@ -64,6 +64,10 @@ echo "=== credit pool lifecycle behavior ==="
 ops/smoke/check-credit-pool-lifecycle.sh
 
 echo
+echo "=== companion pending UX ==="
+ops/smoke/check-companion-pending-ux.sh
+
+echo
 echo "=== companion helper definitions ==="
 ops/smoke/check-companion-helper-duplicates.sh
 
