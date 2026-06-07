@@ -88,6 +88,10 @@ echo "=== credit ownership ==="
 ops/smoke/check-credit-ownership.sh
 
 echo
+echo "=== route ownership contract ==="
+ops/smoke/check-route-ownership-contract.sh
+
+echo
 echo "=== public route map consistency ==="
 ops/smoke/check-public-route-map-consistency.sh
 
