@@ -67,6 +67,24 @@ if wrapper_path.exists():
         require(route in mod.FULL_APP_ROUTES, f"{route} missing from FULL_APP_ROUTES")
 
 public_gateway = read_text("public_gateway.py")
+
+# Public gateway should not redefine the same route helper. Duplicate top-level
+# helper names make routing behavior depend on file order.
+if public_gateway:
+    import ast
+    tree = ast.parse(public_gateway)
+    definitions = {}
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            definitions.setdefault(node.name, []).append(node.lineno)
+
+    for name in ["_system_proxy_json_request"]:
+        lines = definitions.get(name, [])
+        require(
+            len(lines) == 1,
+            f"public_gateway.py has duplicate helper {name} at lines {lines}",
+        )
+
 for marker in [
     "/public/study/decks",
     "/public/study/progress",
