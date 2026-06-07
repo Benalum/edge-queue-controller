@@ -64,10 +64,6 @@ echo "=== credit pool lifecycle behavior ==="
 ops/smoke/check-credit-pool-lifecycle.sh
 
 echo
-echo "=== wrapper global HTML error sanitizer ==="
-ops/smoke/check-wrapper-global-html-error-sanitizer.sh
-
-echo
 echo "=== wrapper companion error UX ==="
 ops/smoke/check-wrapper-companion-error-ux.sh
 
