@@ -13332,3 +13332,139 @@ async def s5e15_laptop_queue_worker_heartbeat(
         "ok": True,
         "worker": _s5e15_json.loads(raw),
     }
+
+
+# === Stage 5E-16: internal laptop-owned queue synthetic recovery endpoint ===
+#
+# Additive internal-token protected endpoint.
+# Synthetic-safe recovery behavior.
+# No schema changes.
+# No persistent worker behavior.
+# No requeue behavior yet.
+
+import json as _s5e16_json
+
+from fastapi import Header as _S5E16_Header
+from fastapi import HTTPException as _S5E16_HTTPException
+from pydantic import BaseModel as _S5E16_BaseModel
+
+
+class _S5E16QueueRecoverRequest(_S5E16_BaseModel):
+    stale_seconds: int = 120
+    fail_stuck_jobs: bool = True
+    synthetic_prefixes: list[str] | None = None
+
+
+def _s5e16_safe_stale_seconds(value: int) -> int:
+    try:
+        seconds = int(value)
+    except Exception:
+        raise _S5E16_HTTPException(status_code=400, detail="stale_seconds must be an integer")
+
+    if seconds < 1:
+        raise _S5E16_HTTPException(status_code=400, detail="stale_seconds must be >= 1")
+
+    if seconds > 86400:
+        raise _S5E16_HTTPException(status_code=400, detail="stale_seconds must be <= 86400")
+
+    return seconds
+
+
+def _s5e16_safe_prefixes(prefixes: list[str] | None) -> list[str]:
+    active = prefixes or ["s5e", "synthetic"]
+
+    cleaned = []
+    for item in active:
+        text = str(item or "").strip()
+        if not text:
+            continue
+        if len(text) > 64:
+            raise _S5E16_HTTPException(status_code=400, detail="synthetic prefix too long")
+        cleaned.append(text)
+
+    if not cleaned:
+        raise _S5E16_HTTPException(status_code=400, detail="at least one synthetic prefix is required")
+
+    return cleaned
+
+
+def _s5e16_prefix_sql(prefixes: list[str], column_name: str) -> str:
+    clauses = []
+    for prefix in prefixes:
+        safe = prefix.replace("'", "''")
+        clauses.append(f"{column_name} LIKE '{safe}%'")
+    return "(" + " OR ".join(clauses) + ")"
+
+
+@app.post("/internal/laptop-queue/recover")
+async def s5e16_laptop_queue_recover(
+    request: _S5E16QueueRecoverRequest,
+    x_laptop_queue_token: str | None = _S5E16_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _s5e4_require_internal_queue_token(x_laptop_queue_token)
+    client = _s5e4_queue_client()
+
+    stale_seconds = _s5e16_safe_stale_seconds(request.stale_seconds)
+    prefixes = _s5e16_safe_prefixes(request.synthetic_prefixes)
+    job_prefix_sql = _s5e16_prefix_sql(prefixes, "j.id")
+    worker_prefix_sql = _s5e16_prefix_sql(prefixes, "w.id")
+
+    if not request.fail_stuck_jobs:
+        raise _S5E16_HTTPException(
+            status_code=400,
+            detail="Stage 5E-16 only supports fail_stuck_jobs=true; requeue is postponed.",
+        )
+
+    try:
+        raw = client.psql_at(
+            f"""
+            WITH stale_workers AS (
+                SELECT
+                    w.id,
+                    w.current_job_id
+                FROM app_workers w
+                WHERE w.last_heartbeat_at IS NOT NULL
+                  AND w.last_heartbeat_at < now() - make_interval(secs => {stale_seconds})
+                  AND w.status <> 'offline'
+                  AND {worker_prefix_sql}
+            ),
+            failed_jobs AS (
+                UPDATE app_jobs j
+                SET status = 'failed',
+                    error_text = 'Recovered by Stage 5E-16: assigned worker heartbeat stale',
+                    finished_at = COALESCE(j.finished_at, now()),
+                    updated_at = now()
+                FROM stale_workers sw
+                WHERE j.status = 'running'
+                  AND j.assigned_worker_id = sw.id
+                  AND {job_prefix_sql}
+                RETURNING j.id
+            ),
+            offline_workers AS (
+                UPDATE app_workers w
+                SET status = 'offline',
+                    current_job_id = NULL,
+                    updated_at = now()
+                FROM stale_workers sw
+                WHERE w.id = sw.id
+                RETURNING w.id
+            )
+            SELECT json_build_object(
+                'stale_worker_count', COALESCE((SELECT COUNT(*) FROM stale_workers), 0),
+                'offline_worker_count', COALESCE((SELECT COUNT(*) FROM offline_workers), 0),
+                'failed_job_count', COALESCE((SELECT COUNT(*) FROM failed_jobs), 0),
+                'offline_worker_ids', COALESCE((SELECT json_agg(id) FROM offline_workers), '[]'::json),
+                'failed_job_ids', COALESCE((SELECT json_agg(id) FROM failed_jobs), '[]'::json)
+            )::text;
+            """
+        )
+    except Exception as exc:
+        raise _S5E16_HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return {
+        "ok": True,
+        "recovery": _s5e16_json.loads(raw or "{}"),
+        "mode": "fail_stuck_jobs",
+        "stale_seconds": stale_seconds,
+        "synthetic_prefixes": prefixes,
+    }
