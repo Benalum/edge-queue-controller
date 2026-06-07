@@ -55,6 +55,61 @@ const authState = {
 // Mirror the token into a same-site cookie so the always-on Python wrapper
 // can decide whether /study, /companion, /calendar, and /profile should proxy
 // the full CT 101 app or serve public summaries.
+
+// GLOBAL_HTML_ERROR_SANITIZER_V1
+function sanitizeVisibleErrorText(value) {
+  const text = String(value ?? "");
+  if (typeof cleanCompanionErrorMessage === "function") {
+    return cleanCompanionErrorMessage(text);
+  }
+
+  const lower = text.trim().toLowerCase();
+  if (
+    lower.startsWith("<!doctype html") ||
+    lower.startsWith("<html") ||
+    (lower.includes("cloudflare") && lower.includes("bad gateway")) ||
+    lower.includes("error code 502") ||
+    lower.includes("error code 503") ||
+    lower.includes("error code 504")
+  ) {
+    return "The companion is still working or the gateway timed out before the browser received the final response. I will not show the raw Cloudflare error page. Refresh in a moment or try again.";
+  }
+
+  return text;
+}
+
+function installGlobalHtmlErrorSanitizer() {
+  if (window.__globalHtmlErrorSanitizerInstalled) return;
+  window.__globalHtmlErrorSanitizerInstalled = true;
+
+  const textDescriptor = Object.getOwnPropertyDescriptor(Node.prototype, "textContent");
+  if (textDescriptor && textDescriptor.set && textDescriptor.get) {
+    Object.defineProperty(Node.prototype, "textContent", {
+      get: textDescriptor.get,
+      set(value) {
+        return textDescriptor.set.call(this, sanitizeVisibleErrorText(value));
+      },
+      configurable: true,
+      enumerable: textDescriptor.enumerable,
+    });
+  }
+
+  const htmlDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
+  if (htmlDescriptor && htmlDescriptor.set && htmlDescriptor.get) {
+    Object.defineProperty(Element.prototype, "innerHTML", {
+      get: htmlDescriptor.get,
+      set(value) {
+        return htmlDescriptor.set.call(this, sanitizeVisibleErrorText(value));
+      },
+      configurable: true,
+      enumerable: htmlDescriptor.enumerable,
+    });
+  }
+}
+
+installGlobalHtmlErrorSanitizer();
+
+
 function syncAuthRouteCookie() {
   const secure = location.protocol === "https:" ? "; Secure" : "";
 
