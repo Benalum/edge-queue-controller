@@ -302,9 +302,37 @@ class LaptopQueueClient:
         result: dict[str, Any] | None = None,
         error_text: str | None = None,
     ) -> dict[str, Any]:
+        """
+        Complete or fail a running job.
+
+        Stage 5E-17 safety:
+        - running job assigned to the same worker can transition to complete/failed
+        - duplicate success for an already complete job returns current row without mutation
+        - duplicate failure for an already failed job returns current row without mutation
+        - late success after failure/recovery is refused
+        - late failure after success is refused
+        - wrong worker is refused
+        - queued jobs are refused
+        """
         status = "complete" if ok else "failed"
         result_sql = _jsonb_literal(result or {}) if ok else "NULL"
         error_sql = "NULL" if ok else _sql_literal(error_text or "Job failed")
+
+        row_columns = """
+                    id,
+                    user_id,
+                    job_type,
+                    status,
+                    requested_model,
+                    assigned_worker_id,
+                    payload_json,
+                    result_json,
+                    error_text,
+                    created_at,
+                    updated_at,
+                    started_at,
+                    finished_at
+        """
 
         raw = self.psql_at(
             f"""
@@ -319,19 +347,7 @@ class LaptopQueueClient:
                   AND assigned_worker_id = {_sql_literal(worker_id)}
                   AND status = 'running'
                 RETURNING
-                    id,
-                    user_id,
-                    job_type,
-                    status,
-                    requested_model,
-                    assigned_worker_id,
-                    payload_json,
-                    result_json,
-                    error_text,
-                    created_at,
-                    updated_at,
-                    started_at,
-                    finished_at
+                    {row_columns}
             ),
             updated_worker AS (
                 UPDATE app_workers
@@ -347,10 +363,55 @@ class LaptopQueueClient:
             """
         )
 
-        if not raw:
-            raise LaptopQueueError(f"Could not complete job {job_id}")
+        if raw:
+            return json.loads(raw)
 
-        return json.loads(raw)
+        existing_raw = self.psql_at(
+            f"""
+            SELECT COALESCE(
+                (
+                    SELECT row_to_json(j)::text
+                    FROM (
+                        SELECT
+                            {row_columns}
+                        FROM app_jobs
+                        WHERE id = {_sql_literal(job_id)}
+                    ) j
+                ),
+                ''
+            );
+            """
+        )
+
+        if not existing_raw:
+            raise LaptopQueueError(f"Could not complete job {job_id}: job not found")
+
+        existing = json.loads(existing_raw)
+        existing_status = existing.get("status")
+        assigned_worker_id = existing.get("assigned_worker_id")
+
+        if assigned_worker_id != worker_id:
+            raise LaptopQueueError(
+                f"Could not complete job {job_id}: assigned worker mismatch"
+            )
+
+        if existing_status == "complete":
+            if ok:
+                return existing
+            raise LaptopQueueError(
+                f"Could not fail job {job_id}: job is already complete"
+            )
+
+        if existing_status == "failed":
+            if not ok:
+                return existing
+            raise LaptopQueueError(
+                f"Could not complete job {job_id}: job is already failed"
+            )
+
+        raise LaptopQueueError(
+            f"Could not complete job {job_id}: job status is {existing_status}"
+        )
 
     def get_worker_state(self, *, worker_id: str) -> str | None:
         value = self.psql_at(
