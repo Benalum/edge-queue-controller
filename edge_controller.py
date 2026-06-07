@@ -13089,3 +13089,246 @@ async def s5e4_laptop_queue_synthetic_cleanup(
         "ok": leftovers == 0,
         "leftover_count": leftovers,
     }
+
+
+# === Stage 5E-15: internal laptop-owned queue worker register/heartbeat endpoints ===
+#
+# Additive internal-token protected endpoints.
+# No recovery behavior yet.
+# No schema changes.
+# No persistent worker behavior.
+
+import json as _s5e15_json
+from typing import Any as _S5E15_Any
+
+from fastapi import Header as _S5E15_Header
+from fastapi import HTTPException as _S5E15_HTTPException
+from pydantic import BaseModel as _S5E15_BaseModel
+
+
+def _s5e15_sql_literal(value):
+    if value is None:
+        return "NULL"
+    text = str(value)
+    return "'" + text.replace("'", "''") + "'"
+
+
+def _s5e15_jsonb_literal(value):
+    return _s5e15_sql_literal(
+        _s5e15_json.dumps(value, separators=(",", ":"), sort_keys=True)
+    ) + "::jsonb"
+
+
+class _S5E15WorkerRegisterRequest(_S5E15_BaseModel):
+    worker_id: str
+    name: str | None = None
+    worker_node_id: str
+    node_name: str | None = None
+    node_type: str = "synthetic"
+    host_machine: str = "ct101"
+    tailscale_ip: str | None = None
+    lan_ip: str | None = None
+    capabilities: dict[str, _S5E15_Any] | None = None
+    idle_shutdown_seconds: int | None = 300
+    status: str = "idle"
+
+
+class _S5E15WorkerHeartbeatRequest(_S5E15_BaseModel):
+    worker_id: str
+    worker_node_id: str | None = None
+    status: str = "idle"
+    current_job_id: str | None = None
+
+
+def _s5e15_validate_worker_status(status: str) -> str:
+    cleaned = (status or "").strip().lower()
+    allowed = {"idle", "busy", "offline", "error"}
+    if cleaned not in allowed:
+        raise _S5E15_HTTPException(
+            status_code=400,
+            detail=f"Invalid worker status: {status}",
+        )
+    return cleaned
+
+
+@app.post("/internal/laptop-queue/workers/register")
+async def s5e15_laptop_queue_worker_register(
+    request: _S5E15WorkerRegisterRequest,
+    x_laptop_queue_token: str | None = _S5E15_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _s5e4_require_internal_queue_token(x_laptop_queue_token)
+    client = _s5e4_queue_client()
+
+    status = _s5e15_validate_worker_status(request.status)
+    worker_name = request.name or request.worker_id
+    node_name = request.node_name or request.worker_node_id
+    capabilities = request.capabilities or {"job_types": ["ollama_chat"]}
+    idle_shutdown_seconds = request.idle_shutdown_seconds or 300
+
+    try:
+        raw = client.psql_at(
+            f"""
+            WITH node_upsert AS (
+                INSERT INTO app_worker_nodes (
+                    id,
+                    name,
+                    node_type,
+                    host_machine,
+                    tailscale_ip,
+                    lan_ip,
+                    enabled,
+                    status,
+                    capabilities,
+                    notes,
+                    last_seen_at,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    {_s5e15_sql_literal(request.worker_node_id)},
+                    {_s5e15_sql_literal(node_name)},
+                    {_s5e15_sql_literal(request.node_type)},
+                    {_s5e15_sql_literal(request.host_machine)},
+                    {_s5e15_sql_literal(request.tailscale_ip)},
+                    {_s5e15_sql_literal(request.lan_ip)},
+                    TRUE,
+                    'online',
+                    {_s5e15_jsonb_literal(capabilities)},
+                    'Registered through Stage 5E-15 laptop queue worker endpoint.',
+                    now(),
+                    now(),
+                    now()
+                )
+                ON CONFLICT (id) DO UPDATE
+                SET name = EXCLUDED.name,
+                    node_type = EXCLUDED.node_type,
+                    host_machine = EXCLUDED.host_machine,
+                    tailscale_ip = EXCLUDED.tailscale_ip,
+                    lan_ip = EXCLUDED.lan_ip,
+                    enabled = TRUE,
+                    status = 'online',
+                    capabilities = EXCLUDED.capabilities,
+                    last_seen_at = now(),
+                    updated_at = now()
+                RETURNING id
+            ),
+            worker_upsert AS (
+                INSERT INTO app_workers (
+                    id,
+                    name,
+                    status,
+                    capabilities_json,
+                    current_job_id,
+                    worker_node_id,
+                    last_heartbeat_at,
+                    idle_shutdown_seconds,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    {_s5e15_sql_literal(request.worker_id)},
+                    {_s5e15_sql_literal(worker_name)},
+                    {_s5e15_sql_literal(status)},
+                    {_s5e15_jsonb_literal(capabilities)},
+                    NULL,
+                    {_s5e15_sql_literal(request.worker_node_id)},
+                    now(),
+                    {int(idle_shutdown_seconds)},
+                    now(),
+                    now()
+                )
+                ON CONFLICT (id) DO UPDATE
+                SET name = EXCLUDED.name,
+                    status = EXCLUDED.status,
+                    capabilities_json = EXCLUDED.capabilities_json,
+                    worker_node_id = EXCLUDED.worker_node_id,
+                    last_heartbeat_at = now(),
+                    idle_shutdown_seconds = EXCLUDED.idle_shutdown_seconds,
+                    updated_at = now()
+                RETURNING
+                    id,
+                    name,
+                    status,
+                    capabilities_json,
+                    current_job_id,
+                    worker_node_id,
+                    last_heartbeat_at,
+                    idle_shutdown_seconds,
+                    created_at,
+                    updated_at
+            )
+            SELECT COALESCE((SELECT row_to_json(w)::text FROM worker_upsert w), '');
+            """
+        )
+    except Exception as exc:
+        raise _S5E15_HTTPException(status_code=500, detail=str(exc)) from exc
+
+    if not raw:
+        raise _S5E15_HTTPException(status_code=500, detail="Worker registration returned no row.")
+
+    return {
+        "ok": True,
+        "worker": _s5e15_json.loads(raw),
+    }
+
+
+@app.post("/internal/laptop-queue/workers/heartbeat")
+async def s5e15_laptop_queue_worker_heartbeat(
+    request: _S5E15WorkerHeartbeatRequest,
+    x_laptop_queue_token: str | None = _S5E15_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _s5e4_require_internal_queue_token(x_laptop_queue_token)
+    client = _s5e4_queue_client()
+
+    status = _s5e15_validate_worker_status(request.status)
+
+    try:
+        node_update = ""
+        if request.worker_node_id:
+            node_update = f"""
+            UPDATE app_worker_nodes
+            SET last_seen_at = now(),
+                status = CASE WHEN enabled THEN 'online' ELSE status END,
+                updated_at = now()
+            WHERE id = {_s5e15_sql_literal(request.worker_node_id)};
+            """
+
+        raw = client.psql_at(
+            f"""
+            {node_update}
+
+            WITH updated_worker AS (
+                UPDATE app_workers
+                SET status = {_s5e15_sql_literal(status)},
+                    current_job_id = {_s5e15_sql_literal(request.current_job_id)},
+                    last_heartbeat_at = now(),
+                    updated_at = now()
+                WHERE id = {_s5e15_sql_literal(request.worker_id)}
+                RETURNING
+                    id,
+                    name,
+                    status,
+                    capabilities_json,
+                    current_job_id,
+                    worker_node_id,
+                    last_heartbeat_at,
+                    idle_shutdown_seconds,
+                    created_at,
+                    updated_at
+            )
+            SELECT COALESCE((SELECT row_to_json(w)::text FROM updated_worker w), '');
+            """
+        )
+    except Exception as exc:
+        raise _S5E15_HTTPException(status_code=500, detail=str(exc)) from exc
+
+    if not raw:
+        raise _S5E15_HTTPException(
+            status_code=404,
+            detail=f"Worker not found: {request.worker_id}",
+        )
+
+    return {
+        "ok": True,
+        "worker": _s5e15_json.loads(raw),
+    }
