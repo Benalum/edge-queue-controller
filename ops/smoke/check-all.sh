@@ -64,6 +64,10 @@ echo "=== credit pool lifecycle behavior ==="
 ops/smoke/check-credit-pool-lifecycle.sh
 
 echo
+echo "=== ChatGPT bridge workflow doc ==="
+ops/smoke/check-chatgpt-bridge-workflow-doc.sh
+
+echo
 echo "=== wrapper companion error UX ==="
 ops/smoke/check-wrapper-companion-error-ux.sh
 
