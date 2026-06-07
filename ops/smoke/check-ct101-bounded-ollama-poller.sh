@@ -14,6 +14,10 @@ CT_TOKEN_FILE="${CT101_LAPTOP_QUEUE_TOKEN_FILE:-/opt/ai-platform/.secrets/laptop
 PORT="${LAPTOP_QUEUE_CT101_BOUNDED_OLLAMA_SMOKE_PORT:-7110}"
 IDS_FILE="/tmp/ct101-laptop-queue-s5e21-ids-$PORT.json"
 
+# Ollama is inside Docker on CT101. Override if the container IP changes:
+#   export CT101_OLLAMA_BASE_URL=http://<ollama_container_ip>:11434
+CT101_OLLAMA_BASE_URL="${CT101_OLLAMA_BASE_URL:-http://172.20.0.2:11434}"
+
 if [ ! -f "$LAPTOP_TOKEN_FILE" ]; then
   echo "FAIL: missing laptop token file: $LAPTOP_TOKEN_FILE"
   exit 1
@@ -31,15 +35,18 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 
-OLLAMA_MODEL="$(ssh "$CT_SSH" "pct exec $CT_ID -- python3 - <<'PY'
+OLLAMA_MODEL="$(ssh "$CT_SSH" "pct exec $CT_ID -- env CT101_OLLAMA_BASE_URL='$CT101_OLLAMA_BASE_URL' python3 - <<'PY'
 import json
+import os
 import urllib.request
 
+base_url = os.environ.get('CT101_OLLAMA_BASE_URL', 'http://172.20.0.2:11434').rstrip('/')
+
 try:
-    with urllib.request.urlopen('http://127.0.0.1:11434/api/tags', timeout=10) as resp:
+    with urllib.request.urlopen(base_url + '/api/tags', timeout=10) as resp:
         data = json.loads(resp.read().decode('utf-8'))
 except Exception as exc:
-    raise SystemExit(f'FAIL: could not query Ollama tags: {exc}')
+    raise SystemExit(f'FAIL: could not query Ollama tags at {base_url}: {exc}')
 
 models = data.get('models') or []
 if not models:
@@ -54,6 +61,7 @@ if [ -z "$OLLAMA_MODEL" ]; then
   exit 1
 fi
 
+echo "Using CT101 Ollama URL: $CT101_OLLAMA_BASE_URL"
 echo "Using CT101 Ollama model: $OLLAMA_MODEL"
 
 if command -v tailscale >/dev/null 2>&1; then
@@ -285,7 +293,7 @@ REMOTE
 
 echo "Running CT101 bounded Ollama poller"
 
-ssh "$CT_SSH" "pct exec $CT_ID -- env LAPTOP_QUEUE_ENABLED='1' LAPTOP_QUEUE_SYNTHETIC_ONLY='1' LAPTOP_QUEUE_POLL_MODE='bounded' LAPTOP_QUEUE_EXECUTION_MODE='ollama' LAPTOP_QUEUE_BASE_URL='$BASE_URL' LAPTOP_QUEUE_TOKEN_FILE='$CT_TOKEN_FILE' LAPTOP_QUEUE_OLLAMA_BASE_URL='http://127.0.0.1:11434' LAPTOP_QUEUE_OLLAMA_TIMEOUT_SECONDS='120' LAPTOP_QUEUE_OLLAMA_MODEL_FALLBACK='$OLLAMA_MODEL' IDS_B64='$IDS_B64' bash -s" <<'REMOTE'
+ssh "$CT_SSH" "pct exec $CT_ID -- env LAPTOP_QUEUE_ENABLED='1' LAPTOP_QUEUE_SYNTHETIC_ONLY='1' LAPTOP_QUEUE_POLL_MODE='bounded' LAPTOP_QUEUE_EXECUTION_MODE='ollama' LAPTOP_QUEUE_BASE_URL='$BASE_URL' LAPTOP_QUEUE_TOKEN_FILE='$CT_TOKEN_FILE' LAPTOP_QUEUE_OLLAMA_BASE_URL='$CT101_OLLAMA_BASE_URL' LAPTOP_QUEUE_OLLAMA_TIMEOUT_SECONDS='240' LAPTOP_QUEUE_OLLAMA_NUM_PREDICT='16' LAPTOP_QUEUE_OLLAMA_MODEL_FALLBACK='$OLLAMA_MODEL' IDS_B64='$IDS_B64' bash -s" <<'REMOTE'
 set -euo pipefail
 
 IDS_JSON="$(printf '%s' "$IDS_B64" | base64 -d)"
