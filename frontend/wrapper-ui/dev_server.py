@@ -28,6 +28,14 @@ def map_api(path):
         "/api/auth/login": "/system/session/login",
         "/api/auth/register": "/system/session/register",
         "/api/auth/logout": "/system/session/logout-safe",
+        # AUTH_EXTRA_CONTROLLER_ROUTES_V1
+        # Keep browser auth flows on the controller instead of falling through
+        # to the public gateway's generic /api -> / path rewrite.
+        "/api/auth/forgot-password": "/system/session/forgot-password",
+        "/api/auth/reset-password": "/system/session/reset-password",
+        "/api/auth/change-password": "/system/session/change-password",
+        "/api/auth/verify-email": "/api/auth/verify-email",
+        "/api/auth/resend-verification": "/api/auth/resend-verification",
         "/api/account/credits": "/system/account/credits",
         "/api/account/credit-pools": "/system/account/credit-pools",
     }
