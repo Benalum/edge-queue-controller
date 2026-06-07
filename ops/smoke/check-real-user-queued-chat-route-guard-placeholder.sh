@@ -107,11 +107,13 @@ if [ "$get_code" = "501" ]; then
     exit 1
   fi
 elif [ "$get_code" = "401" ]; then
-  grep -q "queued_chat_session_auth_failed_stage_5f17" "$get_body" || {
-    echo "FAIL: GET 401 missing queued_chat_session_auth_failed_stage_5f17"
+  if grep -q "queued_chat_session_auth_failed_stage_5f17" "$get_body" || grep -q "queued_chat_status_session_auth_failed_stage_5f20" "$get_body"; then
+    true
+  else
+    echo "FAIL: GET 401 missing expected queued chat auth failure marker"
     cat "$get_body"
     exit 1
-  }
+  fi
 else
   echo "FAIL: real-user placeholder GET expected 501 or 401, got $get_code"
   cat "$get_body"

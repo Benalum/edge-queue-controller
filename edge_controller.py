@@ -13502,6 +13502,10 @@ from edge_modules.chat_queue_real_user_creation import (
     create_real_user_queued_chat_job as _s5f19_create_real_user_queued_chat_job,
     real_user_creation_helper_enabled as _s5f19_real_user_creation_helper_enabled,
 )
+from edge_modules.chat_queue_real_user_guard import (
+    RealUserQueuedChatGuardError as _S5F20_RealUserQueuedChatGuardError,
+    validate_real_user_queued_chat_status_request as _s5f20_validate_real_user_queued_chat_status_request,
+)
 
 
 class _S5F9QueuedChatRequest(_S5F9_BaseModel):
@@ -13689,21 +13693,97 @@ async def s5f9_create_queued_chat(
 
 
 @app.get("/api/chat/queued/{job_id}")
-async def s5f9_get_queued_chat_status(job_id: str):
+async def s5f9_get_queued_chat_status(
+    job_id: str,
+    x_queued_chat_session_token: str | None = _S5F9_Header(default=None, alias="X-Queued-Chat-Session-Token"),
+):
     if not _s5f9_laptop_chat_queue_enabled():
         _s5f9_raise_feature_disabled()
 
     if not _s5f9_laptop_chat_queue_synthetic_only() and _s5f14_laptop_chat_queue_real_users_enabled():
-        raise _S5F9_HTTPException(
-            status_code=501,
-            detail={
-                "ok": False,
-                "error": "real_user_status_not_wired_stage_5f17",
-                "feature": "laptop_queued_chat",
-                "stage": "5f17",
-                "message": "Real-user queued chat status auth is not wired yet.",
-            },
+        try:
+            auth_user = _s5f17_resolve_authenticated_user_from_session_token(
+                session_token=x_queued_chat_session_token
+            )
+        except _S5F17_QueuedChatSessionAuthError as exc:
+            raise _S5F9_HTTPException(
+                status_code=401,
+                detail={
+                    "ok": False,
+                    "error": "queued_chat_status_session_auth_failed_stage_5f20",
+                    "feature": "laptop_queued_chat",
+                    "stage": "5f20",
+                    "message": str(exc),
+                },
+            ) from exc
+
+        try:
+            _s5f20_validate_real_user_queued_chat_status_request(
+                authenticated_user_id=auth_user.user_id,
+                job_id=job_id,
+            )
+        except _S5F20_RealUserQueuedChatGuardError as exc:
+            raise _S5F9_HTTPException(
+                status_code=403,
+                detail={
+                    "ok": False,
+                    "error": "queued_chat_status_ownership_failed_stage_5f20",
+                    "feature": "laptop_queued_chat",
+                    "stage": "5f20",
+                    "message": str(exc),
+                },
+            ) from exc
+
+        raw = _s5f9_psql_at(
+            f"""
+            SELECT COALESCE(
+              (
+                SELECT row_to_json(j)::text
+                FROM (
+                  SELECT
+                    id AS job_id,
+                    user_id,
+                    job_type,
+                    status,
+                    requested_model,
+                    payload_json,
+                    result_json,
+                    error_text,
+                    created_at,
+                    updated_at,
+                    started_at,
+                    finished_at
+                  FROM app_jobs
+                  WHERE id = {_s5f9_sql_literal(job_id)}
+                    AND user_id = {_s5f9_sql_literal(auth_user.user_id)}
+                ) j
+              ),
+              ''
+            );
+            """
         )
+
+        if not raw:
+            raise _S5F9_HTTPException(
+                status_code=404,
+                detail={
+                    "ok": False,
+                    "error": "queued_chat_job_not_found_stage_5f20",
+                    "feature": "laptop_queued_chat",
+                    "stage": "5f20",
+                    "job_id": job_id,
+                },
+            )
+
+        job = _s5f9_json.loads(raw)
+
+        return {
+            "ok": True,
+            "stage": "5f20",
+            "route_source": "stage_5f20_real_user_status_route",
+            "real_user": True,
+            "job": job,
+        }
 
     _s5f9_require_synthetic_mode()
 
