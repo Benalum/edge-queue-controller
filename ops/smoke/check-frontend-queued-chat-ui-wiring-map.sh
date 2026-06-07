@@ -53,11 +53,15 @@ require_fixed docs/frontend-queued-chat-ui-wiring-inspection.md "Chat send/rende
 require_fixed docs/frontend-queued-chat-ui-wiring-inspection.md "Chat markup/script markers in index.html" "html inspection"
 require_fixed docs/frontend-queued-chat-ui-wiring-inspection.md "Dormant queued chat status helper markers" "helper inspection"
 
-if grep -F -n "queued_chat_status.js" frontend/wrapper-ui/app.js frontend/wrapper-ui/index.html >/dev/null 2>&1; then
-  echo "FAIL: queued_chat_status.js is imported before Stage 5F-29"
+if grep -F -n "queued_chat_status.js" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+  echo "FAIL: queued_chat_status.js should not be imported by app.js at this stage"
   exit 1
 fi
 
-echo "OK: queued_chat_status.js remains unimported"
+if grep -F -n "queued_chat_status.js" frontend/wrapper-ui/index.html >/dev/null 2>&1; then
+  echo "OK: queued_chat_status.js is imported by index.html after Stage 5F-29"
+else
+  echo "OK: queued_chat_status.js remains unimported before Stage 5F-29"
+fi
 
 echo "PASS: frontend queued chat UI wiring map markers are present"

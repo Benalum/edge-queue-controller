@@ -45,12 +45,16 @@ require_fixed docs/frontend-queued-chat-status-helper.md "The helper is intentio
 require_fixed docs/frontend-queued-chat-status-helper.md "does not call CT101" "no CT101"
 require_fixed docs/frontend-queued-chat-status-helper.md "Stage 5F-28 should add a guarded frontend UI smoke" "next stage"
 
-if grep -F -n "queued_chat_status.js" frontend/wrapper-ui/app.js frontend/wrapper-ui/index.html >/dev/null 2>&1; then
-  echo "FAIL: queued_chat_status.js is imported before runtime wiring stage"
+if grep -F -n "queued_chat_status.js" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+  echo "FAIL: queued_chat_status.js should not be imported by app.js yet"
   exit 1
 fi
 
-echo "OK: helper is not imported by app.js or index.html"
+if grep -F -n "queued_chat_status.js" frontend/wrapper-ui/index.html >/dev/null 2>&1; then
+  echo "OK: helper is imported by index.html after Stage 5F-29"
+else
+  echo "OK: helper remains unimported before Stage 5F-29"
+fi
 
 if command -v node >/dev/null 2>&1; then
   node --check frontend/wrapper-ui/queued_chat_status.js
