@@ -58,12 +58,16 @@ fi
 
 echo "OK: app.js does not use QueuedChatStatusHelper"
 
-if grep -F -n "/api/chat/queued" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
-  echo "FAIL: app.js should not POST/poll queued chat route yet"
-  exit 1
+if grep -F -n "Stage 5F-32: disabled queued-chat send branch." frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+  require_fixed frontend/wrapper-ui/app.js "/api/chat/queued" "queued route present after Stage 5F-32"
+  require_fixed frontend/wrapper-ui/app.js "wiredToSubmit: false" "queued send branch not wired"
+else
+  if grep -F -n "/api/chat/queued" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+    echo "FAIL: app.js should not POST/poll queued chat route yet"
+    exit 1
+  fi
+  echo "OK: app.js does not call /api/chat/queued"
 fi
-
-echo "OK: app.js does not call /api/chat/queued"
 
 if command -v node >/dev/null 2>&1; then
   node --check frontend/wrapper-ui/queued_chat_status.js

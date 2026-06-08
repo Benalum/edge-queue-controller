@@ -5064,3 +5064,73 @@ async function handleResetPasswordRoute() {
     queuedSendWired: false,
   });
 })(typeof window !== "undefined" ? window : globalThis);
+
+/*
+ * Stage 5F-32: disabled queued-chat send branch.
+ *
+ * This block defines a future queued-chat send helper, but intentionally does not
+ * wire it into the current chat submit flow.
+ *
+ * Safety:
+ * - branch is gated by the disabled-by-default queued-chat frontend flag
+ * - branch is not wired to submit
+ * - legacy/current chat path remains active while flag is false
+ * - does not send client-provided user identity fields
+ * - does not send synthetic-user headers
+ */
+(function stage5f32QueuedChatSendBranch(root) {
+  "use strict";
+
+  async function stage5f32SendQueuedChat(payload) {
+    const enabled = root.AI_PLATFORM_QUEUED_CHAT_ENABLED === true;
+
+    if (!enabled) {
+      return {
+        ok: false,
+        skipped: true,
+        reason: "queued_chat_disabled_stage_5f32",
+        legacyChatPathActive: true,
+      };
+    }
+
+    const cleanPayload = {
+      message: String((payload && payload.message) || ""),
+    };
+
+    if (payload && payload.chat_id) {
+      cleanPayload.chat_id = String(payload.chat_id);
+    }
+
+    if (payload && payload.requested_model) {
+      cleanPayload.requested_model = String(payload.requested_model);
+    }
+
+    const response = await fetch("/api/chat/queued", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(cleanPayload),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        status: response.status,
+        error: data,
+      };
+    }
+
+    return data;
+  }
+
+  root.AI_PLATFORM_QUEUED_CHAT_SEND_BRANCH = Object.freeze({
+    stage: "5f32",
+    source: "app_js_disabled_queued_send_branch",
+    wiredToSubmit: false,
+    sendQueuedChat: stage5f32SendQueuedChat,
+  });
+})(typeof window !== "undefined" ? window : globalThis);

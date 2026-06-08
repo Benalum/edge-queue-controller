@@ -44,12 +44,17 @@ require_fixed docs/frontend-queued-chat-app-flag-detection.md "This stage does n
 require_fixed docs/frontend-queued-chat-app-flag-detection.md "The current non-queued chat path remains active." "legacy active"
 require_fixed docs/frontend-queued-chat-app-flag-detection.md "Stage 5F-32 should add a disabled-by-default app.js queued-send branch" "next stage"
 
-if grep -F -n "/api/chat/queued" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
-  echo "FAIL: app.js should not call /api/chat/queued yet"
-  exit 1
+if grep -F -n "Stage 5F-32: disabled queued-chat send branch." frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+  require_fixed frontend/wrapper-ui/app.js "/api/chat/queued" "queued route present after Stage 5F-32"
+  require_fixed frontend/wrapper-ui/app.js "AI_PLATFORM_QUEUED_CHAT_ENABLED === true" "queued route gated"
+  require_fixed frontend/wrapper-ui/app.js "wiredToSubmit: false" "queued send branch not wired"
+else
+  if grep -F -n "/api/chat/queued" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+    echo "FAIL: app.js should not call /api/chat/queued before Stage 5F-32"
+    exit 1
+  fi
+  echo "OK: app.js does not call /api/chat/queued"
 fi
-
-echo "OK: app.js does not call /api/chat/queued"
 
 if grep -F -n "QueuedChatStatusHelper" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
   echo "FAIL: app.js should not use QueuedChatStatusHelper yet"
