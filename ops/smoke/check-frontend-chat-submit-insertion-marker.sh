@@ -52,7 +52,7 @@ require_fixed frontend/wrapper-ui/app.js "wiredToSubmit: false" "send still not 
 require_fixed frontend/wrapper-ui/app.js "pollerWired: false" "poller still not wired"
 require_fixed frontend/wrapper-ui/app.js "placeholderWired: false" "placeholder still not wired"
 
-call_count="$(grep -Eo 'AI_PLATFORM_QUEUED_CHAT_SUBMIT_DECISION_BRANCH[.]shouldUseQueuedChatForSubmit[[:space:]]*\(' frontend/wrapper-ui/app.js | wc -l | tr -d ' ')"
+call_count="$((grep -Eo 'AI_PLATFORM_QUEUED_CHAT_SUBMIT_DECISION_BRANCH[.]shouldUseQueuedChatForSubmit[[:space:]]*\(' frontend/wrapper-ui/app.js || true) | wc -l | tr -d ' ')"
 
 if [ "$call_count" != "0" ]; then
   echo "FAIL: submit decision helper should not be called in Stage 5F-43"
