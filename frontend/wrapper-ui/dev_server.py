@@ -43,6 +43,13 @@ def map_api(path):
     if path in controller_auth_exact:
         return CONTROLLER, controller_auth_exact[path]
 
+    # STAGE_5G2_LAPTOP_QUEUED_CHAT_CONTROLLER_OWNER_V1
+    # Queued-chat browser API belongs to the laptop controller, not the public
+    # gateway and not CT101's frontend. This does not enable queued chat; the
+    # controller flags still decide whether the route is active.
+    if path == "/api/chat/queued" or path.startswith("/api/chat/queued/"):
+        return CONTROLLER, path
+
     # FAST_BACKEND_PROXY_V2
     # Send CT101 app API calls directly to FastAPI, not through Next.
     if path.startswith("/api/backend/"):
