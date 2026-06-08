@@ -216,6 +216,7 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             "Next-Router-State-Tree",
             "Next-Router-Prefetch",
             "Next-Router-Segment-Prefetch",
+            "X-Queued-Chat-Session-Token",
         ):
             value = self.headers.get(name)
             if value:
