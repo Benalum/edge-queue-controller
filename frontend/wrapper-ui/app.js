@@ -5313,6 +5313,22 @@ async function handleResetPasswordRoute() {
       };
     }
 
+    /*
+     * Stage 5F-41: decisionWired remains the authoritative guard.
+     * Even if a mocked send branch reports wiredToSubmit=true, queued submit
+     * must not be selected until a later stage explicitly wires this decision.
+     */
+    if (!decisionWired) {
+      return {
+        ok: true,
+        stage: "5f41",
+        shouldUseQueuedChat: false,
+        reason: "queued_chat_decision_not_wired_stage_5f41",
+        legacyChatPathActive: true,
+        decisionWired,
+      };
+    }
+
     if (!sendBranch || sendBranch.wiredToSubmit !== true) {
       return {
         ok: true,
