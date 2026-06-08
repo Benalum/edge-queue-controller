@@ -5278,3 +5278,71 @@ async function handleResetPasswordRoute() {
     buildQueuedAssistantPlaceholder: stage5f37BuildQueuedAssistantPlaceholder,
   });
 })(typeof window !== "undefined" ? window : globalThis);
+
+/*
+ * Stage 5F-40: disabled queued-chat submit decision branch.
+ *
+ * This block defines a future decision helper for selecting the queued-chat
+ * submit path, but intentionally does not wire it into the current submit flow.
+ *
+ * Safety:
+ * - decision is gated by the disabled-by-default queued-chat frontend flag
+ * - decision remains false while this branch is not wired
+ * - legacy/current chat path remains active
+ * - does not submit jobs
+ * - does not start polling
+ * - does not send client-provided identity fields
+ * - does not send synthetic-user headers
+ */
+(function stage5f40QueuedChatSubmitDecisionBranch(root) {
+  "use strict";
+
+  function stage5f40ShouldUseQueuedChatForSubmit(context) {
+    const enabled = root.AI_PLATFORM_QUEUED_CHAT_ENABLED === true;
+    const sendBranch = root.AI_PLATFORM_QUEUED_CHAT_SEND_BRANCH;
+    const decisionWired = false;
+
+    if (!enabled) {
+      return {
+        ok: true,
+        stage: "5f40",
+        shouldUseQueuedChat: false,
+        reason: "queued_chat_flag_disabled_stage_5f40",
+        legacyChatPathActive: true,
+        decisionWired,
+      };
+    }
+
+    if (!sendBranch || sendBranch.wiredToSubmit !== true) {
+      return {
+        ok: true,
+        stage: "5f40",
+        shouldUseQueuedChat: false,
+        reason: "queued_chat_submit_not_wired_stage_5f40",
+        legacyChatPathActive: true,
+        decisionWired,
+      };
+    }
+
+    return {
+      ok: true,
+      stage: "5f40",
+      shouldUseQueuedChat: true,
+      reason: "queued_chat_submit_selected_stage_5f40",
+      legacyChatPathActive: false,
+      decisionWired,
+      context: {
+        hasMessage: Boolean(context && String(context.message || "").trim()),
+        hasChat: Boolean(context && context.chat_id),
+        hasModel: Boolean(context && context.requested_model),
+      },
+    };
+  }
+
+  root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_DECISION_BRANCH = Object.freeze({
+    stage: "5f40",
+    source: "app_js_disabled_queued_submit_decision_branch",
+    decisionWired: false,
+    shouldUseQueuedChatForSubmit: stage5f40ShouldUseQueuedChatForSubmit,
+  });
+})(typeof window !== "undefined" ? window : globalThis);
