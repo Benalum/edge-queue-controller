@@ -5383,3 +5383,72 @@ async function handleResetPasswordRoute() {
     shouldUseQueuedChatForSubmit: stage5f40ShouldUseQueuedChatForSubmit,
   });
 })(typeof window !== "undefined" ? window : globalThis);
+
+/*
+ * Stage 5F-45: disabled queued-chat submit dry-run branch.
+ *
+ * This block defines a future dry-run helper for checking whether a submit
+ * could use the queued-chat path, but intentionally does not wire it into
+ * the current submit flow.
+ *
+ * Safety:
+ * - dry-run is gated by the disabled-by-default queued-chat frontend flag
+ * - dry-run remains unwired
+ * - legacy/current chat path remains active
+ * - does not submit jobs
+ * - does not call fetch
+ * - does not start polling
+ * - does not render placeholders
+ * - does not send client-provided identity fields
+ * - does not send synthetic-user headers
+ */
+(function stage5f45QueuedChatSubmitDryRunBranch(root) {
+  "use strict";
+
+  function stage5f45BuildQueuedChatSubmitDryRun(context) {
+    const enabled = root.AI_PLATFORM_QUEUED_CHAT_ENABLED === true;
+    const decisionBranch = root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_DECISION_BRANCH;
+    const sendBranch = root.AI_PLATFORM_QUEUED_CHAT_SEND_BRANCH;
+    const pollBranch = root.AI_PLATFORM_QUEUED_CHAT_STATUS_POLL_BRANCH;
+    const placeholderBranch = root.AI_PLATFORM_QUEUED_CHAT_ASSISTANT_PLACEHOLDER_BRANCH;
+
+    const payload = {
+      message: String((context && context.message) || ""),
+    };
+
+    if (context && context.chat_id) {
+      payload.chat_id = String(context.chat_id);
+    }
+
+    if (context && context.requested_model) {
+      payload.requested_model = String(context.requested_model);
+    }
+
+    return {
+      ok: true,
+      stage: "5f45",
+      source: "app_js_disabled_queued_submit_dry_run_branch",
+      dryRunWired: false,
+      enabled,
+      wouldUseQueuedChat: false,
+      reason: enabled ? "queued_submit_dry_run_unwired_stage_5f45" : "queued_submit_dry_run_flag_disabled_stage_5f45",
+      legacyChatPathActive: true,
+      decisionBranchPresent: Boolean(decisionBranch),
+      sendBranchPresent: Boolean(sendBranch),
+      pollBranchPresent: Boolean(pollBranch),
+      placeholderBranchPresent: Boolean(placeholderBranch),
+      decisionWired: Boolean(decisionBranch && decisionBranch.decisionWired === true),
+      sendWired: Boolean(sendBranch && sendBranch.wiredToSubmit === true),
+      pollerWired: Boolean(pollBranch && pollBranch.pollerWired === true),
+      placeholderWired: Boolean(placeholderBranch && placeholderBranch.placeholderWired === true),
+      payload,
+    };
+  }
+
+  root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_DRY_RUN_BRANCH = Object.freeze({
+    stage: "5f45",
+    source: "app_js_disabled_queued_submit_dry_run_branch",
+    dryRunWired: false,
+    buildQueuedChatSubmitDryRun: stage5f45BuildQueuedChatSubmitDryRun,
+  });
+})(typeof window !== "undefined" ? window : globalThis);
