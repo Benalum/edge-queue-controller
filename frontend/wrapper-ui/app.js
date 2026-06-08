@@ -3257,6 +3257,20 @@ $("authForm")./*
 
 /*
  * /*
+ * Stage 5F-63: guarded live-submit gate marker.
+ *
+ * Future live queued-chat submit selection should pass through this gate.
+ *
+ * Safety:
+ * - marker only near live submit path
+ * - frontend queued-chat flag remains off by default
+ * - live submit behavior remains unchanged
+ * - no queued orchestration call
+ * - no queued send call
+ * - no queued polling
+ * - no queued placeholder rendering
+ */
+/*
  * Stage 5F-60: guarded live-submit branch marker.
  *
  * Future live queued-chat submit selection may be inserted here after a
@@ -5821,5 +5835,67 @@ async function handleResetPasswordRoute() {
     source: "app_js_disabled_guarded_live_submit_readiness_branch",
     guardedLiveSubmitWired: false,
     buildGuardedLiveSubmitReadiness: stage5f60BuildGuardedLiveSubmitReadiness
+  });
+})(typeof window !== "undefined" ? window : globalThis);
+
+
+/*
+ * Stage 5F-63: disabled guarded live-submit gate branch.
+ *
+ * This block exposes a future live-submit gate helper for tests/planning.
+ * It intentionally does not wire itself into the current submit flow.
+ *
+ * Safety:
+ * - guarded live-submit gate remains unwired
+ * - legacy/current chat path remains active
+ * - does not call queued orchestration
+ * - does not call queued send
+ * - does not call queued status polling
+ * - does not render queued placeholders
+ */
+(function stage5f63GuardedLiveSubmitGateBranch(root) {
+  "use strict";
+
+  function stage5f63EvaluateGuardedLiveSubmitGate(context) {
+    const enabled = root.AI_PLATFORM_QUEUED_CHAT_ENABLED === true;
+    const readiness = root.AI_PLATFORM_QUEUED_CHAT_GUARDED_LIVE_SUBMIT_BRANCH;
+
+    return {
+      ok: true,
+      stage: "5f63",
+      source: "app_js_disabled_guarded_live_submit_gate_branch",
+      guardedLiveSubmitGateWired: false,
+      enabled,
+      readinessPresent: Boolean(readiness),
+      liveSubmitSelected: false,
+      legacyChatPathActive: true,
+      queuedSubmitAllowed: false,
+      reason: enabled
+        ? "guarded_live_submit_gate_unwired_stage_5f63"
+        : "guarded_live_submit_gate_flag_disabled_stage_5f63",
+      blockedActions: [
+        "queued_orchestration",
+        "queued_send",
+        "queued_polling",
+        "queued_placeholder",
+        "queued_final_render"
+      ],
+      requiredBeforeWire: [
+        "flag_off_regression_passes",
+        "gate_mock_test_passes",
+        "single_orchestration_call_proven",
+        "single_send_call_proven",
+        "single_poll_loop_proven",
+        "single_final_render_proven",
+        "rollback_flag_off_proven"
+      ]
+    };
+  }
+
+  root.AI_PLATFORM_QUEUED_CHAT_GUARDED_LIVE_SUBMIT_GATE_BRANCH = Object.freeze({
+    stage: "5f63",
+    source: "app_js_disabled_guarded_live_submit_gate_branch",
+    guardedLiveSubmitGateWired: false,
+    evaluateGuardedLiveSubmitGate: stage5f63EvaluateGuardedLiveSubmitGate
   });
 })(typeof window !== "undefined" ? window : globalThis);
