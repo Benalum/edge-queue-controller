@@ -3256,7 +3256,22 @@ $("authForm")./*
  */
 
 /*
- * Stage 5F-57: guarded queued submit branch skeleton marker.
+ * /*
+ * Stage 5F-60: guarded live-submit branch marker.
+ *
+ * Future live queued-chat submit selection may be inserted here after a
+ * dedicated wired-stage smoke proves flag-off behavior remains unchanged.
+ *
+ * Safety:
+ * - marker only
+ * - feature flag remains off by default
+ * - legacy submit remains active
+ * - no queued orchestration call
+ * - no queued send call
+ * - no polling
+ * - no placeholder rendering
+ */
+Stage 5F-57: guarded queued submit branch skeleton marker.
  *
  * Future guarded queued-chat submit wiring may be inserted here.
  *
@@ -5745,5 +5760,66 @@ async function handleResetPasswordRoute() {
     source: "app_js_disabled_guarded_queued_submit_skeleton_branch",
     guardedSubmitWired: false,
     buildGuardedQueuedSubmitSkeleton: stage5f57BuildGuardedQueuedSubmitSkeleton
+  });
+})(typeof window !== "undefined" ? window : globalThis);
+
+
+/*
+ * Stage 5F-60: disabled guarded live-submit readiness branch.
+ *
+ * This block exposes a future live-submit readiness helper for tests/planning.
+ * It intentionally does not wire itself into the current submit flow.
+ *
+ * Safety:
+ * - guarded live submit remains unwired
+ * - legacy/current chat path remains active
+ * - does not call queued orchestration
+ * - does not call queued send
+ * - does not call queued status polling
+ * - does not render queued placeholders
+ */
+(function stage5f60GuardedLiveSubmitReadinessBranch(root) {
+  "use strict";
+
+  function stage5f60BuildGuardedLiveSubmitReadiness(context) {
+    const enabled = root.AI_PLATFORM_QUEUED_CHAT_ENABLED === true;
+
+    return {
+      ok: true,
+      stage: "5f60",
+      source: "app_js_disabled_guarded_live_submit_readiness_branch",
+      guardedLiveSubmitWired: false,
+      enabled,
+      liveSubmitSelected: false,
+      legacyChatPathActive: true,
+      reason: enabled
+        ? "guarded_live_submit_unwired_stage_5f60"
+        : "guarded_live_submit_flag_disabled_stage_5f60",
+      requiredBeforeEnable: [
+        "flag_off_legacy_submit_unchanged",
+        "single_orchestration_call",
+        "single_queued_send",
+        "single_placeholder",
+        "single_poll_loop",
+        "single_final_render",
+        "rollback_flag_off"
+      ],
+      helperPresence: {
+        guardedSkeleton: Boolean(root.AI_PLATFORM_QUEUED_CHAT_GUARDED_SUBMIT_SKELETON_BRANCH),
+        orchestration: Boolean(root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_ORCHESTRATION_BRANCH),
+        payload: Boolean(root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_PAYLOAD_BRANCH),
+        decision: Boolean(root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_DECISION_BRANCH),
+        send: Boolean(root.AI_PLATFORM_QUEUED_CHAT_SEND_BRANCH),
+        poll: Boolean(root.AI_PLATFORM_QUEUED_CHAT_STATUS_POLL_BRANCH),
+        placeholder: Boolean(root.AI_PLATFORM_QUEUED_CHAT_ASSISTANT_PLACEHOLDER_BRANCH)
+      }
+    };
+  }
+
+  root.AI_PLATFORM_QUEUED_CHAT_GUARDED_LIVE_SUBMIT_BRANCH = Object.freeze({
+    stage: "5f60",
+    source: "app_js_disabled_guarded_live_submit_readiness_branch",
+    guardedLiveSubmitWired: false,
+    buildGuardedLiveSubmitReadiness: stage5f60BuildGuardedLiveSubmitReadiness
   });
 })(typeof window !== "undefined" ? window : globalThis);
