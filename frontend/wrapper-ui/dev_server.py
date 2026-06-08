@@ -228,6 +228,19 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         # map_api() rewrites them to CT101's real /api/* path. Use the original
         # browser path so cookie-to-bearer auth still happens after mapping.
         auth_source_path = original_path or upstream_path
+
+        # STAGE_5G7_QUEUED_CHAT_COOKIE_TO_SESSION_HEADER_V1
+        # The browser queued-chat helper uses credentials: include and must not
+        # read or send raw identity fields. Bridge the existing same-domain
+        # edgeStudyToken cookie to the controller-only queued-chat session header
+        # inside the wrapper for laptop-owned queued-chat routes.
+        if (
+            auth_source_path == "/api/chat/queued"
+            or auth_source_path.startswith("/api/chat/queued/")
+        ) and not headers.get("X-Queued-Chat-Session-Token"):
+            token = self._auth_route_token()
+            if token:
+                headers["X-Queued-Chat-Session-Token"] = token
         if auth_source_path.startswith("/api/backend/") and not headers.get("Authorization"):
             token = self._auth_route_token()
             if token:
