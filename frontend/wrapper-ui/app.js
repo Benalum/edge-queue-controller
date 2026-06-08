@@ -5036,3 +5036,31 @@ async function handleResetPasswordRoute() {
     console.warn("Password reset route handling failed", err);
   }
 })();
+
+/*
+ * Stage 5F-31: queued-chat frontend flag detection.
+ *
+ * This block intentionally does not wire queued chat send behavior.
+ * It only records whether the disabled-by-default queued-chat frontend flag is enabled.
+ *
+ * Safety:
+ * - queued chat remains disabled by default
+ * - legacy/current chat path remains active while flag is false
+ * - does not call the queued chat API route
+ * - does not use the queued chat status helper yet
+ * - does not send client-provided user identity fields
+ * - does not send synthetic-user headers
+ */
+(function stage5f31QueuedChatFlagDetection(root) {
+  "use strict";
+
+  const enabled = root.AI_PLATFORM_QUEUED_CHAT_ENABLED === true;
+
+  root.AI_PLATFORM_QUEUED_CHAT_UI_STATE = Object.freeze({
+    stage: "5f31",
+    source: "app_js_queued_chat_flag_detection",
+    enabled,
+    legacyChatPathActive: enabled !== true,
+    queuedSendWired: false,
+  });
+})(typeof window !== "undefined" ? window : globalThis);

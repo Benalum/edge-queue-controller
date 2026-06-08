@@ -67,12 +67,16 @@ fi
 
 echo "OK: app.js does not call /api/chat/queued"
 
-if grep -F -n "AI_PLATFORM_QUEUED_CHAT_ENABLED" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
-  echo "FAIL: app.js should not read queued chat flag until Stage 5F-31"
-  exit 1
+if grep -F -n "Stage 5F-31: queued-chat frontend flag detection." frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+  require_fixed frontend/wrapper-ui/app.js "AI_PLATFORM_QUEUED_CHAT_ENABLED === true" "app reads queued flag after Stage 5F-31"
+  require_fixed frontend/wrapper-ui/app.js "queuedSendWired: false" "queued send still not wired"
+else
+  if grep -F -n "AI_PLATFORM_QUEUED_CHAT_ENABLED" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+    echo "FAIL: app.js should not read queued chat flag before Stage 5F-31"
+    exit 1
+  fi
+  echo "OK: app.js does not read queued chat flag yet"
 fi
-
-echo "OK: app.js does not read queued chat flag yet"
 
 if grep -F -n "QueuedChatStatusHelper" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
   echo "FAIL: app.js should not use QueuedChatStatusHelper yet"
