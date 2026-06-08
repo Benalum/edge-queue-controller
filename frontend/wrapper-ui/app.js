@@ -5219,3 +5219,62 @@ async function handleResetPasswordRoute() {
     pollQueuedChatStatus: stage5f35PollQueuedChatStatus,
   });
 })(typeof window !== "undefined" ? window : globalThis);
+
+/*
+ * Stage 5F-37: disabled queued-chat assistant placeholder branch.
+ *
+ * This block defines a future queued-chat assistant placeholder helper, but
+ * intentionally does not wire it into the current chat rendering flow.
+ *
+ * Safety:
+ * - branch is gated by the disabled-by-default queued-chat frontend flag
+ * - branch is not wired to submit
+ * - branch is not wired to message rendering
+ * - legacy/current chat path remains active while flag is false
+ * - does not send client-provided identity fields
+ * - does not send synthetic-user headers
+ */
+(function stage5f37QueuedChatAssistantPlaceholderBranch(root) {
+  "use strict";
+
+  function stage5f37BuildQueuedAssistantPlaceholder(job, options) {
+    const enabled = root.AI_PLATFORM_QUEUED_CHAT_ENABLED === true;
+
+    if (!enabled) {
+      return {
+        ok: false,
+        skipped: true,
+        reason: "queued_placeholder_disabled_stage_5f37",
+        legacyChatPathActive: true,
+      };
+    }
+
+    const helper = root.QueuedChatStatusHelper;
+
+    if (!helper || typeof helper.queuedChatBuildStatusView !== "function") {
+      return {
+        ok: false,
+        error: "queued_placeholder_helper_missing_stage_5f37",
+      };
+    }
+
+    const elapsedMs = Number((options && options.elapsedMs) || 0);
+    const view = helper.queuedChatBuildStatusView(job || {}, elapsedMs);
+
+    return {
+      ok: true,
+      stage: "5f37",
+      view,
+      placeholderText: view.placeholder || "Waiting for queued response status.",
+      canRenderAssistant: view.canRenderAssistant === true,
+      assistantReply: view.assistantReply || "",
+    };
+  }
+
+  root.AI_PLATFORM_QUEUED_CHAT_ASSISTANT_PLACEHOLDER_BRANCH = Object.freeze({
+    stage: "5f37",
+    source: "app_js_disabled_queued_assistant_placeholder_branch",
+    placeholderWired: false,
+    buildQueuedAssistantPlaceholder: stage5f37BuildQueuedAssistantPlaceholder,
+  });
+})(typeof window !== "undefined" ? window : globalThis);
