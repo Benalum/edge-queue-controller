@@ -5134,3 +5134,88 @@ async function handleResetPasswordRoute() {
     sendQueuedChat: stage5f32SendQueuedChat,
   });
 })(typeof window !== "undefined" ? window : globalThis);
+
+/*
+ * Stage 5F-35: disabled queued-chat status polling branch.
+ *
+ * This block defines a future queued-chat status polling helper, but intentionally
+ * does not wire it into the current chat submit flow or any runtime polling loop.
+ *
+ * Safety:
+ * - branch is gated by the disabled-by-default queued-chat frontend flag
+ * - branch is not wired to submit
+ * - branch is not wired to automatic polling
+ * - legacy/current chat path remains active while flag is false
+ * - does not send client-provided identity fields
+ * - does not send synthetic-user headers
+ */
+(function stage5f35QueuedChatStatusPollBranch(root) {
+  "use strict";
+
+  async function stage5f35PollQueuedChatStatus(jobId, options) {
+    const enabled = root.AI_PLATFORM_QUEUED_CHAT_ENABLED === true;
+
+    if (!enabled) {
+      return {
+        ok: false,
+        skipped: true,
+        reason: "queued_status_poll_disabled_stage_5f35",
+        legacyChatPathActive: true,
+      };
+    }
+
+    const helper = root.QueuedChatStatusHelper;
+
+    if (!helper || typeof helper.queuedChatBuildStatusView !== "function") {
+      return {
+        ok: false,
+        error: "queued_status_helper_missing_stage_5f35",
+      };
+    }
+
+    const cleanJobId = String(jobId || "").trim();
+
+    if (!cleanJobId) {
+      return {
+        ok: false,
+        error: "missing_job_id_stage_5f35",
+      };
+    }
+
+    const response = await fetch(`/api/chat/queued/${encodeURIComponent(cleanJobId)}`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        status: response.status,
+        error: data,
+      };
+    }
+
+    const job = data.job || data;
+    const elapsedMs = Number((options && options.elapsedMs) || 0);
+    const view = helper.queuedChatBuildStatusView(job, elapsedMs);
+
+    return {
+      ok: true,
+      stage: "5f35",
+      job,
+      view,
+    };
+  }
+
+  root.AI_PLATFORM_QUEUED_CHAT_STATUS_POLL_BRANCH = Object.freeze({
+    stage: "5f35",
+    source: "app_js_disabled_queued_status_poll_branch",
+    pollerWired: false,
+    pollQueuedChatStatus: stage5f35PollQueuedChatStatus,
+  });
+})(typeof window !== "undefined" ? window : globalThis);

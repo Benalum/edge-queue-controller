@@ -56,12 +56,16 @@ else
   echo "OK: app.js does not call /api/chat/queued"
 fi
 
-if grep -F -n "QueuedChatStatusHelper" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
-  echo "FAIL: app.js should not use QueuedChatStatusHelper yet"
-  exit 1
+if grep -F -n "Stage 5F-35: disabled queued-chat status polling branch." frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+  require_fixed frontend/wrapper-ui/app.js "QueuedChatStatusHelper" "status helper available after Stage 5F-35"
+  require_fixed frontend/wrapper-ui/app.js "pollerWired: false" "status poller not wired"
+else
+  if grep -F -n "QueuedChatStatusHelper" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+    echo "FAIL: app.js should not use QueuedChatStatusHelper before Stage 5F-35"
+    exit 1
+  fi
+  echo "OK: app.js does not use QueuedChatStatusHelper yet"
 fi
-
-echo "OK: app.js does not use QueuedChatStatusHelper yet"
 
 if grep -F -n "user_id" frontend/wrapper-ui/app.js >/dev/null 2>&1; then
   echo "FAIL: app.js should not send/read user_id for queued chat"
