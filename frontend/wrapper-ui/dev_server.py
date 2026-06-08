@@ -3,6 +3,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 from http.cookies import SimpleCookie
 import os
+import re
 import json
 import urllib.error
 import urllib.request
@@ -14,6 +15,7 @@ CT101_FRONTEND = os.getenv("CT101_FRONTEND", "http://100.88.245.33:3010")
 CT101_API = os.getenv("CT101_API", "http://100.88.245.33:8088")
 PORT = int(os.getenv("WRAPPER_UI_PORT", "8787"))
 EDGE_TRUSTED_PROXY_SECRET = os.getenv("EDGE_TRUSTED_PROXY_SECRET", "")
+WRAPPER_QUEUED_CHAT_BRIDGE_ENABLED = os.getenv("WRAPPER_QUEUED_CHAT_BRIDGE_ENABLED", "").strip().lower() in {"1", "true", "yes", "on"}
 
 FULL_APP_ROUTES = {"/study", "/chat", "/companion", "/calendar", "/profile"}
 WRAPPER_ROUTES = {"/", "/study", "/chat", "/companion", "/calendar", "/profile", "/system"}
@@ -304,8 +306,182 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             if self.command != "HEAD":
                 self.wfile.write(data)
 
+
+    # STAGE_5G9_CT101_QUEUED_CHAT_BRIDGE_V1
+    # Optional compatibility bridge for the currently active CT101 ChatPage.
+    # CT101 ChatPage calls:
+    #   POST /api/backend/chats/{chat_id}/messages/queued
+    #   GET  /api/backend/chats/{chat_id}/messages/jobs/{job_id}
+    #
+    # Laptop controller owns:
+    #   POST /api/chat/queued
+    #   GET  /api/chat/queued/{job_id}
+    #
+    # This bridge is disabled unless WRAPPER_QUEUED_CHAT_BRIDGE_ENABLED=1.
+    def _send_stage5g9_json(self, status, payload):
+        data = json.dumps(payload).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+
+        if self.command != "HEAD":
+            self.wfile.write(data)
+
+    def _stage5g9_read_json_body(self):
+        length = int(self.headers.get("Content-Length", "0") or "0")
+        raw = self.rfile.read(length) if length else b""
+
+        if not raw:
+            return {}
+
+        try:
+            return json.loads(raw.decode() or "{}")
+        except Exception as exc:
+            raise ValueError(f"invalid JSON body: {exc}") from exc
+
+    def _stage5g9_controller_headers(self):
+        headers = {
+            "User-Agent": "wrapper-proxy/3.0-stage5g9",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+
+        auth = self.headers.get("Authorization")
+        if auth:
+            headers["Authorization"] = auth
+
+        token = self.headers.get("X-Queued-Chat-Session-Token") or self._auth_route_token()
+        if token:
+            headers["X-Queued-Chat-Session-Token"] = token
+
+        return headers
+
+    def _stage5g9_controller_json(self, upstream_path, method, payload=None):
+        body = None
+        if payload is not None:
+            body = json.dumps(payload).encode()
+
+        req = urllib.request.Request(
+            CONTROLLER + upstream_path,
+            data=body,
+            headers=self._stage5g9_controller_headers(),
+            method=method,
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                raw = resp.read()
+                status = resp.status
+        except urllib.error.HTTPError as exc:
+            raw = exc.read()
+            status = exc.code
+
+        try:
+            data = json.loads(raw.decode() or "{}")
+        except Exception:
+            data = {"raw": raw.decode(errors="replace")}
+
+        return status, data
+
+    def _stage5g9_transform_create_response(self, chat_id, data):
+        if not isinstance(data, dict):
+            return data
+
+        out = dict(data)
+        out.setdefault("mode", "queued")
+        out.setdefault("chat_id", chat_id)
+
+        if "status" not in out and isinstance(out.get("job"), dict):
+            out["status"] = out["job"].get("status")
+
+        return out
+
+    def _stage5g9_transform_status_response(self, chat_id, job_id, data):
+        if not isinstance(data, dict):
+            return data
+
+        out = dict(data)
+        job = out.get("job") if isinstance(out.get("job"), dict) else {}
+
+        out.setdefault("mode", "queued")
+        out.setdefault("chat_id", chat_id)
+        out.setdefault("job_id", job_id)
+        out.setdefault("status", job.get("status") or out.get("status"))
+
+        # Future Stage 5G-10 can materialize assistant_message compatibility
+        # once worker completion/result_json shape is proven through this bridge.
+        out.setdefault("assistant_message", None)
+
+        return out
+
+    def _try_stage5g9_ct101_queued_chat_bridge(self, path):
+        if not WRAPPER_QUEUED_CHAT_BRIDGE_ENABLED:
+            return False
+
+        create_match = re.fullmatch(r"/api/backend/chats/([^/]+)/messages/queued", path)
+        if create_match:
+            if self.command != "POST":
+                self._send_stage5g9_json(405, {"ok": False, "error": "method_not_allowed_stage_5g9"})
+                return True
+
+            chat_id = create_match.group(1)
+
+            try:
+                ct101_payload = self._stage5g9_read_json_body()
+            except ValueError as exc:
+                self._send_stage5g9_json(400, {"ok": False, "error": "invalid_json_stage_5g9", "message": str(exc)})
+                return True
+
+            laptop_payload = {
+                "message": str(ct101_payload.get("content") or ""),
+                "chat_id": chat_id,
+            }
+
+            if ct101_payload.get("model"):
+                laptop_payload["requested_model"] = str(ct101_payload.get("model"))
+
+            status, data = self._stage5g9_controller_json(
+                "/api/chat/queued",
+                "POST",
+                laptop_payload,
+            )
+
+            self._send_stage5g9_json(
+                status,
+                self._stage5g9_transform_create_response(chat_id, data),
+            )
+            return True
+
+        status_match = re.fullmatch(r"/api/backend/chats/([^/]+)/messages/jobs/([^/]+)", path)
+        if status_match:
+            if self.command != "GET":
+                self._send_stage5g9_json(405, {"ok": False, "error": "method_not_allowed_stage_5g9"})
+                return True
+
+            chat_id = status_match.group(1)
+            job_id = status_match.group(2)
+
+            status, data = self._stage5g9_controller_json(
+                f"/api/chat/queued/{job_id}",
+                "GET",
+                None,
+            )
+
+            self._send_stage5g9_json(
+                status,
+                self._stage5g9_transform_status_response(chat_id, job_id, data),
+            )
+            return True
+
+        return False
+
+
     def _proxy_api(self):
         parsed = urlparse(self.path)
+
+        if self._try_stage5g9_ct101_queued_chat_bridge(parsed.path):
+            return
+
         backend, upstream_path = map_api(parsed.path)
         return self._proxy_to_backend(backend, upstream_path, parsed.query, original_path=parsed.path)
 
