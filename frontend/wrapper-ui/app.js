@@ -126,7 +126,7 @@ function syncAuthRouteCookie() {
 syncAuthRouteCookie();
 
 // PRIVATE_ROUTE_REFRESH_AFTER_AUTH_V1
-const PRIVATE_APP_ROUTE_SET = new Set(["/study", "/chat", "/companion", "/profile"]);
+const PRIVATE_APP_ROUTE_SET = new Set(["/study", "/chat", "/companion", "/calendar", "/profile"]);
 
 function refreshPrivateRouteAfterAuth(reason = "auth") {
   syncAuthRouteCookie();
@@ -3234,88 +3234,12 @@ $("authCloseBtn").addEventListener("click", closeAuthModal);
 $("loginTabBtn").addEventListener("click", () => setAuthMode("login"));
 $("registerTabBtn").addEventListener("click", () => setAuthMode("register"));
 $("resendVerificationBtn")?.addEventListener("click", resendVerificationEmail);
-$("authForm")./*
- * Stage 5F-43: queued-chat submit insertion guard marker.
- *
- * Future queued-chat submit wiring may be inserted near this marker.
- *
- * Requirements for any future wiring:
- * - call AI_PLATFORM_QUEUED_CHAT_SUBMIT_DECISION_BRANCH.shouldUseQueuedChatForSubmit at most once
- * - call only after the user submit payload is available
- * - call before the legacy non-queued assistant request
- * - preserve legacy submit behavior while the queued-chat flag is false
- * - do not render duplicate user messages
- * - do not render duplicate assistant placeholders
- * - do not create duplicate queued jobs
- * - do not start duplicate polling loops
- *
- * Stage 5F-43 is marker-only.
- * It does not call the decision helper.
- * It does not call the queued send helper.
- * It does not change submit behavior.
- */
-
 /*
- * /*
- * Stage 5F-69: guarded live-submit branch skeleton marker.
- *
- * This is the future insertion point for the first real guarded queued-chat
- * submit path.
- *
- * Safety:
- * - marker only near live submit path
- * - frontend queued-chat flag remains off by default
- * - guarded live-submit branch remains unwired
- * - legacy submit behavior remains unchanged
- * - no queued orchestration call
- * - no queued send call
- * - no queued polling
- * - no queued placeholder rendering
+ * Stage 5G-1: repaired malformed guarded-submit comment splice.
+ * Queued chat remains disabled by default.
+ * Legacy auth submit listener remains active.
  */
-/*
- * Stage 5F-63: guarded live-submit gate marker.
- *
- * Future live queued-chat submit selection should pass through this gate.
- *
- * Safety:
- * - marker only near live submit path
- * - frontend queued-chat flag remains off by default
- * - live submit behavior remains unchanged
- * - no queued orchestration call
- * - no queued send call
- * - no queued polling
- * - no queued placeholder rendering
- */
-/*
- * Stage 5F-60: guarded live-submit branch marker.
- *
- * Future live queued-chat submit selection may be inserted here after a
- * dedicated wired-stage smoke proves flag-off behavior remains unchanged.
- *
- * Safety:
- * - marker only
- * - feature flag remains off by default
- * - legacy submit remains active
- * - no queued orchestration call
- * - no queued send call
- * - no polling
- * - no placeholder rendering
- */
-Stage 5F-57: guarded queued submit branch skeleton marker.
- *
- * Future guarded queued-chat submit wiring may be inserted here.
- *
- * Safety:
- * - skeleton marker only
- * - queued chat remains disabled by default
- * - legacy submit remains active
- * - does not call queued orchestration
- * - does not call queued send
- * - does not start queued polling
- * - does not render queued placeholders
- * - does not send client-provided identity fields
- */
-addEventListener("submit", handleAuthSubmit);
+$("authForm").addEventListener("submit", handleAuthSubmit);
 
 renderPage();
 checkExistingLogin();
