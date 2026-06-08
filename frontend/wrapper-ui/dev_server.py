@@ -408,9 +408,59 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         out.setdefault("job_id", job_id)
         out.setdefault("status", job.get("status") or out.get("status"))
 
-        # Future Stage 5G-10 can materialize assistant_message compatibility
-        # once worker completion/result_json shape is proven through this bridge.
-        out.setdefault("assistant_message", None)
+        # STAGE_5G10_CT101_COMPAT_ASSISTANT_MESSAGE_V1
+        # CT101 ChatPage waits for:
+        #   pollData.status === "complete" && pollData.assistant_message
+        #
+        # The laptop controller status route returns the completed job and
+        # result_json. Convert that to CT101-compatible assistant_message only
+        # for complete jobs with a non-empty reply. This does not write an
+        # assistant message row and therefore cannot duplicate final messages.
+        assistant_message = out.get("assistant_message")
+
+        if assistant_message is None and out.get("status") == "complete":
+            result = job.get("result_json") or out.get("result_json") or {}
+
+            if isinstance(result, str):
+                try:
+                    result = json.loads(result or "{}")
+                except Exception:
+                    result = {}
+
+            reply = ""
+            if isinstance(result, dict):
+                reply = str(
+                    result.get("reply")
+                    or result.get("response")
+                    or result.get("content")
+                    or ""
+                ).strip()
+
+            if reply:
+                assistant_id = ""
+                if isinstance(result, dict):
+                    assistant_id = str(
+                        result.get("chat_assistant_message_id")
+                        or result.get("assistant_message_id")
+                        or ""
+                    ).strip()
+
+                if not assistant_id:
+                    assistant_id = f"{job_id}-assistant"
+
+                assistant_message = {
+                    "id": assistant_id,
+                    "role": "assistant",
+                    "content": reply,
+                    "risk_level": 0,
+                    "created_at": (
+                        job.get("finished_at")
+                        or job.get("updated_at")
+                        or job.get("created_at")
+                    ),
+                }
+
+        out["assistant_message"] = assistant_message
 
         return out
 
