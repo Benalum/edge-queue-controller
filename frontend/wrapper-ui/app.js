@@ -3234,7 +3234,28 @@ $("authCloseBtn").addEventListener("click", closeAuthModal);
 $("loginTabBtn").addEventListener("click", () => setAuthMode("login"));
 $("registerTabBtn").addEventListener("click", () => setAuthMode("register"));
 $("resendVerificationBtn")?.addEventListener("click", resendVerificationEmail);
-$("authForm").addEventListener("submit", handleAuthSubmit);
+$("authForm")./*
+ * Stage 5F-43: queued-chat submit insertion guard marker.
+ *
+ * Future queued-chat submit wiring may be inserted near this marker.
+ *
+ * Requirements for any future wiring:
+ * - call AI_PLATFORM_QUEUED_CHAT_SUBMIT_DECISION_BRANCH.shouldUseQueuedChatForSubmit at most once
+ * - call only after the user submit payload is available
+ * - call before the legacy non-queued assistant request
+ * - preserve legacy submit behavior while the queued-chat flag is false
+ * - do not render duplicate user messages
+ * - do not render duplicate assistant placeholders
+ * - do not create duplicate queued jobs
+ * - do not start duplicate polling loops
+ *
+ * Stage 5F-43 is marker-only.
+ * It does not call the decision helper.
+ * It does not call the queued send helper.
+ * It does not change submit behavior.
+ */
+
+addEventListener("submit", handleAuthSubmit);
 
 renderPage();
 checkExistingLogin();
