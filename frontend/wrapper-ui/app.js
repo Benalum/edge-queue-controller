@@ -5452,3 +5452,64 @@ async function handleResetPasswordRoute() {
     buildQueuedChatSubmitDryRun: stage5f45BuildQueuedChatSubmitDryRun,
   });
 })(typeof window !== "undefined" ? window : globalThis);
+
+/*
+ * Stage 5F-48: disabled queued-chat submit payload builder branch.
+ *
+ * This block defines a future queued-chat submit payload builder, but
+ * intentionally does not wire it into the current submit flow.
+ *
+ * Safety:
+ * - payload builder remains unwired
+ * - legacy/current chat path remains active
+ * - builds only message, chat_id, and requested_model
+ * - does not submit jobs
+ * - does not call fetch
+ * - does not start polling
+ * - does not render placeholders
+ * - does not send client-provided identity fields
+ * - does not send synthetic-user headers
+ */
+(function stage5f48QueuedChatSubmitPayloadBranch(root) {
+  "use strict";
+
+  function stage5f48BuildQueuedChatSubmitPayload(context) {
+    const message = String((context && context.message) || "").trim();
+
+    if (!message) {
+      return {
+        ok: false,
+        stage: "5f48",
+        error: "missing_message_stage_5f48",
+        payloadWired: false,
+      };
+    }
+
+    const payload = {
+      message,
+    };
+
+    if (context && context.chat_id) {
+      payload.chat_id = String(context.chat_id);
+    }
+
+    if (context && context.requested_model) {
+      payload.requested_model = String(context.requested_model);
+    }
+
+    return {
+      ok: true,
+      stage: "5f48",
+      source: "app_js_disabled_queued_submit_payload_builder_branch",
+      payloadWired: false,
+      payload,
+    };
+  }
+
+  root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_PAYLOAD_BRANCH = Object.freeze({
+    stage: "5f48",
+    source: "app_js_disabled_queued_submit_payload_builder_branch",
+    payloadWired: false,
+    buildQueuedChatSubmitPayload: stage5f48BuildQueuedChatSubmitPayload,
+  });
+})(typeof window !== "undefined" ? window : globalThis);
