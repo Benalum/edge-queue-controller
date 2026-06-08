@@ -60,6 +60,23 @@ def _require_real_user_creation_enabled() -> None:
         raise RealUserQueuedChatCreationError("real-user queued chat creation helper is disabled")
 
 
+
+# STAGE_5G18_DEFAULT_MODEL_ALIAS_RESOLVER_V1
+# Treat "default" as a logical model alias, not an Ollama model name.
+# The actual default is controlled from one env location.
+def resolve_real_user_queued_chat_model_alias(requested_model: str | None) -> str:
+    model = str(requested_model or "").strip()
+
+    if model and model.lower() != "default":
+        return model
+
+    return (
+        os.getenv("AI_PLATFORM_DEFAULT_CHAT_MODEL")
+        or os.getenv("EDGE_OLLAMA_DEFAULT_MODEL")
+        or os.getenv("LAPTOP_QUEUE_OLLAMA_MODEL_FALLBACK")
+        or "gemma4:e4b"
+    ).strip()
+
 def create_real_user_queued_chat_job(
     *,
     authenticated_user_id: str,
@@ -87,7 +104,7 @@ def create_real_user_queued_chat_job(
     except RealUserQueuedChatGuardError as exc:
         raise RealUserQueuedChatCreationError(str(exc)) from exc
 
-    requested_model = validated.requested_model or "default"
+    requested_model = resolve_real_user_queued_chat_model_alias(validated.requested_model)
     chat_id = validated.chat_id or f"s5f18-chat-{secrets.token_hex(8)}"
     user_message_id = f"s5f18-msg-user-{secrets.token_hex(8)}"
     job_id = f"s5f18-job-{secrets.token_hex(8)}"
