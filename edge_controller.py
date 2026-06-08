@@ -13662,6 +13662,13 @@ def _s5g14_mirror_trusted_edge_user_session(
             is_admin = EXCLUDED.is_admin,
             updated_at = now();
 
+        -- STAGE_5G16_TRUSTED_REFRESH_RECLAIM_TOKEN_HASH_V1
+        -- Reclaim this CT101 browser token from any stale mirrored session
+        -- before inserting/updating the trusted refreshed session.
+        DELETE FROM app_sessions
+        WHERE token_hash = {_sql_literal(token_hash)}
+          AND id <> {_sql_literal(session_id)};
+
         INSERT INTO app_sessions (
           id,
           user_id,
@@ -13766,6 +13773,28 @@ async def s5f9_create_queued_chat(
                 guard_payload["authenticated_user_id"] = request.authenticated_user_id
 
             _s5f17_reject_client_provided_user_id(guard_payload)
+            # STAGE_5G16_PREAUTH_TRUSTED_CT101_REFRESH_V1
+            # If the request arrived through the trusted wrapper, refresh the
+            # mirrored CT101 user/session/chat before resolving ownership.
+            # This avoids stale token->user or chat->user rows from older
+            # bridge attempts while still requiring the shared trusted secret.
+            trusted_user_for_refresh = _s5g14_validate_trusted_edge_identity(
+                x_edge_auth_secret=x_edge_auth_secret,
+                x_edge_user_id=x_edge_user_id,
+                x_edge_user_email=x_edge_user_email,
+                x_edge_user_is_admin=x_edge_user_is_admin,
+            )
+            if trusted_user_for_refresh:
+                _s5g14_mirror_trusted_edge_user_session(
+                    trusted_user=trusted_user_for_refresh,
+                    session_token=x_queued_chat_session_token,
+                )
+                _s5g14_mirror_trusted_edge_chat(
+                    trusted_user=trusted_user_for_refresh,
+                    chat_id=guard_payload.get("chat_id"),
+                    requested_model=guard_payload.get("requested_model") or guard_payload.get("model"),
+                )
+
             auth_user = _s5f17_resolve_authenticated_user_from_session_token(
                 session_token=x_queued_chat_session_token
             )
@@ -13913,6 +13942,21 @@ async def s5f9_get_queued_chat_status(
 
     if not _s5f9_laptop_chat_queue_synthetic_only() and _s5f14_laptop_chat_queue_real_users_enabled():
         try:
+            # STAGE_5G16_PREAUTH_TRUSTED_CT101_STATUS_REFRESH_V1
+            # Status polling has no chat body, but a trusted wrapper request can
+            # still refresh the mirrored session before ownership validation.
+            trusted_user_for_refresh = _s5g14_validate_trusted_edge_identity(
+                x_edge_auth_secret=x_edge_auth_secret,
+                x_edge_user_id=x_edge_user_id,
+                x_edge_user_email=x_edge_user_email,
+                x_edge_user_is_admin=x_edge_user_is_admin,
+            )
+            if trusted_user_for_refresh:
+                _s5g14_mirror_trusted_edge_user_session(
+                    trusted_user=trusted_user_for_refresh,
+                    session_token=x_queued_chat_session_token,
+                )
+
             auth_user = _s5f17_resolve_authenticated_user_from_session_token(
                 session_token=x_queued_chat_session_token
             )
