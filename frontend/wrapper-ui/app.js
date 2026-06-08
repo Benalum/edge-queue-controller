@@ -5513,3 +5513,162 @@ async function handleResetPasswordRoute() {
     buildQueuedChatSubmitPayload: stage5f48BuildQueuedChatSubmitPayload,
   });
 })(typeof window !== "undefined" ? window : globalThis);
+
+/*
+ * Stage 5F-51: disabled queued-chat submit orchestration branch.
+ *
+ * This block defines a future queued-chat submit orchestration helper, but
+ * intentionally does not wire it into the current submit flow.
+ *
+ * Safety:
+ * - orchestration remains unwired
+ * - legacy/current chat path remains active
+ * - only runs when directly called by a future/mock test
+ * - does not change live submit behavior
+ * - does not send client-provided identity fields
+ * - does not send synthetic-user headers
+ */
+(function stage5f51QueuedChatSubmitOrchestrationBranch(root) {
+  "use strict";
+
+  async function stage5f51RunQueuedChatSubmitOrchestration(context, options) {
+    const enabled = root.AI_PLATFORM_QUEUED_CHAT_ENABLED === true;
+
+    if (!enabled) {
+      return {
+        ok: false,
+        skipped: true,
+        stage: "5f51",
+        reason: "queued_orchestration_flag_disabled_stage_5f51",
+        orchestrationWired: false,
+        legacyChatPathActive: true,
+      };
+    }
+
+    const payloadBranch = root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_PAYLOAD_BRANCH;
+    const decisionBranch = root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_DECISION_BRANCH;
+    const sendBranch = root.AI_PLATFORM_QUEUED_CHAT_SEND_BRANCH;
+    const placeholderBranch = root.AI_PLATFORM_QUEUED_CHAT_ASSISTANT_PLACEHOLDER_BRANCH;
+    const pollBranch = root.AI_PLATFORM_QUEUED_CHAT_STATUS_POLL_BRANCH;
+
+    const calls = [];
+
+    if (!payloadBranch || typeof payloadBranch.buildQueuedChatSubmitPayload !== "function") {
+      return {
+        ok: false,
+        stage: "5f51",
+        error: "queued_orchestration_payload_helper_missing_stage_5f51",
+        orchestrationWired: false,
+        calls,
+      };
+    }
+
+    calls.push("payload");
+    const payloadResult = payloadBranch.buildQueuedChatSubmitPayload(context || {});
+
+    if (!payloadResult || payloadResult.ok !== true || !payloadResult.payload) {
+      return {
+        ok: false,
+        stage: "5f51",
+        error: "queued_orchestration_payload_failed_stage_5f51",
+        orchestrationWired: false,
+        calls,
+        payloadResult,
+      };
+    }
+
+    if (!decisionBranch || typeof decisionBranch.shouldUseQueuedChatForSubmit !== "function") {
+      return {
+        ok: false,
+        stage: "5f51",
+        error: "queued_orchestration_decision_helper_missing_stage_5f51",
+        orchestrationWired: false,
+        calls,
+      };
+    }
+
+    calls.push("decision");
+    const decisionResult = decisionBranch.shouldUseQueuedChatForSubmit(payloadResult.payload);
+
+    if (!decisionResult || decisionResult.shouldUseQueuedChat !== true) {
+      return {
+        ok: false,
+        stage: "5f51",
+        error: "queued_orchestration_decision_refused_stage_5f51",
+        orchestrationWired: false,
+        calls,
+        payload: payloadResult.payload,
+        decisionResult,
+        legacyChatPathActive: true,
+      };
+    }
+
+    if (!sendBranch || typeof sendBranch.sendQueuedChat !== "function") {
+      return {
+        ok: false,
+        stage: "5f51",
+        error: "queued_orchestration_send_helper_missing_stage_5f51",
+        orchestrationWired: false,
+        calls,
+      };
+    }
+
+    calls.push("send");
+    const sendResult = await sendBranch.sendQueuedChat(payloadResult.payload);
+
+    if (!sendResult || sendResult.ok !== true || !sendResult.job_id) {
+      return {
+        ok: false,
+        stage: "5f51",
+        error: "queued_orchestration_send_failed_stage_5f51",
+        orchestrationWired: false,
+        calls,
+        sendResult,
+      };
+    }
+
+    let placeholderResult = null;
+
+    if (placeholderBranch && typeof placeholderBranch.buildQueuedAssistantPlaceholder === "function") {
+      calls.push("placeholder");
+      placeholderResult = placeholderBranch.buildQueuedAssistantPlaceholder(
+        {
+          id: sendResult.job_id,
+          job_id: sendResult.job_id,
+          status: "queued",
+        },
+        options || {}
+      );
+    }
+
+    let statusResult = null;
+
+    if (pollBranch && typeof pollBranch.pollQueuedChatStatus === "function") {
+      calls.push("poll");
+      statusResult = await pollBranch.pollQueuedChatStatus(sendResult.job_id, options || {});
+    }
+
+    return {
+      ok: true,
+      stage: "5f51",
+      source: "app_js_disabled_queued_submit_orchestration_branch",
+      orchestrationWired: false,
+      calls,
+      payload: payloadResult.payload,
+      decisionResult,
+      sendResult,
+      placeholderResult,
+      statusResult,
+      job_id: sendResult.job_id,
+      chat_id: sendResult.chat_id || payloadResult.payload.chat_id || "",
+      user_message_id: sendResult.user_message_id || "",
+    };
+  }
+
+  root.AI_PLATFORM_QUEUED_CHAT_SUBMIT_ORCHESTRATION_BRANCH = Object.freeze({
+    stage: "5f51",
+    source: "app_js_disabled_queued_submit_orchestration_branch",
+    orchestrationWired: false,
+    runQueuedChatSubmitOrchestration: stage5f51RunQueuedChatSubmitOrchestration,
+  });
+})(typeof window !== "undefined" ? window : globalThis);

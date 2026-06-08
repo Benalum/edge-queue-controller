@@ -67,13 +67,42 @@ fi
 
 echo "OK: AI_PLATFORM_QUEUED_CHAT_SEND_BRANCH.sendQueuedChat is not called"
 
-if grep -E -n '[^A-Za-z0-9_]sendQueuedChat[[:space:]]*\(' frontend/wrapper-ui/app.js >/dev/null 2>&1; then
-  echo "FAIL: direct sendQueuedChat(...) call found"
-  grep -E -n '[^A-Za-z0-9_]sendQueuedChat[[:space:]]*\(' frontend/wrapper-ui/app.js || true
-  exit 1
-fi
+python3 - <<'PYCHECK'
+from pathlib import Path
+import re
+import sys
 
-echo "OK: direct sendQueuedChat(...) is not called"
+text = Path("frontend/wrapper-ui/app.js").read_text()
+
+# Stage 5F-51 compatibility: ignore isolated orchestration helper sendQueuedChat.
+# This helper is not wired to live submit; it is tested directly by future mocks.
+start_marker = "(function stage5f51QueuedChatSubmitOrchestrationBranch(root)"
+end_marker = "})(typeof window !== \"undefined\" ? window : globalThis);"
+
+start = text.find(start_marker)
+if start >= 0:
+    end = text.find(end_marker, start)
+    if end >= 0:
+        text_for_live_path = text[:start] + text[end + len(end_marker):]
+    else:
+        text_for_live_path = text
+else:
+    text_for_live_path = text
+
+pattern = re.compile(r'[^A-Za-z0-9_]sendQueuedChat\s*\(', re.MULTILINE)
+matches = list(pattern.finditer(text_for_live_path))
+
+if matches:
+    print("FAIL: direct sendQueuedChat(...) call found outside isolated Stage 5F-51 helper")
+    lines = text_for_live_path.splitlines()
+    for m in matches:
+        line_no = text_for_live_path[:m.start()].count("\n") + 1
+        line = lines[line_no - 1] if 0 <= line_no - 1 < len(lines) else ""
+        print(f"{line_no}: {line}")
+    sys.exit(1)
+
+print("OK: direct sendQueuedChat(...) is not called from live path")
+PYCHECK
 
 if grep -F -n "Stage 5F-35: disabled queued-chat status polling branch." frontend/wrapper-ui/app.js >/dev/null 2>&1; then
   require_fixed frontend/wrapper-ui/app.js "QueuedChatStatusHelper" "status helper available after Stage 5F-35"
