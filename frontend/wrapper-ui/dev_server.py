@@ -354,6 +354,16 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         if token:
             headers["X-Queued-Chat-Session-Token"] = token
 
+        # STAGE_5G14_FORWARD_TRUSTED_CT101_IDENTITY_TO_CONTROLLER_V1
+        # The controller validates EDGE_TRUSTED_PROXY_SECRET before using
+        # these X-Edge-* headers. This lets the laptop queue trust the wrapper,
+        # not the browser, for CT101-authenticated chat requests.
+        self._inject_trusted_edge_headers(
+            headers,
+            "/api/chat/queued",
+            original_path="/api/backend/chats/_/messages/queued",
+        )
+
         return headers
 
     def _stage5g9_controller_json(self, upstream_path, method, payload=None):
