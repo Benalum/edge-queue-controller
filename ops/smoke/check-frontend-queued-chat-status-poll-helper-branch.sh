@@ -47,17 +47,17 @@ require_fixed docs/frontend-queued-chat-status-poll-helper-branch.md "does not c
 require_fixed docs/frontend-queued-chat-status-poll-helper-branch.md "does not wire polling into submit" "no submit wiring"
 require_fixed docs/frontend-queued-chat-status-poll-helper-branch.md "Stage 5F-36 should add a mocked test" "next stage"
 
-call_count="$(grep -Eo 'stage5f35PollQueuedChatStatus[[:space:]]*\\(' frontend/wrapper-ui/app.js | wc -l | tr -d ' ')"
+call_count="$(grep -Eo 'stage5f35PollQueuedChatStatus[[:space:]]*\(' frontend/wrapper-ui/app.js | wc -l | tr -d ' ')"
 
 if [ "$call_count" != "1" ]; then
   echo "FAIL: expected only the stage5f35PollQueuedChatStatus function declaration, found $call_count call-like occurrences"
-  grep -nE 'stage5f35PollQueuedChatStatus[[:space:]]*\\(' frontend/wrapper-ui/app.js || true
+  grep -nE 'stage5f35PollQueuedChatStatus[[:space:]]*\(' frontend/wrapper-ui/app.js || true
   exit 1
 fi
 
 echo "OK: stage5f35PollQueuedChatStatus is not called by normal submit path"
 
-if grep -E -n 'AI_PLATFORM_QUEUED_CHAT_STATUS_POLL_BRANCH[.]pollQueuedChatStatus[[:space:]]*\\(' frontend/wrapper-ui/app.js >/dev/null 2>&1; then
+if grep -E -n 'AI_PLATFORM_QUEUED_CHAT_STATUS_POLL_BRANCH[.]pollQueuedChatStatus[[:space:]]*\(' frontend/wrapper-ui/app.js >/dev/null 2>&1; then
   echo "FAIL: AI_PLATFORM_QUEUED_CHAT_STATUS_POLL_BRANCH.pollQueuedChatStatus should not be called yet"
   exit 1
 fi
