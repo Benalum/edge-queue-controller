@@ -13860,6 +13860,25 @@ def _s5g14_validate_trusted_edge_identity(
     }
 
 
+
+# STAGE_5H3_TRUSTED_CT101_QUEUED_AUTH_USER_V1
+# Trusted CT101 wrapper requests must create/status-check queued jobs as the
+# mirrored CT101 laptop user after EDGE_TRUSTED_PROXY_SECRET is validated.
+# This keeps server-side ownership aligned with the mirrored CT101 chat row.
+class _S5G14TrustedQueuedAuthUser:
+    def __init__(self, *, user_id, session_id, email=None):
+        self.user_id = user_id
+        self.session_id = session_id
+        self.email = email
+
+
+def _s5g14_trusted_queued_auth_user(trusted_user):
+    return _S5G14TrustedQueuedAuthUser(
+        user_id=trusted_user["id"],
+        session_id="ct101-edge-session-" + trusted_user["ct101_user_id"],
+        email=trusted_user.get("email"),
+    )
+
 def _s5g14_mirror_trusted_edge_user_session(
     *,
     trusted_user,
@@ -13872,11 +13891,37 @@ def _s5g14_mirror_trusted_edge_user_session(
     if not session_token:
         return False
 
-    from edge_modules.chat_queue_persistence import _psql_run, _sql_literal
+    from edge_modules.chat_queue_persistence import _psql_run, _psql_at, _sql_literal
     from edge_modules.chat_queue_session_auth import hash_session_token
 
     session_id = "ct101-edge-session-" + trusted_user["ct101_user_id"]
     token_hash = hash_session_token(session_token)
+
+    # STAGE_5H3_CT101_MIRROR_EMAIL_NORMALIZE_V1
+    email = str(trusted_user.get("email") or "").strip()
+    if not email:
+        email = str(trusted_user.get("ct101_user_id") or "ct101-user") + "@ct101.local"
+
+
+    # STAGE_5H3_CT101_MIRROR_EMAIL_COLLISION_GUARD_V1
+    # The laptop may already have the source browser user with the same email.
+    # The mirrored CT101 user is a separate server-derived namespace identity,
+    # so give it a deterministic non-colliding synthetic email if needed.
+    ct101_source_id = str(trusted_user.get("ct101_user_id") or "ct101-user").strip() or "ct101-user"
+    synthetic_email = "ct101+" + ct101_source_id.replace("@", "_at_").replace(" ", "_") + "@ct101.local"
+    email_exists_for_other_user = _psql_at(
+        f"""
+        SELECT CASE WHEN EXISTS (
+          SELECT 1
+          FROM app_users
+          WHERE email = {_sql_literal(email)}
+            AND id <> {_sql_literal(trusted_user["id"])}
+        )
+        THEN '1' ELSE '' END;
+        """
+    )
+    if email_exists_for_other_user:
+        email = synthetic_email
 
     _psql_run(
         f"""
@@ -13894,7 +13939,7 @@ def _s5g14_mirror_trusted_edge_user_session(
         )
         VALUES (
           {_sql_literal(trusted_user["id"])},
-          {_sql_literal(trusted_user["email"])},
+          {_sql_literal(email)},
           {_sql_literal(trusted_user.get("display_name") or "")},
           NULL,
           TRUE,
@@ -14055,9 +14100,15 @@ async def s5f9_create_queued_chat(
                     mode=guard_payload.get("mode"),
                 )
 
-            auth_user = _s5f17_resolve_authenticated_user_from_session_token(
-                session_token=x_queued_chat_session_token
-            )
+            # STAGE_5H3_TRUSTED_CT101_AUTH_OWNER_PREFERENCE_V1
+            # Prefer trusted CT101 mirrored ownership over local session ownership
+            # when the wrapper supplied valid trusted CT101 identity headers.
+            if trusted_user_for_refresh:
+                auth_user = _s5g14_trusted_queued_auth_user(trusted_user_for_refresh)
+            else:
+                auth_user = _s5f17_resolve_authenticated_user_from_session_token(
+                    session_token=x_queued_chat_session_token
+                )
         except _S5F17_QueuedChatSessionAuthError as exc:
             trusted_user = _s5g14_validate_trusted_edge_identity(
                 x_edge_auth_secret=x_edge_auth_secret,
@@ -14078,21 +14129,7 @@ async def s5f9_create_queued_chat(
                     mode=guard_payload.get("mode"),
                 )
 
-                try:
-                    auth_user = _s5f17_resolve_authenticated_user_from_session_token(
-                        session_token=x_queued_chat_session_token
-                    )
-                except _S5F17_QueuedChatSessionAuthError as retry_exc:
-                    raise _S5F9_HTTPException(
-                        status_code=401,
-                        detail={
-                            "ok": False,
-                            "error": "queued_chat_trusted_edge_session_auth_failed_stage_5g14",
-                            "feature": "laptop_queued_chat",
-                            "stage": "5g14",
-                            "message": str(retry_exc),
-                        },
-                    ) from retry_exc
+                auth_user = _s5g14_trusted_queued_auth_user(trusted_user)
             else:
                 raise _S5F9_HTTPException(
                     status_code=401,
@@ -14218,9 +14255,12 @@ async def s5f9_get_queued_chat_status(
                     session_token=x_queued_chat_session_token,
                 )
 
-            auth_user = _s5f17_resolve_authenticated_user_from_session_token(
-                session_token=x_queued_chat_session_token
-            )
+            if trusted_user_for_refresh:
+                auth_user = _s5g14_trusted_queued_auth_user(trusted_user_for_refresh)
+            else:
+                auth_user = _s5f17_resolve_authenticated_user_from_session_token(
+                    session_token=x_queued_chat_session_token
+                )
         except _S5F17_QueuedChatSessionAuthError as exc:
             trusted_user = _s5g14_validate_trusted_edge_identity(
                 x_edge_auth_secret=x_edge_auth_secret,
@@ -14235,21 +14275,7 @@ async def s5f9_get_queued_chat_status(
                     session_token=x_queued_chat_session_token,
                 )
 
-                try:
-                    auth_user = _s5f17_resolve_authenticated_user_from_session_token(
-                        session_token=x_queued_chat_session_token
-                    )
-                except _S5F17_QueuedChatSessionAuthError as retry_exc:
-                    raise _S5F9_HTTPException(
-                        status_code=401,
-                        detail={
-                            "ok": False,
-                            "error": "queued_chat_status_trusted_edge_session_auth_failed_stage_5g14",
-                            "feature": "laptop_queued_chat",
-                            "stage": "5g14",
-                            "message": str(retry_exc),
-                        },
-                    ) from retry_exc
+                auth_user = _s5g14_trusted_queued_auth_user(trusted_user)
             else:
                 raise _S5F9_HTTPException(
                     status_code=401,

@@ -3,6 +3,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 from http.cookies import SimpleCookie
 import os
+import sys
 import re
 import json
 import urllib.error
@@ -16,6 +17,13 @@ CT101_API = os.getenv("CT101_API", "http://100.88.245.33:8088")
 PORT = int(os.getenv("WRAPPER_UI_PORT", "8787"))
 EDGE_TRUSTED_PROXY_SECRET = os.getenv("EDGE_TRUSTED_PROXY_SECRET", "")
 WRAPPER_QUEUED_CHAT_BRIDGE_ENABLED = os.getenv("WRAPPER_QUEUED_CHAT_BRIDGE_ENABLED", "").strip().lower() in {"1", "true", "yes", "on"}
+
+# STAGE_5H3_WRAPPER_REPO_ROOT_IMPORT_PATH_V1
+# dev_server.py runs from frontend/wrapper-ui, so add the repo root before
+# server-side fallback imports like edge_modules.* are needed.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 FULL_APP_ROUTES = {"/study", "/chat", "/companion", "/calendar", "/profile"}
 WRAPPER_ROUTES = {"/", "/study", "/chat", "/companion", "/calendar", "/profile", "/system"}
@@ -166,9 +174,19 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         if not token:
             return None
 
+        # STAGE_5H3_WRAPPER_SESSION_COOKIE_USER_LOOKUP_V1
+        # Internal wrapper lookup should support both auth forms because the
+        # browser session is same-domain cookie based. This does not expose the
+        # token to the browser; it only helps the wrapper derive trusted headers.
+        lookup_headers = {
+            "Authorization": f"Bearer {token}",
+            "Cookie": f"edgeStudyToken={token}",
+            "Accept": "application/json",
+        }
+
         req = urllib.request.Request(
             CONTROLLER + "/system/session/me",
-            headers={"Authorization": f"Bearer {token}"},
+            headers=lookup_headers,
             method="GET",
         )
 
@@ -177,7 +195,65 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
                 data = json.loads(resp.read().decode() or "{}")
                 return data.get("user") or data
         except Exception:
+            return self._stage5h3_user_from_local_session_token(token)
+
+    # STAGE_5H3_WRAPPER_LOCAL_SESSION_RESOLVER_FALLBACK_V1
+    # The wrapper may need to derive trusted CT101 headers for local smoke-created
+    # sessions that are valid in app_sessions but not accepted by /system/session/me.
+    # This remains server-side: it derives user identity from the session token hash
+    # and never accepts user_id from the browser payload.
+    def _stage5h3_user_from_local_session_token(self, token):
+        clean_token = str(token or "").strip()
+        if not clean_token:
             return None
+
+        try:
+            from edge_modules.chat_queue_session_auth import hash_session_token
+            from edge_modules.chat_queue_persistence import _psql_at, _sql_literal
+
+            token_hash = hash_session_token(clean_token)
+            raw = _psql_at(
+                f"""
+                SELECT COALESCE(
+                  (
+                    SELECT row_to_json(u)::text
+                    FROM (
+                      SELECT
+                        u.id,
+                        u.email,
+                        COALESCE(u.display_name, '') AS display_name,
+                        COALESCE(u.is_admin, FALSE) AS is_admin
+                      FROM app_sessions s
+                      JOIN app_users u
+                        ON u.id = s.user_id
+                      WHERE s.token_hash = {_sql_literal(token_hash)}
+                        AND s.revoked_at IS NULL
+                        AND s.expires_at > now()
+                        AND u.is_active = TRUE
+                      LIMIT 1
+                    ) u
+                  ),
+                  ''
+                );
+                """
+            )
+
+            if not raw:
+                return None
+
+            return json.loads(raw)
+        except Exception:
+            return None
+
+    # STAGE_5H3_WRAPPER_NORMALIZE_CT101_EDGE_USER_ID_V1
+    # If the local session now resolves to the mirrored laptop user id
+    # "ct101:<source>", send only "<source>" as X-Edge-User-Id because the
+    # controller itself owns the ct101 namespace prefixing.
+    def _stage5h3_edge_user_id_for_trusted_header(self, user):
+        raw = str((user or {}).get("id") or "").strip()
+        if raw.startswith("ct101:"):
+            return raw.split(":", 1)[1]
+        return raw
 
     def _inject_trusted_edge_headers(self, headers, upstream_path, original_path=None):
         auth_bridge_path = original_path or upstream_path
@@ -192,7 +268,7 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             return
 
         headers["X-Edge-Auth-Secret"] = EDGE_TRUSTED_PROXY_SECRET
-        headers["X-Edge-User-Id"] = str(user.get("id") or "")
+        headers["X-Edge-User-Id"] = self._stage5h3_edge_user_id_for_trusted_header(user)
         headers["X-Edge-User-Email"] = str(user.get("email") or "")
         headers["X-Edge-User-Is-Admin"] = "true" if user.get("is_admin") else "false"
 
@@ -377,6 +453,31 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             headers=self._stage5g9_controller_headers(),
             method=method,
         )
+        # STAGE_5H3_WRAPPER_CONTROLLER_JSON_TRUSTED_HEADER_INJECTION_V1
+        # Ensure queued create/status bridge calls to the laptop controller carry
+        # the same server-derived trusted CT101 identity headers.
+        try:
+            trusted_headers = self._inject_trusted_edge_headers({}, upstream_path, getattr(self, "path", None))
+            for _stage5h3_key, _stage5h3_value in (trusted_headers or {}).items():
+                if _stage5h3_value is not None:
+                    req.add_header(str(_stage5h3_key), str(_stage5h3_value))
+        except Exception:
+            pass
+
+        # STAGE_5H3_WRAPPER_CONTROLLER_JSON_DIRECT_TRUSTED_HEADERS_V1
+        # Direct fallback for laptop queued create/status controller calls. This
+        # derives identity only from the server-side session resolver and never
+        # accepts client-provided user_id.
+        try:
+            if str(upstream_path or "").startswith("/api/chat/queued") and EDGE_TRUSTED_PROXY_SECRET:
+                stage5h3_user = self._controller_user_from_token()
+                if stage5h3_user and stage5h3_user.get("id"):
+                    req.add_header("X-Edge-Auth-Secret", EDGE_TRUSTED_PROXY_SECRET)
+                    req.add_header("X-Edge-User-Id", self._stage5h3_edge_user_id_for_trusted_header(stage5h3_user))
+                    req.add_header("X-Edge-User-Email", str(stage5h3_user.get("email") or ""))
+                    req.add_header("X-Edge-User-Is-Admin", "true" if stage5h3_user.get("is_admin") else "false")
+        except Exception:
+            pass
 
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
