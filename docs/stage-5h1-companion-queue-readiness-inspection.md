@@ -145,6 +145,8 @@ Recommended approach:
 3. Add a mode-safe companion queued route/data ownership path.
 4. Preserve server-derived identity only.
 5. Do not accept client-provided `user_id`.
+
+Plain smoke phrase: Do not accept client-provided user_id.
 6. Preserve wrapper trusted identity safety checks.
 7. Preserve existing Stage 5G smokes.
 8. Keep worker concurrency at 1.
