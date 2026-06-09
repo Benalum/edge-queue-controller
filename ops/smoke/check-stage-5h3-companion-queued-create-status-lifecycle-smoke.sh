@@ -32,6 +32,7 @@ grep -Fq "never prints the assistant reply content" "$DOC" || fail "doc missing 
 
 grep -Fq "STAGE_5H2_COMPANION_MODE_OWNERSHIP_V1" "$WRAPPER" || fail "wrapper missing Stage 5H-2 marker"
 grep -Fq "STAGE_5H2_COMPANION_MODE_OWNERSHIP_V1" "$CONTROLLER" || fail "controller missing Stage 5H-2 marker"
+grep -Fq "STAGE_5H3_TRUSTED_CT101_QUEUED_AUTH_USER_V1" "$CONTROLLER" || fail "controller missing Stage 5H-3 trusted CT101 auth-owner marker"
 grep -Fq 'declared_mode in {"chat", "companion"}' "$WRAPPER" || fail "wrapper missing mode allowlist"
 grep -Fq 'clean_mode not in {"chat", "companion"}' "$CONTROLLER" || fail "controller missing mode allowlist"
 grep -Fq "mode must be chat or companion" "$GUARD" || fail "guard missing mode validation"

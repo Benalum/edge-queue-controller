@@ -59,3 +59,9 @@ The smoke never prints the assistant reply content.
 
 The smoke does not send or accept client-provided `user_id`.
 
+
+## Correction note
+
+The first Stage 5H-3 lifecycle run found that trusted CT101 bridge requests could mirror a companion chat under the CT101-namespaced laptop user while queued creation still resolved ownership from the original controller session user.
+
+The corrected Stage 5H-3 path makes trusted CT101 bridge queued ownership use the mirrored CT101 laptop user id after the trusted proxy secret is validated.
