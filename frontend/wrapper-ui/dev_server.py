@@ -500,6 +500,17 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             if ct101_payload.get("model"):
                 laptop_payload["requested_model"] = str(ct101_payload.get("model"))
 
+            # STAGE_5H2_COMPANION_MODE_OWNERSHIP_V1
+            # Forward only allowed non-identity chat modes. The controller still
+            # derives user ownership from session/trusted wrapper identity.
+            declared_mode = str(
+                ct101_payload.get("mode")
+                or ct101_payload.get("chat_mode")
+                or ""
+            ).strip().lower()
+            if declared_mode in {"chat", "companion"}:
+                laptop_payload["mode"] = declared_mode
+
             status, data = self._stage5g9_controller_json(
                 "/api/chat/queued",
                 "POST",

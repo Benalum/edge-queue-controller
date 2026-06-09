@@ -13756,6 +13756,9 @@ class _S5F9QueuedChatRequest(_S5F9_BaseModel):
     message: str | None = None
     chat_id: str | None = None
     requested_model: str | None = None
+    # STAGE_5H2_COMPANION_MODE_OWNERSHIP_V1
+    # Non-identity chat mode hint. Validated server-side before queued job creation.
+    mode: str | None = None
     # Stage 5F-17: explicitly capture forbidden client user fields
     # so real-user queued chat can reject them instead of silently ignoring them.
     user_id: str | None = None
@@ -13947,6 +13950,7 @@ def _s5g14_mirror_trusted_edge_chat(
     trusted_user,
     chat_id,
     requested_model=None,
+    mode=None,
 ):
     if not trusted_user:
         return False
@@ -13958,6 +13962,15 @@ def _s5g14_mirror_trusted_edge_chat(
     from edge_modules.chat_queue_persistence import _psql_run, _sql_literal
 
     model = str(requested_model or "").strip() or "gemma4:e4b"
+
+    # STAGE_5H2_COMPANION_MODE_OWNERSHIP_V1
+    # Preserve only allowed chat modes. This value is not identity and does not
+    # replace server-side user/session ownership checks.
+    clean_mode = str(mode or "chat").strip().lower()
+    if clean_mode not in {"chat", "companion"}:
+        clean_mode = "chat"
+
+    title = "CT101 Companion" if clean_mode == "companion" else "CT101 Chat"
 
     _psql_run(
         f"""
@@ -13974,8 +13987,8 @@ def _s5g14_mirror_trusted_edge_chat(
         VALUES (
           {_sql_literal(chat_id)},
           {_sql_literal(trusted_user["id"])},
-          'chat',
-          'CT101 Chat',
+          {_sql_literal(clean_mode)},
+          {_sql_literal(title)},
           {_sql_literal(model)},
           now(),
           now(),
@@ -13983,6 +13996,8 @@ def _s5g14_mirror_trusted_edge_chat(
         )
         ON CONFLICT (id) DO UPDATE
         SET user_id = EXCLUDED.user_id,
+            mode = EXCLUDED.mode,
+            title = EXCLUDED.title,
             model = COALESCE(EXCLUDED.model, app_chats.model),
             updated_at = now(),
             deleted_at = NULL;
@@ -14037,6 +14052,7 @@ async def s5f9_create_queued_chat(
                     trusted_user=trusted_user_for_refresh,
                     chat_id=guard_payload.get("chat_id"),
                     requested_model=guard_payload.get("requested_model") or guard_payload.get("model"),
+                    mode=guard_payload.get("mode"),
                 )
 
             auth_user = _s5f17_resolve_authenticated_user_from_session_token(
@@ -14059,6 +14075,7 @@ async def s5f9_create_queued_chat(
                     trusted_user=trusted_user,
                     chat_id=guard_payload.get("chat_id"),
                     requested_model=guard_payload.get("requested_model") or guard_payload.get("model"),
+                    mode=guard_payload.get("mode"),
                 )
 
                 try:

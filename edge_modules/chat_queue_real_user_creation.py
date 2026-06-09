@@ -124,8 +124,8 @@ def create_real_user_queued_chat_job(
             VALUES (
               {_sql_literal(chat_id)},
               {_sql_literal(authenticated_user_id)},
-              'chat',
-              'Stage 5F-18 Queued Chat',
+              {_sql_literal(validated.mode)},
+              {_sql_literal("Stage 5H-2 Queued Companion" if validated.mode == "companion" else "Stage 5F-18 Queued Chat")},
               {_sql_literal(requested_model)},
               now(),
               now()
@@ -138,8 +138,8 @@ def create_real_user_queued_chat_job(
         "user_message_id": user_message_id,
         "prompt": validated.message,
         "messages": [{"role": "user", "content": validated.message}],
-        "mode": "chat",
-        "route_source": "stage_5f18_real_user_creation_helper",
+        "mode": validated.mode,
+        "route_source": "stage_5h2_real_user_mode_aware_creation_helper",
         "synthetic": False,
         "requested_model": requested_model,
     }

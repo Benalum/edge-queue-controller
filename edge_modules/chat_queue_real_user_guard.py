@@ -34,6 +34,7 @@ class RealUserQueuedChatGuardResult:
     chat_id: str | None
     requested_model: str | None
     message: str
+    mode: str = "chat"
 
 
 def real_user_queued_chat_enabled() -> bool:
@@ -69,6 +70,13 @@ def validate_real_user_queued_chat_request(
     if not message:
         raise RealUserQueuedChatGuardError("message is required")
 
+    # STAGE_5H2_COMPANION_MODE_OWNERSHIP_V1
+    # Mode is allowed as a non-identity routing hint. User identity must still
+    # come from the server-side session/trusted wrapper path.
+    mode = str(payload.get("mode") or "chat").strip().lower()
+    if mode not in {"chat", "companion"}:
+        raise RealUserQueuedChatGuardError("mode must be chat or companion")
+
     chat_id_raw = payload.get("chat_id")
     chat_id = str(chat_id_raw).strip() if chat_id_raw else None
 
@@ -98,6 +106,7 @@ def validate_real_user_queued_chat_request(
         chat_id=chat_id,
         requested_model=requested_model,
         message=message,
+        mode=mode,
     )
 
 
