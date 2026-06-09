@@ -8291,6 +8291,15 @@ def _system_status_normalized_block(nodes, services):
                 "id": "ct101-laptop-queue-worker",
                 "name": "CT101 Laptop Queue Worker",
                 "state": service_state("ct101-laptop-queue-worker"),
+                # STAGE_5G26_NORMALIZED_WORKER_DETAIL_FIELD_V1
+                "detail": next(
+                    (
+                        service.get("detail")
+                        for service in services
+                        if service.get("id") == "ct101-laptop-queue-worker"
+                    ),
+                    "Managed CT101 worker processing queued chat jobs.",
+                ),
             },
             {
                 "id": "power-automation",
@@ -8479,6 +8488,16 @@ printf 'last_log=%s\n' "$last_log"
             detail_parts.append(f"model: {facts.get('model')}")
         if facts.get("max_jobs"):
             detail_parts.append(f"max jobs/run: {facts.get('max_jobs')}")
+
+        # STAGE_5G26_NORMALIZED_WORKER_DETAIL_QUEUE_SUMMARY_V1
+        # Keep the normalized UI detail useful without exposing prompts,
+        # tokens, raw environment values, or user message contents.
+        detail_parts.append(
+            "queue: "
+            f"queued {queue_summary.get('queued', 0)}, "
+            f"running {queue_summary.get('running', 0)}, "
+            f"failed {queue_summary.get('failed', 0)}"
+        )
 
         max_jobs_value = None
         if str(facts.get("max_jobs") or "").isdigit():
