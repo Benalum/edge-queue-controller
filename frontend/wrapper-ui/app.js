@@ -672,6 +672,7 @@ const NORMALIZED_PLATFORM_IDS = [
   "frontend-wrapper",
   "queue",
   "workers",
+  "ct101-laptop-queue-worker",
   "power-automation",
 ];
 
@@ -688,6 +689,7 @@ const NORMALIZED_PLATFORM_DETAILS = {
   "frontend-wrapper": "Public wrapper and browser experience.",
   queue: "Job queue and scheduling surface.",
   workers: "Worker capacity and processing services.",
+  "ct101-laptop-queue-worker": "Managed CT101 worker processing queued chat jobs with guarded one-at-a-time execution.",
   "power-automation": "Power automation status.",
 };
 
