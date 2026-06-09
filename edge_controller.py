@@ -8288,6 +8288,11 @@ def _system_status_normalized_block(nodes, services):
                 "state": node_state("ct-101"),
             },
             {
+                "id": "ct101-laptop-queue-worker",
+                "name": "CT101 Laptop Queue Worker",
+                "state": service_state("ct101-laptop-queue-worker"),
+            },
+            {
                 "id": "power-automation",
                 "name": "Power Automation",
                 "state": service_state("power-automation"),
@@ -8295,6 +8300,219 @@ def _system_status_normalized_block(nodes, services):
         ],
     }
 
+
+# STAGE_5G24_CT101_MANAGED_WORKER_STATUS_V1
+def _system_queue_depth_summary():
+    summary = {
+        "queued": 0,
+        "running": 0,
+        "complete": 0,
+        "failed": 0,
+        "other": 0,
+    }
+
+    try:
+        from edge_modules.chat_queue_persistence import _psql_at
+        rows = _psql_at("SELECT status || E'\\t' || COUNT(*)::text FROM app_jobs WHERE job_type = 'ollama_chat' GROUP BY status ORDER BY status;").strip()
+        for line in rows.splitlines():
+            parts = line.split("\t")
+            if len(parts) != 2:
+                continue
+            status, count_text = parts
+            try:
+                count = int(count_text)
+            except Exception:
+                count = 0
+            if status in summary:
+                summary[status] = count
+            else:
+                summary["other"] += count
+    except Exception as exc:
+        summary["error"] = str(exc)
+
+    return summary
+
+
+def _system_ct101_laptop_queue_worker_status(checked_at, *, pveso_state, ct101_state):
+    queue_summary = _system_queue_depth_summary()
+    base = {
+        "id": "ct101-laptop-queue-worker",
+        "name": "CT101 Laptop Queue Worker",
+        "state": "unknown",
+        "checked_at": checked_at,
+        "detail": "Managed worker status has not been checked yet.",
+        "queue": queue_summary,
+    }
+
+    if pveso_state != "online":
+        base.update({
+            "state": pveso_state or "offline",
+            "detail": "Main Proxmox server is not online.",
+            "service_active": False,
+            "paused": None,
+            "preflight_ok": False,
+        })
+        return base
+
+    if ct101_state != "online":
+        base.update({
+            "state": ct101_state or "offline",
+            "detail": "CT101 container is not online.",
+            "service_active": False,
+            "paused": None,
+            "preflight_ok": False,
+        })
+        return base
+
+    remote_script = r'''
+set -u
+SERVICE="ai-platform-laptop-queue-worker.service"
+ENV_FILE="/etc/ai-platform/laptop-queue-worker.env"
+PAUSE_FILE="/etc/ai-platform/laptop-queue-worker.paused"
+PREFLIGHT="/opt/ai-platform/ops/runtime/laptop-queue-worker-preflight.sh"
+
+service_active="$(systemctl is-active "$SERVICE" 2>/dev/null || true)"
+service_enabled="$(systemctl is-enabled "$SERVICE" 2>/dev/null || true)"
+
+if [ -f "$PAUSE_FILE" ]; then paused="yes"; else paused="no"; fi
+
+worker_id=""
+worker_node_id=""
+model=""
+max_jobs=""
+real_user_jobs=""
+synthetic_only=""
+base_url=""
+ollama_url=""
+
+if [ -f "$ENV_FILE" ]; then
+  worker_id="$(awk -F= '$1=="LAPTOP_QUEUE_WORKER_ID"{print substr($0, index($0, "=")+1); exit}' "$ENV_FILE")"
+  worker_node_id="$(awk -F= '$1=="LAPTOP_QUEUE_WORKER_NODE_ID"{print substr($0, index($0, "=")+1); exit}' "$ENV_FILE")"
+  model="$(awk -F= '$1=="LAPTOP_QUEUE_OLLAMA_MODEL_FALLBACK"{print substr($0, index($0, "=")+1); exit}' "$ENV_FILE")"
+  max_jobs="$(awk -F= '$1=="LAPTOP_QUEUE_MAX_JOBS_PER_RUN"{print substr($0, index($0, "=")+1); exit}' "$ENV_FILE")"
+  real_user_jobs="$(awk -F= '$1=="LAPTOP_QUEUE_REAL_USER_JOBS_ENABLED"{print substr($0, index($0, "=")+1); exit}' "$ENV_FILE")"
+  synthetic_only="$(awk -F= '$1=="LAPTOP_QUEUE_SYNTHETIC_ONLY"{print substr($0, index($0, "=")+1); exit}' "$ENV_FILE")"
+  base_url="$(awk -F= '$1=="LAPTOP_QUEUE_BASE_URL"{print substr($0, index($0, "=")+1); exit}' "$ENV_FILE")"
+  ollama_url="$(awk -F= '$1=="LAPTOP_QUEUE_OLLAMA_BASE_URL"{print substr($0, index($0, "=")+1); exit}' "$ENV_FILE")"
+fi
+
+preflight_ok="no"
+if [ -x "$PREFLIGHT" ]; then
+  if "$PREFLIGHT" >/tmp/stage5g24-worker-preflight.out 2>/tmp/stage5g24-worker-preflight.err; then
+    preflight_ok="yes"
+  fi
+fi
+
+last_log="$(journalctl -u "$SERVICE" --no-pager -n 1 2>/dev/null | sed 's/[[:cntrl:]]//g' | tail -n 1 || true)"
+
+printf 'service_active=%s\n' "$service_active"
+printf 'service_enabled=%s\n' "$service_enabled"
+printf 'paused=%s\n' "$paused"
+printf 'worker_id=%s\n' "$worker_id"
+printf 'worker_node_id=%s\n' "$worker_node_id"
+printf 'model=%s\n' "$model"
+printf 'max_jobs=%s\n' "$max_jobs"
+printf 'real_user_jobs=%s\n' "$real_user_jobs"
+printf 'synthetic_only=%s\n' "$synthetic_only"
+printf 'base_url_set=%s\n' "$([ -n "$base_url" ] && echo yes || echo no)"
+printf 'ollama_url_set=%s\n' "$([ -n "$ollama_url" ] && echo yes || echo no)"
+printf 'preflight_ok=%s\n' "$preflight_ok"
+printf 'last_log=%s\n' "$last_log"
+'''
+
+    try:
+        proc = subprocess.run(
+            [
+                "ssh",
+                f"root@{_SYSTEM_PVESO_HOST}",
+                "pct",
+                "exec",
+                "101",
+                "--",
+                "bash",
+                "-s",
+            ],
+            input=remote_script,
+            text=True,
+            capture_output=True,
+            timeout=18,
+        )
+
+        facts = {}
+        for line in (proc.stdout or '').splitlines():
+            if "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            facts[k.strip()] = v.strip()
+
+        if proc.returncode != 0:
+            base.update({
+                "state": "degraded",
+                "detail": "Managed worker status command failed.",
+                "service_active": False,
+                "paused": None,
+                "preflight_ok": False,
+                "error": (proc.stderr or "").strip()[:240],
+            })
+            return base
+
+        service_active = facts.get("service_active") == "active"
+        paused = facts.get("paused") == "yes"
+        preflight_ok = facts.get("preflight_ok") == "yes"
+
+        if service_active and preflight_ok and not paused:
+            state = "online"
+        elif service_active and paused:
+            state = "paused"
+        elif service_active and not preflight_ok:
+            state = "degraded"
+        else:
+            state = "offline"
+
+        detail_parts = [
+            f"service: {facts.get('service_active') or 'unknown'}",
+            f"preflight: {'ok' if preflight_ok else 'failed'}",
+            f"paused: {'yes' if paused else 'no'}",
+        ]
+
+        if facts.get("model"):
+            detail_parts.append(f"model: {facts.get('model')}")
+        if facts.get("max_jobs"):
+            detail_parts.append(f"max jobs/run: {facts.get('max_jobs')}")
+
+        max_jobs_value = None
+        if str(facts.get("max_jobs") or "").isdigit():
+            max_jobs_value = int(facts.get("max_jobs"))
+
+        base.update({
+            "state": state,
+            "detail": ", ".join(detail_parts),
+            "service_active": service_active,
+            "service_enabled": facts.get("service_enabled") or "unknown",
+            "paused": paused,
+            "preflight_ok": preflight_ok,
+            "worker_id": facts.get("worker_id") or None,
+            "worker_node_id": facts.get("worker_node_id") or None,
+            "model": facts.get("model") or None,
+            "max_jobs_per_run": max_jobs_value,
+            "real_user_jobs_enabled": facts.get("real_user_jobs") == "1",
+            "synthetic_only": facts.get("synthetic_only") == "1",
+            "base_url_set": facts.get("base_url_set") == "yes",
+            "ollama_url_set": facts.get("ollama_url_set") == "yes",
+            "last_log": facts.get("last_log") or None,
+        })
+        return base
+
+    except Exception as exc:
+        base.update({
+            "state": "degraded",
+            "detail": "Managed worker status check failed.",
+            "service_active": False,
+            "paused": None,
+            "preflight_ok": False,
+            "error": str(exc),
+        })
+        return base
 
 @app.get("/system/local-health")
 def system_local_health():
@@ -8424,6 +8642,13 @@ def system_status():
             else f"Study route not confirmed. Last check: {study_check['error'] if study_check else 'unknown'}"
         ),
     })
+
+    ct101_worker_service = _system_ct101_laptop_queue_worker_status(
+        checked_at,
+        pveso_state=pveso_state,
+        ct101_state=ct101["state"],
+    )
+    services.append(ct101_worker_service)
 
     # These services depend on pveso. If pveso is offline, skip public-domain checks
     # so DNS/proxy failures do not make the entire system look broken.
