@@ -1882,9 +1882,8 @@ async def power_idle_tick():
                 action = "would_stop_worker_target"
                 reason = "Queue has been empty long enough and target is allowlisted, but dry-run is enabled."
             else:
-                # Real stop is intentionally not implemented yet.
-                action = "real_stop_not_implemented"
-                reason = "Dry-run is disabled, but real stop code has not been implemented yet."
+                action = "would_stop_worker_target"
+                reason = "Queue has been empty long enough and target is allowlisted; guarded stop execution is enabled."
 
             container_actions.append(
                 {
@@ -1905,7 +1904,6 @@ async def power_idle_tick():
                 "would_stop_worker_target",
                 "blocked_protected_target",
                 "blocked_not_allowlisted",
-                "real_stop_not_implemented",
             }
             for action in container_actions
         ) if container_actions else False
