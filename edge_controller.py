@@ -2289,7 +2289,6 @@ async def power_stop_plan():
     import os
     from datetime import datetime, timezone
     from fastapi import HTTPException
-    from fastapi import HTTPException
 
     def parse_bool(value, default=True):
         if value is None:
