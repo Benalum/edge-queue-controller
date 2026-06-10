@@ -2289,6 +2289,7 @@ async def power_stop_plan():
     import os
     from datetime import datetime, timezone
     from fastapi import HTTPException
+    from fastapi import HTTPException
 
     def parse_bool(value, default=True):
         if value is None:
@@ -3064,11 +3065,55 @@ async def power_auto_tick():
 
     queue_demand = _power_auto_queue_demand_state()
     worker_registry_state = _power_lookup_worker_registry_state("llms_ollama")
-    worker_start_plan = await power_start_worker_plan(target_name="llms_ollama")
 
-    stop_plan = await power_stop_plan()
-    host_plan = await power_host_shutdown_plan()
-    wake_plan = await power_wake_plan()
+    try:
+        worker_start_plan = await power_start_worker_plan(target_name="llms_ollama")
+    except HTTPException as e:
+        worker_start_plan = {
+            "ok": False,
+            "eligible": False,
+            "inventory_error": True,
+            "blocked_reason": "Inventory unavailable; worker start plan could not be safely evaluated.",
+            "error": e.detail,
+        }
+
+    try:
+        stop_plan = await power_stop_plan()
+    except HTTPException as e:
+        stop_plan = {
+            "ok": False,
+            "inventory_error": True,
+            "error": e.detail,
+            "container_stop_plans": [],
+            "note": "power_auto_tick continued after power_stop_plan failed.",
+        }
+
+    try:
+        host_plan = await power_host_shutdown_plan()
+    except HTTPException as e:
+        host_plan = {
+            "ok": False,
+            "inventory_error": True,
+            "error": e.detail,
+            "eligible": False,
+            "blocked_reasons": [
+                "Inventory unavailable; host shutdown plan could not be safely evaluated."
+            ],
+            "note": "power_auto_tick continued after power_host_shutdown_plan failed.",
+        }
+
+    try:
+        wake_plan = await power_wake_plan()
+    except HTTPException as e:
+        wake_plan = {
+            "ok": False,
+            "inventory_error": True,
+            "error": e.detail,
+            "wake": {
+                "eligible": False,
+            },
+            "note": "power_auto_tick continued after power_wake_plan failed.",
+        }
 
     # Guard old auto-stop / auto-shutdown path with the newer web presence policy.
     # If someone is actively using the site, do not stop workers or shut down pveso.
@@ -12655,8 +12700,8 @@ def _web_presence_power_decision():
 
     return {
         "ok": True,
-        "dry_run": True,
-        "execute": False,
+        "dry_run": not _web_power_parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_SHUTDOWN"), False),
+        "execute": _web_power_parse_bool(os.getenv("WEB_POWER_POLICY_EXECUTE_SHUTDOWN"), False),
         "policy": {
             "anonymous_wake_after_seconds": presence["anonymous_wake_after_seconds"],
             "container_idle_seconds": container_idle_seconds,
