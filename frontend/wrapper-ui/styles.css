@@ -1695,3 +1695,28 @@ body[data-current-route="/credits"] .topbar {
   color: var(--muted);
   line-height: 1.5;
 }
+
+
+/* ============================================================
+   STAGE_5O27B_PUBLIC_GATE_NONBLANK_STYLES_V1
+   Logged-out public feature summaries.
+   ============================================================ */
+
+.public-feature-gate {
+  width: min(1100px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+}
+
+.public-feature-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+
+.public-feature-card p {
+  margin: .45rem 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}

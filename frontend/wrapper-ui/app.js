@@ -3488,12 +3488,12 @@ function bindQueuedChatPage() {
 // ============================================================
 
 function hasActiveWrapperSession() {
+  // STAGE_5O27B_STALE_TOKEN_SAFE_PUBLIC_GATE_V1
+  // A stale cookie/localStorage token should not make logged-out users hit
+  // private page loaders. Treat the user as logged in only after /me has
+  // populated authState.user during this page session.
   try {
-    return Boolean(
-      (authState && authState.token) ||
-      localStorage.getItem("edgeStudyToken") ||
-      document.cookie.split(";").some((part) => part.trim().startsWith("edgeStudyToken="))
-    );
+    return Boolean(authState && authState.token && authState.user);
   } catch {
     return false;
   }
@@ -3553,8 +3553,18 @@ const PUBLIC_FEATURE_SUMMARIES = {
 };
 
 function renderPublicFeatureGate(route) {
-  const app = $("app");
+  // STAGE_5O27B_NONBLANK_PUBLIC_GATE_RENDERER_V1
+  // Self-contained renderer: do not depend on helper functions that might not
+  // be initialized yet. Public logged-out pages must never render blank.
+  const app = document.getElementById("app");
   if (!app) return;
+
+  const safe = (value) => String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
   const summary = PUBLIC_FEATURE_SUMMARIES[route] || {
     eyebrow: "Platform",
@@ -3563,22 +3573,26 @@ function renderPublicFeatureGate(route) {
     points: []
   };
 
-  const pointsHtml = (summary.points || []).map(([label, text]) => `
-    <div class="summary-card public-feature-card">
-      <span>${escapeHtml(label)}</span>
-      <p>${escapeHtml(text)}</p>
-    </div>
-  `).join("");
+  const pointsHtml = (summary.points || []).map((point) => {
+    const label = Array.isArray(point) ? point[0] : "";
+    const text = Array.isArray(point) ? point[1] : "";
+    return `
+      <div class="summary-card public-feature-card">
+        <span>${safe(label)}</span>
+        <p>${safe(text)}</p>
+      </div>
+    `;
+  }).join("");
 
   app.innerHTML = `
     <section class="system-section public-feature-gate">
       <div class="summary-box">
-        <span>${escapeHtml(summary.eyebrow)}</span>
-        <strong>${escapeHtml(summary.title)}</strong>
-        <p>${escapeHtml(summary.body)}</p>
+        <span>${safe(summary.eyebrow)}</span>
+        <strong>${safe(summary.title)}</strong>
+        <p>${safe(summary.body)}</p>
         <div class="public-feature-actions">
-          <button class="primary-btn" type="button" onclick="openAuthModal('login')">Log in</button>
-          <button class="ghost-btn" type="button" onclick="openAuthModal('register')">Create account</button>
+          <button id="publicGateLoginBtn" class="primary-btn" type="button">Log in</button>
+          <button id="publicGateRegisterBtn" class="ghost-btn" type="button">Create account</button>
         </div>
       </div>
       <div class="summary-grid">
@@ -3586,11 +3600,42 @@ function renderPublicFeatureGate(route) {
       </div>
     </section>
   `;
+
+  const loginBtn = document.getElementById("publicGateLoginBtn");
+  const registerBtn = document.getElementById("publicGateRegisterBtn");
+
+  if (loginBtn) {
+    loginBtn.addEventListener("click", () => {
+      if (typeof openAuthModal === "function") openAuthModal("login");
+    });
+  }
+
+  if (registerBtn) {
+    registerBtn.addEventListener("click", () => {
+      if (typeof openAuthModal === "function") openAuthModal("register");
+    });
+  }
 }
 
 function renderPage() {
   const path = routePath();
   const page = pages[path];
+
+  // STAGE_5O27B_PUBLIC_ROUTE_EARLY_GATE_V1
+  // Public pages should render summaries before any private loaders/preloads.
+  if (!hasActiveWrapperSession()) {
+    if (
+      path === "/study" ||
+      path === "/chat" ||
+      path === "/companion" ||
+      path === "/profile" ||
+      path === "/calendar" ||
+      path === "/credits"
+    ) {
+      renderPublicFeatureGate(path === "/chat" ? "/chat" : path);
+      return;
+    }
+  }
 
   // STAGE_5O27_GENERIC_PUBLIC_PAGE_GATES_V1
   // These pages are rendered through the generic `pages[path]` branch,
