@@ -3196,9 +3196,14 @@ async function hydrateStudyWrapperPreview(preferredDeckId = null) {
 
 async function loadStudyWrapperPreview() {
   const app = $("app");
-  const isLiveStudyRoute = window.location.pathname === "/study";
+  
+  const style = document.getElementById("studyPreviewStyles");
+const isLiveStudyRoute = window.location.pathname === "/study";
 
-  if (!app) return;
+  
+
+  if (style) style.disabled = false;
+if (!app) return;
 
   try {
     const res = await fetch("/study/study-dashboard.partial.html", {
@@ -3491,7 +3496,16 @@ function renderPage() {
 
   const isStudyWrapperRoute = path === "/study-wrapper-preview" || path === "/study";
 
-  if (isStudyWrapperRoute) {
+  
+
+  const studyPreviewStyle = document.getElementById("studyPreviewStyles");
+  if (studyPreviewStyle) {
+    // STAGE_5O23_STUDY_LAYOUT_SHARED_HEADER_V1
+    // Study content may use its own content stylesheet, but the shared
+    // wrapper stylesheet loads after it and owns header/logo/nav styling.
+    studyPreviewStyle.disabled = !isStudyWrapperRoute;
+  }
+if (isStudyWrapperRoute) {
     loadStudyWrapperPreview();
     return;
   }

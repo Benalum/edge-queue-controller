@@ -1620,3 +1620,54 @@ body[data-current-route="/study"] .brand-logo svg {
   stroke: currentColor !important;
   color: var(--text) !important;
 }
+
+
+/* ============================================================
+   STAGE_5O23_GLOBAL_LOGO_HEADER_SINGLE_SOURCE_V1
+   One shared logo/header/nav visual system for every wrapper page.
+   Page-specific styles may style page content, but not the header logo.
+   ============================================================ */
+
+.topbar .brand,
+.topbar .brand *,
+.topbar .logo-only,
+.topbar .logo-only *,
+.topbar .brand-mark,
+.topbar .brand-logo,
+.topbar .helper-logo {
+  color: var(--text) !important;
+  background: transparent !important;
+  background-image: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+.topbar .brand svg,
+.topbar .logo-only svg,
+.topbar .brand-mark svg,
+.topbar .brand-logo svg,
+.topbar .helper-logo svg {
+  color: var(--text) !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+  filter: none !important;
+}
+
+.topbar .nav-link,
+.topbar .nav-link *,
+.topbar a[data-route],
+.topbar a[data-route] * {
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+body[data-current-route="/study"] .topbar,
+body[data-current-route="/companion"] .topbar,
+body[data-current-route="/profile"] .topbar,
+body[data-current-route="/admin"] .topbar,
+body[data-current-route="/system"] .topbar,
+body[data-current-route="/credits"] .topbar {
+  background: var(--topbar-bg, rgba(6, 9, 20, .92)) !important;
+}
