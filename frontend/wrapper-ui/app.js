@@ -6992,3 +6992,56 @@ async function handleResetPasswordRoute() {
   window.setInterval(normalizeHeaderActiveState, 1500);
 })();
 
+
+// ============================================================
+// STAGE_5O9_CREDITS_PILL_ROUTE_STATE_V1
+//
+// Credits in the header is an account balance pill, not a permanent
+// selected nav tab. It should only receive route-active styling on /credits.
+// Also keeps route URLs clean; no ?fresh cache busters are needed.
+// ============================================================
+(function stage5o9CreditsPillRouteState() {
+  function cleanRoute(path) {
+    let route = String(path || "/").split("?")[0].split("#")[0] || "/";
+    if (route.length > 1 && route.endsWith("/")) route = route.slice(0, -1);
+    if (route === "/account/credits") return "/credits";
+    return route;
+  }
+
+  function updateCreditsPillRouteState() {
+    const current = cleanRoute(window.location.pathname || "/");
+    const active = current === "/credits";
+
+    document.body.setAttribute("data-current-route", current);
+
+    const pill = document.getElementById("creditsPill");
+    if (!pill) return;
+
+    pill.classList.toggle("route-active", active);
+    pill.classList.toggle("active", active);
+    pill.classList.toggle("is-active", active);
+    pill.classList.toggle("selected", active);
+
+    if (active) {
+      pill.setAttribute("aria-current", "page");
+    } else {
+      pill.removeAttribute("aria-current");
+    }
+  }
+
+  function scheduleCreditsPillRouteState() {
+    window.requestAnimationFrame(updateCreditsPillRouteState);
+    window.setTimeout(updateCreditsPillRouteState, 50);
+    window.setTimeout(updateCreditsPillRouteState, 250);
+  }
+
+  window.addEventListener("popstate", scheduleCreditsPillRouteState);
+  window.addEventListener("hashchange", scheduleCreditsPillRouteState);
+  document.addEventListener("DOMContentLoaded", scheduleCreditsPillRouteState);
+  document.addEventListener("click", scheduleCreditsPillRouteState, true);
+
+  window.stage5o9UpdateCreditsPillRouteState = updateCreditsPillRouteState;
+  scheduleCreditsPillRouteState();
+  window.setInterval(updateCreditsPillRouteState, 1500);
+})();
+

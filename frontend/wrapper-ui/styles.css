@@ -1428,3 +1428,37 @@ body:not([data-current-route="/credits"]) .route-nav a[data-route="/credits"]:no
   box-shadow: none !important;
 }
 
+
+/* ============================================================
+   STAGE_5O9_CREDITS_PILL_NEUTRAL_ROUTE_STYLE_V1
+
+   The credits header pill displays account balance. It must not look like
+   the selected page unless the current route is /credits.
+   ============================================================ */
+
+#creditsPill,
+.credits-pill {
+  color: rgba(255,255,255,.82) !important;
+  background: rgba(255,255,255,.075) !important;
+  border-color: rgba(255,255,255,.14) !important;
+  box-shadow: none !important;
+}
+
+#creditsPill:hover,
+.credits-pill:hover {
+  color: rgba(255,255,255,.94) !important;
+  background: rgba(255,255,255,.115) !important;
+  border-color: rgba(255,255,255,.20) !important;
+  box-shadow: none !important;
+}
+
+body[data-current-route="/credits"] #creditsPill,
+body[data-current-route="/credits"] .credits-pill,
+#creditsPill.route-active,
+.credits-pill.route-active {
+  color: #d7ffe9 !important;
+  background: rgba(35, 197, 120, .20) !important;
+  border-color: rgba(35, 197, 120, .55) !important;
+  box-shadow: 0 0 0 1px rgba(35, 197, 120, .18), 0 8px 24px rgba(35, 197, 120, .10) !important;
+}
+
