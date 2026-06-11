@@ -1564,3 +1564,25 @@ body[data-current-route="/study"] h3,
 body[data-current-route="/study"] .eyebrow {
   color: inherit;
 }
+
+
+/* ============================================================
+   STAGE_5O18_STUDY_LOGO_COLOR_NORMALIZATION_V1
+   Study partial must not override shared wrapper logo/header color.
+   ============================================================ */
+
+body[data-current-route="/study"] .brand,
+body[data-current-route="/study"] .brand *,
+body[data-current-route="/study"] .brand-mark,
+body[data-current-route="/study"] .brand-logo,
+body[data-current-route="/study"] .brand-logo *,
+body[data-current-route="/study"] .logo-only,
+body[data-current-route="/study"] .logo-only *,
+body[data-current-route="/study"] .helper-logo,
+body[data-current-route="/study"] .helper-logo *,
+body[data-current-route="/study"] svg {
+  color: inherit !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+  filter: none !important;
+}

@@ -3199,7 +3199,12 @@ async function loadStudyWrapperPreview() {
   const style = document.getElementById("studyPreviewStyles");
   const isLiveStudyRoute = window.location.pathname === "/study";
 
-  if (style) style.disabled = false;
+  if (style) {
+    // STAGE_5O18_STUDY_NO_SEPARATE_STYLESHEET_V1
+    // Keep Study on the shared wrapper stylesheet. The old /study/styles.css
+    // changes the logo/header colors and makes Study drift from other pages.
+    style.disabled = true;
+  }
 
   if (!app) return;
 
