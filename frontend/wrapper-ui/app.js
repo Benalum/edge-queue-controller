@@ -126,7 +126,7 @@ function syncAuthRouteCookie() {
 syncAuthRouteCookie();
 
 // PRIVATE_ROUTE_REFRESH_AFTER_AUTH_V1
-const PRIVATE_APP_ROUTE_SET = new Set(["/study", "/chat", "/companion", "/calendar", "/profile"]);
+const PRIVATE_APP_ROUTE_SET = new Set(["/study-wrapper-preview", "/study", "/chat", "/companion", "/calendar", "/profile"]);
 
 function refreshPrivateRouteAfterAuth(reason = "auth") {
   syncAuthRouteCookie();
@@ -160,6 +160,13 @@ const pages = {
       ["Always available overview", "Public summaries stay available even when live backend services are asleep."],
       ["Efficient resources", "Compute services can wake only when needed and shut down when idle."],
     ],
+  },
+
+  "/study-wrapper-preview": {
+    eyebrow: "Preview",
+    title: "Study Wrapper Preview",
+    subtitle: "Preview of the Study dashboard inside the shared wrapper layout. Study behavior is not wired here yet.",
+    boxes: [],
   },
 
   "/study": {
@@ -2568,6 +2575,51 @@ function renderSystemPage() {
   `;
 }
 
+
+async function loadStudyWrapperPreview() {
+  const app = $("app");
+  const style = document.getElementById("studyPreviewStyles");
+  if (style) style.disabled = false;
+
+  if (!app) return;
+
+  try {
+    const res = await fetch("/study/study-content.partial.html", {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    const html = await res.text();
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${html.slice(0, 120)}`);
+    }
+
+    app.innerHTML = `
+      <section class="page-card">
+        <p class="eyebrow">Preview</p>
+        <h1>Study Wrapper Preview</h1>
+        <p class="subtitle">
+          This preview uses the shared wrapper header and loads the Study dashboard body only.
+          Study JavaScript is intentionally not running here yet.
+        </p>
+        <div class="study-wrapper-preview">
+          ${html}
+        </div>
+      </section>
+    `;
+  } catch (error) {
+    app.innerHTML = `
+      <section class="page-card">
+        <p class="eyebrow">Preview error</p>
+        <h1>Study Wrapper Preview</h1>
+        <p class="subtitle">Could not load the Study partial.</p>
+        <pre>${String(error.message || error)}</pre>
+      </section>
+    `;
+  }
+}
+
 function renderPage() {
   const path = routePath();
   const page = pages[path];
@@ -2578,6 +2630,16 @@ function renderPage() {
   renderAuthButtons();
 
   $("adminNavLink")?.classList.toggle("hidden", !authState.user?.is_admin);
+
+  const isStudyPreview = path === "/study-wrapper-preview";
+
+  const studyPreviewStyle = document.getElementById("studyPreviewStyles");
+  if (studyPreviewStyle) studyPreviewStyle.disabled = !isStudyPreview;
+
+  if (isStudyPreview) {
+    loadStudyWrapperPreview();
+    return;
+  }
 
   const isHome = path === "/";
   const isSystem = path === "/system";

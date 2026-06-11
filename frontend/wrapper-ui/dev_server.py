@@ -15,6 +15,7 @@ UNIFIED_SHELL_ROUTES = {
     "/login",
     "/register",
     "/study",
+    "/study-wrapper-preview",
     "/chat",
     "/companion",
     "/calendar",
@@ -47,7 +48,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 FULL_APP_ROUTES = {"/study", "/chat", "/companion", "/calendar", "/profile"}
-WRAPPER_ROUTES = {"/", "/study", "/chat", "/companion", "/calendar", "/profile", "/system"}
+WRAPPER_ROUTES = {"/", "/study-wrapper-preview", "/study", "/chat", "/companion", "/calendar", "/profile", "/system"}
 
 
 def map_api(path):
