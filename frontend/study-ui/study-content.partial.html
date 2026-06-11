@@ -1,0 +1,249 @@
+<!-- Study dashboard content partial extracted from standalone Study HTML. Runtime is not using this file yet. -->
+<header class="hero page-block" data-page="home">
+      <div>
+        <p class="eyebrow">AI Platform Control</p>
+        <h1>Study Dashboard</h1>
+        <p class="subtitle">
+          Create decks, add cards, review by difficulty, and track your progress.
+        </p>
+      </div>
+
+      <div class="status-card">
+        <div class="status-dot" id="apiDot"></div>
+        <div>
+          <strong id="apiStatusText">Checking API...</strong>
+          <span id="workerStatusText">Worker proxy</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel page-block" data-page="home" id="homePanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Welcome</p>
+            <h2>Your personal AI learning platform</h2>
+          </div>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3>Study smarter</h3>
+            <p>Create decks, add cards, review by difficulty, and track progress over time.</p>
+          </div>
+          <div class="feature-card">
+            <h3>AI companion</h3>
+            <p>Chat with your companion, ask what to study, and get help based on your study cards.</p>
+            <button class="secondary" type="button" data-page-link="companion">Open Companion</button>
+          </div>
+          <div class="feature-card">
+            <h3>Calendar & reminders</h3>
+            <p>Create simple local study reminders while we connect the full backend calendar system.</p>
+            <button class="secondary" type="button" data-page-link="calendar">Open Calendar</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3>Current setup</h3>
+            <p>Study cards are active. Companion now uses the worker proxy and Gemma E4B queue path when available.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Recommended next step</h3>
+            <p>Use the Companion tab and ask: “What should I study right now based on my cards?”</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel page-block hidden" data-page="companion" id="companionPanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Companion</p>
+            <h2>AI Companion</h2>
+          </div>
+        </div>
+        <p class="muted">
+          The full companion runs in the AI Platform app. It is designed for conversation,
+          emotional support, study help, calendar/reminder help, and safety-aware responses.
+        </p>
+        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
+      </section>
+
+      <section class="panel page-block hidden" data-page="calendar" id="calendarPanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Calendar</p>
+            <h2>Calendar & Reminders</h2>
+          </div>
+        </div>
+        <p class="muted">
+          The full calendar/reminder system belongs in the AI Platform app so the companion
+          can help create, update, and track reminders with user permission.
+        </p>
+        <a class="primary" href="https://alexhartel.com/calendar">Open Calendar</a>
+      </section>
+
+      <section class="panel page-block hidden" data-page="auth" id="authPanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Account</p>
+            <h2>Use your shared AI Platform account</h2>
+          </div>
+        </div>
+        <p class="muted">
+          Login and registration now happen through the shared account page so Study,
+          Companion, Calendar, and Profile can use the same account.
+        </p>
+        <div class="mode-row">
+          <a class="primary" href="https://alexhartel.com/login">Open Account Login</a>
+          <a class="secondary" href="https://alexhartel.com/register">Create Account</a>
+        </div>
+      </section>
+
+      <section class="panel hidden" data-page="study" id="dashboardPanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Study</p>
+            <h2>Progress Overview</h2>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat">
+            <span>Decks</span>
+            <strong id="deckCount">0</strong>
+          </div>
+          <div class="stat">
+            <span>Cards</span>
+            <strong id="cardCount">0</strong>
+          </div>
+          <div class="stat">
+            <span>Reviews</span>
+            <strong id="reviewCount">0</strong>
+          </div>
+          <div class="stat">
+            <span>Accuracy</span>
+            <strong id="accuracyValue">—</strong>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid-2 hidden" data-page="study" id="studyGrid">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Decks</p>
+              <h2>Create / Select Deck</h2>
+            </div>
+          </div>
+
+          <form id="deckForm" class="form-grid">
+            <label>
+              Deck title
+              <input id="deckTitleInput" type="text" placeholder="Math 316 Review" required />
+            </label>
+            <label>
+              Description
+              <textarea id="deckDescriptionInput" placeholder="What is this deck for?"></textarea>
+            </label>
+            <button class="primary" type="submit">Create Deck</button>
+          </form>
+
+          <div class="divider"></div>
+
+          <label>
+            Selected deck
+            <select id="deckSelect">
+              <option value="">No deck selected</option>
+            </select>
+          </label>
+
+          <div id="deckSummary" class="mini-summary"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Cards</p>
+              <h2>Add Card</h2>
+            </div>
+          </div>
+
+          <form id="cardForm" class="form-grid">
+            <label>
+              Question
+              <textarea id="questionInput" placeholder="What is the Laplace transform of 1?" required></textarea>
+            </label>
+
+            <label>
+              Answer
+              <textarea id="answerInput" placeholder="1/s" required></textarea>
+            </label>
+
+            <label>
+              Explanation
+              <textarea id="explanationInput" placeholder="Optional explanation"></textarea>
+            </label>
+
+            <label>
+              Difficulty
+              <select id="difficultyInput">
+                <option value="">Auto / New</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </label>
+
+            <label>
+              Tags
+              <input id="tagsInput" type="text" placeholder="laplace, transforms" />
+            </label>
+
+            <button class="primary" type="submit">Add Card</button>
+          </form>
+        </section>
+      </div>
+
+      <section class="panel hidden" data-page="study" id="reviewPanel">
+        <div class="panel-header spread">
+          <div>
+            <p class="eyebrow">Adaptive Review</p>
+            <h2>Review Queue</h2>
+          </div>
+
+          <div class="mode-row">
+            <select id="reviewMode">
+              <option value="balanced">Balanced</option>
+              <option value="hard">Focus hard</option>
+              <option value="medium">Focus medium</option>
+              <option value="easy">Focus easy</option>
+            </select>
+            <button class="secondary" id="loadQueueBtn">Load Queue</button>
+          </div>
+        </div>
+
+        <div class="bucket-grid">
+          <div class="bucket new">New <strong id="bucketNew">0</strong></div>
+          <div class="bucket hard">Hard <strong id="bucketHard">0</strong></div>
+          <div class="bucket medium">Medium <strong id="bucketMedium">0</strong></div>
+          <div class="bucket easy">Easy <strong id="bucketEasy">0</strong></div>
+        </div>
+
+        <div id="reviewCard" class="review-card empty">
+          Select a deck and load a review queue.
+        </div>
+      </section>
+
+      <section class="panel hidden" data-page="study" id="cardsPanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Selected Deck</p>
+            <h2>Card Stats</h2>
+          </div>
+        </div>
+        <div id="cardsList" class="cards-list"></div>
+      </section>
+    </main>
