@@ -260,7 +260,7 @@ const pages = {
 
   "/support": {
     eyebrow: "Support",
-    title: "Customer Support",
+    title: "Help when something is not working",
     subtitle:
       "Send a message to support if something is not working, you need account help, or you have questions about credits and services.",
     boxes: [],
@@ -5460,7 +5460,11 @@ function forceRefreshAfterOperation(reason = "") {
         });
       }
 
-      if (path === "/support" && typeof cleanLoadSupportTickets === "function") {
+      if (
+        path === "/support" &&
+        typeof cleanLoadSupportTickets === "function" &&
+        hasActiveWrapperSession()
+      ) {
         await cleanLoadSupportTickets();
       }
 

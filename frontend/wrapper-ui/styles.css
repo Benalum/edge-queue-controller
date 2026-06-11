@@ -1811,3 +1811,9 @@ body[data-current-route="/credits"] .topbar {
 .public-feature-gate .summary-card span {
   letter-spacing: -.01em;
 }
+
+
+/* STAGE_5O30_SUPPORT_PUBLIC_BODY_ONLY_V1 */
+body[data-current-route="/support"] .public-feature-gate .summary-box {
+  min-height: 11rem;
+}
