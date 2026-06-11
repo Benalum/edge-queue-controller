@@ -2829,6 +2829,10 @@ async function loadStudyWrapperPreview() {
           This preview uses the shared wrapper header and loads the Study dashboard body only.
           Study JavaScript is intentionally not running here yet.
         </p>
+        <div class="actions">
+          <a class="primary-btn" href="/study">Open Live Study</a>
+          <span class="muted">Use Live Study for creating decks, adding cards, and reviewing.</span>
+        </div>
         <div class="study-wrapper-preview">
           ${html}
         </div>
