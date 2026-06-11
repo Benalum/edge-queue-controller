@@ -226,6 +226,10 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             "Accept": "application/json",
         }
 
+        # STAGE_5L4I_WRAPPER_SESSION_ME_LOOKUP_FOR_DIRECT_QUEUED_CHAT_V1
+        # Resolve the browser cookie server-side through the controller's real
+        # session endpoint so direct /api/chat/queued can receive trusted
+        # wrapper-derived X-Edge-* identity headers.
         req = urllib.request.Request(
             CONTROLLER + "/system/session/me",
             headers=lookup_headers,
@@ -235,9 +239,13 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         try:
             with urllib.request.urlopen(req, timeout=5) as resp:
                 data = json.loads(resp.read().decode() or "{}")
-                return data.get("user") or data
+                user = data.get("user") or data
+                if user and user.get("id"):
+                    return user
         except Exception:
-            return self._stage5h3_user_from_local_session_token(token)
+            pass
+
+        return self._stage5h3_user_from_local_session_token(token)
 
     # STAGE_5H3_WRAPPER_LOCAL_SESSION_RESOLVER_FALLBACK_V1
     # The wrapper may need to derive trusted CT101 headers for local smoke-created
@@ -361,6 +369,23 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             token = self._auth_route_token()
             if token:
                 headers["X-Queued-Chat-Session-Token"] = token
+
+        # STAGE_5L4D_DIRECT_QUEUED_CHAT_TRUSTED_IDENTITY_V1
+        # Direct browser queued-chat calls use /api/chat/queued, not the older
+        # /api/backend/* compatibility bridge. Add the same server-derived
+        # trusted identity headers here so the controller can mirror/resolve
+        # ownership without trusting client-provided user_id fields.
+        if (
+            auth_source_path == "/api/chat/queued"
+            or auth_source_path.startswith("/api/chat/queued/")
+        ) and EDGE_TRUSTED_PROXY_SECRET:
+            user = self._controller_user_from_token()
+            if user and user.get("id"):
+                headers["X-Edge-Auth-Secret"] = EDGE_TRUSTED_PROXY_SECRET
+                headers["X-Edge-User-Id"] = self._stage5h3_edge_user_id_for_trusted_header(user)
+                headers["X-Edge-User-Email"] = str(user.get("email") or "")
+                headers["X-Edge-User-Is-Admin"] = "true" if user.get("is_admin") else "false"
+
         if (
             auth_source_path.startswith("/api/backend/")
             or auth_source_path.startswith("/api/study/")
