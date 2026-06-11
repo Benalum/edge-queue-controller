@@ -3592,6 +3592,17 @@ function renderPage() {
   const path = routePath();
   const page = pages[path];
 
+  // STAGE_5O27_GENERIC_PUBLIC_PAGE_GATES_V1
+  // These pages are rendered through the generic `pages[path]` branch,
+  // not direct path-specific branches. Logged-out users should see the
+  // public summary wrapper instead of loading usable/private UI surfaces.
+  if (!hasActiveWrapperSession()) {
+    if (path === "/profile" || path === "/calendar" || path === "/credits") {
+      renderPublicFeatureGate(path);
+      return;
+    }
+  }
+
   document.title = `${page.title} | AlexHartel AI Platform`;
   setActiveNav(path);
   setSystemHeaderState();
@@ -5556,7 +5567,11 @@ async function fastRefreshAfterAuth(reason = "") {
     jobs.push(cleanLoadAdminData());
   }
 
-  if (path === "/credits" && typeof loadAccountCredits === "function") {
+  if (
+    path === "/credits" &&
+    typeof loadAccountCredits === "function" &&
+    hasActiveWrapperSession()
+  ) {
     jobs.push(loadAccountCredits({ deep: true }));
   }
 
