@@ -1817,3 +1817,37 @@ body[data-current-route="/credits"] .topbar {
 body[data-current-route="/support"] .public-feature-gate .summary-box {
   min-height: 11rem;
 }
+
+
+/* ============================================================
+   STAGE_5O33_PROFILE_PAGE_STYLES_V1
+   Logged-in Profile account surface.
+   ============================================================ */
+
+.profile-page {
+  width: min(1120px, calc(100vw - 2rem));
+  margin: 0 auto;
+}
+
+.profile-hero strong {
+  display: block;
+  font-size: clamp(1.45rem, 2vw, 2.2rem);
+  line-height: 1.1;
+  letter-spacing: -.03em;
+  margin-top: .35rem;
+}
+
+.profile-grid {
+  margin-top: 1rem;
+}
+
+.profile-grid .summary-card strong {
+  display: block;
+  margin-top: .35rem;
+}
+
+.profile-grid .summary-card p {
+  margin: .45rem 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}

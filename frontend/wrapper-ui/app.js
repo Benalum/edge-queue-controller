@@ -3552,7 +3552,7 @@ const PUBLIC_FEATURE_SUMMARIES = {
   "/profile": {
     eyebrow: "Profile",
     title: "Manage your account, preferences, and permissions.",
-    body: "Profile centralizes account details, preferences, permissions, and future personalization settings.",
+    body: "Profile explains how account settings, privacy controls, permissions, and personalization will work after you sign in.",
     points: [
       ["Account", "View identity, plan, and login state."],
       ["Permissions", "Control what tools and companion features can access."],
@@ -3582,6 +3582,16 @@ const PUBLIC_FEATURE_SUMMARIES = {
 };
 
 function renderPublicFeatureGate(route) {
+  // STAGE_5O33_PUBLIC_GATE_BROWSER_ROUTE_FIX_V1
+  try {
+    const browserRoute = cleanRoute(window.location.pathname || route || "/");
+    if (PUBLIC_FEATURE_SUMMARIES[browserRoute]) {
+      route = browserRoute;
+    }
+  } catch {
+    // Keep provided route.
+  }
+
   // STAGE_5O27B_NONBLANK_PUBLIC_GATE_RENDERER_V1
   // Self-contained renderer: do not depend on helper functions that might not
   // be initialized yet. Public logged-out pages must never render blank.
@@ -3623,6 +3633,94 @@ function renderPublicFeatureGate(route) {
       </div>
       <div class="summary-grid">
         ${pointsHtml}
+      </div>
+    </section>
+  `;
+}
+
+
+// ============================================================
+// STAGE_5O33_LOGGED_IN_PROFILE_PAGE_V1
+// Real logged-in Profile surface instead of generic feature summary.
+// ============================================================
+
+function renderLoggedInProfilePage() {
+  const safe = (value) => String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+  const user = authState?.user || {};
+  const email = user.email || "Signed-in user";
+  const role = user.role || (user.is_admin ? "admin" : "user");
+  const plan = user.plan || "free";
+  const status = user.status || "active";
+  const billing = user.billing_status || "not configured";
+
+  const freeCredits = user.free_credit_balance ?? user.free_credits ?? user.credit_balance ?? accountCredits?.free_balance ?? "—";
+  const paidCredits = user.paid_credit_balance ?? user.paid_credits ?? accountCredits?.paid_balance ?? "—";
+  const storageQuota = user.storage_quota_mb ?? accountCredits?.storage_quota_mb ?? "—";
+
+  return `
+    <section class="system-section profile-page">
+      <div class="summary-box profile-hero">
+        <span>Profile</span>
+        <strong>Account and personalization</strong>
+        <p>
+          Manage identity, plan details, permissions, preferences, and future
+          personalization settings for the platform.
+        </p>
+      </div>
+
+      <div class="summary-grid profile-grid">
+        <div class="summary-card">
+          <span>Account</span>
+          <strong>${safe(email)}</strong>
+          <p>Status: ${safe(status)}</p>
+          <p>Role: ${safe(role)}</p>
+        </div>
+
+        <div class="summary-card">
+          <span>Plan</span>
+          <strong>${safe(plan)}</strong>
+          <p>Billing status: ${safe(billing)}</p>
+          <p>Storage quota: ${safe(storageQuota)} MB</p>
+        </div>
+
+        <div class="summary-card">
+          <span>Credits</span>
+          <strong>${safe(user.credit_balance ?? accountCredits?.total_available ?? "—")}</strong>
+          <p>Free/local: ${safe(freeCredits)}</p>
+          <p>Paid: ${safe(paidCredits)}</p>
+        </div>
+
+        <div class="summary-card">
+          <span>Security boundary</span>
+          <strong>Private by design</strong>
+          <p>Server credentials, infrastructure secrets, and internal keys stay out of the browser.</p>
+        </div>
+      </div>
+
+      <div class="summary-grid profile-grid">
+        <div class="summary-card">
+          <span>Permissions</span>
+          <strong>Coming next</strong>
+          <p>Choose what Study, Companion, Calendar providers, and future tools may use as context.</p>
+        </div>
+
+        <div class="summary-card">
+          <span>Preferences</span>
+          <strong>Coming next</strong>
+          <p>Set default learning style, companion behavior, notification preferences, and display options.</p>
+        </div>
+
+        <div class="summary-card">
+          <span>Connected providers</span>
+          <strong>Google / Apple later</strong>
+          <p>Calendar connections will be provider-backed only. No local calendar database is planned.</p>
+        </div>
       </div>
     </section>
   `;
@@ -3701,6 +3799,17 @@ function renderPage() {
 
   const isHome = path === "/";
   const isSystem = path === "/system";
+  if (path === "/profile") {
+    // STAGE_5O33_PROFILE_DIRECT_RENDER_BRANCH_V1
+    if (!hasActiveWrapperSession()) {
+      renderPublicFeatureGate("/profile");
+      return;
+    }
+
+    $("app").innerHTML = renderLoggedInProfilePage();
+    return;
+  }
+
   const isCredits = path === "/credits";
   const isAdmin = path === "/admin";
   const isSupport = path === "/support";
