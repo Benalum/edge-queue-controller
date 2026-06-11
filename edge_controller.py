@@ -6896,6 +6896,117 @@ def _study_card_to_public(row):
     return data
 
 
+
+# STAGE_5P2_STUDY_SESSION_STATUS_BEGIN
+_STUDY_SESSION_ACTIVE_STATUSES = (
+    "active",
+    "paused",
+    "reviewing_answer",
+    "waiting_for_mark",
+)
+
+
+def _study_init_session_tables():
+    _study_init_tables()
+    with db() as conn:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS study_sessions ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "user_id INTEGER NOT NULL, "
+            "deck_id INTEGER, "
+            "status TEXT NOT NULL, "
+            "current_card_id INTEGER, "
+            "queue_json TEXT, "
+            "queue_position INTEGER NOT NULL DEFAULT 0, "
+            "started_at TEXT, "
+            "paused_at TEXT, "
+            "ended_at TEXT, "
+            "last_action TEXT, "
+            "last_intent TEXT, "
+            "created_at TEXT NOT NULL, "
+            "updated_at TEXT NOT NULL, "
+            "FOREIGN KEY(user_id) REFERENCES app_users(id), "
+            "FOREIGN KEY(deck_id) REFERENCES study_decks(id), "
+            "FOREIGN KEY(current_card_id) REFERENCES study_cards(id)"
+            ")"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_study_sessions_user_status "
+            "ON study_sessions(user_id, status, updated_at)"
+        )
+        conn.commit()
+
+
+def _study_session_row_to_public(row):
+    if not row:
+        return {
+            "id": None,
+            "status": "none",
+            "deck_id": None,
+            "current_card_id": None,
+            "queue_position": 0,
+            "queue_count": 0,
+            "last_action": None,
+            "last_intent": None,
+            "started_at": None,
+            "paused_at": None,
+            "ended_at": None,
+            "created_at": None,
+            "updated_at": None,
+        }
+
+    item = row_to_dict(row)
+    queue_count = 0
+    try:
+        queue_items = json.loads(item.get("queue_json") or "[]")
+        if isinstance(queue_items, list):
+            queue_count = len(queue_items)
+    except Exception:
+        queue_count = 0
+
+    return {
+        "id": item.get("id"),
+        "status": item.get("status") or "none",
+        "deck_id": item.get("deck_id"),
+        "current_card_id": item.get("current_card_id"),
+        "queue_position": int(item.get("queue_position") or 0),
+        "queue_count": queue_count,
+        "last_action": item.get("last_action"),
+        "last_intent": item.get("last_intent"),
+        "started_at": item.get("started_at"),
+        "paused_at": item.get("paused_at"),
+        "ended_at": item.get("ended_at"),
+        "created_at": item.get("created_at"),
+        "updated_at": item.get("updated_at"),
+    }
+
+
+def _study_get_current_session_for_user(user_id: int):
+    _study_init_session_tables()
+    placeholders = ",".join("?" for _ in _STUDY_SESSION_ACTIVE_STATUSES)
+    params = [int(user_id), *_STUDY_SESSION_ACTIVE_STATUSES]
+
+    with db() as conn:
+        return conn.execute(
+            f"SELECT * FROM study_sessions "
+            f"WHERE user_id = ? AND status IN ({placeholders}) "
+            f"ORDER BY updated_at DESC, id DESC LIMIT 1",
+            params,
+        ).fetchone()
+
+
+@app.get("/public/study/session/status")
+@app.get("/api/study/session/status")
+async def public_study_session_status(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    row = _study_get_current_session_for_user(user_id)
+    return {
+        "ok": True,
+        "session": _study_session_row_to_public(row),
+    }
+# STAGE_5P2_STUDY_SESSION_STATUS_END
+
 @app.post("/public/study/decks")
 @app.post("/api/study/decks")
 async def public_study_create_deck(request: Request):
