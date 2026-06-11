@@ -4316,7 +4316,11 @@ async function cleanLoadAdminData() {
   const [users, tickets, system] = await Promise.allSettled([
     api("/admin/users", { method: "GET" }),
     api("/admin/support/tickets", { method: "GET" }),
-    api("/system/status", { method: "GET" }),
+    // STAGE_5O21_ADMIN_FAST_STATUS_FIRST_V1
+    // Admin page should not block initial rendering on deep Proxmox/SSH checks.
+    // Use fast public status here; deep infrastructure status can be added behind
+    // an explicit refresh/deep-check button later.
+    api("/system/public-status", { method: "GET" }),
   ]);
 
   cleanAdminUsers = users.status === "fulfilled"
