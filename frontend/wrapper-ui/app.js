@@ -7073,3 +7073,90 @@ async function handleResetPasswordRoute() {
 
 
 
+
+// ============================================================
+// STAGE_5O13_HEADER_NAV_ACTIVE_STATE_V1
+// Single source of truth for wrapper header active-tab state.
+// This runs after older route handlers so duplicate/legacy handlers cannot
+// leave Credits or another tab stuck highlighted.
+// ============================================================
+(function stage5o13HeaderNavActiveState() {
+  function normalizeHeaderRoute(value) {
+    let route = String(value || "/").trim() || "/";
+    try {
+      const url = new URL(route, window.location.origin);
+      if (url.origin === window.location.origin) {
+        route = url.pathname || "/";
+      }
+    } catch (_) {
+      route = route.split("?")[0].split("#")[0] || "/";
+    }
+
+    route = route.split("?")[0].split("#")[0] || "/";
+    if (route.length > 1) route = route.replace(/\/+$/, "");
+    return route || "/";
+  }
+
+  function currentHeaderRoute() {
+    return normalizeHeaderRoute(window.location.pathname || "/");
+  }
+
+  function syncHeaderNavActiveState() {
+    const route = currentHeaderRoute();
+    document.body.dataset.currentRoute = route;
+
+    const navLinks = document.querySelectorAll(
+      'header a[data-route], .topbar a[data-route], .main-nav a[data-route], .route-nav a[data-route], nav a[data-route]'
+    );
+
+    navLinks.forEach((link) => {
+      const linkRoute = normalizeHeaderRoute(link.getAttribute("data-route") || link.getAttribute("href") || "");
+      const isActive = linkRoute === route;
+
+      link.classList.toggle("active", isActive);
+
+      if (isActive) {
+        link.setAttribute("aria-current", "page");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+  }
+
+  window.stage5o13SyncHeaderNavActiveState = syncHeaderNavActiveState;
+
+  const scheduleSync = () => {
+    syncHeaderNavActiveState();
+    window.setTimeout(syncHeaderNavActiveState, 0);
+    window.setTimeout(syncHeaderNavActiveState, 50);
+  };
+
+  const originalPushState = history.pushState;
+  history.pushState = function stage5o13PushState(...args) {
+    const result = originalPushState.apply(this, args);
+    scheduleSync();
+    return result;
+  };
+
+  const originalReplaceState = history.replaceState;
+  history.replaceState = function stage5o13ReplaceState(...args) {
+    const result = originalReplaceState.apply(this, args);
+    scheduleSync();
+    return result;
+  };
+
+  window.addEventListener("popstate", scheduleSync);
+  window.addEventListener("hashchange", scheduleSync);
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest?.("a[data-route]");
+    if (link) scheduleSync();
+  }, true);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", scheduleSync);
+  } else {
+    scheduleSync();
+  }
+
+  window.setTimeout(scheduleSync, 250);
+})();

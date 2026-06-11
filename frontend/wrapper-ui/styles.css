@@ -1416,19 +1416,6 @@ header a[data-route][aria-current="page"],
 }
 
 /* Prevent stale route state from leaving Credits permanently green. */
-body:not([data-current-route="/credits"]) header a[href="/credits"]:not([aria-current="page"]),
-body:not([data-current-route="/credits"]) header a[data-route="/credits"]:not([aria-current="page"]),
-body:not([data-current-route="/credits"]) .topbar a[href="/credits"]:not([aria-current="page"]),
-body:not([data-current-route="/credits"]) .topbar a[data-route="/credits"]:not([aria-current="page"]),
-body:not([data-current-route="/credits"]) .main-nav a[href="/credits"]:not([aria-current="page"]),
-body:not([data-current-route="/credits"]) .main-nav a[data-route="/credits"]:not([aria-current="page"]),
-body:not([data-current-route="/credits"]) .route-nav a[href="/credits"]:not([aria-current="page"]),
-body:not([data-current-route="/credits"]) .route-nav a[data-route="/credits"]:not([aria-current="page"]) {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-
 /* ============================================================
    STAGE_5O9_CREDITS_PILL_NEUTRAL_ROUTE_STYLE_V1
 
@@ -1462,3 +1449,44 @@ body[data-current-route="/credits"] .credits-pill,
   box-shadow: 0 0 0 1px rgba(35, 197, 120, .18), 0 8px 24px rgba(35, 197, 120, .10) !important;
 }
 
+
+/* STAGE_5O13_HEADER_NAV_ACTIVE_STATE_V1
+   One consistent selected-tab style for wrapper navigation.
+   Credits must not stay highlighted unless the current route is /credits. */
+header a[data-route],
+.topbar a[data-route],
+.main-nav a[data-route],
+.route-nav a[data-route] {
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+header a[data-route].active,
+header a[data-route][aria-current="page"],
+.topbar a[data-route].active,
+.topbar a[data-route][aria-current="page"],
+.main-nav a[data-route].active,
+.main-nav a[data-route][aria-current="page"],
+.route-nav a[data-route].active,
+.route-nav a[data-route][aria-current="page"] {
+  color: #86efac !important;
+  background: rgba(34, 197, 94, .16) !important;
+  border-color: rgba(34, 197, 94, .45) !important;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, .18) inset !important;
+}
+
+body:not([data-current-route="/credits"]) header a[data-route="/credits"],
+body:not([data-current-route="/credits"]) .topbar a[data-route="/credits"],
+body:not([data-current-route="/credits"]) .main-nav a[data-route="/credits"],
+body:not([data-current-route="/credits"]) .route-nav a[data-route="/credits"] {
+  color: inherit !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+body:not([data-current-route="/study"]) header a[data-route="/study"],
+body:not([data-current-route="/study"]) .topbar a[data-route="/study"],
+body:not([data-current-route="/study"]) .main-nav a[data-route="/study"],
+body:not([data-current-route="/study"]) .route-nav a[data-route="/study"] {
+  color: inherit !important;
+}
