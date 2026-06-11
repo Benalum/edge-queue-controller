@@ -1720,3 +1720,88 @@ body[data-current-route="/credits"] .topbar {
   color: var(--muted);
   line-height: 1.5;
 }
+
+
+/* ============================================================
+   STAGE_5O28_PUBLIC_SUMMARY_POLISH_V1
+   Logged-out feature pages should be informational only.
+   Header owns login/create-account actions.
+   ============================================================ */
+
+.public-feature-gate {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.public-feature-gate .summary-box {
+  position: relative;
+  overflow: hidden;
+  padding: 1.35rem;
+}
+
+.public-feature-gate .summary-box::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -45% 45%;
+  height: 12rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(125,211,252,.18), transparent 70%);
+  pointer-events: none;
+}
+
+.public-feature-gate .summary-box > * {
+  position: relative;
+  z-index: 1;
+}
+
+.public-feature-gate .summary-box strong {
+  display: block;
+  max-width: 760px;
+  font-size: clamp(1.45rem, 2vw, 2.25rem);
+  line-height: 1.1;
+  letter-spacing: -.03em;
+  margin-top: .35rem;
+}
+
+.public-feature-gate .summary-box p {
+  max-width: 780px;
+  line-height: 1.6;
+}
+
+.public-feature-note {
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: .95rem;
+}
+
+.public-feature-gate .summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.public-feature-card {
+  min-height: 8rem;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.public-feature-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(125,211,252,.28);
+  background: rgba(255,255,255,.095);
+}
+
+.public-feature-card span {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.public-feature-card p {
+  margin: .55rem 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+
+/* STAGE_5O28_HIDE_OLD_PUBLIC_AUTH_ACTIONS_V1 */
+.public-feature-actions {
+  display: none !important;
+}

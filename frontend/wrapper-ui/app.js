@@ -3503,7 +3503,7 @@ const PUBLIC_FEATURE_SUMMARIES = {
   "/study": {
     eyebrow: "Study",
     title: "Study smarter with decks, cards, and adaptive review.",
-    body: "Create decks, add cards, review by difficulty, and track progress. After logging in, your study decks and review history appear here.",
+    body: "Build decks, add cards, review by difficulty, and track progress over time. Once signed in, this page becomes your personal study dashboard.",
     points: [
       ["Decks", "Organize topics into reusable decks."],
       ["Cards", "Add questions, answers, explanations, difficulty, and tags."],
@@ -3513,7 +3513,7 @@ const PUBLIC_FEATURE_SUMMARIES = {
   "/companion": {
     eyebrow: "Companion",
     title: "A queued local AI companion for study and support.",
-    body: "The companion sends messages through the laptop-owned queued AI path so the site stays responsive while local Ollama handles work.",
+    body: "Send messages through the local queued AI path so the website stays responsive while your worker processes the response.",
     points: [
       ["Queued responses", "Messages are submitted as jobs and polled until complete."],
       ["Study context", "Future companion features can use allowed study context."],
@@ -3523,7 +3523,7 @@ const PUBLIC_FEATURE_SUMMARIES = {
   "/profile": {
     eyebrow: "Profile",
     title: "Manage your account, preferences, and permissions.",
-    body: "After logging in, Profile shows account details and future privacy/personality settings for how the platform can use your data.",
+    body: "Profile centralizes account details, preferences, permissions, and future personalization settings.",
     points: [
       ["Account", "View identity, plan, and login state."],
       ["Permissions", "Control what tools and companion features can access."],
@@ -3533,7 +3533,7 @@ const PUBLIC_FEATURE_SUMMARIES = {
   "/credits": {
     eyebrow: "Credits",
     title: "Credits power higher-cost AI features.",
-    body: "After logging in, Credits shows balances, reservations, rewards, and future plan options.",
+    body: "Credits track usage for higher-cost features such as local AI jobs, image generation, storage, and future paid resources.",
     points: [
       ["Free/local credits", "For local services running on your hardware."],
       ["Paid credits", "For future paid resources such as external GPUs or cloud services."],
@@ -3590,31 +3590,13 @@ function renderPublicFeatureGate(route) {
         <span>${safe(summary.eyebrow)}</span>
         <strong>${safe(summary.title)}</strong>
         <p>${safe(summary.body)}</p>
-        <div class="public-feature-actions">
-          <button id="publicGateLoginBtn" class="primary-btn" type="button">Log in</button>
-          <button id="publicGateRegisterBtn" class="ghost-btn" type="button">Create account</button>
-        </div>
+        <p class="public-feature-note">Sign in from the header when you are ready to use this feature.</p>
       </div>
       <div class="summary-grid">
         ${pointsHtml}
       </div>
     </section>
   `;
-
-  const loginBtn = document.getElementById("publicGateLoginBtn");
-  const registerBtn = document.getElementById("publicGateRegisterBtn");
-
-  if (loginBtn) {
-    loginBtn.addEventListener("click", () => {
-      if (typeof openAuthModal === "function") openAuthModal("login");
-    });
-  }
-
-  if (registerBtn) {
-    registerBtn.addEventListener("click", () => {
-      if (typeof openAuthModal === "function") openAuthModal("register");
-    });
-  }
 }
 
 function renderPage() {
