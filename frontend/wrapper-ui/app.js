@@ -556,7 +556,7 @@ function ahInvalidateForMutation(path) {
   if (p.includes("/system/")) {
     ahInvalidateCache([
       "/system/public-status",
-      "/system/admin-status",
+      "/system/status",
       "/admin/users",
     ]);
   }
@@ -4316,7 +4316,7 @@ async function cleanLoadAdminData() {
   const [users, tickets, system] = await Promise.allSettled([
     api("/admin/users", { method: "GET" }),
     api("/admin/support/tickets", { method: "GET" }),
-    api("/system/admin-status", { method: "GET" }),
+    api("/system/status", { method: "GET" }),
   ]);
 
   cleanAdminUsers = users.status === "fulfilled"
