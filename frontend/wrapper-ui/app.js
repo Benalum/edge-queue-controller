@@ -2597,7 +2597,11 @@ function setStudyWrapperPreviewReadOnly() {
       el.id === "tagsInput" ||
       el.closest?.("#cardForm");
 
-    if (isSafePreviewSelect || isCreateDeckControl || isCreateCardControl) {
+    const isReviewQueueControl =
+      el.id === "reviewMode" ||
+      el.id === "loadQueueBtn";
+
+    if (isSafePreviewSelect || isCreateDeckControl || isCreateCardControl || isReviewQueueControl) {
       el.disabled = false;
       el.removeAttribute("aria-disabled");
       el.title = "Preview-only deck switching. Editing and review actions are still disabled.";
@@ -2737,6 +2741,139 @@ async function createStudyWrapperPreviewDeck(event) {
     console.error("[study-wrapper-preview] create deck failed", error);
     if (statusText) statusText.textContent = "Could not create deck";
     alert(`Could not create deck: ${error.message || error}`);
+  }
+}
+
+
+
+const studyPreviewReviewState = {
+  queue: [],
+  currentIndex: 0,
+  showingAnswer: false
+};
+
+function renderStudyWrapperPreviewReviewCard() {
+  const el = document.getElementById("reviewCard");
+  if (!el) return;
+
+  const card = studyPreviewReviewState.queue[studyPreviewReviewState.currentIndex];
+
+  if (!card) {
+    el.innerHTML = `<p class="muted">No cards in the current preview queue.</p>`;
+    return;
+  }
+
+  const accuracy = card.accuracy === null || card.accuracy === undefined
+    ? "—"
+    : `${Math.round(card.accuracy * 100)}%`;
+
+  const answerBlock = studyPreviewReviewState.showingAnswer
+    ? `
+      <div class="mini-summary">
+        <strong>Answer</strong>
+        <p>${studyPreviewEscape(card.answer || "No answer saved.")}</p>
+        ${card.explanation ? `<p class="muted">${studyPreviewEscape(card.explanation)}</p>` : ""}
+      </div>
+    `
+    : "";
+
+  el.innerHTML = `
+    <div class="card-row">
+      <strong>${studyPreviewEscape(card.question || "Untitled card")}</strong>
+      <span class="card-meta">
+        ${studyPreviewEscape(card.performance_bucket || card.difficulty || "new")}
+        · ${Number(card.total_reviews || 0)} reviews
+        · ${accuracy} accuracy
+      </span>
+    </div>
+
+    ${answerBlock}
+
+    <div class="actions">
+      ${studyPreviewReviewState.showingAnswer ? `
+        <button class="secondary" type="button" disabled title="Preview review submit is not wired yet.">Wrong</button>
+        <button class="primary-btn" type="button" disabled title="Preview review submit is not wired yet.">Correct</button>
+      ` : `
+        <button class="primary-btn" type="button" id="studyPreviewShowAnswerBtn">Show Answer</button>
+      `}
+      <button class="secondary" type="button" id="studyPreviewSkipCardBtn">Skip</button>
+    </div>
+  `;
+
+  document.getElementById("studyPreviewShowAnswerBtn")?.addEventListener("click", () => {
+    studyPreviewReviewState.showingAnswer = true;
+    renderStudyWrapperPreviewReviewCard();
+  });
+
+  document.getElementById("studyPreviewSkipCardBtn")?.addEventListener("click", () => {
+    studyPreviewReviewState.currentIndex += 1;
+    studyPreviewReviewState.showingAnswer = false;
+    renderStudyWrapperPreviewReviewCard();
+  });
+}
+
+async function loadStudyWrapperPreviewReviewQueue() {
+  const deckSelect = document.getElementById("deckSelect");
+  const reviewMode = document.getElementById("reviewMode");
+  const statusText = document.getElementById("workerStatusText");
+
+  const deckId = String(deckSelect?.value || "").trim();
+  if (!deckId) {
+    alert("Select or create a deck first.");
+    return;
+  }
+
+  const mode = String(reviewMode?.value || "balanced");
+
+  try {
+    if (statusText) statusText.textContent = "Loading review queue...";
+
+    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/review-queue?mode=${encodeURIComponent(mode)}&limit=10`, {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      throw new Error(`/api/study/decks/${deckId}/review-queue HTTP ${res.status}: ${text.slice(0, 160)}`);
+    }
+
+    const data = JSON.parse(text);
+    studyPreviewReviewState.queue = Array.isArray(data.cards) ? data.cards : [];
+    studyPreviewReviewState.currentIndex = 0;
+    studyPreviewReviewState.showingAnswer = false;
+
+    const buckets = data.bucket_counts || {};
+    studyPreviewSetText("bucketNew", String(buckets.new || 0));
+    studyPreviewSetText("bucketHard", String(buckets.hard || 0));
+    studyPreviewSetText("bucketMedium", String(buckets.medium || 0));
+    studyPreviewSetText("bucketEasy", String(buckets.easy || 0));
+
+    renderStudyWrapperPreviewReviewCard();
+
+    if (statusText) statusText.textContent = "Review queue loaded";
+  } catch (error) {
+    console.error("[study-wrapper-preview] review queue failed", error);
+    if (statusText) statusText.textContent = "Could not load review queue";
+    alert(`Could not load review queue: ${error.message || error}`);
+  }
+}
+
+function bindStudyWrapperPreviewReviewQueue() {
+  const mode = document.getElementById("reviewMode");
+  const button = document.getElementById("loadQueueBtn");
+
+  if (mode) {
+    mode.disabled = false;
+    mode.removeAttribute("aria-disabled");
+    mode.title = "Choose preview review queue mode.";
+  }
+
+  if (button) {
+    button.disabled = false;
+    button.removeAttribute("aria-disabled");
+    button.title = "Load preview review queue.";
+    button.onclick = loadStudyWrapperPreviewReviewQueue;
   }
 }
 
@@ -2973,6 +3110,7 @@ async function hydrateStudyWrapperPreview(preferredDeckId = null) {
     bindStudyWrapperPreviewDeckSwitch(decks);
     bindStudyWrapperPreviewCreateDeck();
     bindStudyWrapperPreviewCreateCard();
+    bindStudyWrapperPreviewReviewQueue();
 
     const cardsList = document.getElementById("cardsList");
     if (cardsList && Array.isArray(progress.by_deck) && progress.by_deck[0]) {
