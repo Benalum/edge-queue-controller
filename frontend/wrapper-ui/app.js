@@ -306,7 +306,7 @@ function authHeaders(extra = {}) {
  * - /support/* = controller-owned support tickets
  *
  * Note: The wrapper makes fetch calls to /api/* paths, which are translated
- * by the public gateway (index.js) to /public/* and /system/* controller routes,
+ * by the laptop wrapper to laptop controller routes,
  * or proxied to CT101 /api/* compatibility endpoints as appropriate.
  */
 async function api(path, options = {}) {
