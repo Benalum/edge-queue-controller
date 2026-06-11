@@ -5817,8 +5817,31 @@ document.addEventListener("click", (event) => {
 
   document.cookie =
     `edgeStudyToken=${encodeURIComponent(token)}; Path=/; Max-Age=2592000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+  // STAGE_5O11_INTERNAL_ROUTE_NO_DOCUMENT_RELOAD_V1
+  // Do not use location.href for wrapper-owned routes. That reloads the whole
+  // document and re-runs startup/auth/background fetches. Internal app routes
+  // must use the SPA router so the header/nav state changes without refresh.
   event.preventDefault();
-  location.href = target.toString();
+
+  const cleanRoute =
+    target.pathname ||
+    link.getAttribute("data-route") ||
+    link.getAttribute("href") ||
+    "/";
+
+  const sameOrigin = !target.origin || target.origin === window.location.origin;
+  const routeIsInternal =
+    sameOrigin &&
+    typeof pages !== "undefined" &&
+    Object.prototype.hasOwnProperty.call(pages, cleanRoute);
+
+  if (routeIsInternal && typeof navigate === "function") {
+    navigate(cleanRoute);
+  } else if (sameOrigin && link?.dataset?.route && typeof navigate === "function") {
+    navigate(link.dataset.route);
+  } else {
+    window.location.href = target.toString();
+  }
 }, true);
 
 (async function bootEmailVerificationRoute() {
@@ -7053,29 +7076,4 @@ async function handleResetPasswordRoute() {
 // ============================================================
 // STAGE_5O10_SCRUB_FRESH_QUERY_PARAM_V1
 // Defensive cleanup for old/stale links that still include ?fresh=.
-// ============================================================
-(function stage5o10ScrubFreshQueryParam() {
-  function scrubFreshQueryParam() {
-    try {
-      const url = new URL(window.location.href);
-      if (!url.searchParams.has("fresh")) return;
 
-      url.searchParams.delete("fresh");
-      const clean =
-        url.pathname +
-        (url.searchParams.toString() ? `?${url.searchParams.toString()}` : "") +
-        url.hash;
-
-      window.history.replaceState({}, "", clean || "/");
-    } catch (err) {
-      console.warn("Could not scrub fresh query param:", err);
-    }
-  }
-
-  scrubFreshQueryParam();
-  document.addEventListener("DOMContentLoaded", scrubFreshQueryParam);
-  window.addEventListener("popstate", scrubFreshQueryParam);
-  window.addEventListener("hashchange", scrubFreshQueryParam);
-  window.setTimeout(scrubFreshQueryParam, 50);
-  window.setTimeout(scrubFreshQueryParam, 250);
-})();
