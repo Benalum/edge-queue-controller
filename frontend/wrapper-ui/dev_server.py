@@ -32,7 +32,6 @@ def _is_unified_shell_route(path):
 
 
 CONTROLLER = os.getenv("EDGE_CONTROLLER_URL", "http://127.0.0.1:7070")
-GATEWAY = os.getenv("EDGE_PUBLIC_GATEWAY_URL", "http://127.0.0.1:7071")
 CT101_FRONTEND = os.getenv("CT101_FRONTEND", "http://100.88.245.33:3010")
 CT101_API = os.getenv("CT101_API", "http://100.88.245.33:8088")
 PORT = int(os.getenv("WRAPPER_UI_PORT", "8787"))
@@ -63,7 +62,7 @@ def map_api(path):
         "/api/auth/logout": "/system/session/logout-safe",
         # AUTH_EXTRA_CONTROLLER_ROUTES_V1
         # Keep browser auth flows on the controller instead of falling through
-        # to the public gateway's generic /api -> / path rewrite.
+        # to legacy generic /api -> / path rewrites.
         "/api/auth/forgot-password": "/system/session/forgot-password",
         "/api/auth/reset-password": "/system/session/reset-password",
         "/api/auth/change-password": "/system/session/change-password",
@@ -78,7 +77,7 @@ def map_api(path):
 
     # STAGE_5G2_LAPTOP_QUEUED_CHAT_CONTROLLER_OWNER_V1
     # Queued-chat browser API belongs to the laptop controller, not the public
-    # controller and not CT101's frontend. This does not enable queued chat; the
+    # laptop controller and not CT101's frontend. This does not enable queued chat; the
     # controller flags still decide whether the route is active.
     if path == "/api/chat/queued" or path.startswith("/api/chat/queued/"):
         return CONTROLLER, path

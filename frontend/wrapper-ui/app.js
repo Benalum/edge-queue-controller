@@ -1,5 +1,5 @@
 
-// COMPANION_TRANSIENT_GATEWAY_WRAPPER_V1
+// COMPANION_TRANSIENT_CONTROLLER_WRAPPER_V1
 function isGatewayHtmlErrorText(value) {
   const text = String(value || "").trim().toLowerCase();
   return (
@@ -307,7 +307,7 @@ function authHeaders(extra = {}) {
  *
  * Note: The wrapper makes fetch calls to /api/* paths, which are translated
  * by the public gateway (index.js) to /public/* and /system/* controller routes,
- * or proxied to CT101 /api/* source-of-truth endpoints as appropriate.
+ * or proxied to CT101 /api/* compatibility endpoints as appropriate.
  */
 async function api(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
