@@ -7160,3 +7160,107 @@ async function handleResetPasswordRoute() {
 
   window.setTimeout(scheduleSync, 250);
 })();
+
+
+// ============================================================
+// STAGE_5O16_CREDITS_PILL_NOT_NAV_TAB_V1
+// Credits is an account balance button, not a normal nav tab.
+// Only real header nav anchors get active-page styling.
+// ============================================================
+(function stage5o16CreditsPillNotNavTab() {
+  function cleanRoute(value) {
+    let route = String(value || "/").trim() || "/";
+    try {
+      const url = new URL(route, window.location.origin);
+      route = url.pathname || "/";
+    } catch {
+      route = route.split("?")[0].split("#")[0] || "/";
+    }
+    route = route.split("?")[0].split("#")[0] || "/";
+    if (route.length > 1) route = route.replace(/\/+$/, "");
+    if (route === "/study-wrapper-preview") return "/study";
+    if (route === "/account/credits") return "/credits";
+    return route || "/";
+  }
+
+  function syncNavActive() {
+    const current = cleanRoute(window.location.pathname || "/");
+    document.body.setAttribute("data-current-route", current);
+    document.body.dataset.currentRoute = current;
+
+    document
+      .querySelectorAll('header nav a[data-route], .topbar nav a[data-route], nav.nav a[data-route]')
+      .forEach((link) => {
+        const route = cleanRoute(link.getAttribute("data-route") || link.getAttribute("href") || "");
+        const active = route === current;
+        link.classList.toggle("active", active);
+        link.classList.toggle("is-active", active);
+        link.classList.toggle("selected", active);
+        if (active) {
+          link.setAttribute("aria-current", "page");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+
+    const pill = document.getElementById("creditsPill");
+    if (pill) {
+      const active = current === "/credits";
+      pill.classList.toggle("active", active);
+      pill.classList.toggle("is-active", active);
+      pill.classList.toggle("selected", active);
+      pill.classList.toggle("route-active", active);
+      if (active) {
+        pill.setAttribute("aria-current", "page");
+      } else {
+        pill.removeAttribute("aria-current");
+      }
+    }
+  }
+
+  function goCredits(event) {
+    const pill = event.target.closest?.("#creditsPill");
+    if (!pill) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (typeof navigate === "function") {
+      navigate("/credits");
+    } else {
+      history.pushState({}, "", "/credits");
+      if (typeof renderPage === "function") renderPage();
+    }
+
+    syncNavActive();
+    window.setTimeout(syncNavActive, 0);
+    window.setTimeout(syncNavActive, 50);
+  }
+
+  document.addEventListener("click", goCredits, true);
+  window.addEventListener("popstate", syncNavActive);
+  window.addEventListener("hashchange", syncNavActive);
+
+  const oldPush = history.pushState;
+  history.pushState = function stage5o16PushState(...args) {
+    const result = oldPush.apply(this, args);
+    window.setTimeout(syncNavActive, 0);
+    return result;
+  };
+
+  const oldReplace = history.replaceState;
+  history.replaceState = function stage5o16ReplaceState(...args) {
+    const result = oldReplace.apply(this, args);
+    window.setTimeout(syncNavActive, 0);
+    return result;
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", syncNavActive);
+  } else {
+    syncNavActive();
+  }
+
+  window.setTimeout(syncNavActive, 50);
+  window.setTimeout(syncNavActive, 250);
+})();
+

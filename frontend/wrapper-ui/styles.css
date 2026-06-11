@@ -1490,3 +1490,38 @@ body:not([data-current-route="/study"]) .main-nav a[data-route="/study"],
 body:not([data-current-route="/study"]) .route-nav a[data-route="/study"] {
   color: inherit !important;
 }
+
+
+/* ============================================================
+   STAGE_5O16_CREDITS_PILL_NEUTRAL_BALANCE_BUTTON_V1
+   Credits is a balance button. It is green only on /credits.
+   ============================================================ */
+
+#creditsPill.credits-pill {
+  color: rgba(255,255,255,.82) !important;
+  background: rgba(255,255,255,.075) !important;
+  border-color: rgba(255,255,255,.14) !important;
+  box-shadow: none !important;
+}
+
+#creditsPill.credits-pill:hover {
+  color: rgba(255,255,255,.94) !important;
+  background: rgba(255,255,255,.115) !important;
+  border-color: rgba(255,255,255,.20) !important;
+  box-shadow: none !important;
+}
+
+body[data-current-route="/credits"] #creditsPill.credits-pill,
+#creditsPill.credits-pill.route-active {
+  color: #d7ffe9 !important;
+  background: rgba(35, 197, 120, .20) !important;
+  border-color: rgba(35, 197, 120, .55) !important;
+  box-shadow: 0 0 0 1px rgba(35, 197, 120, .18), 0 8px 24px rgba(35, 197, 120, .10) !important;
+}
+
+body:not([data-current-route="/credits"]) #creditsPill.credits-pill {
+  color: rgba(255,255,255,.82) !important;
+  background: rgba(255,255,255,.075) !important;
+  border-color: rgba(255,255,255,.14) !important;
+  box-shadow: none !important;
+}
