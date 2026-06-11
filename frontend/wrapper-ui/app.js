@@ -3480,6 +3480,114 @@ function bindQueuedChatPage() {
 }
 
 
+
+// ============================================================
+// STAGE_5O25_PUBLIC_FEATURE_GATE_V1
+// Logged-out users see a public feature summary first.
+// Logged-in users see the usable application surface.
+// ============================================================
+
+function hasActiveWrapperSession() {
+  try {
+    return Boolean(
+      (authState && authState.token) ||
+      localStorage.getItem("edgeStudyToken") ||
+      document.cookie.split(";").some((part) => part.trim().startsWith("edgeStudyToken="))
+    );
+  } catch {
+    return false;
+  }
+}
+
+const PUBLIC_FEATURE_SUMMARIES = {
+  "/study": {
+    eyebrow: "Study",
+    title: "Study smarter with decks, cards, and adaptive review.",
+    body: "Create decks, add cards, review by difficulty, and track progress. After logging in, your study decks and review history appear here.",
+    points: [
+      ["Decks", "Organize topics into reusable decks."],
+      ["Cards", "Add questions, answers, explanations, difficulty, and tags."],
+      ["Progress", "Track reviews, accuracy, confidence, and weak spots."]
+    ]
+  },
+  "/companion": {
+    eyebrow: "Companion",
+    title: "A queued local AI companion for study and support.",
+    body: "The companion sends messages through the laptop-owned queued AI path so the site stays responsive while local Ollama handles work.",
+    points: [
+      ["Queued responses", "Messages are submitted as jobs and polled until complete."],
+      ["Study context", "Future companion features can use allowed study context."],
+      ["Local-first", "Designed around your local server and worker queue."]
+    ]
+  },
+  "/profile": {
+    eyebrow: "Profile",
+    title: "Manage your account, preferences, and permissions.",
+    body: "After logging in, Profile shows account details and future privacy/personality settings for how the platform can use your data.",
+    points: [
+      ["Account", "View identity, plan, and login state."],
+      ["Permissions", "Control what tools and companion features can access."],
+      ["Personalization", "Store preferences that improve the experience."]
+    ]
+  },
+  "/credits": {
+    eyebrow: "Credits",
+    title: "Credits power higher-cost AI features.",
+    body: "After logging in, Credits shows balances, reservations, rewards, and future plan options.",
+    points: [
+      ["Free/local credits", "For local services running on your hardware."],
+      ["Paid credits", "For future paid resources such as external GPUs or cloud services."],
+      ["History", "Credit changes and reservations stay auditable."]
+    ]
+  },
+  "/calendar": {
+    eyebrow: "Calendar",
+    title: "Google Calendar and Apple Calendar integrations.",
+    body: "The platform will not store its own separate calendar. Future calendar features should connect to Google Calendar or Apple Calendar with permission.",
+    points: [
+      ["Google Calendar", "Future provider-backed scheduling and event context."],
+      ["Apple Calendar", "Future provider-backed scheduling and reminders."],
+      ["No local calendar store", "Calendar data should stay with the provider."]
+    ]
+  }
+};
+
+function renderPublicFeatureGate(route) {
+  const app = $("app");
+  if (!app) return;
+
+  const summary = PUBLIC_FEATURE_SUMMARIES[route] || {
+    eyebrow: "Platform",
+    title: "Sign in to use this feature.",
+    body: "This page is available after login.",
+    points: []
+  };
+
+  const pointsHtml = (summary.points || []).map(([label, text]) => `
+    <div class="summary-card public-feature-card">
+      <span>${escapeHtml(label)}</span>
+      <p>${escapeHtml(text)}</p>
+    </div>
+  `).join("");
+
+  app.innerHTML = `
+    <section class="system-section public-feature-gate">
+      <div class="summary-box">
+        <span>${escapeHtml(summary.eyebrow)}</span>
+        <strong>${escapeHtml(summary.title)}</strong>
+        <p>${escapeHtml(summary.body)}</p>
+        <div class="public-feature-actions">
+          <button class="primary-btn" type="button" onclick="openAuthModal('login')">Log in</button>
+          <button class="ghost-btn" type="button" onclick="openAuthModal('register')">Create account</button>
+        </div>
+      </div>
+      <div class="summary-grid">
+        ${pointsHtml}
+      </div>
+    </section>
+  `;
+}
+
 function renderPage() {
   const path = routePath();
   const page = pages[path];
@@ -3504,6 +3612,10 @@ function renderPage() {
   }
 
   if (isStudyWrapperRoute) {
+    if (!hasActiveWrapperSession()) {
+      renderPublicFeatureGate("/study");
+      return;
+    }
     loadStudyWrapperPreview();
     return;
   }

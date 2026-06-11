@@ -1671,3 +1671,27 @@ body[data-current-route="/system"] .topbar,
 body[data-current-route="/credits"] .topbar {
   background: var(--topbar-bg, rgba(6, 9, 20, .92)) !important;
 }
+
+
+/* ============================================================
+   STAGE_5O25_PUBLIC_FEATURE_GATE_STYLES_V1
+   Public logged-out summaries for app feature pages.
+   ============================================================ */
+
+.public-feature-gate {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.public-feature-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+
+.public-feature-card p {
+  margin: .45rem 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
