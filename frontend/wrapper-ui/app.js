@@ -3196,15 +3196,7 @@ async function hydrateStudyWrapperPreview(preferredDeckId = null) {
 
 async function loadStudyWrapperPreview() {
   const app = $("app");
-  const style = document.getElementById("studyPreviewStyles");
   const isLiveStudyRoute = window.location.pathname === "/study";
-
-  if (style) {
-    // STAGE_5O18_STUDY_NO_SEPARATE_STYLESHEET_V1
-    // Keep Study on the shared wrapper stylesheet. The old /study/styles.css
-    // changes the logo/header colors and makes Study drift from other pages.
-    style.disabled = true;
-  }
 
   if (!app) return;
 
@@ -3498,14 +3490,6 @@ function renderPage() {
   $("adminNavLink")?.classList.toggle("hidden", !authState.user?.is_admin);
 
   const isStudyWrapperRoute = path === "/study-wrapper-preview" || path === "/study";
-
-  const studyPreviewStyle = document.getElementById("studyPreviewStyles");
-  if (studyPreviewStyle) {
-    // STAGE_5O17_STUDY_SHARED_WRAPPER_STYLE_V1
-    // Study now uses the shared wrapper stylesheet so its logo, header,
-    // nav, panels, and spacing match Companion/Profile/Admin/System.
-    studyPreviewStyle.disabled = true;
-  }
 
   if (isStudyWrapperRoute) {
     loadStudyWrapperPreview();

@@ -1586,3 +1586,37 @@ body[data-current-route="/study"] svg {
   stroke: currentColor !important;
   filter: none !important;
 }
+
+
+/* ============================================================
+   STAGE_5O22_STUDY_SINGLE_STYLESHEET_LOGO_RESET_V1
+   Study uses the same single wrapper stylesheet as every page.
+   Force any Study-rendered/logo-adjacent elements back to the
+   normal topbar/brand color rules.
+   ============================================================ */
+
+body[data-current-route="/study"] .topbar,
+body[data-current-route="/study"] .topbar *,
+body[data-current-route="/study"] .brand,
+body[data-current-route="/study"] .brand *,
+body[data-current-route="/study"] .logo-only,
+body[data-current-route="/study"] .logo-only *,
+body[data-current-route="/study"] .brand-mark,
+body[data-current-route="/study"] .brand-logo,
+body[data-current-route="/study"] .helper-logo {
+  color: var(--text) !important;
+  background-image: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+body[data-current-route="/study"] .topbar svg,
+body[data-current-route="/study"] .brand svg,
+body[data-current-route="/study"] .logo-only svg,
+body[data-current-route="/study"] .brand-mark svg,
+body[data-current-route="/study"] .brand-logo svg {
+  fill: currentColor !important;
+  stroke: currentColor !important;
+  color: var(--text) !important;
+}
