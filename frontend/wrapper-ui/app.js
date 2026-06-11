@@ -7618,3 +7618,328 @@ async function handleResetPasswordRoute() {
   window.setTimeout(syncNavActive, 250);
 })();
 
+// STAGE_5O35_COMPANION_UX_BEGIN
+(function () {
+  const stageClass = "stage5o35";
+  const snapshotKey = "stage5o35CompanionQueueSnapshot";
+  let stageScheduled = false;
+
+  function stageRouteLooksCompanion() {
+    const path = String(window.location.pathname || "").replace(/\/+$/, "");
+    const hash = String(window.location.hash || "").toLowerCase();
+    return path === "/companion" || path.endsWith("/companion") || hash.includes("companion");
+  }
+
+  function stageFindRoot() {
+    return document.querySelector("#app")
+      || document.querySelector("#root")
+      || document.querySelector("main")
+      || document.querySelector(".app-main")
+      || document.querySelector(".page-root");
+  }
+
+  function stageNodeMentionsCompanion(root) {
+    if (!root) return false;
+    const text = String(root.innerText || "");
+    if (/companion|queued chat|message|assistant|worker|model/i.test(text)) return true;
+    return Array.from(root.querySelectorAll("[id], [class], [data-page], [data-route]")).some(function (el) {
+      const blob = [
+        el.id || "",
+        el.className || "",
+        el.getAttribute("data-page") || "",
+        el.getAttribute("data-route") || ""
+      ].join(" ");
+      return /companion|queued|chat/i.test(blob);
+    });
+  }
+
+  function stageHasInteractiveCompanion(root) {
+    if (!root) return false;
+    const hasMessageControl = !!root.querySelector("textarea, input[type='text'], input:not([type]), form");
+    const hasButton = Array.from(root.querySelectorAll("button, input[type='submit']")).some(function (btn) {
+      return /send|submit|message|chat|start|retry/i.test(String(btn.textContent || btn.value || ""));
+    });
+    return stageNodeMentionsCompanion(root) && (hasMessageControl || hasButton);
+  }
+
+  function stageReadSnapshot() {
+    try {
+      return JSON.parse(window.localStorage.getItem(snapshotKey) || "{}") || {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function stageWriteSnapshot(next) {
+    const previous = stageReadSnapshot();
+    const merged = Object.assign({}, previous, next, {
+      updatedAt: new Date().toLocaleString()
+    });
+    try {
+      window.localStorage.setItem(snapshotKey, JSON.stringify(merged));
+    } catch (err) {
+      /* storage may be unavailable */
+    }
+    stageUpdateCards();
+  }
+
+  function stagePickValue(data, keys) {
+    if (!data || typeof data !== "object") return "";
+    for (const key of keys) {
+      if (data[key] !== undefined && data[key] !== null && String(data[key]).trim() !== "") {
+        return String(data[key]);
+      }
+    }
+    for (const value of Object.values(data)) {
+      if (value && typeof value === "object") {
+        const nested = stagePickValue(value, keys);
+        if (nested) return nested;
+      }
+    }
+    return "";
+  }
+
+  function stageCaptureQueueResponse(url, response) {
+    if (!url || !String(url).includes("/api/chat/queued") || !response || !response.clone) return;
+    response.clone().json().then(function (data) {
+      const jobId = stagePickValue(data, ["job_id", "jobId", "id"]);
+      const status = stagePickValue(data, ["status", "state", "job_status", "jobStatus"]);
+      const model = stagePickValue(data, ["model", "current_model", "worker_model", "model_name"]);
+      const worker = stagePickValue(data, ["worker", "worker_id", "worker_name"]);
+      stageWriteSnapshot({
+        lastJobId: jobId || stageReadSnapshot().lastJobId || "",
+        status: status || stageReadSnapshot().status || "updated",
+        model: model || stageReadSnapshot().model || "",
+        worker: worker || stageReadSnapshot().worker || ""
+      });
+    }).catch(function () {
+      stageWriteSnapshot({
+        status: stageReadSnapshot().status || "waiting for response"
+      });
+    });
+  }
+
+  function stageInstallFetchObserver() {
+    if (window.__stage5o35CompanionFetchObserver || typeof window.fetch !== "function") return;
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      const url = typeof input === "string" ? input : (input && input.url ? input.url : "");
+      return nativeFetch(input, init).then(function (response) {
+        stageCaptureQueueResponse(url, response);
+        return response;
+      });
+    };
+    window.__stage5o35CompanionFetchObserver = true;
+  }
+
+  function stageField(name) {
+    const shell = document.querySelector(".stage5o35-companion-shell");
+    return shell ? shell.querySelector("[data-stage5o35-field='" + name + "']") : null;
+  }
+
+  function stageFindStatusFromText() {
+    const shell = document.querySelector(".stage5o35-companion-shell");
+    const text = shell ? String(shell.innerText || "") : "";
+    const statusMatch = text.match(/\b(queued|pending|running|processing|complete|completed|done|failed|error|cancelled)\b/i);
+    return statusMatch ? statusMatch[1].toLowerCase() : "";
+  }
+
+  function stageFindModelFromText() {
+    const shell = document.querySelector(".stage5o35-companion-shell");
+    const text = shell ? String(shell.innerText || "") : "";
+    const modelMatch = text.match(/\bmodel\s*[:\-]\s*([^\n\r]+)/i);
+    return modelMatch ? modelMatch[1].trim().slice(0, 80) : "";
+  }
+
+  function stageFindJobFromText() {
+    const shell = document.querySelector(".stage5o35-companion-shell");
+    const text = shell ? String(shell.innerText || "") : "";
+    const jobMatch = text.match(/\b(?:job[_\s-]*id|job)\s*[:#\-]?\s*([A-Za-z0-9_-]{8,})/i);
+    return jobMatch ? jobMatch[1] : "";
+  }
+
+  function stageSetField(name, value) {
+    const el = stageField(name);
+    if (el) el.textContent = value || "—";
+  }
+
+  function stageUpdateCards() {
+    const shell = document.querySelector(".stage5o35-companion-shell");
+    if (!shell) return;
+
+    const snapshot = stageReadSnapshot();
+    const status = snapshot.status || stageFindStatusFromText() || "ready";
+    const model = snapshot.model || stageFindModelFromText() || "backend default";
+    const jobId = snapshot.lastJobId || stageFindJobFromText() || "";
+    const worker = snapshot.worker || "local worker pool";
+    const updatedAt = snapshot.updatedAt || "not started this session";
+
+    stageSetField("queueStatus", status);
+    stageSetField("model", model);
+    stageSetField("jobId", jobId ? jobId : "no recent job");
+    stageSetField("worker", worker);
+    stageSetField("updatedAt", updatedAt);
+
+    shell.dataset.queueStatus = String(status).toLowerCase();
+
+    const empty = shell.querySelector(".stage5o35-empty-state");
+    if (empty) {
+      const hasMessages = !!shell.querySelector(".message, .chat-message, .assistant-message, .user-message, [data-role='assistant'], [data-role='user']")
+        || /\bassistant\s*·|\buser\s*·/i.test(String(shell.innerText || ""));
+      empty.hidden = hasMessages;
+    }
+  }
+
+  function stageUpgradeControls(shell) {
+    shell.querySelectorAll("textarea, input[type='text'], input:not([type])").forEach(function (input) {
+      input.classList.add("stage5o35-message-input");
+      if (!input.getAttribute("placeholder")) {
+        input.setAttribute("placeholder", "Message Companion...");
+      }
+    });
+
+    shell.querySelectorAll("button, input[type='submit']").forEach(function (button) {
+      const label = String(button.textContent || button.value || "");
+      if (/send|submit|message|chat/i.test(label)) {
+        button.classList.add("stage5o35-send-button");
+      }
+    });
+
+    shell.querySelectorAll(".message, .chat-message, [data-role='assistant'], [data-role='user']").forEach(function (msg) {
+      const role = String(msg.getAttribute("data-role") || msg.className || msg.textContent || "").toLowerCase();
+      msg.classList.add("stage5o35-message-bubble");
+      if (role.includes("user")) msg.classList.add("stage5o35-user-bubble");
+      if (role.includes("assistant")) msg.classList.add("stage5o35-assistant-bubble");
+    });
+  }
+
+  function stageEnhanceCompanion() {
+    if (!stageRouteLooksCompanion()) return;
+
+    const root = stageFindRoot();
+    if (!stageHasInteractiveCompanion(root)) return;
+
+    const existingShell = root.querySelector(".stage5o35-companion-shell");
+    if (existingShell) {
+      stageUpgradeControls(existingShell);
+      stageUpdateCards();
+      return;
+    }
+
+    const originalChildren = Array.from(root.children).filter(function (child) {
+      return !child.classList.contains("stage5o35-companion-shell");
+    });
+    if (!originalChildren.length) return;
+
+    const shell = document.createElement("section");
+    shell.className = "stage5o35-companion-shell";
+    shell.setAttribute("aria-label", "Companion workspace");
+
+    const hero = document.createElement("div");
+    hero.className = "stage5o35-companion-hero";
+    hero.innerHTML = [
+      '<div class="stage5o35-companion-hero-copy">',
+      '<p class="stage5o35-eyebrow">Companion</p>',
+      '<h1>Supportive chat workspace</h1>',
+      '<p>Talk with your local Companion while the queue handles work safely behind the scenes.</p>',
+      '</div>',
+      '<div class="stage5o35-companion-hero-badge">Queue-aware UI</div>'
+    ].join("");
+
+    const grid = document.createElement("div");
+    grid.className = "stage5o35-companion-grid";
+
+    const main = document.createElement("div");
+    main.className = "stage5o35-companion-main";
+
+    const conversation = document.createElement("div");
+    conversation.className = "stage5o35-conversation-card";
+
+    const empty = document.createElement("div");
+    empty.className = "stage5o35-empty-state";
+    empty.innerHTML = [
+      '<div class="stage5o35-empty-icon">💬</div>',
+      '<div>',
+      '<h2>Start a Companion conversation</h2>',
+      '<p>Send a message below. New work still uses the existing queued chat endpoint and polling flow.</p>',
+      '</div>'
+    ].join("");
+
+    const legacy = document.createElement("div");
+    legacy.className = "stage5o35-existing-companion-ui";
+    originalChildren.forEach(function (child) {
+      legacy.appendChild(child);
+    });
+
+    conversation.appendChild(empty);
+    conversation.appendChild(legacy);
+    main.appendChild(conversation);
+
+    const aside = document.createElement("aside");
+    aside.className = "stage5o35-companion-aside";
+    aside.innerHTML = [
+      '<section class="stage5o35-status-card">',
+      '<div class="stage5o35-card-title-row"><h2>Companion status</h2><span class="stage5o35-live-dot"></span></div>',
+      '<dl>',
+      '<div><dt>Queue</dt><dd data-stage5o35-field="queueStatus">ready</dd></div>',
+      '<div><dt>Worker</dt><dd data-stage5o35-field="worker">local worker pool</dd></div>',
+      '<div><dt>Model</dt><dd data-stage5o35-field="model">backend default</dd></div>',
+      '</dl>',
+      '</section>',
+      '<section class="stage5o35-status-card">',
+      '<h2>Last job</h2>',
+      '<dl>',
+      '<div><dt>Job id</dt><dd data-stage5o35-field="jobId">no recent job</dd></div>',
+      '<div><dt>Updated</dt><dd data-stage5o35-field="updatedAt">not started this session</dd></div>',
+      '</dl>',
+      '</section>',
+      '<section class="stage5o35-status-card stage5o35-how-card">',
+      '<h2>How this works</h2>',
+      '<p>Messages continue through <code>/api/chat/queued</code>. The page watches the same polling flow and displays queue state without changing backend behavior.</p>',
+      '</section>',
+      '<section class="stage5o35-status-card stage5o35-toggle-card">',
+      '<div>',
+      '<h2>Study context</h2>',
+      '<p>Future toggle placeholder. No Study data is connected here yet.</p>',
+      '</div>',
+      '<button type="button" class="stage5o35-toggle" disabled aria-disabled="true">Coming next</button>',
+      '</section>'
+    ].join("");
+
+    grid.appendChild(main);
+    grid.appendChild(aside);
+    shell.appendChild(hero);
+    shell.appendChild(grid);
+    root.appendChild(shell);
+
+    stageUpgradeControls(shell);
+    stageUpdateCards();
+  }
+
+  function stageSchedule() {
+    if (stageScheduled) return;
+    stageScheduled = true;
+    window.setTimeout(function () {
+      stageScheduled = false;
+      stageInstallFetchObserver();
+      stageEnhanceCompanion();
+    }, 60);
+  }
+
+  document.addEventListener("DOMContentLoaded", stageSchedule);
+  window.addEventListener("hashchange", stageSchedule);
+  window.addEventListener("popstate", stageSchedule);
+  document.addEventListener("click", function (event) {
+    const link = event.target && event.target.closest ? event.target.closest("a[href]") : null;
+    if (link && String(link.getAttribute("href") || "").includes("companion")) {
+      window.setTimeout(stageSchedule, 100);
+    }
+  });
+
+  const observer = new MutationObserver(stageSchedule);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+
+  stageSchedule();
+})();
+// STAGE_5O35_COMPANION_UX_END
+
