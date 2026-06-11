@@ -78,7 +78,7 @@ def map_api(path):
 
     # STAGE_5G2_LAPTOP_QUEUED_CHAT_CONTROLLER_OWNER_V1
     # Queued-chat browser API belongs to the laptop controller, not the public
-    # gateway and not CT101's frontend. This does not enable queued chat; the
+    # controller and not CT101's frontend. This does not enable queued chat; the
     # controller flags still decide whether the route is active.
     if path == "/api/chat/queued" or path.startswith("/api/chat/queued/"):
         return CONTROLLER, path
