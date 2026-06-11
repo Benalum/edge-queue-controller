@@ -2752,6 +2752,48 @@ const studyPreviewReviewState = {
   showingAnswer: false
 };
 
+
+async function submitStudyWrapperPreviewReview(cardId, wasCorrect) {
+  const statusText = document.getElementById("workerStatusText");
+  const deckSelect = document.getElementById("deckSelect");
+  const deckId = String(deckSelect?.value || "").trim();
+
+  try {
+    if (statusText) statusText.textContent = "Submitting review...";
+
+    const res = await fetch(`/api/study/cards/${encodeURIComponent(cardId)}/reviews`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        was_correct: Boolean(wasCorrect),
+        confidence: wasCorrect ? 4 : 2
+      })
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      throw new Error(`/api/study/cards/${cardId}/reviews HTTP ${res.status}: ${text.slice(0, 160)}`);
+    }
+
+    studyPreviewReviewState.currentIndex += 1;
+    studyPreviewReviewState.showingAnswer = false;
+
+    if (deckId) {
+      await hydrateStudyWrapperPreview(deckId);
+    }
+
+    renderStudyWrapperPreviewReviewCard();
+
+    if (statusText) statusText.textContent = "Review submitted";
+  } catch (error) {
+    console.error("[study-wrapper-preview] review submit failed", error);
+    if (statusText) statusText.textContent = "Could not submit review";
+    alert(`Could not submit review: ${error.message || error}`);
+  }
+}
+
+
 function renderStudyWrapperPreviewReviewCard() {
   const el = document.getElementById("reviewCard");
   if (!el) return;
@@ -2791,8 +2833,8 @@ function renderStudyWrapperPreviewReviewCard() {
 
     <div class="actions">
       ${studyPreviewReviewState.showingAnswer ? `
-        <button class="secondary" type="button" disabled title="Preview review submit is not wired yet.">Wrong</button>
-        <button class="primary-btn" type="button" disabled title="Preview review submit is not wired yet.">Correct</button>
+        <button class="secondary" type="button" id="studyPreviewWrongBtn">Wrong</button>
+        <button class="primary-btn" type="button" id="studyPreviewCorrectBtn">Correct</button>
       ` : `
         <button class="primary-btn" type="button" id="studyPreviewShowAnswerBtn">Show Answer</button>
       `}
@@ -2809,6 +2851,14 @@ function renderStudyWrapperPreviewReviewCard() {
     studyPreviewReviewState.currentIndex += 1;
     studyPreviewReviewState.showingAnswer = false;
     renderStudyWrapperPreviewReviewCard();
+  });
+
+  document.getElementById("studyPreviewWrongBtn")?.addEventListener("click", () => {
+    submitStudyWrapperPreviewReview(card.id, false);
+  });
+
+  document.getElementById("studyPreviewCorrectBtn")?.addEventListener("click", () => {
+    submitStudyWrapperPreviewReview(card.id, true);
   });
 }
 
