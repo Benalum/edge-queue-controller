@@ -2584,8 +2584,12 @@ function setStudyWrapperPreviewReadOnly() {
 
   root.querySelectorAll("input, textarea, select, button").forEach((el) => {
     const isSafePreviewSelect = el.id === "deckSelect";
+    const isCreateDeckControl =
+      el.id === "deckTitleInput" ||
+      el.id === "deckDescriptionInput" ||
+      el.closest?.("#deckForm");
 
-    if (isSafePreviewSelect) {
+    if (isSafePreviewSelect || isCreateDeckControl) {
       el.disabled = false;
       el.removeAttribute("aria-disabled");
       el.title = "Preview-only deck switching. Editing and review actions are still disabled.";
@@ -2683,6 +2687,76 @@ function renderStudyWrapperPreviewDeckSummary(deck) {
   `;
 }
 
+
+async function createStudyWrapperPreviewDeck(event) {
+  event.preventDefault();
+
+  const titleInput = document.getElementById("deckTitleInput");
+  const descriptionInput = document.getElementById("deckDescriptionInput");
+  const statusText = document.getElementById("workerStatusText");
+
+  const title = String(titleInput?.value || "").trim();
+  const description = String(descriptionInput?.value || "").trim();
+
+  if (!title) {
+    alert("Enter a deck title first.");
+    return;
+  }
+
+  try {
+    if (statusText) statusText.textContent = "Creating deck...";
+
+    const res = await fetch("/api/study/decks", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, description })
+    });
+
+    const text = await res.text();
+    if (!res.ok) throw new Error(`/api/study/decks HTTP ${res.status}: ${text.slice(0, 160)}`);
+
+    const data = JSON.parse(text);
+    const newDeckId = data?.deck?.id;
+
+    if (titleInput) titleInput.value = "";
+    if (descriptionInput) descriptionInput.value = "";
+
+    await hydrateStudyWrapperPreview(newDeckId);
+
+    if (statusText) statusText.textContent = "Deck created";
+  } catch (error) {
+    console.error("[study-wrapper-preview] create deck failed", error);
+    if (statusText) statusText.textContent = "Could not create deck";
+    alert(`Could not create deck: ${error.message || error}`);
+  }
+}
+
+function bindStudyWrapperPreviewCreateDeck() {
+  const form = document.getElementById("deckForm");
+  const titleInput = document.getElementById("deckTitleInput");
+  const descriptionInput = document.getElementById("deckDescriptionInput");
+
+  if (!form) return;
+
+  [titleInput, descriptionInput].forEach((el) => {
+    if (!el) return;
+    el.disabled = false;
+    el.removeAttribute("aria-disabled");
+    el.title = "Create a deck in the wrapper preview.";
+  });
+
+  const submitButton = form.querySelector("button[type='submit'], button:not([type])");
+  if (submitButton) {
+    submitButton.disabled = false;
+    submitButton.removeAttribute("aria-disabled");
+    submitButton.title = "Create deck";
+  }
+
+  form.onsubmit = createStudyWrapperPreviewDeck;
+}
+
+
 function bindStudyWrapperPreviewDeckSwitch(decks) {
   const deckSelect = document.getElementById("deckSelect");
   if (!deckSelect) return;
@@ -2763,7 +2837,7 @@ async function hydrateStudyWrapperPreviewDeck(deckId) {
 }
 
 
-async function hydrateStudyWrapperPreview() {
+async function hydrateStudyWrapperPreview(preferredDeckId = null) {
   const statusText = document.getElementById("workerStatusText");
   const apiDot = document.getElementById("apiDot");
 
@@ -2803,11 +2877,14 @@ async function hydrateStudyWrapperPreview() {
       deckSelect.innerHTML = `<option value="">Select a deck</option>` + decks.map((deck) => (
         `<option value="${studyPreviewEscape(deck.id)}">${studyPreviewEscape(deck.title)}</option>`
       )).join("");
-      if (decks[0]) deckSelect.value = String(decks[0].id);
+      const selectedDeck = decks.find((deck) => String(deck.id) === String(preferredDeckId)) || decks[0];
+      if (selectedDeck) deckSelect.value = String(selectedDeck.id);
     }
 
-    renderStudyWrapperPreviewDeckSummary(decks[0] || null);
+    const selectedDeck = decks.find((deck) => String(deck.id) === String(preferredDeckId)) || decks[0] || null;
+    renderStudyWrapperPreviewDeckSummary(selectedDeck);
     bindStudyWrapperPreviewDeckSwitch(decks);
+    bindStudyWrapperPreviewCreateDeck();
 
     const cardsList = document.getElementById("cardsList");
     if (cardsList && Array.isArray(progress.by_deck) && progress.by_deck[0]) {
@@ -2822,8 +2899,8 @@ async function hydrateStudyWrapperPreview() {
       }).join("");
     }
 
-    if (decks[0]) {
-      hydrateStudyWrapperPreviewDeck(decks[0].id);
+    if (selectedDeck) {
+      hydrateStudyWrapperPreviewDeck(selectedDeck.id);
     }
 
     if (statusText) statusText.textContent = "Study data loaded";
