@@ -2576,6 +2576,102 @@ function renderSystemPage() {
 }
 
 
+
+function studyPreviewSetText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function studyPreviewEscape(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function hydrateStudyWrapperPreview() {
+  const statusText = document.getElementById("workerStatusText");
+  const apiDot = document.getElementById("apiDot");
+
+  try {
+    if (statusText) statusText.textContent = "Loading Study data...";
+    if (apiDot) apiDot.className = "status-dot";
+
+    const [progressRes, decksRes] = await Promise.all([
+      fetch("/api/study/progress", { credentials: "include", cache: "no-store" }),
+      fetch("/api/study/decks", { credentials: "include", cache: "no-store" })
+    ]);
+
+    const progressText = await progressRes.text();
+    const decksText = await decksRes.text();
+
+    if (!progressRes.ok) throw new Error(`/api/study/progress HTTP ${progressRes.status}: ${progressText.slice(0, 120)}`);
+    if (!decksRes.ok) throw new Error(`/api/study/decks HTTP ${decksRes.status}: ${decksText.slice(0, 120)}`);
+
+    const progress = JSON.parse(progressText);
+    const decksData = JSON.parse(decksText);
+
+    const overall = progress.overall || {};
+    const decks = Array.isArray(decksData.decks) ? decksData.decks : [];
+
+    studyPreviewSetText("deckCount", String(overall.deck_count ?? decks.length ?? 0));
+    studyPreviewSetText("cardCount", String(overall.card_count ?? 0));
+    studyPreviewSetText("reviewCount", String(overall.review_count ?? 0));
+
+    const accuracy = overall.accuracy;
+    studyPreviewSetText(
+      "accuracyValue",
+      typeof accuracy === "number" ? `${Math.round(accuracy * 100)}%` : "—"
+    );
+
+    const deckSelect = document.getElementById("deckSelect");
+    if (deckSelect) {
+      deckSelect.innerHTML = `<option value="">Select a deck</option>` + decks.map((deck) => (
+        `<option value="${studyPreviewEscape(deck.id)}">${studyPreviewEscape(deck.title)}</option>`
+      )).join("");
+      if (decks[0]) deckSelect.value = String(decks[0].id);
+    }
+
+    const deckSummary = document.getElementById("deckSummary");
+    if (deckSummary) {
+      if (decks[0]) {
+        const deck = decks[0];
+        const deckAccuracy = typeof deck.accuracy === "number" ? `${Math.round(deck.accuracy * 100)}% accuracy` : "— accuracy";
+        deckSummary.innerHTML = `
+          <strong>${studyPreviewEscape(deck.title)}</strong>
+          <p>${studyPreviewEscape(deck.description || "")}</p>
+          <small>${Number(deck.card_count || 0)} cards · ${Number(deck.total_reviews || 0)} reviews · ${deckAccuracy}</small>
+        `;
+      } else {
+        deckSummary.textContent = "No decks found.";
+      }
+    }
+
+    const cardsList = document.getElementById("cardsList");
+    if (cardsList && Array.isArray(progress.by_deck) && progress.by_deck[0]) {
+      cardsList.innerHTML = progress.by_deck.map((deck) => {
+        const deckAccuracy = typeof deck.accuracy === "number" ? `${Math.round(deck.accuracy * 100)}% accuracy` : "— accuracy";
+        return `
+          <div class="card-row">
+            <strong>${studyPreviewEscape(deck.title)}</strong>
+            <span>${Number(deck.card_count || 0)} cards · ${Number(deck.review_count || 0)} reviews · ${deckAccuracy}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    if (statusText) statusText.textContent = "Study data loaded";
+    if (apiDot) apiDot.classList.add("ok");
+  } catch (error) {
+    console.error("[study-wrapper-preview] hydrate failed", error);
+    if (statusText) statusText.textContent = "Could not load Study data";
+    if (apiDot) apiDot.classList.add("bad");
+  }
+}
+
+
 async function loadStudyWrapperPreview() {
   const app = $("app");
   const style = document.getElementById("studyPreviewStyles");
@@ -2608,6 +2704,8 @@ async function loadStudyWrapperPreview() {
         </div>
       </section>
     `;
+
+    hydrateStudyWrapperPreview();
   } catch (error) {
     app.innerHTML = `
       <section class="page-card">
