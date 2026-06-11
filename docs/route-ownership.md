@@ -1,3 +1,13 @@
+# Current Ownership Notice
+
+As of Stage 5I/5J, the laptop owns public pages, auth, Study, Companion, Calendar, Profile, Chat queue state, system/account APIs, and app data.
+
+CT101 is an execution worker node for Ollama/model work only.
+
+Older sections below may describe historical CT101 ownership before the direct wrapper/controller cleanup. Prefer docs/cleanup/stage-5j2-current-route-ownership-summary-2026-06-10.md for the current decision.
+
+---
+
 # Route Ownership
 
 ## Canonical rule
