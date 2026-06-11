@@ -6865,6 +6865,7 @@ def _study_card_to_public(row):
 
 
 @app.post("/public/study/decks")
+@app.post("/api/study/decks")
 async def public_study_create_deck(request: Request):
     await _require_public_api_key(request)
     user_id = _study_current_user_id(request)
@@ -6928,6 +6929,7 @@ async def public_study_create_deck(request: Request):
 
 
 @app.get("/public/study/decks")
+@app.get("/api/study/decks")
 async def public_study_list_decks(request: Request):
     await _require_public_api_key(request)
     user_id = _study_current_user_id(request)
@@ -6971,7 +6973,35 @@ async def public_study_list_decks(request: Request):
     }
 
 
+
+@app.delete("/public/study/decks/{deck_id}")
+@app.delete("/api/study/decks/{deck_id}")
+async def public_study_delete_deck(deck_id: int, request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    _study_init_tables()
+
+    deck = _study_deck_for_user(deck_id, user_id)
+    if not deck:
+        raise HTTPException(status_code=404, detail="Deck not found.")
+
+    now = datetime.now(timezone.utc).isoformat()
+    with db() as conn:
+        conn.execute(
+            "UPDATE study_decks SET archived_at = ?, updated_at = ? WHERE id = ? AND user_id = ?",
+            (now, now, int(deck_id), int(user_id)),
+        )
+        conn.execute(
+            "UPDATE study_cards SET archived_at = ?, updated_at = ? WHERE deck_id = ? AND user_id = ? AND archived_at IS NULL",
+            (now, now, int(deck_id), int(user_id)),
+        )
+        conn.commit()
+
+    return {"ok": True, "deck_id": int(deck_id), "archived_at": now}
+
+
 @app.post("/public/study/decks/{deck_id}/cards")
+@app.post("/api/study/decks/{deck_id}/cards")
 async def public_study_create_card(deck_id: int, request: Request):
     await _require_public_api_key(request)
     user_id = _study_current_user_id(request)
@@ -7072,6 +7102,7 @@ async def public_study_create_card(deck_id: int, request: Request):
 
 
 @app.get("/public/study/decks/{deck_id}/cards")
+@app.get("/api/study/decks/{deck_id}/cards")
 async def public_study_list_cards(deck_id: int, request: Request):
     await _require_public_api_key(request)
     user_id = _study_current_user_id(request)
@@ -7121,7 +7152,31 @@ async def public_study_list_cards(deck_id: int, request: Request):
     }
 
 
+
+@app.delete("/public/study/cards/{card_id}")
+@app.delete("/api/study/cards/{card_id}")
+async def public_study_delete_card(card_id: int, request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    _study_init_tables()
+
+    card = _study_card_for_user(card_id, user_id)
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found.")
+
+    now = datetime.now(timezone.utc).isoformat()
+    with db() as conn:
+        conn.execute(
+            "UPDATE study_cards SET archived_at = ?, updated_at = ? WHERE id = ? AND user_id = ?",
+            (now, now, int(card_id), int(user_id)),
+        )
+        conn.commit()
+
+    return {"ok": True, "card_id": int(card_id), "archived_at": now}
+
+
 @app.post("/public/study/cards/{card_id}/reviews")
+@app.post("/api/study/cards/{card_id}/reviews")
 async def public_study_review_card(card_id: int, request: Request):
     await _require_public_api_key(request)
     user_id = _study_current_user_id(request)
@@ -7254,6 +7309,7 @@ async def public_study_review_card(card_id: int, request: Request):
 
 
 @app.get("/public/study/progress")
+@app.get("/api/study/progress")
 async def public_study_progress(request: Request):
     await _require_public_api_key(request)
     user_id = _study_current_user_id(request)
@@ -7627,6 +7683,7 @@ def _study_select_review_queue(cards, mode: str, limit: int):
 
 
 @app.get("/public/study/decks/{deck_id}/card-stats")
+@app.get("/api/study/decks/{deck_id}/card-stats")
 async def public_study_card_stats(deck_id: int, request: Request):
     await _require_public_api_key(request)
     user_id = _study_current_user_id(request)
@@ -7644,6 +7701,7 @@ async def public_study_card_stats(deck_id: int, request: Request):
 
 
 @app.get("/public/study/decks/{deck_id}/review-queue")
+@app.get("/api/study/decks/{deck_id}/review-queue")
 async def public_study_review_queue(deck_id: int, request: Request, mode: str = "balanced", limit: int = 10):
     await _require_public_api_key(request)
     user_id = _study_current_user_id(request)
@@ -7736,6 +7794,7 @@ def _companion_grade_answer(stored_answer, user_answer):
 
 
 @app.post("/public/companion/study/grade")
+@app.post("/api/companion/study/grade")
 async def public_companion_study_grade(request: Request):
     await _require_public_api_key(request)
     user_id = _study_current_user_id(request)
@@ -8002,6 +8061,7 @@ USER_MESSAGE:
 
 
 @app.get("/public/companion/context")
+@app.get("/api/companion/context")
 async def public_companion_context(request: Request):
     await _require_public_api_key(request)
     user_row = _auth_current_user_from_request(request)
@@ -8015,6 +8075,7 @@ async def public_companion_context(request: Request):
 
 
 @app.post("/public/companion/chat")
+@app.post("/api/companion/chat")
 async def public_companion_chat(request: Request):
     await _require_public_api_key(request)
     user_row = _auth_current_user_from_request(request)

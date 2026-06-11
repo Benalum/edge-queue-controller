@@ -509,7 +509,7 @@ bec8b90 Add disabled frontend queued chat status poll branch
 102:          <input id="authPassword" type="password" autocomplete="current-password" required />
 105:        <button id="authSubmitBtn" class="primary-btn" type="submit">
 108:      </form>
-114:  <script src="/app.js?v=20260605145139"></script>
+114:  <script src="/app.js?v=20260609200419"></script>
 115:  <script src="/queued_chat_config.js"></script>
 116:<script src="/queued_chat_status.js"></script>
 

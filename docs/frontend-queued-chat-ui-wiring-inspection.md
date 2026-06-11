@@ -399,7 +399,7 @@ c2b27b0 Track CT101 real-user execution guard
 97:          <input id="authEmail" type="email" autocomplete="email" required />
 102:          <input id="authPassword" type="password" autocomplete="current-password" required />
 105:        <button id="authSubmitBtn" class="primary-btn" type="submit">
-114:  <script src="/app.js?v=20260605145139"></script>
+114:  <script src="/app.js?v=20260609200419"></script>
 
 ## Dev server chat route markers
 

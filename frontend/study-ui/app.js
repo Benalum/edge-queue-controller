@@ -1,7 +1,7 @@
-const API_BASE = "https://edge-public-proxy.alexhartel179.workers.dev/api";
+const API_BASE = "/api";
 
 const state = {
-  token: localStorage.getItem("edgeStudyToken") || "",
+  token: "cookie-session",
   user: null,
   decks: [],
   selectedDeckId: "",
@@ -12,6 +12,35 @@ const state = {
 
 const $ = (id) => document.getElementById(id);
 
+function on(id, eventName, handler, options) {
+  const el = $(id);
+  if (!el) {
+    console.warn(`[study-ui] Missing element #${id}; skipped ${eventName} listener.`);
+    return null;
+  }
+  el.addEventListener(eventName, handler, options);
+  return el;
+}
+
+function safeNavigate(url, reason = "study-ui navigation") {
+  const target = String(url || "");
+
+  if (
+    target.includes("/login") ||
+    target.includes("login?next") ||
+    target.includes("/api/public/auth-status")
+  ) {
+    console.warn(`[study-ui] Blocked legacy login redirect from ${reason}: ${target}`);
+    return false;
+  }
+
+  window.location.assign(target);
+  return true;
+}
+
+
+
+
 function setMessage(id, text, type = "") {
   const el = $(id);
   el.textContent = text || "";
@@ -21,7 +50,6 @@ function setMessage(id, text, type = "") {
 function authHeaders(json = false) {
   const headers = {};
   if (json) headers["Content-Type"] = "application/json";
-  if (state.token) headers.Authorization = `Bearer ${state.token}`;
   return headers;
 }
 
@@ -81,20 +109,16 @@ function showLoggedOutUI() {
 }
 
 async function loadMe() {
-  if (!state.token) {
-    showLoggedOutUI();
-    return;
-  }
-
   try {
     const data = await api("/me", {
       headers: authHeaders()
     });
     state.user = data.user;
+    state.token = "cookie-session";
     showAuthedUI();
     await refreshAll();
   } catch {
-    state.token = "";
+    state.token = "cookie-session";
     state.user = null;
     localStorage.removeItem("edgeStudyToken");
     showLoggedOutUI();
@@ -476,19 +500,19 @@ document.querySelectorAll("[data-auth-tab]").forEach((button) => {
   });
 });
 
-$("authForm").addEventListener("submit", handleAuthSubmit);
+on("authForm", "submit", handleAuthSubmit);
 const logoutBtn = $("logoutBtn");
 if (logoutBtn) {
   logoutBtn.addEventListener("click", logout);
 }
-$("deckForm").addEventListener("submit", createDeck);
-$("cardForm").addEventListener("submit", createCard);
-$("deckSelect").addEventListener("change", async (event) => {
+on("deckForm", "submit", createDeck);
+on("cardForm", "submit", createCard);
+on("deckSelect", "change", async (event) => {
   state.selectedDeckId = event.target.value;
   renderDeckSummary();
   await loadCardsAndStats();
 });
-$("loadQueueBtn").addEventListener("click", loadReviewQueue);
+on("loadQueueBtn", "click", loadReviewQueue);
 
 checkApiStatus();
 loadMe();
@@ -506,7 +530,7 @@ function showPage(page) {
     el.classList.toggle("hidden", el.dataset.page !== page);
   });
 
-  if (page === "study" && !state.token) {
+  if (false && page === "study" && !state.token) {
     showPage("auth");
     return;
   }
@@ -517,10 +541,30 @@ function showPage(page) {
 }
 
 function syncNavAuth() {
-  const loggedIn = Boolean(state.token && state.user);
-  $("navAuthBtn").classList.toggle("hidden", loggedIn);
-  $("navLogoutBtn").classList.toggle("hidden", !loggedIn);
+  const loggedIn = Boolean(state.user || state.token);
+
+  const sharedAuthLink = $("sharedAuthLink");
+  if (sharedAuthLink) {
+    sharedAuthLink.textContent = loggedIn ? "Account" : "Login / Register";
+    sharedAuthLink.href = loggedIn ? "/" : "/";
+  }
+
+  const navAuthBtn = $("navAuthBtn");
+  if (navAuthBtn) {
+    navAuthBtn.classList.toggle("hidden", loggedIn);
+  }
+
+  const navLogoutBtn = $("navLogoutBtn");
+  if (navLogoutBtn) {
+    navLogoutBtn.classList.toggle("hidden", !loggedIn);
+  }
+
+  const logoutBtn = $("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.classList.toggle("hidden", !loggedIn);
+  }
 }
+
 
 document.querySelectorAll("[data-page-link]").forEach((button) => {
   button.addEventListener("click", (event) => {
@@ -529,8 +573,8 @@ document.querySelectorAll("[data-page-link]").forEach((button) => {
   });
 });
 
-$("navAuthBtn").addEventListener("click", () => showPage("auth"));
-$("navLogoutBtn").addEventListener("click", logout);
+on("navAuthBtn", "click", () => { safeNavigate("/", "window.location.href assignment"); });
+on("navLogoutBtn", "click", logout);
 
 const originalShowAuthedUI = showAuthedUI;
 showAuthedUI = function patchedShowAuthedUI() {
@@ -791,7 +835,7 @@ if (companionConfirmWrongBtn) {
     try {
       if (typeof API_BASE !== "undefined" && API_BASE) return API_BASE;
     } catch (_) {}
-    return "https://edge-public-proxy.alexhartel179.workers.dev/api";
+    return "/api";
   }
 
   function getAuthToken() {
@@ -806,8 +850,7 @@ if (companionConfirmWrongBtn) {
   function jsonHeaders() {
     const headers = { "Content-Type": "application/json" };
     const token = getAuthToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
-    return headers;
+        return headers;
   }
 
   function escapeHtml(value) {
@@ -1288,13 +1331,13 @@ if (companionConfirmWrongBtn) {
 
 /* === Shared Account auth redirect patch === */
 (function () {
-  const ACCOUNT_LOGIN = "https://alexhartel.com/login";
-  const ACCOUNT_REGISTER = "https://alexhartel.com/register";
+  const ACCOUNT_LOGIN = "https://alexhartel.com/";
+  const ACCOUNT_REGISTER = "https://alexhartel.com/";
   const ACCOUNT_LOGOUT = "https://alexhartel.com/logout";
   const ACCOUNT_PROFILE = "https://alexhartel.com/profile";
 
   function go(url) {
-    window.location.href = url;
+    safeNavigate(url, "window.location.href assignment");
   }
 
   function isOldLoginTarget(value) {
@@ -1391,23 +1434,18 @@ if (companionConfirmWrongBtn) {
 
 /* === Disable old Study auth panel and normalize Home/Study routing === */
 (function () {
-  const ACCOUNT_LOGIN = "https://alexhartel.com/login";
-  const ACCOUNT_REGISTER = "https://alexhartel.com/register";
+  const ACCOUNT_LOGIN = "https://alexhartel.com/";
+  const ACCOUNT_REGISTER = "https://alexhartel.com/";
 
   function $(id) {
     return document.getElementById(id);
   }
 
   function hasOldStudyToken() {
-    // Keep compatibility with whatever the old Study app used.
-    // This does not read the new HttpOnly account cookie.
-    return Boolean(
-      localStorage.getItem("token") ||
-      localStorage.getItem("authToken") ||
-      localStorage.getItem("accessToken") ||
-      localStorage.getItem("aiStudyToken")
-    );
+    return true;
   }
+
+
 
   function hideAllPages() {
     document.querySelectorAll(".page-block").forEach((el) => el.classList.add("hidden"));
@@ -1425,15 +1463,11 @@ if (companionConfirmWrongBtn) {
   }
 
   function showStudyOrAccountLogin() {
-    // Until Study is migrated to the shared account API, never show the old Study login form.
-    if (!hasOldStudyToken()) {
-      window.location.href = `${ACCOUNT_LOGIN}?next=${encodeURIComponent("https://alexhartel.com/study")}`;
-      return;
-    }
-
     showPage("study");
     document.body.dataset.currentPage = "study";
   }
+
+
 
   function disableOldAuthPanel() {
     const authPanel = $("authPanel");
@@ -1446,7 +1480,7 @@ if (companionConfirmWrongBtn) {
     authPanel.querySelectorAll("form").forEach((form) => {
       form.addEventListener("submit", (event) => {
         event.preventDefault();
-        window.location.href = ACCOUNT_LOGIN;
+        safeNavigate(ACCOUNT_LOGIN, "window.location.href assignment");
       }, true);
     });
 
@@ -1455,26 +1489,27 @@ if (companionConfirmWrongBtn) {
         event.preventDefault();
         event.stopPropagation();
         const mode = btn.getAttribute("data-auth-tab");
-        window.location.href = mode === "register" ? ACCOUNT_REGISTER : ACCOUNT_LOGIN;
+        safeNavigate(mode === "register" ? ACCOUNT_REGISTER : ACCOUNT_LOGIN, "window.location.href assignment");
       }, true);
     });
   }
 
   function routeFromHash() {
+    const path = String(window.location.pathname || "").toLowerCase();
     const hash = String(window.location.hash || "#home").toLowerCase();
 
-    if (hash === "#study") {
+    if (path === "/study" || path.startsWith("/study/") || hash === "#study") {
       showStudyOrAccountLogin();
       return;
     }
 
     if (hash === "#login" || hash === "#auth") {
-      window.location.href = ACCOUNT_LOGIN;
+      safeNavigate(ACCOUNT_LOGIN, "window.location.href assignment");
       return;
     }
 
     if (hash === "#register") {
-      window.location.href = ACCOUNT_REGISTER;
+      safeNavigate(ACCOUNT_REGISTER, "window.location.href assignment");
       return;
     }
 
@@ -1508,7 +1543,7 @@ if (companionConfirmWrongBtn) {
     if (pageLink === "auth" || text === "login" || text === "login / register") {
       event.preventDefault();
       event.stopPropagation();
-      window.location.href = ACCOUNT_LOGIN;
+      safeNavigate(ACCOUNT_LOGIN, "window.location.href assignment");
     }
   }, true);
 
@@ -1516,6 +1551,13 @@ if (companionConfirmWrongBtn) {
 
   document.addEventListener("DOMContentLoaded", () => {
     disableOldAuthPanel();
+
+    if (window.location.pathname === "/study" || window.location.pathname.startsWith("/study/")) {
+      history.replaceState(null, "", "/study#study");
+      showStudyOrAccountLogin();
+      return;
+    }
+
     setTimeout(routeFromHash, 0);
     setTimeout(routeFromHash, 250);
   });
@@ -1525,7 +1567,7 @@ if (companionConfirmWrongBtn) {
     const authPanel = $("authPanel");
     if (authPanel && !authPanel.classList.contains("hidden")) {
       if (window.location.hash.toLowerCase() === "#study" && !hasOldStudyToken()) {
-        window.location.href = `${ACCOUNT_LOGIN}?next=${encodeURIComponent("https://alexhartel.com/study")}`;
+        safeNavigate(`${ACCOUNT_LOGIN}?next=${encodeURIComponent("https://alexhartel.com/study")}`, "window.location.href assignment");
       }
     }
   });
@@ -1542,9 +1584,9 @@ if (companionConfirmWrongBtn) {
 
 /* === Shared Account dynamic header auth state === */
 (function () {
-  const ACCOUNT_LOGIN = "https://alexhartel.com/login";
+  const ACCOUNT_LOGIN = "https://alexhartel.com/";
   const ACCOUNT_LOGOUT = "https://alexhartel.com/logout";
-  const AUTH_STATUS_URL = "https://alexhartel.com/api/public/auth-status";
+  const AUTH_STATUS_URL = "/api/me";
 
   async function updateSharedAuthHeader() {
     const link = document.getElementById("sharedAuthLink");
@@ -1596,7 +1638,7 @@ if (companionConfirmWrongBtn) {
     // Reuse the existing frontend API base when available.
     // In this app API_BASE usually ends with /api.
     if (typeof API_BASE !== "undefined" && API_BASE) return API_BASE;
-    return "https://edge-public-proxy.alexhartel179.workers.dev/api";
+    return "/api";
   }
 
   function systemAuthHeaders() {
@@ -1612,10 +1654,10 @@ if (companionConfirmWrongBtn) {
       "";
 
     if (token) {
-      headers.Authorization = `Bearer ${token}`;
+      // Wrapper cookie auth is used; do not send stale Authorization headers.
     }
 
-    return headers;
+            return headers;
   }
 
   function systemCreatePanel() {
@@ -1826,4 +1868,40 @@ if (companionConfirmWrongBtn) {
     systemLoadStatus();
     setInterval(systemLoadStatus, SYSTEM_REFRESH_MS);
   });
+})();
+
+/* FORCE_PRIVATE_STUDY_PANEL_ON_STUDY_PATH_V1 */
+(function () {
+  function forcePrivateStudyPanel() {
+    const onStudyPath =
+      window.location.pathname === "/study" ||
+      window.location.pathname.startsWith("/study/");
+
+    if (!onStudyPath) return;
+
+    document.querySelectorAll(".page-block").forEach((el) => {
+      el.classList.add("hidden");
+    });
+
+    document.querySelectorAll('[data-page="study"]').forEach((el) => {
+      el.classList.remove("hidden");
+    });
+
+    document.body.dataset.currentPage = "study";
+
+    const authLink = document.getElementById("sharedAuthLink");
+    if (authLink && localStorage.getItem("edgeStudyToken")) {
+      authLink.textContent = "Profile";
+      authLink.href = "https://alexhartel.com/profile";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    forcePrivateStudyPanel();
+    setTimeout(forcePrivateStudyPanel, 100);
+    setTimeout(forcePrivateStudyPanel, 500);
+    setTimeout(forcePrivateStudyPanel, 1500);
+  });
+
+  window.addEventListener("load", forcePrivateStudyPanel);
 })();

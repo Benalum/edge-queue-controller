@@ -3,11 +3,32 @@ from pathlib import Path
 from urllib.parse import urlparse
 from http.cookies import SimpleCookie
 import os
+import mimetypes
 import sys
 import re
 import json
 import urllib.error
 import urllib.request
+
+UNIFIED_SHELL_ROUTES = {
+    "/",
+    "/login",
+    "/register",
+    "/study",
+    "/chat",
+    "/companion",
+    "/calendar",
+    "/profile",
+    "/credits",
+    "/admin",
+    "/support",
+    "/system",
+}
+
+def _is_unified_shell_route(path):
+    clean = path.split("?", 1)[0].rstrip("/") or "/"
+    return clean in UNIFIED_SHELL_ROUTES
+
 
 
 CONTROLLER = os.getenv("EDGE_CONTROLLER_URL", "http://127.0.0.1:7070")
@@ -16,6 +37,7 @@ CT101_FRONTEND = os.getenv("CT101_FRONTEND", "http://100.88.245.33:3010")
 CT101_API = os.getenv("CT101_API", "http://100.88.245.33:8088")
 PORT = int(os.getenv("WRAPPER_UI_PORT", "8787"))
 EDGE_TRUSTED_PROXY_SECRET = os.getenv("EDGE_TRUSTED_PROXY_SECRET", "")
+EDGE_PUBLIC_API_KEY = os.getenv("EDGE_PUBLIC_API_KEY", "")
 WRAPPER_QUEUED_CHAT_BRIDGE_ENABLED = os.getenv("WRAPPER_QUEUED_CHAT_BRIDGE_ENABLED", "").strip().lower() in {"1", "true", "yes", "on"}
 
 # STAGE_5H3_WRAPPER_REPO_ROOT_IMPORT_PATH_V1
@@ -36,6 +58,7 @@ def map_api(path):
     controller_auth_exact = {
         "/api/me": "/system/session/me",
         "/api/auth/login": "/system/session/login",
+        "/api/auth/me": "/system/session/me",
         "/api/auth/register": "/system/session/register",
         "/api/auth/logout": "/system/session/logout-safe",
         # AUTH_EXTRA_CONTROLLER_ROUTES_V1
@@ -71,6 +94,7 @@ def map_api(path):
         "/api/presence/power-policy": "/system/presence/power-policy",
         "/api/presence/apply-power-policy": "/system/presence/apply-power-policy",
         "/api/auth/login": "/system/session/login",
+        "/api/auth/me": "/system/session/me",
         "/api/auth/register": "/system/session/register",
         "/api/auth/logout": "/system/session/logout-safe",
         "/api/account/credits": "/system/account/credits",
@@ -105,15 +129,21 @@ def map_api(path):
         return CONTROLLER, path.replace("/api/support/", "/system/support/", 1)
 
     if path.startswith("/api/system/"):
-        return GATEWAY, path.replace("/api/system/", "/system/", 1)
+        return CONTROLLER, path.replace("/api/system/", "/system/", 1)
+
+    if path == "/api/auth/me":
+        return CONTROLLER, "/system/session/me"
 
     if path.startswith("/api/study/"):
-        return GATEWAY, path.replace("/api/study/", "/public/study/", 1)
+        return CONTROLLER, path
 
     if path.startswith("/api/companion/"):
-        return GATEWAY, path.replace("/api/companion/", "/public/companion/", 1)
+        return CONTROLLER, path
 
-    return GATEWAY, path.replace("/api", "", 1) or "/"
+    if path.startswith("/api/calendar/"):
+        return CONTROLLER, path
+
+    return CONTROLLER, path
 
 
 class SPAProxyHandler(SimpleHTTPRequestHandler):
@@ -152,15 +182,27 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
     def _has_auth_route_cookie(self):
         return bool(self._auth_route_token())
 
-    def _should_proxy_full_app(self, path):
-        if not self._has_auth_route_cookie():
-            return False
 
-        return (
-            path in FULL_APP_ROUTES
-            or path.startswith("/_next/")
-            or path.startswith("/api/backend/")
-        )
+    def _serve_absolute_file(self, file_path):
+        file_path = Path(file_path)
+        if not file_path.exists() or not file_path.is_file():
+            self.send_error(404)
+            return
+        ctype = mimetypes.guess_type(str(file_path))[0] or "application/octet-stream"
+        data = file_path.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _should_proxy_full_app(self, path):
+        # The laptop wrapper is now the page owner.
+        # Do not proxy logged-in page documents like /study to old CT101 :3010.
+        return False
 
 
     # EDGE_USER_HEADER_BRIDGE_V1
@@ -319,10 +361,23 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             token = self._auth_route_token()
             if token:
                 headers["X-Queued-Chat-Session-Token"] = token
-        if auth_source_path.startswith("/api/backend/") and not headers.get("Authorization"):
+        if (
+            auth_source_path.startswith("/api/backend/")
+            or auth_source_path.startswith("/api/study/")
+            or auth_source_path.startswith("/api/companion/")
+            or auth_source_path == "/api/auth/me"
+            or auth_source_path == "/api/me"
+        ) and not headers.get("Authorization"):
             token = self._auth_route_token()
             if token:
                 headers["Authorization"] = f"Bearer {token}"
+
+        if (
+            auth_source_path.startswith("/api/study/")
+            or auth_source_path.startswith("/api/companion/")
+            or auth_source_path.startswith("/api/calendar/")
+        ) and EDGE_PUBLIC_API_KEY and not headers.get("x-edge-api-key"):
+            headers["x-edge-api-key"] = EDGE_PUBLIC_API_KEY
 
         self._inject_trusted_edge_headers(headers, upstream_path, original_path=original_path)
 
@@ -662,6 +717,15 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         path = parsed.path or "/"
 
         local_path = Path("." + path)
+
+        if path == "/study" or path.startswith("/study/"):
+            rel = path.removeprefix("/study").lstrip("/")
+            if not rel:
+                rel = "index.html"
+            study_path = REPO_ROOT / "frontend" / "study-ui" / rel
+            if study_path.exists() and study_path.is_file():
+                return self._serve_absolute_file(study_path)
+            return self._serve_absolute_file(REPO_ROOT / "frontend" / "study-ui" / "index.html")
 
         if local_path.exists() and local_path.is_file():
             return super().do_GET()

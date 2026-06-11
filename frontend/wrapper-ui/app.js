@@ -3021,7 +3021,7 @@ async function handleVerifyEmailRoute() {
 
   if (!token) {
     showPageNotice("Verification link is missing a token.", true);
-    window.history.replaceState({}, "", "/login");
+    window.history.replaceState({}, "", "/");
     openAuthModal("login");
     return true;
   }
@@ -3051,7 +3051,7 @@ async function handleVerifyEmailRoute() {
     }
 
     showPageNotice("Email verified. Please log in.");
-    window.history.replaceState({}, "", "/login");
+    window.history.replaceState({}, "", "/");
     openAuthModal("login");
 
     const userEmail = user?.email || loadPendingVerificationEmail();
@@ -3062,18 +3062,18 @@ async function handleVerifyEmailRoute() {
     setEmailVerificationMessage("Email verified. Log in to continue.");
 
     setTimeout(() => {
-      window.location.href = "/login";
+      console.warn("[wrapper-ui] Suppressed old /login redirect; staying on wrapper auth.");
     }, 900);
   } catch (err) {
     const message = err.message || "Email verification failed.";
 
     showPageNotice(message, true);
-    window.history.replaceState({}, "", "/login");
+    window.history.replaceState({}, "", "/");
     openAuthModal("login");
     setEmailVerificationMessage(message, true);
 
     setTimeout(() => {
-      window.location.href = "/login";
+      console.warn("[wrapper-ui] Suppressed old /login redirect; staying on wrapper auth.");
     }, 1200);
   }
 
@@ -4967,7 +4967,7 @@ async function handleResetPasswordRoute() {
 
   if (!token) {
     showPageNotice("Reset link is missing a token.", true);
-    window.history.replaceState({}, "", "/login");
+    window.history.replaceState({}, "", "/");
     openAuthModal("login");
     return true;
   }
@@ -4978,7 +4978,7 @@ async function handleResetPasswordRoute() {
 
   if (!newPassword) {
     showPageNotice("Password reset cancelled.", true);
-    window.history.replaceState({}, "", "/login");
+    window.history.replaceState({}, "", "/");
     openAuthModal("login");
     return true;
   }
@@ -4987,7 +4987,7 @@ async function handleResetPasswordRoute() {
 
   if (newPassword !== confirmPassword) {
     showPageNotice("Passwords did not match.", true);
-    window.history.replaceState({}, "", "/login");
+    window.history.replaceState({}, "", "/");
     openAuthModal("login");
     return true;
   }
@@ -5002,17 +5002,17 @@ async function handleResetPasswordRoute() {
     });
 
     showPageNotice(data?.message || "Password reset. You can now log in.");
-    window.history.replaceState({}, "", "/login");
+    window.history.replaceState({}, "", "/");
     openAuthModal("login");
     setEmailVerificationMessage("Password reset. Log in with your new password.");
 
     setTimeout(() => {
-      window.location.href = "/login";
+      console.warn("[wrapper-ui] Suppressed old /login redirect; staying on wrapper auth.");
     }, 900);
   } catch (err) {
     const message = err.message || "Password reset failed.";
     showPageNotice(message, true);
-    window.history.replaceState({}, "", "/login");
+    window.history.replaceState({}, "", "/");
     openAuthModal("login");
     setEmailVerificationMessage(message, true);
   }
