@@ -1,10 +1,10 @@
 [Unit]
 Description=Run Edge Queue scheduler tick
-Wants=edge-queue-controller.service
-After=edge-queue-controller.service network-online.target
+After=edge-queue-controller.service
+Requires=edge-queue-controller.service
 
 [Service]
 Type=oneshot
-User=alex
-WorkingDirectory=/home/alex/Desktop/edge-queue-controller
-ExecStart=/usr/bin/bash -lc 'curl -fsS --retry 3 --retry-delay 2 --max-time 300 -X POST http://127.0.0.1:7070/tick'
+TimeoutStartSec=25
+RuntimeMaxSec=30
+ExecStart=/usr/bin/flock -n /tmp/edge-queue-scheduler-tick.lock /usr/bin/curl -fsS --connect-timeout 2 --max-time 20 -X POST http://127.0.0.1:7070/tick

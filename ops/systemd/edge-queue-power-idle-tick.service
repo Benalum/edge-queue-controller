@@ -1,8 +1,10 @@
 [Unit]
 Description=Run Edge Queue idle power dry-run tick
-Requires=edge-queue-controller.service
 After=edge-queue-controller.service
+Requires=edge-queue-controller.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/curl -fsS -X POST http://127.0.0.1:7070/power/idle/tick
+TimeoutStartSec=25
+RuntimeMaxSec=30
+ExecStart=/usr/bin/flock -n /tmp/edge-queue-power-idle-tick.lock /usr/bin/curl -fsS --connect-timeout 2 --max-time 20 -X POST http://127.0.0.1:7070/power/idle/tick
