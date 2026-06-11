@@ -2583,6 +2583,15 @@ function setStudyWrapperPreviewReadOnly() {
   if (!root) return;
 
   root.querySelectorAll("input, textarea, select, button").forEach((el) => {
+    const isSafePreviewSelect = el.id === "deckSelect";
+
+    if (isSafePreviewSelect) {
+      el.disabled = false;
+      el.removeAttribute("aria-disabled");
+      el.title = "Preview-only deck switching. Editing and review actions are still disabled.";
+      return;
+    }
+
     el.disabled = true;
     el.setAttribute("aria-disabled", "true");
     el.title = "Preview only. Use the live Study page for editing and review actions.";
@@ -2652,6 +2661,43 @@ function studyPreviewCardArray(data) {
   if (Array.isArray(data)) return data;
   return [];
 }
+
+
+function renderStudyWrapperPreviewDeckSummary(deck) {
+  const deckSummary = document.getElementById("deckSummary");
+  if (!deckSummary) return;
+
+  if (!deck) {
+    deckSummary.textContent = "No deck selected.";
+    return;
+  }
+
+  const deckAccuracy = typeof deck.accuracy === "number"
+    ? `${Math.round(deck.accuracy * 100)}% accuracy`
+    : "— accuracy";
+
+  deckSummary.innerHTML = `
+    <strong>${studyPreviewEscape(deck.title)}</strong>
+    <p>${studyPreviewEscape(deck.description || "")}</p>
+    <small>${Number(deck.card_count || 0)} cards · ${Number(deck.total_reviews || 0)} reviews · ${deckAccuracy}</small>
+  `;
+}
+
+function bindStudyWrapperPreviewDeckSwitch(decks) {
+  const deckSelect = document.getElementById("deckSelect");
+  if (!deckSelect) return;
+
+  deckSelect.disabled = false;
+  deckSelect.removeAttribute("aria-disabled");
+  deckSelect.title = "Preview-only deck switching. Editing and review actions are still disabled.";
+
+  deckSelect.onchange = () => {
+    const selected = decks.find((deck) => String(deck.id) === String(deckSelect.value));
+    renderStudyWrapperPreviewDeckSummary(selected);
+    hydrateStudyWrapperPreviewDeck(deckSelect.value);
+  };
+}
+
 
 async function hydrateStudyWrapperPreviewDeck(deckId) {
   if (!deckId) return;
@@ -2760,20 +2806,8 @@ async function hydrateStudyWrapperPreview() {
       if (decks[0]) deckSelect.value = String(decks[0].id);
     }
 
-    const deckSummary = document.getElementById("deckSummary");
-    if (deckSummary) {
-      if (decks[0]) {
-        const deck = decks[0];
-        const deckAccuracy = typeof deck.accuracy === "number" ? `${Math.round(deck.accuracy * 100)}% accuracy` : "— accuracy";
-        deckSummary.innerHTML = `
-          <strong>${studyPreviewEscape(deck.title)}</strong>
-          <p>${studyPreviewEscape(deck.description || "")}</p>
-          <small>${Number(deck.card_count || 0)} cards · ${Number(deck.total_reviews || 0)} reviews · ${deckAccuracy}</small>
-        `;
-      } else {
-        deckSummary.textContent = "No decks found.";
-      }
-    }
+    renderStudyWrapperPreviewDeckSummary(decks[0] || null);
+    bindStudyWrapperPreviewDeckSwitch(decks);
 
     const cardsList = document.getElementById("cardsList");
     if (cardsList && Array.isArray(progress.by_deck) && progress.by_deck[0]) {
