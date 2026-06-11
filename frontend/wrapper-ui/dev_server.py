@@ -48,7 +48,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 FULL_APP_ROUTES = {"/study", "/chat", "/companion", "/calendar", "/profile"}
-WRAPPER_ROUTES = {"/", "/study-wrapper-preview", "/study", "/chat", "/companion", "/calendar", "/profile", "/system"}
+WRAPPER_ROUTES = {"/", "/study-wrapper-preview", "/study-standalone", "/study", "/chat", "/companion", "/calendar", "/profile", "/system"}
 
 
 def map_api(path):
@@ -718,7 +718,14 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
 
         local_path = Path("." + path)
 
-        if path == "/study" or path.startswith("/study/"):
+        # Stage 5K-19 controlled Study cutover:
+        # - exact /study is now served by the shared wrapper shell
+        # - /study/* still serves Study assets/partials
+        # - /study-standalone remains a temporary fallback for the old standalone Study page
+        if path == "/study-standalone":
+            return self._serve_absolute_file(REPO_ROOT / "frontend" / "study-ui" / "index.html")
+
+        if path.startswith("/study/"):
             rel = path.removeprefix("/study").lstrip("/")
             if not rel:
                 rel = "index.html"

@@ -3192,6 +3192,8 @@ async function hydrateStudyWrapperPreview(preferredDeckId = null) {
 async function loadStudyWrapperPreview() {
   const app = $("app");
   const style = document.getElementById("studyPreviewStyles");
+  const isLiveStudyRoute = window.location.pathname === "/study";
+
   if (style) style.disabled = false;
 
   if (!app) return;
@@ -3210,23 +3212,25 @@ async function loadStudyWrapperPreview() {
 
     app.innerHTML = `
       <section class="page-card">
-        <p class="eyebrow">Preview</p>
-        <h1>Study Wrapper Preview</h1>
+        <p class="eyebrow">${isLiveStudyRoute ? "Study" : "Candidate route"}</p>
+        <h1>${isLiveStudyRoute ? "Study" : "Study Wrapper Preview"}</h1>
         <p class="subtitle">
-          This preview uses the shared wrapper header and loads the Study dashboard body only.
-          Study JavaScript is intentionally not running here yet.
+          ${isLiveStudyRoute
+            ? "Create decks, add cards, review by difficulty, and track progress from the shared wrapper layout."
+            : "Shared-wrapper candidate route for Study. Use this to verify behavior before removing the standalone fallback."}
         </p>
-        <div class="actions">
-          <a class="primary-btn" href="/study">Open Live Study</a>
-          <span class="muted">Use Live Study for creating decks, adding cards, and reviewing.</span>
-        </div>
+        ${isLiveStudyRoute ? "" : `
+          <div class="actions">
+            <a class="primary-btn" href="/study">Open Live Study</a>
+            <a class="secondary" href="/study-standalone">Open Standalone Fallback</a>
+          </div>
+        `}
         <div class="study-wrapper-preview">
           ${html}
         </div>
       </section>
     `;
 
-    setStudyWrapperPreviewReadOnly();
     hydrateStudyWrapperPreview();
   } catch (error) {
     app.innerHTML = `
@@ -3251,12 +3255,12 @@ function renderPage() {
 
   $("adminNavLink")?.classList.toggle("hidden", !authState.user?.is_admin);
 
-  const isStudyPreview = path === "/study-wrapper-preview";
+  const isStudyWrapperRoute = path === "/study-wrapper-preview" || path === "/study";
 
   const studyPreviewStyle = document.getElementById("studyPreviewStyles");
-  if (studyPreviewStyle) studyPreviewStyle.disabled = !isStudyPreview;
+  if (studyPreviewStyle) studyPreviewStyle.disabled = !isStudyWrapperRoute;
 
-  if (isStudyPreview) {
+  if (isStudyWrapperRoute) {
     loadStudyWrapperPreview();
     return;
   }
