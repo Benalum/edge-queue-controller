@@ -4489,7 +4489,7 @@ async function cleanLoadAdminData() {
 }
 
 async function cleanLoadRouteData() {
-  if (location.pathname === "/support") {
+  if (location.pathname === "/support" && hasActiveWrapperSession()) {
     await cleanLoadSupportTickets();
   }
 
@@ -4771,17 +4771,39 @@ function cleanRenderSupportSummary() {
 }
 
 function cleanRenderSupportPage() {
-  if (!cleanIsLoggedIn()) {
+  if (!hasActiveWrapperSession()) {
+    // STAGE_5O31_FORCE_SUPPORT_PUBLIC_SUMMARY_V1
+    // Logged-out Support uses the same public summary pattern as the other pages.
+    // Header owns login/create-account actions.
     return `
-      ${cleanRenderSupportSummary()}
+      <section class="system-section public-feature-gate">
+        <div class="summary-box">
+          <span>Support</span>
+          <strong>Help when something is not working</strong>
+          <p>
+            Support explains how logged-in users can create tickets, track replies,
+            and keep platform issues organized.
+          </p>
+          <p class="public-feature-note">Sign in from the header when you are ready to contact support.</p>
+        </div>
 
-      <section class="system-section">
-        <h2>Need help?</h2>
-        <p class="section-copy">
-          Log in to send a message to customer support and view your ticket history.
-        </p>
-        <div class="actions">
-          <button class="primary-btn" type="button" data-clean-login>Log in to contact support</button>
+        <div class="summary-grid">
+          <div class="summary-card public-feature-card">
+            <span>Send a message</span>
+            <p>Logged-in users can create a support ticket with a subject and message.</p>
+          </div>
+          <div class="summary-card public-feature-card">
+            <span>Track ticket status</span>
+            <p>Tickets move through waiting on admin, waiting on user, and solved states.</p>
+          </div>
+          <div class="summary-card public-feature-card">
+            <span>Keep replies organized</span>
+            <p>Each ticket keeps the conversation in one place so users and admins have context.</p>
+          </div>
+          <div class="summary-card public-feature-card">
+            <span>Resolve issues clearly</span>
+            <p>Users or admins can mark a ticket solved when the issue is fixed.</p>
+          </div>
         </div>
       </section>
     `;
@@ -5385,8 +5407,13 @@ try {
     const app = document.getElementById("app");
 
     if (location.pathname === "/support") {
+      // STAGE_5O31_SUPPORT_WRAPPER_PUBLIC_SAFE_V1
       if (app) app.innerHTML = cleanRenderSupportPage();
-      cleanAttachHandlers();
+      if (hasActiveWrapperSession()) {
+        cleanAttachHandlers();
+      } else {
+        cleanSyncNav();
+      }
       return;
     }
 
