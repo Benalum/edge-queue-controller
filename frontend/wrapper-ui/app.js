@@ -129,16 +129,21 @@ syncAuthRouteCookie();
 const PRIVATE_APP_ROUTE_SET = new Set(["/study-wrapper-preview", "/study", "/chat", "/companion", "/calendar", "/profile"]);
 
 function refreshPrivateRouteAfterAuth(reason = "auth") {
-  syncAuthRouteCookie();
-
-  if (PRIVATE_APP_ROUTE_SET.has(location.pathname)) {
-    const url = new URL(location.href);
-    url.searchParams.set("fresh", String(Date.now()));
-    url.searchParams.set("auth", reason);
-    location.replace(url.toString());
-    return true;
+  // STAGE_5O10_REMOVE_FRESH_ROUTE_CACHE_BUSTING_V1
+  // Keep private app routes clean. Data freshness is handled by the API cache
+  // invalidation/refresh layer, not by adding ?fresh= timestamps to URLs.
+  try {
+    const cleanPath = String(window.location.pathname || "/").split("?")[0].split("#")[0] || "/";
+    if (PRIVATE_APP_ROUTE_SET && PRIVATE_APP_ROUTE_SET.has(cleanPath)) {
+      window.history.replaceState({}, "", cleanPath);
+      if (typeof renderRoute === "function") {
+        renderRoute(cleanPath);
+      }
+      return true;
+    }
+  } catch (err) {
+    console.warn("Private route clean refresh failed:", err);
   }
-
   return false;
 }
 
@@ -5812,8 +5817,6 @@ document.addEventListener("click", (event) => {
 
   document.cookie =
     `edgeStudyToken=${encodeURIComponent(token)}; Path=/; Max-Age=2592000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
-
-  target.searchParams.set("fresh", String(Date.now()));
   event.preventDefault();
   location.href = target.toString();
 }, true);
@@ -7045,3 +7048,34 @@ async function handleResetPasswordRoute() {
   window.setInterval(updateCreditsPillRouteState, 1500);
 })();
 
+
+
+// ============================================================
+// STAGE_5O10_SCRUB_FRESH_QUERY_PARAM_V1
+// Defensive cleanup for old/stale links that still include ?fresh=.
+// ============================================================
+(function stage5o10ScrubFreshQueryParam() {
+  function scrubFreshQueryParam() {
+    try {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.has("fresh")) return;
+
+      url.searchParams.delete("fresh");
+      const clean =
+        url.pathname +
+        (url.searchParams.toString() ? `?${url.searchParams.toString()}` : "") +
+        url.hash;
+
+      window.history.replaceState({}, "", clean || "/");
+    } catch (err) {
+      console.warn("Could not scrub fresh query param:", err);
+    }
+  }
+
+  scrubFreshQueryParam();
+  document.addEventListener("DOMContentLoaded", scrubFreshQueryParam);
+  window.addEventListener("popstate", scrubFreshQueryParam);
+  window.addEventListener("hashchange", scrubFreshQueryParam);
+  window.setTimeout(scrubFreshQueryParam, 50);
+  window.setTimeout(scrubFreshQueryParam, 250);
+})();
