@@ -7102,6 +7102,133 @@ async def public_study_session_start(request: Request):
 # STAGE_5P3A_STUDY_SESSION_START_END
 
 
+# STAGE_5P3B_STUDY_SESSION_LIFECYCLE_BEGIN
+def _study_require_current_session_for_user(user_id: int):
+    row = _study_get_current_session_for_user(user_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="No active study session found")
+    return row
+
+
+def _study_update_session_status(session_id: int, status: str, action: str, intent: str):
+    _study_init_session_tables()
+    now = datetime.now(timezone.utc).isoformat()
+
+    paused_at = now if status == "paused" else None
+    ended_at = now if status in ("stopped", "completed") else None
+
+    with db() as conn:
+        conn.execute(
+            "UPDATE study_sessions "
+            "SET status = ?, paused_at = ?, ended_at = ?, "
+            "last_action = ?, last_intent = ?, updated_at = ? "
+            "WHERE id = ?",
+            (
+                status,
+                paused_at,
+                ended_at,
+                action,
+                intent,
+                now,
+                int(session_id),
+            ),
+        )
+        conn.commit()
+        return conn.execute(
+            "SELECT * FROM study_sessions WHERE id = ?",
+            (int(session_id),),
+        ).fetchone()
+
+
+@app.post("/public/study/session/pause")
+@app.post("/api/study/session/pause")
+async def public_study_session_pause(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    row = _study_require_current_session_for_user(user_id)
+
+    status = row["status"]
+    if status == "paused":
+        return {
+            "ok": True,
+            "intent": "study_session_pause",
+            "command": "pause",
+            "session": _study_session_row_to_public(row),
+        }
+
+    if status not in ("active", "reviewing_answer", "waiting_for_mark"):
+        raise HTTPException(status_code=400, detail=f"Cannot pause session with status {status}")
+
+    updated = _study_update_session_status(
+        row["id"],
+        "paused",
+        "pause",
+        "study_session_pause",
+    )
+    return {
+        "ok": True,
+        "intent": "study_session_pause",
+        "command": "pause",
+        "session": _study_session_row_to_public(updated),
+    }
+
+
+@app.post("/public/study/session/resume")
+@app.post("/api/study/session/resume")
+async def public_study_session_resume(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    row = _study_require_current_session_for_user(user_id)
+
+    status = row["status"]
+    if status == "active":
+        return {
+            "ok": True,
+            "intent": "study_session_resume",
+            "command": "resume",
+            "session": _study_session_row_to_public(row),
+        }
+
+    if status != "paused":
+        raise HTTPException(status_code=400, detail=f"Cannot resume session with status {status}")
+
+    updated = _study_update_session_status(
+        row["id"],
+        "active",
+        "resume",
+        "study_session_resume",
+    )
+    return {
+        "ok": True,
+        "intent": "study_session_resume",
+        "command": "resume",
+        "session": _study_session_row_to_public(updated),
+    }
+
+
+@app.post("/public/study/session/stop")
+@app.post("/api/study/session/stop")
+async def public_study_session_stop(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    row = _study_require_current_session_for_user(user_id)
+
+    updated = _study_update_session_status(
+        row["id"],
+        "stopped",
+        "stop",
+        "study_session_stop",
+    )
+    return {
+        "ok": True,
+        "intent": "study_session_stop",
+        "command": "stop",
+        "session": _study_session_row_to_public(updated),
+    }
+# STAGE_5P3B_STUDY_SESSION_LIFECYCLE_END
+
+
+
 @app.post("/public/study/decks")
 @app.post("/api/study/decks")
 async def public_study_create_deck(request: Request):
