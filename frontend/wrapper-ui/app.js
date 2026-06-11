@@ -463,8 +463,14 @@ function renderAuthButtons() {
 }
 
 function navigate(path) {
+  path = normalizeWrapperRoute(path);
   if (!pages[path]) path = "/";
-  history.pushState({}, "", path);
+  if (window.location.pathname !== path) {
+    history.pushState({}, "", path);
+  }
+  renderPage();
+  syncWrapperNavState(path);
+}
 
 // ============================================================
 // API_CACHE_LAYER_V1
@@ -7019,144 +7025,146 @@ async function handleResetPasswordRoute() {
 })();
 
 
+
+
+
+
+
+
 // ============================================================
-// STAGE_5O9_CREDITS_PILL_ROUTE_STATE_V1
-//
-// Credits in the header is an account balance pill, not a permanent
-// selected nav tab. It should only receive route-active styling on /credits.
-// Also keeps route URLs clean; no ?fresh cache busters are needed.
+// STAGE_5O14B_SINGLE_NAV_ROUTER_V1
+// One source of truth for wrapper route clicks and active header state.
+// Fixes:
+// - Credits pill staying green on non-Credits pages.
+// - Admin/Profile/Study/Companion/System not reliably becoming selected.
+// - Internal page clicks feeling like reloads from overlapping route handlers.
 // ============================================================
-(function stage5o9CreditsPillRouteState() {
-  function cleanRoute(path) {
-    let route = String(path || "/").split("?")[0].split("#")[0] || "/";
-    if (route.length > 1 && route.endsWith("/")) route = route.slice(0, -1);
-    if (route === "/account/credits") return "/credits";
-    return route;
+
+function normalizeWrapperRoute(value) {
+  let route = String(value || "/").trim() || "/";
+
+  try {
+    const url = new URL(route, window.location.origin);
+    if (url.origin === window.location.origin) {
+      route = url.pathname || "/";
+    }
+  } catch {
+    route = route.split("?")[0].split("#")[0] || "/";
   }
 
-  function updateCreditsPillRouteState() {
-    const current = cleanRoute(window.location.pathname || "/");
-    const active = current === "/credits";
+  route = route.split("?")[0].split("#")[0] || "/";
 
-    document.body.setAttribute("data-current-route", current);
+  if (route.length > 1 && route.endsWith("/")) {
+    route = route.slice(0, -1);
+  }
 
-    const pill = document.getElementById("creditsPill");
-    if (!pill) return;
+  if (route === "/study-wrapper-preview") return "/study";
+  if (route === "/chat") return "/companion";
+  if (route === "/account/credits") return "/credits";
 
-    pill.classList.toggle("route-active", active);
-    pill.classList.toggle("active", active);
-    pill.classList.toggle("is-active", active);
-    pill.classList.toggle("selected", active);
+  return route || "/";
+}
+
+function syncWrapperNavState(routeValue) {
+  const current = normalizeWrapperRoute(routeValue || window.location.pathname || "/");
+  document.body.setAttribute("data-current-route", current);
+
+  document.querySelectorAll("header [data-route], .topbar [data-route], .nav [data-route]").forEach((el) => {
+    const route = normalizeWrapperRoute(el.getAttribute("data-route") || el.getAttribute("href") || "");
+    const active = route === current;
+
+    el.classList.toggle("active", active);
+    el.classList.toggle("is-active", active);
+    el.classList.toggle("selected", active);
 
     if (active) {
-      pill.setAttribute("aria-current", "page");
+      el.setAttribute("aria-current", "page");
     } else {
-      pill.removeAttribute("aria-current");
+      el.removeAttribute("aria-current");
+    }
+  });
+
+  const creditsPill = document.getElementById("creditsPill");
+  if (creditsPill) {
+    const creditsActive = current === "/credits";
+    creditsPill.classList.toggle("active", creditsActive);
+    creditsPill.classList.toggle("is-active", creditsActive);
+    creditsPill.classList.toggle("selected", creditsActive);
+    creditsPill.classList.toggle("route-active", creditsActive);
+    if (creditsActive) {
+      creditsPill.setAttribute("aria-current", "page");
+    } else {
+      creditsPill.removeAttribute("aria-current");
     }
   }
+}
 
-  function scheduleCreditsPillRouteState() {
-    window.requestAnimationFrame(updateCreditsPillRouteState);
-    window.setTimeout(updateCreditsPillRouteState, 50);
-    window.setTimeout(updateCreditsPillRouteState, 250);
+function navigateWrapperRoute(routeValue) {
+  const route = normalizeWrapperRoute(routeValue);
+  const target = pages[route] ? route : "/";
+
+  if (window.location.pathname !== target) {
+    history.pushState({}, "", target);
   }
 
-  window.addEventListener("popstate", scheduleCreditsPillRouteState);
-  window.addEventListener("hashchange", scheduleCreditsPillRouteState);
-  document.addEventListener("DOMContentLoaded", scheduleCreditsPillRouteState);
-  document.addEventListener("click", scheduleCreditsPillRouteState, true);
+  renderPage();
+  syncWrapperNavState(target);
+}
 
-  window.stage5o9UpdateCreditsPillRouteState = updateCreditsPillRouteState;
-  scheduleCreditsPillRouteState();
-  window.setInterval(updateCreditsPillRouteState, 1500);
-})();
+(function installSingleWrapperNavRouter() {
+  if (window.__stage5o14bSingleNavRouterInstalled) return;
+  window.__stage5o14bSingleNavRouterInstalled = true;
 
+  window.navigate = navigateWrapperRoute;
 
+  document.addEventListener("click", (event) => {
+    const link = event.target?.closest?.("a[href], button[data-route], [data-route]");
+    if (!link) return;
 
+    const href = link.getAttribute("href") || "";
+    const dataRoute = link.getAttribute("data-route") || "";
+    const rawRoute = dataRoute || href;
 
-// ============================================================
-// STAGE_5O13_HEADER_NAV_ACTIVE_STATE_V1
-// Single source of truth for wrapper header active-tab state.
-// This runs after older route handlers so duplicate/legacy handlers cannot
-// leave Credits or another tab stuck highlighted.
-// ============================================================
-(function stage5o13HeaderNavActiveState() {
-  function normalizeHeaderRoute(value) {
-    let route = String(value || "/").trim() || "/";
+    if (!rawRoute) return;
+
+    let route = "";
     try {
-      const url = new URL(route, window.location.origin);
-      if (url.origin === window.location.origin) {
-        route = url.pathname || "/";
-      }
-    } catch (_) {
-      route = route.split("?")[0].split("#")[0] || "/";
+      const url = new URL(rawRoute, window.location.origin);
+      if (url.origin !== window.location.origin) return;
+      route = normalizeWrapperRoute(url.pathname);
+    } catch {
+      route = normalizeWrapperRoute(rawRoute);
     }
 
-    route = route.split("?")[0].split("#")[0] || "/";
-    if (route.length > 1) route = route.replace(/\/+$/, "");
-    return route || "/";
-  }
+    if (!pages[route]) return;
 
-  function currentHeaderRoute() {
-    return normalizeHeaderRoute(window.location.pathname || "/");
-  }
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
 
-  function syncHeaderNavActiveState() {
-    const route = currentHeaderRoute();
-    document.body.dataset.currentRoute = route;
+    navigateWrapperRoute(route);
+  }, true);
 
-    const navLinks = document.querySelectorAll(
-      'header a[data-route], .topbar a[data-route], .main-nav a[data-route], .route-nav a[data-route], nav a[data-route]'
-    );
-
-    navLinks.forEach((link) => {
-      const linkRoute = normalizeHeaderRoute(link.getAttribute("data-route") || link.getAttribute("href") || "");
-      const isActive = linkRoute === route;
-
-      link.classList.toggle("active", isActive);
-
-      if (isActive) {
-        link.setAttribute("aria-current", "page");
-      } else {
-        link.removeAttribute("aria-current");
-      }
-    });
-  }
-
-  window.stage5o13SyncHeaderNavActiveState = syncHeaderNavActiveState;
-
-  const scheduleSync = () => {
-    syncHeaderNavActiveState();
-    window.setTimeout(syncHeaderNavActiveState, 0);
-    window.setTimeout(syncHeaderNavActiveState, 50);
-  };
+  window.addEventListener("popstate", () => {
+    renderPage();
+    syncWrapperNavState();
+  });
 
   const originalPushState = history.pushState;
-  history.pushState = function stage5o13PushState(...args) {
+  history.pushState = function stage5o14bPushState(...args) {
     const result = originalPushState.apply(this, args);
-    scheduleSync();
+    window.setTimeout(() => syncWrapperNavState(), 0);
     return result;
   };
 
   const originalReplaceState = history.replaceState;
-  history.replaceState = function stage5o13ReplaceState(...args) {
+  history.replaceState = function stage5o14bReplaceState(...args) {
     const result = originalReplaceState.apply(this, args);
-    scheduleSync();
+    window.setTimeout(() => syncWrapperNavState(), 0);
     return result;
   };
 
-  window.addEventListener("popstate", scheduleSync);
-  window.addEventListener("hashchange", scheduleSync);
-  document.addEventListener("click", (event) => {
-    const link = event.target.closest?.("a[data-route]");
-    if (link) scheduleSync();
-  }, true);
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", scheduleSync);
-  } else {
-    scheduleSync();
-  }
-
-  window.setTimeout(scheduleSync, 250);
+  document.addEventListener("DOMContentLoaded", () => syncWrapperNavState(), { once: true });
+  syncWrapperNavState();
+  window.setTimeout(() => syncWrapperNavState(), 100);
 })();
