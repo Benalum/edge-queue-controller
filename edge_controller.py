@@ -3028,6 +3028,14 @@ async def power_auto_tick():
     auto_shutdown_host = parse_bool(os.getenv("EDGE_POWER_AUTO_SHUTDOWN_HOST"), False)
     auto_start_workers = parse_bool(os.getenv("EDGE_POWER_AUTO_START_WORKERS"), False)
 
+    # STAGE_5O2_POWER_AUTO_TICK_NONBLOCKING_DEFAULT_V1
+    # /power/auto/tick previously evaluated several Proxmox/SSH-backed plans
+    # before deciding whether any action was enabled. When pveso/Proxmox was
+    # unreachable, this could block the single controller worker and freeze
+    # /health plus browser auth/API routes. Keep the route non-blocking unless
+    # an operator explicitly opts into the full legacy evaluator.
+    full_power_auto_tick = parse_bool(os.getenv("EDGE_POWER_AUTO_TICK_FULL"), False)
+
     auto_status = await power_auto_status()
     if auto_status.get("paused"):
         return {
@@ -3053,6 +3061,30 @@ async def power_auto_tick():
                 }
             ],
             "note": "Power automation is paused. No worker stop or host shutdown action was evaluated.",
+        }
+
+    if not full_power_auto_tick:
+        return {
+            "ok": True,
+            "time": datetime.now(timezone.utc).isoformat(),
+            "quarantined": True,
+            "source": "stage_5o2_power_auto_tick_nonblocking_default",
+            "automation": {
+                "auto_stop_workers": auto_stop_workers,
+                "auto_shutdown_host": auto_shutdown_host,
+                "auto_start_workers": auto_start_workers,
+                "full_power_auto_tick": False,
+                "paused": False,
+            },
+            "actions": [
+                {
+                    "area": "automation",
+                    "action": "power_auto_tick_quarantined_nonblocking",
+                    "executed": False,
+                    "reason": "EDGE_POWER_AUTO_TICK_FULL is not enabled, so Proxmox/SSH-backed planning is skipped.",
+                }
+            ],
+            "note": "Set EDGE_POWER_AUTO_TICK_FULL=1 only after the Proxmox/SSH planning path is made safe and non-blocking.",
         }
 
     execute_stops_enabled = parse_bool(os.getenv("EDGE_POWER_EXECUTE_STOPS"), False)
