@@ -7007,6 +7007,101 @@ async def public_study_session_status(request: Request):
     }
 # STAGE_5P2_STUDY_SESSION_STATUS_END
 
+
+# STAGE_5P3A_STUDY_SESSION_START_BEGIN
+def _study_session_active_placeholders():
+    return ",".join("?" for _ in _STUDY_SESSION_ACTIVE_STATUSES)
+
+
+def _study_build_session_queue(user_id: int, deck_id: int):
+    _study_init_session_tables()
+
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id FROM study_cards "
+            "WHERE user_id = ? AND deck_id = ? AND archived_at IS NULL "
+            "ORDER BY id ASC",
+            (int(user_id), int(deck_id)),
+        ).fetchall()
+
+    return [int(row["id"]) for row in rows]
+
+
+@app.post("/public/study/session/start")
+@app.post("/api/study/session/start")
+async def public_study_session_start(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    deck_id = payload.get("deck_id") if isinstance(payload, dict) else None
+    try:
+        deck_id = int(deck_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="deck_id is required")
+
+    deck = _study_deck_for_user(deck_id, user_id)
+    if not deck:
+        raise HTTPException(status_code=404, detail="Study deck not found")
+
+    queue = _study_build_session_queue(user_id, deck_id)
+    if not queue:
+        raise HTTPException(status_code=400, detail="Study deck has no active cards")
+
+    now = datetime.now(timezone.utc).isoformat()
+    active_placeholders = _study_session_active_placeholders()
+    active_params = [int(user_id), *_STUDY_SESSION_ACTIVE_STATUSES]
+
+    with db() as conn:
+        conn.execute(
+            f"UPDATE study_sessions "
+            f"SET status = 'stopped', ended_at = ?, updated_at = ?, "
+            f"last_action = 'auto_stop_for_new_start', last_intent = 'study_session_start' "
+            f"WHERE user_id = ? AND status IN ({active_placeholders})",
+            [now, now, *active_params],
+        )
+
+        cur = conn.execute(
+            "INSERT INTO study_sessions ("
+            "user_id, deck_id, status, current_card_id, queue_json, queue_position, "
+            "started_at, paused_at, ended_at, last_action, last_intent, created_at, updated_at"
+            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                int(user_id),
+                int(deck_id),
+                "active",
+                int(queue[0]),
+                json.dumps(queue),
+                0,
+                now,
+                None,
+                None,
+                "start",
+                "study_session_start",
+                now,
+                now,
+            ),
+        )
+        conn.commit()
+
+        row = conn.execute(
+            "SELECT * FROM study_sessions WHERE id = ?",
+            (cur.lastrowid,),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "intent": "study_session_start",
+        "command": "start",
+        "session": _study_session_row_to_public(row),
+    }
+# STAGE_5P3A_STUDY_SESSION_START_END
+
+
 @app.post("/public/study/decks")
 @app.post("/api/study/decks")
 async def public_study_create_deck(request: Request):
