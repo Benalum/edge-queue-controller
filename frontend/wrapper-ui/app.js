@@ -2577,6 +2577,31 @@ function renderSystemPage() {
 
 
 
+
+function setStudyWrapperPreviewReadOnly() {
+  const root = document.querySelector(".study-wrapper-preview");
+  if (!root) return;
+
+  root.querySelectorAll("input, textarea, select, button").forEach((el) => {
+    el.disabled = true;
+    el.setAttribute("aria-disabled", "true");
+    el.title = "Preview only. Use the live Study page for editing and review actions.";
+  });
+
+  const firstPanel = root.querySelector(".panel");
+  if (firstPanel && !root.querySelector("[data-study-preview-notice]")) {
+    const notice = document.createElement("div");
+    notice.className = "mini-summary";
+    notice.setAttribute("data-study-preview-notice", "true");
+    notice.innerHTML = `
+      <strong>Preview only</strong>
+      <p>This shared-layout preview is read-only. Use <a href="/study">the live Study page</a> to create decks, add cards, or review cards.</p>
+    `;
+    firstPanel.prepend(notice);
+  }
+}
+
+
 function studyPreviewSetText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
@@ -2810,6 +2835,7 @@ async function loadStudyWrapperPreview() {
       </section>
     `;
 
+    setStudyWrapperPreviewReadOnly();
     hydrateStudyWrapperPreview();
   } catch (error) {
     app.innerHTML = `
