@@ -3621,6 +3621,11 @@ function renderPage() {
   }
 
   if (path === "/chat" || path === "/companion") {
+    if (!hasActiveWrapperSession()) {
+      renderPublicFeatureGate(path === "/chat" ? "/chat" : "/companion");
+      return;
+    }
+
     $("app").innerHTML = renderQueuedChatPage();
     bindQueuedChatPage();
     return;
@@ -5542,7 +5547,12 @@ async function fastRefreshAfterAuth(reason = "") {
     jobs.push(cleanLoadSupportTickets());
   }
 
-  if (path === "/admin" && typeof cleanLoadAdminData === "function" && authState?.user?.is_admin) {
+  if (
+    path === "/admin" &&
+    typeof cleanLoadAdminData === "function" &&
+    authState?.token &&
+    authState?.user?.is_admin
+  ) {
     jobs.push(cleanLoadAdminData());
   }
 
