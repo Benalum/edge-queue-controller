@@ -7073,7 +7073,3 @@ async function handleResetPasswordRoute() {
 
 
 
-// ============================================================
-// STAGE_5O10_SCRUB_FRESH_QUERY_PARAM_V1
-// Defensive cleanup for old/stale links that still include ?fresh=.
-
