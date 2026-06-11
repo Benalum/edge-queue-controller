@@ -3244,6 +3244,238 @@ async function loadStudyWrapperPreview() {
   }
 }
 
+
+// STAGE_5L8_MINIMAL_QUEUED_CHAT_UI_V1
+// Minimal wrapper-native Chat UI wired to the already working /api/chat/queued API.
+// This replaces the static /chat summary with a real send/poll/render loop.
+const queuedChatUiState = {
+  messages: [],
+  busy: false,
+  lastJobId: "",
+};
+
+function queuedChatEscape(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function queuedChatSetStatus(text) {
+  const el = document.getElementById("queuedChatStatus");
+  if (el) el.textContent = text || "";
+}
+
+function queuedChatRenderMessages() {
+  const el = document.getElementById("queuedChatMessages");
+  if (!el) return;
+
+  if (!queuedChatUiState.messages.length) {
+    el.innerHTML = `<p class="muted">Send a message to start a queued local AI chat.</p>`;
+    return;
+  }
+
+  el.innerHTML = queuedChatUiState.messages.map((msg) => `
+    <div class="summary-box">
+      <span>${queuedChatEscape(msg.role)}</span>
+      <strong>${queuedChatEscape(msg.content)}</strong>
+      ${msg.detail ? `<p>${queuedChatEscape(msg.detail)}</p>` : ""}
+    </div>
+  `).join("");
+}
+
+function renderQueuedChatPage() {
+  const signedIn = Boolean(authState?.token);
+
+  return `
+    <section class="page-card">
+      <p class="eyebrow">Queued Chat</p>
+      <h1>Chat</h1>
+      <p class="subtitle">
+        Send a message through the laptop-owned queued Chat API. CT101 processes one Ollama job at a time.
+      </p>
+
+      ${signedIn ? `
+        <div class="summary-grid">
+          <div class="summary-box">
+            <span>Status</span>
+            <strong id="queuedChatStatus">Ready</strong>
+            <p>Uses /api/chat/queued and polls the returned job id.</p>
+          </div>
+          <div class="summary-box">
+            <span>Worker</span>
+            <strong>CT101 queue worker</strong>
+            <p>Current model fallback: gemma4:e4b.</p>
+          </div>
+        </div>
+
+        <form id="queuedChatForm" class="form-grid">
+          <label>
+            Message
+            <textarea id="queuedChatInput" rows="5" placeholder="Ask the local AI something..."></textarea>
+          </label>
+
+          <div class="actions">
+            <button class="primary-btn" type="submit" id="queuedChatSendBtn">Send queued message</button>
+            <button class="ghost-btn" type="button" id="queuedChatClearBtn">Clear</button>
+          </div>
+        </form>
+
+        <section class="system-section">
+          <h2>Conversation</h2>
+          <div id="queuedChatMessages" class="summary-grid"></div>
+        </section>
+      ` : `
+        <div class="summary-box">
+          <span>Login required</span>
+          <strong>Please log in to use queued Chat.</strong>
+          <p>Queued Chat uses your active account session to create real-user queue jobs.</p>
+        </div>
+        <div class="actions">
+          <button class="primary-btn" type="button" data-clean-login>Login / Register</button>
+        </div>
+      `}
+    </section>
+  `;
+}
+
+async function queuedChatPollJob(jobId) {
+  for (let i = 0; i < 80; i++) {
+    queuedChatSetStatus(`Waiting for worker... poll ${i + 1}`);
+
+    const res = await fetch(`/api/chat/queued/${encodeURIComponent(jobId)}`, {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      throw new Error(`Status poll HTTP ${res.status}: ${text.slice(0, 180)}`);
+    }
+
+    const data = JSON.parse(text);
+    const job = data?.job || data;
+    const status = String(job?.status || "").toLowerCase();
+
+    if (status === "complete" || status === "completed") {
+      const result = job?.result_json || {};
+      const reply = result.reply || result.response || result.text || "Completed, but no reply text was returned.";
+      return {
+        reply,
+        detail: `job ${jobId} · ${result.model || job.requested_model || "model unknown"}`
+      };
+    }
+
+    if (status === "failed" || status === "error") {
+      throw new Error(job?.error_text || `Queued job failed with status ${status}`);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+
+  throw new Error("Queued job did not finish before polling timed out.");
+}
+
+async function queuedChatSubmit(event) {
+  event.preventDefault();
+
+  if (queuedChatUiState.busy) return;
+
+  const input = document.getElementById("queuedChatInput");
+  const button = document.getElementById("queuedChatSendBtn");
+  const message = String(input?.value || "").trim();
+
+  if (!message) {
+    queuedChatSetStatus("Enter a message first.");
+    return;
+  }
+
+  queuedChatUiState.busy = true;
+  if (button) button.disabled = true;
+
+  queuedChatUiState.messages.push({ role: "You", content: message });
+  queuedChatRenderMessages();
+
+  if (input) input.value = "";
+
+  try {
+    queuedChatSetStatus("Creating queued job...");
+
+    const res = await fetch("/api/chat/queued", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        requested_model: "gemma4:e4b",
+        chat_id: `wrapper-chat-${Date.now()}`,
+        mode: "chat"
+      })
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      throw new Error(`Create job HTTP ${res.status}: ${text.slice(0, 180)}`);
+    }
+
+    const data = JSON.parse(text);
+    const jobId = data.job_id || data?.job?.job_id;
+
+    if (!jobId) {
+      throw new Error("Queued job response did not include a job_id.");
+    }
+
+    queuedChatUiState.lastJobId = jobId;
+    queuedChatUiState.messages.push({
+      role: "Queue",
+      content: "Job created",
+      detail: jobId
+    });
+    queuedChatRenderMessages();
+
+    const final = await queuedChatPollJob(jobId);
+
+    queuedChatUiState.messages.push({
+      role: "Assistant",
+      content: final.reply,
+      detail: final.detail
+    });
+    queuedChatSetStatus("Complete");
+    queuedChatRenderMessages();
+  } catch (err) {
+    queuedChatUiState.messages.push({
+      role: "Error",
+      content: err.message || String(err)
+    });
+    queuedChatSetStatus("Error");
+    queuedChatRenderMessages();
+  } finally {
+    queuedChatUiState.busy = false;
+    if (button) button.disabled = false;
+  }
+}
+
+function bindQueuedChatPage() {
+  queuedChatRenderMessages();
+
+  const form = document.getElementById("queuedChatForm");
+  if (form) {
+    form.onsubmit = queuedChatSubmit;
+  }
+
+  const clearBtn = document.getElementById("queuedChatClearBtn");
+  if (clearBtn) {
+    clearBtn.onclick = () => {
+      queuedChatUiState.messages = [];
+      queuedChatSetStatus("Ready");
+      queuedChatRenderMessages();
+    };
+  }
+}
+
+
 function renderPage() {
   const path = routePath();
   const page = pages[path];
@@ -3262,6 +3494,12 @@ function renderPage() {
 
   if (isStudyWrapperRoute) {
     loadStudyWrapperPreview();
+    return;
+  }
+
+  if (path === "/chat") {
+    $("app").innerHTML = renderQueuedChatPage();
+    bindQueuedChatPage();
     return;
   }
 
