@@ -3196,14 +3196,11 @@ async function hydrateStudyWrapperPreview(preferredDeckId = null) {
 
 async function loadStudyWrapperPreview() {
   const app = $("app");
-  
   const style = document.getElementById("studyPreviewStyles");
-const isLiveStudyRoute = window.location.pathname === "/study";
-
-  
+  const isLiveStudyRoute = window.location.pathname === "/study";
 
   if (style) style.disabled = false;
-if (!app) return;
+  if (!app) return;
 
   try {
     const res = await fetch("/study/study-dashboard.partial.html", {
@@ -3505,7 +3502,8 @@ function renderPage() {
     // wrapper stylesheet loads after it and owns header/logo/nav styling.
     studyPreviewStyle.disabled = !isStudyWrapperRoute;
   }
-if (isStudyWrapperRoute) {
+
+  if (isStudyWrapperRoute) {
     loadStudyWrapperPreview();
     return;
   }
