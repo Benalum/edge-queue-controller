@@ -3487,16 +3487,45 @@ function bindQueuedChatPage() {
 // Logged-in users see the usable application surface.
 // ============================================================
 
-function hasActiveWrapperSession() {
-  // STAGE_5O27B_STALE_TOKEN_SAFE_PUBLIC_GATE_V1
-  // A stale cookie/localStorage token should not make logged-out users hit
-  // private page loaders. Treat the user as logged in only after /me has
-  // populated authState.user during this page session.
+
+// ============================================================
+// STAGE_5O32_AUTH_READY_HELPERS_V1
+// Profile and other gated pages must re-render after /me confirms
+// the session. Avoid trapping logged-in users on public summaries.
+// ============================================================
+
+function isWrapperAuthReady() {
   try {
     return Boolean(authState && authState.token && authState.user);
   } catch {
     return false;
   }
+}
+
+function rerenderCurrentRouteAfterAuthReady() {
+  try {
+    if (!isWrapperAuthReady()) return;
+    const path = cleanRoute(window.location.pathname || "/");
+    if (
+      path === "/study" ||
+      path === "/chat" ||
+      path === "/companion" ||
+      path === "/profile" ||
+      path === "/support" ||
+      path === "/calendar" ||
+      path === "/credits"
+    ) {
+      renderPage();
+    }
+  } catch (err) {
+    console.warn("auth-ready rerender skipped", err);
+  }
+}
+
+function hasActiveWrapperSession() {
+  // STAGE_5O32_PROFILE_AFTER_LOGIN_GATE_V1
+  // Logged-in means /me has confirmed the user for this page session.
+  return isWrapperAuthReady();
 }
 
 const PUBLIC_FEATURE_SUMMARIES = {
@@ -4240,6 +4269,8 @@ async function handleAuthSubmit(event) {
     authState.token = token;
     syncAuthRouteCookie();
     if (refreshPrivateRouteAfterAuth("login")) return;
+    // STAGE_5O32_PROFILE_POST_LOGIN_REFRESH_V1
+    rerenderCurrentRouteAfterAuthReady();
     authState.token = token;
     syncAuthRouteCookie();
     if (refreshPrivateRouteAfterAuth("login")) return;
@@ -4248,6 +4279,7 @@ async function handleAuthSubmit(event) {
     try {
       const me = await api("/me", { method: "GET" });
       authState.user = me.user || me;
+      rerenderCurrentRouteAfterAuthReady();
     } catch {
       // Keep login successful even if account refresh fails.
     }
@@ -5693,8 +5725,10 @@ async function fastHandleAuthSubmit(event) {
     try {
       const me = await api("/me", { method: "GET" });
       authState.user = me?.user || result.user || null;
+      rerenderCurrentRouteAfterAuthReady();
     } catch {
       authState.user = result.user || null;
+      rerenderCurrentRouteAfterAuthReady();
     }
 
     if (typeof ahInvalidateCache === "function") {
@@ -5963,6 +5997,7 @@ async function wrapperStartupAuthRefresh() {
   try {
     const me = await api("/me", { method: "GET" });
     authState.user = me.user || me;
+      rerenderCurrentRouteAfterAuthReady();
 
     try {
       accountCredits = await api("/account/credits", { method: "GET" });
