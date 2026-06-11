@@ -15,7 +15,7 @@ function isGatewayHtmlErrorText(value) {
 function cleanCompanionErrorMessage(value) {
   const text = String(value || "");
   if (isGatewayHtmlErrorText(text)) {
-    return "The companion is still working or the gateway timed out before the browser received the final response. I will not show the raw Cloudflare error page. Refresh in a moment or try again.";
+    return "The platform gateway timed out before the browser received a final response. I will not show the raw Cloudflare error page. Refresh in a moment or try again.";
   }
   return text;
 }
@@ -72,7 +72,7 @@ function sanitizeVisibleErrorText(value) {
     lower.includes("error code 503") ||
     lower.includes("error code 504")
   ) {
-    return "The companion is still working or the gateway timed out before the browser received the final response. I will not show the raw Cloudflare error page. Refresh in a moment or try again.";
+    return "The platform gateway timed out before the browser received a final response. I will not show the raw Cloudflare error page. Refresh in a moment or try again.";
   }
 
   return text;
@@ -5354,6 +5354,23 @@ setTimeout(() => {
 // ============================================================
 
 // FAST_AUTH_PATCH_V1
+
+// STAGE_5M0A_AUTH_BACKGROUND_FAILURE_GUARD_V1
+// Auth success should not be reversed just because non-critical background
+// requests such as presence, public-status, credits, or study previews fail.
+function safeBackgroundAuthTask(label, fn) {
+  try {
+    const result = fn?.();
+    if (result && typeof result.catch === "function") {
+      result.catch((err) => console.warn(`[auth-background] ${label} failed`, err));
+    }
+    return result;
+  } catch (err) {
+    console.warn(`[auth-background] ${label} failed`, err);
+    return null;
+  }
+}
+
 // Makes login/logout feel instant.
 // Login: auth -> /me -> render now -> refresh page data in background.
 // Logout: clear local state now -> revoke backend session in background.

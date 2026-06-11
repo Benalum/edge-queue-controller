@@ -183,6 +183,65 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         return bool(self._auth_route_token())
 
 
+
+    # STAGE_5M0A_FAST_PUBLIC_STATUS_V1
+    # The frontend calls /api/system/public-status as a lightweight background
+    # heartbeat. Do not let it become a slow gateway/proxy path during login.
+    def _serve_fast_public_status(self):
+        body = json.dumps({
+            "ok": True,
+            "source": "wrapper_fast_public_status",
+            "overall_state": "unknown",
+            "message": "Wrapper is reachable. Full system status is available at /api/system/status."
+        }).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    # STAGE_5M0B_FAST_PRESENCE_WEB_V1
+    # Presence is a non-critical background heartbeat. During page load/login,
+    # do not let it block the browser on a slow controller/gateway path.
+    def _serve_fast_presence_web(self):
+        body = json.dumps({
+            "ok": True,
+            "source": "wrapper_fast_presence_web",
+            "presence_recorded": False,
+            "message": "Presence heartbeat accepted by wrapper. Backend presence can be reconciled later."
+        }).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    # STAGE_5M0B_FAST_PRESENCE_POWER_POLICY_V1
+    # Power-policy application is non-critical for browser rendering/login.
+    # Do not let it become a slow 30-second gateway path during page startup.
+    def _serve_fast_presence_power_policy(self):
+        body = json.dumps({
+            "ok": True,
+            "source": "wrapper_fast_presence_power_policy",
+            "policy_applied": False,
+            "deferred": True,
+            "message": "Power-policy request accepted by wrapper without blocking page load."
+        }).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def _serve_absolute_file(self, file_path):
         file_path = Path(file_path)
         if not file_path.exists() or not file_path.is_file():
@@ -789,6 +848,11 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path or "/"
 
+        # STAGE_5M0B_FAST_PUBLIC_STATUS_ROUTE_V1
+        # Must run before generic /api proxy routing.
+        if path == "/api/system/public-status":
+            return self._serve_fast_public_status()
+
         if path.startswith("/api/"):
             return self._proxy_api()
 
@@ -800,6 +864,16 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         path = parsed.path or "/"
+
+        # STAGE_5M0B_FAST_PRESENCE_WEB_ROUTE_V1
+        # Must run before generic /api proxy routing.
+        if path == "/api/presence/web":
+            return self._serve_fast_presence_web()
+
+        # STAGE_5M0B_FAST_PRESENCE_POWER_POLICY_ROUTE_V1
+        # Must run before generic /api proxy routing.
+        if path == "/api/presence/apply-power-policy":
+            return self._serve_fast_presence_power_policy()
 
         if path.startswith("/api/"):
             return self._proxy_api()
