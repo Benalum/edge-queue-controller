@@ -3610,6 +3610,7 @@ function renderPage() {
       path === "/study" ||
       path === "/chat" ||
       path === "/companion" ||
+      path === "/support" ||
       path === "/profile" ||
       path === "/calendar" ||
       path === "/credits"
@@ -5581,7 +5582,11 @@ async function fastRefreshAfterAuth(reason = "") {
     jobs.push(loadSystemStatus());
   }
 
-  if (path === "/support" && typeof cleanLoadSupportTickets === "function") {
+  if (
+    path === "/support" &&
+    typeof cleanLoadSupportTickets === "function" &&
+    hasActiveWrapperSession()
+  ) {
     jobs.push(cleanLoadSupportTickets());
   }
 
