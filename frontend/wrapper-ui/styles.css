@@ -1355,3 +1355,76 @@ button.card {
     height: 38px;
   }
 }
+
+
+/* ============================================================
+   STAGE_5O8_HEADER_ACTIVE_STATE_CSS_V1
+
+   Shared header/nav active-state normalization.
+   Keeps Study/Admin/System/Credits route styling consistent.
+   ============================================================ */
+
+header a[data-route],
+.topbar a[data-route],
+.main-nav a[data-route],
+.route-nav a[data-route],
+.nav a[data-route],
+.tabs a[data-route],
+.tabbar a[data-route],
+header a[href^="/"],
+.topbar a[href^="/"],
+.main-nav a[href^="/"],
+.route-nav a[href^="/"],
+.nav a[href^="/"],
+.tabs a[href^="/"],
+.tabbar a[href^="/"] {
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+header a[data-route].active,
+header a[data-route].is-active,
+header a[data-route].selected,
+header a[data-route][aria-current="page"],
+.topbar a[data-route].active,
+.topbar a[data-route].is-active,
+.topbar a[data-route].selected,
+.topbar a[data-route][aria-current="page"],
+.main-nav a[data-route].active,
+.main-nav a[data-route].is-active,
+.main-nav a[data-route].selected,
+.main-nav a[data-route][aria-current="page"],
+.route-nav a[data-route].active,
+.route-nav a[data-route].is-active,
+.route-nav a[data-route].selected,
+.route-nav a[data-route][aria-current="page"],
+.nav a[data-route].active,
+.nav a[data-route].is-active,
+.nav a[data-route].selected,
+.nav a[data-route][aria-current="page"],
+.tabs a[data-route].active,
+.tabs a[data-route].is-active,
+.tabs a[data-route].selected,
+.tabs a[data-route][aria-current="page"],
+.tabbar a[data-route].active,
+.tabbar a[data-route].is-active,
+.tabbar a[data-route].selected,
+.tabbar a[data-route][aria-current="page"] {
+  color: #d7ffe9 !important;
+  background: rgba(35, 197, 120, .20) !important;
+  border-color: rgba(35, 197, 120, .55) !important;
+  box-shadow: 0 0 0 1px rgba(35, 197, 120, .18), 0 8px 24px rgba(35, 197, 120, .10) !important;
+}
+
+/* Prevent stale route state from leaving Credits permanently green. */
+body:not([data-current-route="/credits"]) header a[href="/credits"]:not([aria-current="page"]),
+body:not([data-current-route="/credits"]) header a[data-route="/credits"]:not([aria-current="page"]),
+body:not([data-current-route="/credits"]) .topbar a[href="/credits"]:not([aria-current="page"]),
+body:not([data-current-route="/credits"]) .topbar a[data-route="/credits"]:not([aria-current="page"]),
+body:not([data-current-route="/credits"]) .main-nav a[href="/credits"]:not([aria-current="page"]),
+body:not([data-current-route="/credits"]) .main-nav a[data-route="/credits"]:not([aria-current="page"]),
+body:not([data-current-route="/credits"]) .route-nav a[href="/credits"]:not([aria-current="page"]),
+body:not([data-current-route="/credits"]) .route-nav a[data-route="/credits"]:not([aria-current="page"]) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+

@@ -6853,3 +6853,142 @@ async function handleResetPasswordRoute() {
     evaluateGuardedLiveSubmitBranch: stage5f69EvaluateGuardedLiveSubmitBranch
   });
 })(typeof window !== "undefined" ? window : globalThis);
+
+
+// ============================================================
+// STAGE_5O8_HEADER_ACTIVE_STATE_NORMALIZER_V1
+//
+// Keeps shared header/nav active state consistent across SPA routes.
+// Fixes:
+// - Study route using different active coloring.
+// - Admin not turning active when selected.
+// - Credits staying active when current route is not Credits.
+// ============================================================
+(function stage5o8HeaderActiveStateNormalizer() {
+  const APP_ROUTES = new Set([
+    "/",
+    "/chat",
+    "/study",
+    "/companion",
+    "/calendar",
+    "/profile",
+    "/admin",
+    "/system",
+    "/credits",
+    "/account/credits"
+  ]);
+
+  function normalizeRoute(path) {
+    let route = String(path || "/").split("?")[0].split("#")[0] || "/";
+    if (route.length > 1 && route.endsWith("/")) route = route.slice(0, -1);
+
+    if (route === "/study-wrapper-preview") return "/study";
+    if (route === "/account/credits") return "/credits";
+
+    return route;
+  }
+
+  function getCurrentRoute() {
+    return normalizeRoute(window.location.pathname || "/");
+  }
+
+  function getAnchorRoute(anchor) {
+    if (!anchor) return "";
+
+    const dataRoute = anchor.getAttribute("data-route");
+    if (dataRoute) return normalizeRoute(dataRoute);
+
+    const href = anchor.getAttribute("href") || "";
+    if (!href || href.startsWith("#")) return "";
+
+    try {
+      const url = new URL(href, window.location.origin);
+      if (url.origin !== window.location.origin) return "";
+      return normalizeRoute(url.pathname || "/");
+    } catch {
+      return "";
+    }
+  }
+
+  function shouldManageLink(anchor, route) {
+    if (!anchor || !route) return false;
+
+    if (!APP_ROUTES.has(route)) return false;
+
+    const scope = anchor.closest("header, .topbar, .main-nav, .route-nav, .nav, .tabs, .tabbar");
+    if (!scope) return false;
+
+    return true;
+  }
+
+  function isActiveRoute(linkRoute, currentRoute) {
+    const link = normalizeRoute(linkRoute);
+    const current = normalizeRoute(currentRoute);
+
+    if (link === "/") return current === "/";
+    if (link === "/credits") return current === "/credits" || current === "/account/credits";
+
+    return current === link || current.startsWith(link + "/");
+  }
+
+  function normalizeHeaderActiveState() {
+    const current = getCurrentRoute();
+    document.body.setAttribute("data-current-route", current);
+
+    const anchors = Array.from(document.querySelectorAll(
+      "header a, .topbar a, .main-nav a, .route-nav a, .nav a, .tabs a, .tabbar a, [data-route]"
+    ));
+
+    for (const anchor of anchors) {
+      const route = getAnchorRoute(anchor);
+      if (!shouldManageLink(anchor, route)) continue;
+
+      const active = isActiveRoute(route, current);
+
+      anchor.classList.toggle("active", active);
+      anchor.classList.toggle("is-active", active);
+      anchor.classList.toggle("selected", active);
+
+      if (active) {
+        anchor.setAttribute("aria-current", "page");
+      } else if (anchor.getAttribute("aria-current") === "page") {
+        anchor.removeAttribute("aria-current");
+      }
+    }
+  }
+
+  function scheduleNormalizeHeaderActiveState() {
+    window.requestAnimationFrame(normalizeHeaderActiveState);
+    window.setTimeout(normalizeHeaderActiveState, 50);
+    window.setTimeout(normalizeHeaderActiveState, 250);
+  }
+
+  const originalPushState = history.pushState;
+  history.pushState = function patchedPushState() {
+    const result = originalPushState.apply(this, arguments);
+    scheduleNormalizeHeaderActiveState();
+    return result;
+  };
+
+  const originalReplaceState = history.replaceState;
+  history.replaceState = function patchedReplaceState() {
+    const result = originalReplaceState.apply(this, arguments);
+    scheduleNormalizeHeaderActiveState();
+    return result;
+  };
+
+  window.addEventListener("popstate", scheduleNormalizeHeaderActiveState);
+  window.addEventListener("hashchange", scheduleNormalizeHeaderActiveState);
+  document.addEventListener("DOMContentLoaded", scheduleNormalizeHeaderActiveState);
+  document.addEventListener("click", function onPossibleRouteClick(event) {
+    const anchor = event.target && event.target.closest ? event.target.closest("a") : null;
+    if (anchor && getAnchorRoute(anchor)) {
+      scheduleNormalizeHeaderActiveState();
+    }
+  }, true);
+
+  window.stage5o8NormalizeHeaderActiveState = normalizeHeaderActiveState;
+  scheduleNormalizeHeaderActiveState();
+  window.setInterval(normalizeHeaderActiveState, 1500);
+})();
+
