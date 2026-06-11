@@ -150,7 +150,7 @@ const pages = {
       "Practice smarter with study tools, guided review, and an AI companion designed to help you focus on what matters most.",
     cards: [
       ["Study", "Create decks, review cards, track progress, and focus on cards that need more practice.", "/study"],
-      ["Chat", "Use AI Chat or switch into Companion mode for study help, explanations, and supportive conversation.", "/chat"],
+      ["Companion", "Use Companion for general conversation, study help, explanations, and supportive conversation.", "/companion"],
       ["Profile", "Manage preferences, permissions, account settings, and future companion personalization.", "/profile"],
       ["System", "View platform capacity, API health, and resource state.", "/system"],
     ],
@@ -184,28 +184,28 @@ const pages = {
 
 
   "/chat": {
-    eyebrow: "Unified chat",
-    title: "Chat",
+    eyebrow: "Compatibility route",
+    title: "Companion",
     subtitle:
-      "Chat is the single place for normal AI Chat and Companion mode. Use AI Chat for general local Ollama conversations, or switch to Companion mode for study-aware support.",
+      "Chat remains a compatibility alias while Companion becomes the main AI surface for conversation, study help, explanations, and supportive support.",
     boxes: [
-      ["AI Chat", "General local-first AI chat with an experimental queued mode."],
-      ["Companion mode", "Supportive companion conversation with study tools and safety boundaries."],
-      ["One entry point", "The Chat tab replaces the separate Companion tab while keeping /companion compatible."],
-      ["Safe migration", "Queued chat stays opt-in and Companion remains synchronous for now."],
+      ["Companion", "General local-first AI conversation through the existing queued worker path."],
+      ["Study-aware direction", "Future stages will add study session controls, deck/card tools, and answer checking."],
+      ["Compatibility", "/chat stays available for old links while /companion is the primary route."],
+      ["Safe migration", "No backend queue or controller behavior changes in this visible route stage."],
     ],
   },
 
   "/companion": {
-    eyebrow: "Feature summary",
+    eyebrow: "Main AI surface",
     title: "Companion",
     subtitle:
-      "Companion is the AI helper for conversation, studying, explanations, practice, and future personalized support.",
+      "Companion is the main AI surface for conversation, studying, explanations, practice, and future personalized support.",
     boxes: [
-      ["Study helper", "The companion can help users practice flashcards, explain concepts, and check understanding."],
-      ["Answer checking", "When connected to study data, it can compare user answers against card answers."],
+      ["General conversation", "Use Companion for normal local-first AI conversation."],
+      ["Study helper", "Future stages will let Companion start study sessions, select decks, read questions, and grade answers."],
       ["Context aware", "Future versions can use profile, calendar, study, and file context with permission."],
-      ["Helpful guidance", "The goal is a supportive helper that asks questions when unsure instead of guessing."],
+      ["Helpful boundaries", "Companion should stay supportive, ask when unsure, and use safety-aware boundaries."],
     ],
   },
 
@@ -3291,10 +3291,10 @@ function renderQueuedChatPage() {
 
   return `
     <section class="page-card">
-      <p class="eyebrow">Queued Chat</p>
-      <h1>Chat</h1>
+      <p class="eyebrow">Companion</p>
+      <h1>Companion</h1>
       <p class="subtitle">
-        Send a message through the laptop-owned queued Chat API. CT101 processes one Ollama job at a time.
+        Send a message through the existing laptop-owned queued AI path. CT101 processes one Ollama job at a time while the UI presents one main Companion surface.
       </p>
 
       ${signedIn ? `
@@ -3302,11 +3302,11 @@ function renderQueuedChatPage() {
           <div class="summary-box">
             <span>Status</span>
             <strong id="queuedChatStatus">Ready</strong>
-            <p>Uses /api/chat/queued and polls the returned job id.</p>
+            <p>Uses the existing queued worker path and polls the returned job id.</p>
           </div>
           <div class="summary-box">
             <span>Worker</span>
-            <strong>CT101 queue worker</strong>
+            <strong>Companion queue worker</strong>
             <p>Current model fallback: gemma4:e4b.</p>
           </div>
         </div>
@@ -3314,11 +3314,11 @@ function renderQueuedChatPage() {
         <form id="queuedChatForm" class="form-grid">
           <label>
             Message
-            <textarea id="queuedChatInput" rows="5" placeholder="Ask the local AI something..."></textarea>
+            <textarea id="queuedChatInput" rows="5" placeholder="Ask Companion something..."></textarea>
           </label>
 
           <div class="actions">
-            <button class="primary-btn" type="submit" id="queuedChatSendBtn">Send queued message</button>
+            <button class="primary-btn" type="submit" id="queuedChatSendBtn">Send message</button>
             <button class="ghost-btn" type="button" id="queuedChatClearBtn">Clear</button>
           </div>
         </form>
@@ -3330,8 +3330,8 @@ function renderQueuedChatPage() {
       ` : `
         <div class="summary-box">
           <span>Login required</span>
-          <strong>Please log in to use queued Chat.</strong>
-          <p>Queued Chat uses your active account session to create real-user queue jobs.</p>
+          <strong>Please log in to use Companion.</strong>
+          <p>Companion uses your active account session to create real-user queue jobs.</p>
         </div>
         <div class="actions">
           <button class="primary-btn" type="button" data-clean-login>Login / Register</button>
@@ -3497,7 +3497,7 @@ function renderPage() {
     return;
   }
 
-  if (path === "/chat") {
+  if (path === "/chat" || path === "/companion") {
     $("app").innerHTML = renderQueuedChatPage();
     bindQueuedChatPage();
     return;
