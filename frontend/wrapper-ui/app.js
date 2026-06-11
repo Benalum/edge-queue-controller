@@ -2589,7 +2589,15 @@ function setStudyWrapperPreviewReadOnly() {
       el.id === "deckDescriptionInput" ||
       el.closest?.("#deckForm");
 
-    if (isSafePreviewSelect || isCreateDeckControl) {
+    const isCreateCardControl =
+      el.id === "questionInput" ||
+      el.id === "answerInput" ||
+      el.id === "explanationInput" ||
+      el.id === "difficultyInput" ||
+      el.id === "tagsInput" ||
+      el.closest?.("#cardForm");
+
+    if (isSafePreviewSelect || isCreateDeckControl || isCreateCardControl) {
       el.disabled = false;
       el.removeAttribute("aria-disabled");
       el.title = "Preview-only deck switching. Editing and review actions are still disabled.";
@@ -2731,6 +2739,85 @@ async function createStudyWrapperPreviewDeck(event) {
     alert(`Could not create deck: ${error.message || error}`);
   }
 }
+
+
+async function createStudyWrapperPreviewCard(event) {
+  event.preventDefault();
+
+  const deckSelect = document.getElementById("deckSelect");
+  const statusText = document.getElementById("workerStatusText");
+
+  const deckId = String(deckSelect?.value || "").trim();
+  if (!deckId) {
+    alert("Select or create a deck first.");
+    return;
+  }
+
+  const payload = {
+    question: String(document.getElementById("questionInput")?.value || "").trim(),
+    answer: String(document.getElementById("answerInput")?.value || "").trim(),
+    explanation: String(document.getElementById("explanationInput")?.value || "").trim(),
+    difficulty: String(document.getElementById("difficultyInput")?.value || ""),
+    tags: String(document.getElementById("tagsInput")?.value || "")
+  };
+
+  if (!payload.question || !payload.answer) {
+    alert("Enter both a question and an answer.");
+    return;
+  }
+
+  try {
+    if (statusText) statusText.textContent = "Adding card...";
+
+    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/cards`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      throw new Error(`/api/study/decks/${deckId}/cards HTTP ${res.status}: ${text.slice(0, 160)}`);
+    }
+
+    ["questionInput", "answerInput", "explanationInput", "difficultyInput", "tagsInput"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+
+    await hydrateStudyWrapperPreview(deckId);
+
+    if (statusText) statusText.textContent = "Card added";
+  } catch (error) {
+    console.error("[study-wrapper-preview] add card failed", error);
+    if (statusText) statusText.textContent = "Could not add card";
+    alert(`Could not add card: ${error.message || error}`);
+  }
+}
+
+function bindStudyWrapperPreviewCreateCard() {
+  const form = document.getElementById("cardForm");
+  if (!form) return;
+
+  ["questionInput", "answerInput", "explanationInput", "difficultyInput", "tagsInput"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.disabled = false;
+    el.removeAttribute("aria-disabled");
+    el.title = "Add a card to the selected deck.";
+  });
+
+  const submitButton = form.querySelector("button[type='submit'], button:not([type])");
+  if (submitButton) {
+    submitButton.disabled = false;
+    submitButton.removeAttribute("aria-disabled");
+    submitButton.title = "Add card";
+  }
+
+  form.onsubmit = createStudyWrapperPreviewCard;
+}
+
 
 function bindStudyWrapperPreviewCreateDeck() {
   const form = document.getElementById("deckForm");
@@ -2885,6 +2972,7 @@ async function hydrateStudyWrapperPreview(preferredDeckId = null) {
     renderStudyWrapperPreviewDeckSummary(selectedDeck);
     bindStudyWrapperPreviewDeckSwitch(decks);
     bindStudyWrapperPreviewCreateDeck();
+    bindStudyWrapperPreviewCreateCard();
 
     const cardsList = document.getElementById("cardsList");
     if (cardsList && Array.isArray(progress.by_deck) && progress.by_deck[0]) {
