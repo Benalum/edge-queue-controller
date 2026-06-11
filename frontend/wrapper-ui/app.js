@@ -2591,6 +2591,107 @@ function studyPreviewEscape(value) {
     .replaceAll("'", "&#039;");
 }
 
+
+function studyPreviewNormalizeDifficulty(card) {
+  const explicit = String(
+    card?.difficulty ||
+    card?.difficulty_bucket ||
+    card?.bucket ||
+    card?.level ||
+    ""
+  ).toLowerCase();
+
+  if (["new", "hard", "medium", "easy"].includes(explicit)) {
+    return explicit;
+  }
+
+  const reviews = Number(card?.review_count ?? card?.total_reviews ?? card?.reviews ?? 0);
+  const wrongStreak = Number(card?.wrong_streak ?? card?.wrongStreak ?? 0);
+  const accuracy = typeof card?.accuracy === "number" ? card.accuracy : null;
+
+  if (reviews <= 0) return "new";
+  if (wrongStreak >= 2) return "hard";
+  if (accuracy !== null && accuracy <= 0.34) return "hard";
+  if (accuracy !== null && reviews >= 5 && accuracy >= 0.85) return "easy";
+  return "medium";
+}
+
+function studyPreviewPercent(value) {
+  return typeof value === "number" ? `${Math.round(value * 100)}%` : "—";
+}
+
+function studyPreviewCardArray(data) {
+  if (Array.isArray(data?.cards)) return data.cards;
+  if (Array.isArray(data?.card_stats)) return data.card_stats;
+  if (Array.isArray(data?.stats)) return data.stats;
+  if (Array.isArray(data)) return data;
+  return [];
+}
+
+async function hydrateStudyWrapperPreviewDeck(deckId) {
+  if (!deckId) return;
+
+  const cardsList = document.getElementById("cardsList");
+
+  try {
+    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/card-stats`, {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    const text = await res.text();
+    if (!res.ok) throw new Error(`/api/study/decks/${deckId}/card-stats HTTP ${res.status}: ${text.slice(0, 120)}`);
+
+    const data = JSON.parse(text);
+    const cards = studyPreviewCardArray(data);
+
+    const buckets = { new: 0, hard: 0, medium: 0, easy: 0 };
+
+    for (const card of cards) {
+      const difficulty = studyPreviewNormalizeDifficulty(card);
+      if (difficulty in buckets) buckets[difficulty] += 1;
+      else buckets.new += 1;
+    }
+
+    studyPreviewSetText("bucketNew", String(buckets.new));
+    studyPreviewSetText("bucketHard", String(buckets.hard));
+    studyPreviewSetText("bucketMedium", String(buckets.medium));
+    studyPreviewSetText("bucketEasy", String(buckets.easy));
+
+    if (cardsList) {
+      if (!cards.length) {
+        cardsList.innerHTML = `<p class="muted">No card stats found for this deck.</p>`;
+      } else {
+        cardsList.innerHTML = cards.map((card) => {
+          const difficulty = studyPreviewNormalizeDifficulty(card);
+          const reviews = card.review_count ?? card.total_reviews ?? card.reviews ?? 0;
+          const accuracy = studyPreviewPercent(card.accuracy);
+          const wrongStreak = card.wrong_streak ?? card.wrongStreak ?? 0;
+          const confidence = card.confidence ?? card.avg_confidence ?? "—";
+          const question = card.question ?? card.front ?? card.prompt ?? "Untitled card";
+
+          return `
+            <div class="card-row">
+              <strong>${studyPreviewEscape(question)}</strong>
+              <span class="card-meta">
+                ${studyPreviewEscape(difficulty)} · ${Number(reviews || 0)} reviews · ${accuracy} accuracy
+                · Wrong streak: ${studyPreviewEscape(wrongStreak)}
+                · Confidence: ${studyPreviewEscape(confidence)}
+              </span>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+  } catch (error) {
+    console.error("[study-wrapper-preview] card stats hydrate failed", error);
+    if (cardsList) {
+      cardsList.innerHTML = `<p class="muted">Could not load card stats.</p>`;
+    }
+  }
+}
+
+
 async function hydrateStudyWrapperPreview() {
   const statusText = document.getElementById("workerStatusText");
   const apiDot = document.getElementById("apiDot");
@@ -2660,6 +2761,10 @@ async function hydrateStudyWrapperPreview() {
           </div>
         `;
       }).join("");
+    }
+
+    if (decks[0]) {
+      hydrateStudyWrapperPreviewDeck(decks[0].id);
     }
 
     if (statusText) statusText.textContent = "Study data loaded";
