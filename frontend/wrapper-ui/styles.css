@@ -1525,3 +1525,42 @@ body:not([data-current-route="/credits"]) #creditsPill.credits-pill {
   border-color: rgba(255,255,255,.14) !important;
   box-shadow: none !important;
 }
+
+
+/* ============================================================
+   STAGE_5O17_STUDY_SHARED_PAGE_NORMALIZATION_V1
+   Study should visually match the shared wrapper pages.
+   This overrides old Study-preview-only visual drift without
+   introducing a separate Study page theme.
+   ============================================================ */
+
+body[data-current-route="/study"] .brand-mark,
+body[data-current-route="/study"] .helper-logo,
+body[data-current-route="/study"] .logo-only .brand-mark {
+  color: inherit;
+  filter: none;
+}
+
+body[data-current-route="/study"] .system-section,
+body[data-current-route="/study"] .summary-box,
+body[data-current-route="/study"] .summary-card,
+body[data-current-route="/study"] .feature-card {
+  font-family: inherit;
+}
+
+body[data-current-route="/study"] .summary-box,
+body[data-current-route="/study"] .summary-card,
+body[data-current-route="/study"] .feature-card,
+body[data-current-route="/study"] .clean-card,
+body[data-current-route="/study"] .study-card {
+  background: rgba(255,255,255,.075);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: none;
+}
+
+body[data-current-route="/study"] h1,
+body[data-current-route="/study"] h2,
+body[data-current-route="/study"] h3,
+body[data-current-route="/study"] .eyebrow {
+  color: inherit;
+}

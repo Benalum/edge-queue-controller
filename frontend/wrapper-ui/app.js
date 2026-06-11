@@ -3495,7 +3495,12 @@ function renderPage() {
   const isStudyWrapperRoute = path === "/study-wrapper-preview" || path === "/study";
 
   const studyPreviewStyle = document.getElementById("studyPreviewStyles");
-  if (studyPreviewStyle) studyPreviewStyle.disabled = !isStudyWrapperRoute;
+  if (studyPreviewStyle) {
+    // STAGE_5O17_STUDY_SHARED_WRAPPER_STYLE_V1
+    // Study now uses the shared wrapper stylesheet so its logo, header,
+    // nav, panels, and spacing match Companion/Profile/Admin/System.
+    studyPreviewStyle.disabled = true;
+  }
 
   if (isStudyWrapperRoute) {
     loadStudyWrapperPreview();
