@@ -1,0 +1,145 @@
+<!-- Study dashboard-only partial for wrapper preview. Runtime /study does not use this file yet. -->
+<section class="panel" data-page="study" data-preview-page="study" id="dashboardPanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Study</p>
+            <h2>Progress Overview</h2>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat">
+            <span>Decks</span>
+            <strong id="deckCount">0</strong>
+          </div>
+          <div class="stat">
+            <span>Cards</span>
+            <strong id="cardCount">0</strong>
+          </div>
+          <div class="stat">
+            <span>Reviews</span>
+            <strong id="reviewCount">0</strong>
+          </div>
+          <div class="stat">
+            <span>Accuracy</span>
+            <strong id="accuracyValue">—</strong>
+          </div>
+        </div>
+      </section>
+
+<div class="grid-2" data-page="study" data-preview-page="study" id="studyGrid">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Decks</p>
+              <h2>Create / Select Deck</h2>
+            </div>
+          </div>
+
+          <form id="deckForm" class="form-grid">
+            <label>
+              Deck title
+              <input id="deckTitleInput" type="text" placeholder="Math 316 Review" required />
+            </label>
+            <label>
+              Description
+              <textarea id="deckDescriptionInput" placeholder="What is this deck for?"></textarea>
+            </label>
+            <button class="primary" type="submit">Create Deck</button>
+          </form>
+
+          <div class="divider"></div>
+
+          <label>
+            Selected deck
+            <select id="deckSelect">
+              <option value="">No deck selected</option>
+            </select>
+          </label>
+
+          <div id="deckSummary" class="mini-summary"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Cards</p>
+              <h2>Add Card</h2>
+            </div>
+          </div>
+
+          <form id="cardForm" class="form-grid">
+            <label>
+              Question
+              <textarea id="questionInput" placeholder="What is the Laplace transform of 1?" required></textarea>
+            </label>
+
+            <label>
+              Answer
+              <textarea id="answerInput" placeholder="1/s" required></textarea>
+            </label>
+
+            <label>
+              Explanation
+              <textarea id="explanationInput" placeholder="Optional explanation"></textarea>
+            </label>
+
+            <label>
+              Difficulty
+              <select id="difficultyInput">
+                <option value="">Auto / New</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </label>
+
+            <label>
+              Tags
+              <input id="tagsInput" type="text" placeholder="laplace, transforms" />
+            </label>
+
+            <button class="primary" type="submit">Add Card</button>
+          </form>
+        </section>
+      </div>
+
+<section class="panel" data-page="study" data-preview-page="study" id="reviewPanel">
+        <div class="panel-header spread">
+          <div>
+            <p class="eyebrow">Adaptive Review</p>
+            <h2>Review Queue</h2>
+          </div>
+
+          <div class="mode-row">
+            <select id="reviewMode">
+              <option value="balanced">Balanced</option>
+              <option value="hard">Focus hard</option>
+              <option value="medium">Focus medium</option>
+              <option value="easy">Focus easy</option>
+            </select>
+            <button class="secondary" id="loadQueueBtn">Load Queue</button>
+          </div>
+        </div>
+
+        <div class="bucket-grid">
+          <div class="bucket new">New <strong id="bucketNew">0</strong></div>
+          <div class="bucket hard">Hard <strong id="bucketHard">0</strong></div>
+          <div class="bucket medium">Medium <strong id="bucketMedium">0</strong></div>
+          <div class="bucket easy">Easy <strong id="bucketEasy">0</strong></div>
+        </div>
+
+        <div id="reviewCard" class="review-card empty">
+          Select a deck and load a review queue.
+        </div>
+      </section>
+
+<section class="panel" data-page="study" data-preview-page="study" id="cardsPanel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Selected Deck</p>
+            <h2>Card Stats</h2>
+          </div>
+        </div>
+        <div id="cardsList" class="cards-list"></div>
+      </section>

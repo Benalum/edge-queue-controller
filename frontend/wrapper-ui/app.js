@@ -2584,7 +2584,7 @@ async function loadStudyWrapperPreview() {
   if (!app) return;
 
   try {
-    const res = await fetch("/study/study-content.partial.html", {
+    const res = await fetch("/study/study-dashboard.partial.html", {
       credentials: "include",
       cache: "no-store"
     });
