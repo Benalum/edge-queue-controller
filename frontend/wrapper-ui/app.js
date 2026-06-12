@@ -8296,6 +8296,32 @@ async function handleResetPasswordRoute() {
     setField(card, "message", message || "");
   }
 
+  // STAGE_5P11G_STUDY_ANSWER_REVEAL_HELPER_BEGIN
+  function updateAnswerPanel(card, session) {
+    if (!card) return;
+
+    const panel = card.querySelector("[data-stage5p11g-answer-panel]");
+    const answerEl = card.querySelector("[data-stage5p11g-answer]");
+    const explanationWrap = card.querySelector("[data-stage5p11g-explanation-wrap]");
+    const explanationEl = card.querySelector("[data-stage5p11g-explanation]");
+
+    if (!panel) return;
+
+    const status = String((session && session.status) || "").toLowerCase();
+    const currentCard = (session && session.current_card) || {};
+    const answer = String(currentCard.answer || "").trim();
+    const explanation = String(currentCard.explanation || "").trim();
+    const shouldReveal = ["reviewing_answer", "waiting_for_mark"].includes(status) && !!answer;
+
+    panel.hidden = !shouldReveal;
+
+    if (answerEl) answerEl.textContent = shouldReveal ? answer : "—";
+
+    if (explanationWrap) explanationWrap.hidden = !shouldReveal || !explanation;
+    if (explanationEl) explanationEl.textContent = shouldReveal && explanation ? explanation : "—";
+  }
+  // STAGE_5P11G_STUDY_ANSWER_REVEAL_HELPER_END
+
   function renderCard(root) {
     if (!root || root.querySelector("#" + cardId)) return root && root.querySelector("#" + cardId);
 
@@ -8320,6 +8346,12 @@ async function handleResetPasswordRoute() {
       '  <div><span>Last action</span><strong data-stage5p8a-field="lastAction">—</strong></div>',
       '  <div><span>Updated</span><strong data-stage5p8a-field="updated">—</strong></div>',
       '</div>',
+      // STAGE_5P11G_STUDY_ANSWER_REVEAL_ACTIONS_BEGIN
+      '<div class="stage5p11g-answer-panel" data-stage5p11g-answer-panel hidden>',
+      '  <div><span>Answer</span><strong data-stage5p11g-answer>—</strong></div>',
+      '  <div data-stage5p11g-explanation-wrap hidden><span>Explanation</span><p data-stage5p11g-explanation>—</p></div>',
+      '</div>',
+      // STAGE_5P11G_STUDY_ANSWER_REVEAL_ACTIONS_END
       '<p class="stage5p8a-study-session-note">Use the session actions below, or use natural Study phrases in Companion.</p>'
     ].join("");
 
@@ -8369,6 +8401,7 @@ async function handleResetPasswordRoute() {
         setField(card, "queue", "—");
         setField(card, "lastAction", "—");
         setField(card, "updated", "—");
+        updateAnswerPanel(card, {});
         return;
       }
 
@@ -8393,8 +8426,10 @@ async function handleResetPasswordRoute() {
       setField(card, "queue", queueLabel);
       setField(card, "lastAction", session.last_action || session.last_intent || "—");
       setField(card, "updated", session.updated_at ? new Date(session.updated_at).toLocaleString() : "—");
+      updateAnswerPanel(card, session);
     } catch (err) {
       setState(card, "offline", "Could not reach Study session status endpoint.");
+      updateAnswerPanel(card, {});
     } finally {
       if (refresh) refresh.disabled = false;
     }
@@ -8574,17 +8609,29 @@ async function handleResetPasswordRoute() {
     const busy = card.dataset.stage5p8cBusy === "true";
 
     const start = card.querySelector("[data-stage5p8c-command='start']");
+    const readAnswer = card.querySelector("[data-stage5p8c-command='read-answer']");
+    const correct = card.querySelector("[data-stage5p8c-command='correct']");
+    const wrong = card.querySelector("[data-stage5p8c-command='wrong']");
+    const skip = card.querySelector("[data-stage5p8c-command='skip']");
     const pause = card.querySelector("[data-stage5p8c-command='pause']");
     const resume = card.querySelector("[data-stage5p8c-command='resume']");
     const stop = card.querySelector("[data-stage5p8c-command='stop']");
 
     const activeStates = ["active", "reviewing_answer", "waiting_for_mark"];
+    const answerStates = ["reviewing_answer", "waiting_for_mark"];
     const canPause = activeStates.includes(state);
     const canResume = state === "paused";
     const canStop = activeStates.includes(state) || state === "paused";
     const canStart = ["none", "stopped", "completed", "signed out", "error", "offline", "unknown"].includes(state);
+    const canReadAnswer = state === "active";
+    const canMark = answerStates.includes(state);
+    const canSkip = activeStates.includes(state);
 
     if (start) start.disabled = busy || !canStart;
+    if (readAnswer) readAnswer.disabled = busy || !canReadAnswer;
+    if (correct) correct.disabled = busy || !canMark;
+    if (wrong) wrong.disabled = busy || !canMark;
+    if (skip) skip.disabled = busy || !canSkip;
     if (pause) pause.disabled = busy || !canPause;
     if (resume) resume.disabled = busy || !canResume;
     if (stop) stop.disabled = busy || !canStop;
@@ -8641,6 +8688,8 @@ async function handleResetPasswordRoute() {
       if (queueField) queueField.textContent = queueCount ? String(queuePosition + 1) + " / " + String(queueCount) : "—";
       if (actionField) actionField.textContent = session.last_action || session.last_intent || "—";
       if (updatedField) updatedField.textContent = session.updated_at ? new Date(session.updated_at).toLocaleString() : "—";
+
+      if (typeof updateAnswerPanel === "function") updateAnswerPanel(card, session);
 
       setMessage(card, session.status === "none" ? "No active durable Study session." : "Durable Study session is available.");
       updateButtonState(card);
@@ -8744,10 +8793,14 @@ async function handleResetPasswordRoute() {
       // STAGE_5P11E_REMOVE_DUPLICATE_STUDY_REFRESH_BEGIN
       // The status card already has a top Refresh button, so the lower command row stays focused on session actions.
       // STAGE_5P11E_REMOVE_DUPLICATE_STUDY_REFRESH_END
+      '<button type="button" data-stage5p8c-command="read-answer">Read answer</button>',
+      '<button type="button" data-stage5p8c-command="correct">Correct</button>',
+      '<button type="button" data-stage5p8c-command="wrong">Wrong</button>',
+      '<button type="button" data-stage5p8c-command="skip">Skip</button>',
       '<button type="button" data-stage5p8c-command="pause">Pause</button>',
       '<button type="button" data-stage5p8c-command="resume">Resume</button>',
       '<button type="button" data-stage5p8c-command="stop">Stop</button>',
-      '<p data-stage5p11b-start-note>Choose a deck below, then press Start.</p>'
+      '<p data-stage5p11b-start-note>Choose a deck below, then press Start. Use Read answer, Correct, Wrong, or Skip while reviewing.</p>'
     ].join("");
 
     const note = card.querySelector(".stage5p8a-study-session-note");
@@ -8758,11 +8811,19 @@ async function handleResetPasswordRoute() {
     }
 
     const start = controls.querySelector("[data-stage5p8c-command='start']");
+    const readAnswer = controls.querySelector("[data-stage5p8c-command='read-answer']");
+    const correct = controls.querySelector("[data-stage5p8c-command='correct']");
+    const wrong = controls.querySelector("[data-stage5p8c-command='wrong']");
+    const skip = controls.querySelector("[data-stage5p8c-command='skip']");
     const pause = controls.querySelector("[data-stage5p8c-command='pause']");
     const resume = controls.querySelector("[data-stage5p8c-command='resume']");
     const stop = controls.querySelector("[data-stage5p8c-command='stop']");
 
     if (start) start.addEventListener("click", function () { startSession(card); });
+    if (readAnswer) readAnswer.addEventListener("click", function () { sendCommand(card, "read answer", "Read the answer"); });
+    if (correct) correct.addEventListener("click", function () { sendCommand(card, "correct", "Correct"); });
+    if (wrong) wrong.addEventListener("click", function () { sendCommand(card, "wrong", "Wrong"); });
+    if (skip) skip.addEventListener("click", function () { sendCommand(card, "skip", "Skip"); });
     if (pause) pause.addEventListener("click", function () { sendCommand(card, "pause", "Study Session Pause"); });
     if (resume) resume.addEventListener("click", function () { sendCommand(card, "resume", "Study Session Resume"); });
     if (stop) stop.addEventListener("click", function () { sendCommand(card, "stop", "Study Session Stop"); });
