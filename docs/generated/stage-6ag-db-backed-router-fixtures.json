@@ -1,0 +1,1045 @@
+{
+  "description": "DB-backed dry-run router fixture outputs.",
+  "fixtures": {
+    "blocked_admin_source": {
+      "expected_db_intent": null,
+      "expected_legacy_intent": "unknown.unsupported",
+      "input": {
+        "context": {
+          "active_page": "admin",
+          "profile_language": "en",
+          "role": "admin"
+        },
+        "input": {
+          "source": "admin",
+          "surface": "admin",
+          "text": "next"
+        },
+        "router_options": {
+          "allow_dispatch": false,
+          "allow_model_call": false,
+          "dry_run": true
+        }
+      },
+      "result": {
+        "actions": [
+          {
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": null,
+            "route": null,
+            "type": "would_not_dispatch"
+          }
+        ],
+        "confirmation_policy": {
+          "confidence_band": "none",
+          "confirmation_status": "not_required_for_dry_run",
+          "dispatch_disabled_reason": "dry_run_endpoint_never_dispatches",
+          "eligible_for_dispatch": false,
+          "requires_confirmation": false,
+          "route": null,
+          "would_require_confirmation_if_dispatch_enabled": false
+        },
+        "decision_trace": [
+          {
+            "active_page": "admin",
+            "companion_context": false,
+            "normalized_phrase": "next",
+            "normalized_text": "next",
+            "source": "admin",
+            "source_surface_policy": {
+              "active_page": "admin",
+              "allowed": false,
+              "blocked_surface_groups": [
+                "account-bootstrap",
+                "admin",
+                "auth",
+                "billing",
+                "internal",
+                "password",
+                "power",
+                "queue",
+                "security",
+                "system",
+                "worker"
+              ],
+              "policy": "stage6m_user_surface_allowlist",
+              "reason": "blocked_restricted_surface",
+              "restricted_match": {
+                "field": "source",
+                "value": "admin"
+              },
+              "source": "admin",
+              "surface": "admin"
+            },
+            "step": "normalize_input",
+            "study_context": false,
+            "surface": "admin",
+            "text_present": true
+          },
+          {
+            "context_domain": "global",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "error_code": "source_surface_policy_blocked",
+            "intent_key": null,
+            "language_code": "en",
+            "lookup_enabled": true,
+            "lookup_source": "global_phrase_bank",
+            "matched": false,
+            "step": "sqlite_phrase_lookup"
+          },
+          {
+            "confidence": 0.0,
+            "confidence_band": "none",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": null,
+            "intent": "unknown.unsupported",
+            "model_tier": "fast_intent",
+            "route": null,
+            "rule_id": "policy.source_surface.blocked",
+            "step": "rule_result"
+          }
+        ],
+        "dispatch_performed": false,
+        "dry_run": true,
+        "errors": [],
+        "intent": {
+          "confidence": 0.0,
+          "confidence_band": "none",
+          "name": "unknown.unsupported",
+          "reason": "Input source, surface, or active page is blocked by router source/surface policy.",
+          "slots": {}
+        },
+        "language": {
+          "confidence": 0.8,
+          "detected": "en",
+          "profile_default": "en",
+          "response_language": "en"
+        },
+        "model_routing": {
+          "model": "none",
+          "model_call_required": false,
+          "tier": "fast_intent"
+        },
+        "ok": true,
+        "router_lookup": {
+          "dispatch_performed": false,
+          "model_call_required": false,
+          "sqlite_phrase_lookup": {
+            "context_domain": "global",
+            "dispatch_performed": false,
+            "error_code": "source_surface_policy_blocked",
+            "input_text": "next",
+            "intent": null,
+            "intent_key": null,
+            "language_code": "en",
+            "matched": false,
+            "model_call_required": false,
+            "normalized_phrase": "next",
+            "ok": false,
+            "route": null,
+            "source": "global_phrase_bank"
+          },
+          "stage": "6AF"
+        },
+        "safety": {
+          "allowed_in_dry_run": true,
+          "allowed_to_dispatch": false,
+          "requires_confirmation": false,
+          "safety_class": "read_only"
+        },
+        "source_surface_policy": {
+          "active_page": "admin",
+          "allowed": false,
+          "blocked_surface_groups": [
+            "account-bootstrap",
+            "admin",
+            "auth",
+            "billing",
+            "internal",
+            "password",
+            "power",
+            "queue",
+            "security",
+            "system",
+            "worker"
+          ],
+          "policy": "stage6m_user_surface_allowlist",
+          "reason": "blocked_restricted_surface",
+          "restricted_match": {
+            "field": "source",
+            "value": "admin"
+          },
+          "source": "admin",
+          "surface": "admin"
+        },
+        "target": {
+          "existing_route": null,
+          "handler": null,
+          "method": null,
+          "route_class": "none"
+        }
+      }
+    },
+    "study_next_en": {
+      "expected_db_intent": "study.card.next",
+      "expected_legacy_intent": "study.next",
+      "input": {
+        "context": {
+          "active_page": "study",
+          "profile_language": "en",
+          "role": "user"
+        },
+        "input": {
+          "source": "study",
+          "surface": "study_session",
+          "text": "next"
+        },
+        "router_options": {
+          "allow_dispatch": false,
+          "allow_model_call": false,
+          "dry_run": true
+        }
+      },
+      "result": {
+        "actions": [
+          {
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": "study.session.command",
+            "route": "/api/study/session/command",
+            "type": "would_dispatch"
+          }
+        ],
+        "confirmation_policy": {
+          "confidence_band": "high",
+          "confirmation_status": "not_required_for_dry_run",
+          "dispatch_disabled_reason": "dry_run_endpoint_never_dispatches",
+          "eligible_for_dispatch": false,
+          "requires_confirmation": false,
+          "route": "/api/study/session/command",
+          "would_require_confirmation_if_dispatch_enabled": false
+        },
+        "decision_trace": [
+          {
+            "active_page": "study",
+            "companion_context": false,
+            "normalized_phrase": "next",
+            "normalized_text": "next",
+            "source": "study",
+            "source_surface_policy": {
+              "active_page": "study",
+              "allowed": true,
+              "blocked_surface_groups": [
+                "account-bootstrap",
+                "admin",
+                "auth",
+                "billing",
+                "internal",
+                "password",
+                "power",
+                "queue",
+                "security",
+                "system",
+                "worker"
+              ],
+              "policy": "stage6m_user_surface_allowlist",
+              "reason": "allowed_user_facing_surface",
+              "restricted_match": null,
+              "source": "study",
+              "surface": "study_session"
+            },
+            "step": "normalize_input",
+            "study_context": true,
+            "surface": "study_session",
+            "text_present": true
+          },
+          {
+            "context_domain": "study",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "error_code": null,
+            "intent_key": "study.card.next",
+            "language_code": "en",
+            "lookup_enabled": true,
+            "lookup_source": "global_phrase_bank",
+            "matched": true,
+            "step": "sqlite_phrase_lookup"
+          },
+          {
+            "confidence": 0.98,
+            "confidence_band": "high",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": "study.session.command",
+            "intent": "study.next",
+            "model_tier": "fast_intent",
+            "route": "/api/study/session/command",
+            "rule_id": "study.next.alias",
+            "step": "rule_result"
+          }
+        ],
+        "dispatch_performed": false,
+        "dry_run": true,
+        "errors": [],
+        "intent": {
+          "confidence": 0.98,
+          "confidence_band": "high",
+          "name": "study.next",
+          "reason": "Short study navigation command.",
+          "slots": {}
+        },
+        "language": {
+          "confidence": 0.8,
+          "detected": "en",
+          "profile_default": "en",
+          "response_language": "en"
+        },
+        "model_routing": {
+          "model": "none",
+          "model_call_required": false,
+          "tier": "fast_intent"
+        },
+        "ok": true,
+        "router_lookup": {
+          "dispatch_performed": false,
+          "model_call_required": false,
+          "sqlite_phrase_lookup": {
+            "context_domain": "study",
+            "db_path": "edge_queue.sqlite3",
+            "dispatch_performed": false,
+            "error_code": null,
+            "input_text": "next",
+            "intent": {
+              "action_name": "next",
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "default_model_tier": "none",
+              "default_route_type": "service_action",
+              "description": "Move to the next study card.",
+              "domain": "study",
+              "enabled": 1,
+              "id": 3,
+              "intent_key": "study.card.next",
+              "object_name": "card",
+              "requires_auth": 1,
+              "requires_confirmation_default": 0,
+              "reversible": 1,
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "intent_key": "study.card.next",
+            "language_code": "en",
+            "matched": true,
+            "model_call_required": false,
+            "normalized_phrase": "next",
+            "ok": true,
+            "phrase": {
+              "confidence_boost": 0.0,
+              "context_domain": "study",
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "enabled": 1,
+              "id": 1,
+              "intent_key": "study.card.next",
+              "language_code": "en",
+              "normalized_phrase": "next",
+              "phrase": "next",
+              "priority": 10,
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "route": {
+              "agent_name": "",
+              "confirmation_required": 0,
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "enabled": 1,
+              "id": 3,
+              "intent_key": "study.card.next",
+              "min_confidence": 0.86,
+              "route_type": "service_action",
+              "target_handler": "next_card",
+              "target_service": "study",
+              "tool_name": "",
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "source": "global_phrase_bank"
+          },
+          "stage": "6AF"
+        },
+        "safety": {
+          "allowed_in_dry_run": true,
+          "allowed_to_dispatch": false,
+          "requires_confirmation": false,
+          "safety_class": "user_content_write"
+        },
+        "source_surface_policy": {
+          "active_page": "study",
+          "allowed": true,
+          "blocked_surface_groups": [
+            "account-bootstrap",
+            "admin",
+            "auth",
+            "billing",
+            "internal",
+            "password",
+            "power",
+            "queue",
+            "security",
+            "system",
+            "worker"
+          ],
+          "policy": "stage6m_user_surface_allowlist",
+          "reason": "allowed_user_facing_surface",
+          "restricted_match": null,
+          "source": "study",
+          "surface": "study_session"
+        },
+        "target": {
+          "existing_route": "/api/study/session/command",
+          "handler": "study.session.command",
+          "method": "POST",
+          "route_class": "router_candidate"
+        }
+      }
+    },
+    "study_next_es": {
+      "expected_db_intent": "study.card.next",
+      "expected_legacy_intent": "study.next",
+      "input": {
+        "context": {
+          "active_page": "study",
+          "profile_language": "es",
+          "role": "user"
+        },
+        "input": {
+          "source": "study",
+          "surface": "study_session",
+          "text": "siguiente"
+        },
+        "router_options": {
+          "allow_dispatch": false,
+          "allow_model_call": false,
+          "dry_run": true
+        }
+      },
+      "result": {
+        "actions": [
+          {
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": "study.session.command",
+            "route": "/api/study/session/command",
+            "type": "would_dispatch"
+          }
+        ],
+        "confirmation_policy": {
+          "confidence_band": "high",
+          "confirmation_status": "not_required_for_dry_run",
+          "dispatch_disabled_reason": "dry_run_endpoint_never_dispatches",
+          "eligible_for_dispatch": false,
+          "requires_confirmation": false,
+          "route": "/api/study/session/command",
+          "would_require_confirmation_if_dispatch_enabled": false
+        },
+        "decision_trace": [
+          {
+            "active_page": "study",
+            "companion_context": false,
+            "normalized_phrase": "siguiente",
+            "normalized_text": "siguiente",
+            "source": "study",
+            "source_surface_policy": {
+              "active_page": "study",
+              "allowed": true,
+              "blocked_surface_groups": [
+                "account-bootstrap",
+                "admin",
+                "auth",
+                "billing",
+                "internal",
+                "password",
+                "power",
+                "queue",
+                "security",
+                "system",
+                "worker"
+              ],
+              "policy": "stage6m_user_surface_allowlist",
+              "reason": "allowed_user_facing_surface",
+              "restricted_match": null,
+              "source": "study",
+              "surface": "study_session"
+            },
+            "step": "normalize_input",
+            "study_context": true,
+            "surface": "study_session",
+            "text_present": true
+          },
+          {
+            "context_domain": "study",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "error_code": null,
+            "intent_key": "study.card.next",
+            "language_code": "es",
+            "lookup_enabled": true,
+            "lookup_source": "global_phrase_bank",
+            "matched": true,
+            "step": "sqlite_phrase_lookup"
+          },
+          {
+            "confidence": 0.98,
+            "confidence_band": "high",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": "study.session.command",
+            "intent": "study.next",
+            "model_tier": "fast_intent",
+            "route": "/api/study/session/command",
+            "rule_id": "study.next.alias",
+            "step": "rule_result"
+          }
+        ],
+        "dispatch_performed": false,
+        "dry_run": true,
+        "errors": [],
+        "intent": {
+          "confidence": 0.98,
+          "confidence_band": "high",
+          "name": "study.next",
+          "reason": "Short study navigation command.",
+          "slots": {}
+        },
+        "language": {
+          "confidence": 0.8,
+          "detected": "es",
+          "profile_default": "en",
+          "response_language": "es"
+        },
+        "model_routing": {
+          "model": "none",
+          "model_call_required": false,
+          "tier": "fast_intent"
+        },
+        "ok": true,
+        "router_lookup": {
+          "dispatch_performed": false,
+          "model_call_required": false,
+          "sqlite_phrase_lookup": {
+            "context_domain": "study",
+            "db_path": "edge_queue.sqlite3",
+            "dispatch_performed": false,
+            "error_code": null,
+            "input_text": "siguiente",
+            "intent": {
+              "action_name": "next",
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "default_model_tier": "none",
+              "default_route_type": "service_action",
+              "description": "Move to the next study card.",
+              "domain": "study",
+              "enabled": 1,
+              "id": 3,
+              "intent_key": "study.card.next",
+              "object_name": "card",
+              "requires_auth": 1,
+              "requires_confirmation_default": 0,
+              "reversible": 1,
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "intent_key": "study.card.next",
+            "language_code": "es",
+            "matched": true,
+            "model_call_required": false,
+            "normalized_phrase": "siguiente",
+            "ok": true,
+            "phrase": {
+              "confidence_boost": 0.0,
+              "context_domain": "study",
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "enabled": 1,
+              "id": 25,
+              "intent_key": "study.card.next",
+              "language_code": "es",
+              "normalized_phrase": "siguiente",
+              "phrase": "siguiente",
+              "priority": 10,
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "route": {
+              "agent_name": "",
+              "confirmation_required": 0,
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "enabled": 1,
+              "id": 3,
+              "intent_key": "study.card.next",
+              "min_confidence": 0.86,
+              "route_type": "service_action",
+              "target_handler": "next_card",
+              "target_service": "study",
+              "tool_name": "",
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "source": "global_phrase_bank"
+          },
+          "stage": "6AF"
+        },
+        "safety": {
+          "allowed_in_dry_run": true,
+          "allowed_to_dispatch": false,
+          "requires_confirmation": false,
+          "safety_class": "user_content_write"
+        },
+        "source_surface_policy": {
+          "active_page": "study",
+          "allowed": true,
+          "blocked_surface_groups": [
+            "account-bootstrap",
+            "admin",
+            "auth",
+            "billing",
+            "internal",
+            "password",
+            "power",
+            "queue",
+            "security",
+            "system",
+            "worker"
+          ],
+          "policy": "stage6m_user_surface_allowlist",
+          "reason": "allowed_user_facing_surface",
+          "restricted_match": null,
+          "source": "study",
+          "surface": "study_session"
+        },
+        "target": {
+          "existing_route": "/api/study/session/command",
+          "handler": "study.session.command",
+          "method": "POST",
+          "route_class": "router_candidate"
+        }
+      }
+    },
+    "study_show_answer_en": {
+      "expected_db_intent": "study.card.answer",
+      "expected_legacy_intent": "study.answer",
+      "input": {
+        "context": {
+          "active_page": "study",
+          "profile_language": "en",
+          "role": "user"
+        },
+        "input": {
+          "source": "study",
+          "surface": "study_session",
+          "text": "show answer"
+        },
+        "router_options": {
+          "allow_dispatch": false,
+          "allow_model_call": false,
+          "dry_run": true
+        }
+      },
+      "result": {
+        "actions": [
+          {
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": "study.session.command",
+            "route": "/api/study/session/command",
+            "type": "would_dispatch"
+          }
+        ],
+        "confirmation_policy": {
+          "confidence_band": "medium",
+          "confirmation_status": "not_required_for_dry_run",
+          "dispatch_disabled_reason": "dry_run_endpoint_never_dispatches",
+          "eligible_for_dispatch": false,
+          "requires_confirmation": false,
+          "route": "/api/study/session/command",
+          "would_require_confirmation_if_dispatch_enabled": false
+        },
+        "decision_trace": [
+          {
+            "active_page": "study",
+            "companion_context": false,
+            "normalized_phrase": "show answer",
+            "normalized_text": "show answer",
+            "source": "study",
+            "source_surface_policy": {
+              "active_page": "study",
+              "allowed": true,
+              "blocked_surface_groups": [
+                "account-bootstrap",
+                "admin",
+                "auth",
+                "billing",
+                "internal",
+                "password",
+                "power",
+                "queue",
+                "security",
+                "system",
+                "worker"
+              ],
+              "policy": "stage6m_user_surface_allowlist",
+              "reason": "allowed_user_facing_surface",
+              "restricted_match": null,
+              "source": "study",
+              "surface": "study_session"
+            },
+            "step": "normalize_input",
+            "study_context": true,
+            "surface": "study_session",
+            "text_present": true
+          },
+          {
+            "context_domain": "study",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "error_code": null,
+            "intent_key": "study.card.answer",
+            "language_code": "en",
+            "lookup_enabled": true,
+            "lookup_source": "global_phrase_bank",
+            "matched": true,
+            "step": "sqlite_phrase_lookup"
+          },
+          {
+            "confidence": 0.7,
+            "confidence_band": "medium",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": "study.session.command",
+            "intent": "study.answer",
+            "model_tier": "fast_intent",
+            "route": "/api/study/session/command",
+            "rule_id": "study.answer.text",
+            "step": "rule_result"
+          }
+        ],
+        "dispatch_performed": false,
+        "dry_run": true,
+        "errors": [],
+        "intent": {
+          "confidence": 0.7,
+          "confidence_band": "medium",
+          "name": "study.answer",
+          "reason": "Study text input.",
+          "slots": {}
+        },
+        "language": {
+          "confidence": 0.8,
+          "detected": "en",
+          "profile_default": "en",
+          "response_language": "en"
+        },
+        "model_routing": {
+          "model": "none",
+          "model_call_required": false,
+          "tier": "fast_intent"
+        },
+        "ok": true,
+        "router_lookup": {
+          "dispatch_performed": false,
+          "model_call_required": false,
+          "sqlite_phrase_lookup": {
+            "context_domain": "study",
+            "db_path": "edge_queue.sqlite3",
+            "dispatch_performed": false,
+            "error_code": null,
+            "input_text": "show answer",
+            "intent": {
+              "action_name": "answer",
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "default_model_tier": "none",
+              "default_route_type": "service_action",
+              "description": "Reveal the current study card answer.",
+              "domain": "study",
+              "enabled": 1,
+              "id": 5,
+              "intent_key": "study.card.answer",
+              "object_name": "card",
+              "requires_auth": 1,
+              "requires_confirmation_default": 0,
+              "reversible": 1,
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "intent_key": "study.card.answer",
+            "language_code": "en",
+            "matched": true,
+            "model_call_required": false,
+            "normalized_phrase": "show answer",
+            "ok": true,
+            "phrase": {
+              "confidence_boost": 0.0,
+              "context_domain": "study",
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "enabled": 1,
+              "id": 12,
+              "intent_key": "study.card.answer",
+              "language_code": "en",
+              "normalized_phrase": "show answer",
+              "phrase": "show answer",
+              "priority": 10,
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "route": {
+              "agent_name": "",
+              "confirmation_required": 0,
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "enabled": 1,
+              "id": 5,
+              "intent_key": "study.card.answer",
+              "min_confidence": 0.86,
+              "route_type": "service_action",
+              "target_handler": "reveal_answer",
+              "target_service": "study",
+              "tool_name": "",
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "source": "global_phrase_bank"
+          },
+          "stage": "6AF"
+        },
+        "safety": {
+          "allowed_in_dry_run": true,
+          "allowed_to_dispatch": false,
+          "requires_confirmation": false,
+          "safety_class": "user_content_write"
+        },
+        "source_surface_policy": {
+          "active_page": "study",
+          "allowed": true,
+          "blocked_surface_groups": [
+            "account-bootstrap",
+            "admin",
+            "auth",
+            "billing",
+            "internal",
+            "password",
+            "power",
+            "queue",
+            "security",
+            "system",
+            "worker"
+          ],
+          "policy": "stage6m_user_surface_allowlist",
+          "reason": "allowed_user_facing_surface",
+          "restricted_match": null,
+          "source": "study",
+          "surface": "study_session"
+        },
+        "target": {
+          "existing_route": "/api/study/session/command",
+          "handler": "study.session.command",
+          "method": "POST",
+          "route_class": "router_candidate"
+        }
+      }
+    },
+    "study_skip_en": {
+      "expected_db_intent": "study.card.skip",
+      "expected_legacy_intent": "study.skip",
+      "input": {
+        "context": {
+          "active_page": "study",
+          "profile_language": "en",
+          "role": "user"
+        },
+        "input": {
+          "source": "study",
+          "surface": "study_session",
+          "text": "skip"
+        },
+        "router_options": {
+          "allow_dispatch": false,
+          "allow_model_call": false,
+          "dry_run": true
+        }
+      },
+      "result": {
+        "actions": [
+          {
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": "study.session.command",
+            "route": "/api/study/session/command",
+            "type": "would_dispatch"
+          }
+        ],
+        "confirmation_policy": {
+          "confidence_band": "high",
+          "confirmation_status": "not_required_for_dry_run",
+          "dispatch_disabled_reason": "dry_run_endpoint_never_dispatches",
+          "eligible_for_dispatch": false,
+          "requires_confirmation": false,
+          "route": "/api/study/session/command",
+          "would_require_confirmation_if_dispatch_enabled": false
+        },
+        "decision_trace": [
+          {
+            "active_page": "study",
+            "companion_context": false,
+            "normalized_phrase": "skip",
+            "normalized_text": "skip",
+            "source": "study",
+            "source_surface_policy": {
+              "active_page": "study",
+              "allowed": true,
+              "blocked_surface_groups": [
+                "account-bootstrap",
+                "admin",
+                "auth",
+                "billing",
+                "internal",
+                "password",
+                "power",
+                "queue",
+                "security",
+                "system",
+                "worker"
+              ],
+              "policy": "stage6m_user_surface_allowlist",
+              "reason": "allowed_user_facing_surface",
+              "restricted_match": null,
+              "source": "study",
+              "surface": "study_session"
+            },
+            "step": "normalize_input",
+            "study_context": true,
+            "surface": "study_session",
+            "text_present": true
+          },
+          {
+            "context_domain": "study",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "error_code": null,
+            "intent_key": "study.card.skip",
+            "language_code": "en",
+            "lookup_enabled": true,
+            "lookup_source": "global_phrase_bank",
+            "matched": true,
+            "step": "sqlite_phrase_lookup"
+          },
+          {
+            "confidence": 0.96,
+            "confidence_band": "high",
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+            "handler": "study.session.command",
+            "intent": "study.skip",
+            "model_tier": "fast_intent",
+            "route": "/api/study/session/command",
+            "rule_id": "study.skip.alias",
+            "step": "rule_result"
+          }
+        ],
+        "dispatch_performed": false,
+        "dry_run": true,
+        "errors": [],
+        "intent": {
+          "confidence": 0.96,
+          "confidence_band": "high",
+          "name": "study.skip",
+          "reason": "Short study skip command.",
+          "slots": {}
+        },
+        "language": {
+          "confidence": 0.8,
+          "detected": "en",
+          "profile_default": "en",
+          "response_language": "en"
+        },
+        "model_routing": {
+          "model": "none",
+          "model_call_required": false,
+          "tier": "fast_intent"
+        },
+        "ok": true,
+        "router_lookup": {
+          "dispatch_performed": false,
+          "model_call_required": false,
+          "sqlite_phrase_lookup": {
+            "context_domain": "study",
+            "db_path": "edge_queue.sqlite3",
+            "dispatch_performed": false,
+            "error_code": null,
+            "input_text": "skip",
+            "intent": {
+              "action_name": "skip",
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "default_model_tier": "none",
+              "default_route_type": "service_action",
+              "description": "Skip the current study card.",
+              "domain": "study",
+              "enabled": 1,
+              "id": 4,
+              "intent_key": "study.card.skip",
+              "object_name": "card",
+              "requires_auth": 1,
+              "requires_confirmation_default": 0,
+              "reversible": 1,
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "intent_key": "study.card.skip",
+            "language_code": "en",
+            "matched": true,
+            "model_call_required": false,
+            "normalized_phrase": "skip",
+            "ok": true,
+            "phrase": {
+              "confidence_boost": 0.0,
+              "context_domain": "study",
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "enabled": 1,
+              "id": 6,
+              "intent_key": "study.card.skip",
+              "language_code": "en",
+              "normalized_phrase": "skip",
+              "phrase": "skip",
+              "priority": 10,
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "route": {
+              "agent_name": "",
+              "confirmation_required": 0,
+              "created_at": "2026-06-12T20:29:37.624107+00:00",
+              "enabled": 1,
+              "id": 4,
+              "intent_key": "study.card.skip",
+              "min_confidence": 0.86,
+              "route_type": "service_action",
+              "target_handler": "skip_card",
+              "target_service": "study",
+              "tool_name": "",
+              "updated_at": "2026-06-12T20:29:37.667806+00:00"
+            },
+            "source": "global_phrase_bank"
+          },
+          "stage": "6AF"
+        },
+        "safety": {
+          "allowed_in_dry_run": true,
+          "allowed_to_dispatch": false,
+          "requires_confirmation": false,
+          "safety_class": "user_content_write"
+        },
+        "source_surface_policy": {
+          "active_page": "study",
+          "allowed": true,
+          "blocked_surface_groups": [
+            "account-bootstrap",
+            "admin",
+            "auth",
+            "billing",
+            "internal",
+            "password",
+            "power",
+            "queue",
+            "security",
+            "system",
+            "worker"
+          ],
+          "policy": "stage6m_user_surface_allowlist",
+          "reason": "allowed_user_facing_surface",
+          "restricted_match": null,
+          "source": "study",
+          "surface": "study_session"
+        },
+        "target": {
+          "existing_route": "/api/study/session/command",
+          "handler": "study.session.command",
+          "method": "POST",
+          "route_class": "router_candidate"
+        }
+      }
+    }
+  },
+  "stage": "6AG"
+}
