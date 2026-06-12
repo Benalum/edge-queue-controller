@@ -1,0 +1,65 @@
+{
+  "stage": "6X",
+  "name": "companion_route_behavior_baseline_before_router_wiring",
+  "runtime_behavior_change": false,
+  "purpose": "Capture a pre-wiring baseline for existing Companion and Chat routes before any Universal Intent Router adapter is connected.",
+  "companion_routes": [
+    {
+      "route": "/api/companion/chat",
+      "method": "POST",
+      "classification": "router_candidate",
+      "baseline_expectation": "route remains owned by existing Companion handler before router wiring"
+    },
+    {
+      "route": "/api/chat/queued",
+      "method": "POST",
+      "classification": "router_candidate",
+      "baseline_expectation": "route remains owned by existing queued chat handler before router wiring"
+    }
+  ],
+  "live_probe_policy": {
+    "probe_type": "unauthenticated_non_mutating_empty_json",
+    "record_http_code": true,
+    "must_not_return": [
+      404,
+      500,
+      502,
+      503,
+      504
+    ],
+    "acceptable_baseline_classes": [
+      "auth_required",
+      "validation_required",
+      "accepted_existing_behavior"
+    ]
+  },
+  "router_state_required": {
+    "dry_run_endpoint_exists": true,
+    "dry_run_endpoint_disabled_by_default": true,
+    "expected_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false
+  },
+  "shadow_adapter_state_required": {
+    "helper_exists": true,
+    "helper_wired_into_runtime": false,
+    "helper_allowed_file": "edge_intent_router.py",
+    "helper_name": "_stage6v_companion_adapter_shadow"
+  },
+  "must_not_change": [
+    "edge_controller.py Companion route behavior",
+    "edge_controller.py queued chat behavior",
+    "frontend Companion behavior",
+    "frontend Chat behavior",
+    "backend behavior",
+    "public_gateway.py behavior",
+    "systemd environment",
+    "power automation behavior",
+    "auth behavior"
+  ],
+  "future_comparison_target": {
+    "before_router_wiring": "Stage 6X",
+    "after_shadow_wiring": "future stage",
+    "required_result": "no user-visible Companion or Chat behavior regression"
+  }
+}
