@@ -9910,6 +9910,113 @@ def _system_laptop_specs():
     }
 
 
+
+def _system_systemd_unit_facts(unit_name):
+    active_result = _system_run(["systemctl", "is-active", unit_name], timeout=2)
+    enabled_result = _system_run(["systemctl", "is-enabled", unit_name], timeout=2)
+
+    return {
+        "unit": unit_name,
+        "active": (active_result.get("stdout") or "").strip() or "unknown",
+        "enabled": (enabled_result.get("stdout") or "").strip() or "unknown",
+    }
+
+
+def _system_frontend_wrapper_status(checked_at):
+    facts = _system_systemd_unit_facts("edge-wrapper-ui.service")
+    active = facts.get("active") or "unknown"
+    enabled = facts.get("enabled") or "unknown"
+
+    if active == "active":
+        state = "online"
+    elif active in {"activating", "reloading"}:
+        state = "booting"
+    elif active in {"failed", "inactive"}:
+        state = "offline"
+    else:
+        state = "unknown"
+
+    return {
+        "id": "frontend-wrapper",
+        "name": "Frontend Wrapper",
+        "state": state,
+        "checked_at": checked_at,
+        "detail": f"edge-wrapper-ui.service active: {active}, enabled: {enabled}",
+        "service_active": active == "active",
+        "service_enabled": enabled,
+    }
+
+
+def _system_queue_status_from_worker(checked_at, worker_service):
+    queue = worker_service.get("queue") if isinstance(worker_service, dict) else {}
+    worker_state = worker_service.get("state") if isinstance(worker_service, dict) else "unknown"
+
+    if worker_state == "online":
+        state = "online"
+    elif worker_state in {"paused", "degraded", "booting"}:
+        state = "degraded"
+    elif worker_state == "offline":
+        state = "offline"
+    else:
+        state = "unknown"
+
+    return {
+        "id": "queue",
+        "name": "Queue",
+        "state": state,
+        "checked_at": checked_at,
+        "detail": (
+            f"queued {queue.get('queued', 0)}, "
+            f"running {queue.get('running', 0)}, "
+            f"complete {queue.get('complete', 0)}, "
+            f"failed {queue.get('failed', 0)}"
+        ),
+        "queue": queue,
+    }
+
+
+def _system_power_automation_status(checked_at):
+    power_auto = _system_systemd_unit_facts("edge-queue-power-auto-tick.timer")
+    remediation = _system_systemd_unit_facts("edge-queue-remediation-tick.timer")
+    legacy = _system_systemd_unit_facts("edge-queue-scheduler-tick.timer")
+
+    power_auto_active = power_auto.get("active") == "active"
+    remediation_active = remediation.get("active") == "active"
+    legacy_active = legacy.get("active") == "active"
+    legacy_enabled = legacy.get("enabled") == "enabled"
+
+    if power_auto_active and remediation_active and legacy_active:
+        state = "online"
+        detail_prefix = "All power/scheduler timers are active."
+    elif power_auto_active and remediation_active and not legacy_active and not legacy_enabled:
+        state = "degraded"
+        detail_prefix = "Modern power/remediation timers are active; legacy /tick scheduler is intentionally disabled until controlled restart."
+    elif power_auto_active or remediation_active:
+        state = "degraded"
+        detail_prefix = "Some power automation timers are active."
+    else:
+        state = "offline"
+        detail_prefix = "Power automation timers are not active."
+
+    return {
+        "id": "power-automation",
+        "name": "Power Automation",
+        "state": state,
+        "checked_at": checked_at,
+        "detail": (
+            f"{detail_prefix} "
+            f"power-auto: {power_auto.get('active')}/{power_auto.get('enabled')}, "
+            f"remediation: {remediation.get('active')}/{remediation.get('enabled')}, "
+            f"legacy-scheduler: {legacy.get('active')}/{legacy.get('enabled')}"
+        ),
+        "timers": {
+            "edge-queue-power-auto-tick.timer": power_auto,
+            "edge-queue-remediation-tick.timer": remediation,
+            "edge-queue-scheduler-tick.timer": legacy,
+        },
+    }
+
+
 def _system_status_normalized_block(nodes, services):
     node_by_id = {
         node.get("id"): node
@@ -10383,6 +10490,12 @@ def system_status():
         ct101_state=ct101["state"],
     )
     services.append(ct101_worker_service)
+
+    # Stage 7X-6: provide public-safe service records for normalized platform
+    # cards so the System UI does not fall back to unknown placeholders.
+    services.append(_system_frontend_wrapper_status(checked_at))
+    services.append(_system_queue_status_from_worker(checked_at, ct101_worker_service))
+    services.append(_system_power_automation_status(checked_at))
 
     # These services depend on pveso. If pveso is offline, skip public-domain checks
     # so DNS/proxy failures do not make the entire system look broken.
