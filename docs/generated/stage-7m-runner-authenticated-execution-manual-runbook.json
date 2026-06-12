@@ -1,0 +1,81 @@
+{
+  "stage": "7M",
+  "name": "runner_authenticated_execution_manual_runbook",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_guardrails",
+  "purpose": "Document the exact safe manual procedure for running real local authenticated Study and Companion shadow comparisons without committing secrets or output artifacts.",
+  "runbook_scope": {
+    "creates_runner": false,
+    "runs_authenticated_comparison": false,
+    "documents_manual_steps_only": true,
+    "runtime_wired": false,
+    "http_endpoint_exposed": false,
+    "frontend_wired": false,
+    "backend_wired": false,
+    "gateway_wired": false,
+    "systemd_wired": false
+  },
+  "required_tools": [
+    "ops/compare/run-authenticated-shadow-comparison.py",
+    "ops/validate/validate-authenticated-shadow-comparison-artifact.py"
+  ],
+  "safe_output_locations": [
+    "ops/compare/output/",
+    "docs/generated/authenticated-shadow-comparison-results/"
+  ],
+  "safe_output_patterns": [
+    "*.local-auth-shadow.json",
+    "*.auth-shadow-comparison.json",
+    "*.authenticated-shadow-comparison.json"
+  ],
+  "manual_steps": [
+    "confirm working tree status before starting",
+    "authenticate locally outside the repository",
+    "set non-secret base URL",
+    "read authentication value into a shell variable without echoing it",
+    "export exactly one runtime-only auth environment variable",
+    "run one Study comparison into an ignored output path",
+    "run one Companion comparison into an ignored output path",
+    "validate artifacts with the Stage 7E validator",
+    "confirm output artifacts are ignored by git",
+    "unset authentication environment variables",
+    "confirm no secrets appear in git status or tracked files"
+  ],
+  "required_commands_to_document": [
+    "git status --short",
+    "read -rsp",
+    "export EDGE_AUTH_SHADOW_COMPARE_BASE_URL",
+    "export EDGE_AUTH_SHADOW_COMPARE_COOKIE",
+    "export EDGE_AUTH_SHADOW_COMPARE_BEARER",
+    "ops/compare/run-authenticated-shadow-comparison.py",
+    "YES_EXISTING_ROUTE_MAY_CHANGE_STATE",
+    "ops/validate/validate-authenticated-shadow-comparison-artifact.py",
+    "git check-ignore",
+    "unset EDGE_AUTH_SHADOW_COMPARE_COOKIE EDGE_AUTH_SHADOW_COMPARE_BEARER"
+  ],
+  "forbidden_runbook_content": [
+    "real cookie values",
+    "real bearer tokens",
+    "real passwords",
+    "real private keys",
+    "raw authenticated response bodies",
+    "raw personal chat content",
+    "raw calendar data",
+    "raw profile data"
+  ],
+  "required_safety_checks": {
+    "runbook_contains_no_secret_like_values": true,
+    "authenticated_execution_not_run_by_smoke": true,
+    "output_paths_are_ignored": true,
+    "runner_remains_manual_ops_only": true,
+    "runner_not_wired_into_runtime": true,
+    "router_endpoint_disabled_by_default": true
+  },
+  "required_runtime_state": {
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false,
+    "runtime_wiring_changed": false
+  }
+}
