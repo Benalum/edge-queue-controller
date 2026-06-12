@@ -4494,6 +4494,12 @@ function bindQueuedChatPage() {
 // the session. Avoid trapping logged-in users on public summaries.
 // ============================================================
 
+function normalizeWrapperAuthRoute(path) {
+  const raw = String(path || "/").split("?")[0].split("#")[0] || "/";
+  const cleaned = raw.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
+  return cleaned === "" ? "/" : cleaned;
+}
+
 function isWrapperAuthReady() {
   try {
     return Boolean(authState && authState.token && authState.user);
@@ -4505,7 +4511,7 @@ function isWrapperAuthReady() {
 function rerenderCurrentRouteAfterAuthReady() {
   try {
     if (!isWrapperAuthReady()) return;
-    const path = cleanRoute(window.location.pathname || "/");
+    const path = normalizeWrapperAuthRoute(window.location.pathname || "/");
     if (
       path === "/study" ||
       path === "/chat" ||
@@ -4584,7 +4590,7 @@ const PUBLIC_FEATURE_SUMMARIES = {
 function renderPublicFeatureGate(route) {
   // STAGE_5O33_PUBLIC_GATE_BROWSER_ROUTE_FIX_V1
   try {
-    const browserRoute = cleanRoute(window.location.pathname || route || "/");
+    const browserRoute = normalizeWrapperAuthRoute(window.location.pathname || route || "/");
     if (PUBLIC_FEATURE_SUMMARIES[browserRoute]) {
       route = browserRoute;
     }
