@@ -1,0 +1,84 @@
+{
+  "stage": "7N",
+  "name": "authenticated_shadow_comparison_readiness_checkpoint",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_guardrails",
+  "purpose": "Summarize and verify readiness for future real local authenticated shadow comparisons after Stage 7A through Stage 7M.",
+  "completed_stage_chain": [
+    "7A authenticated Study shadow comparison plan",
+    "7B authenticated Companion shadow comparison plan",
+    "7C authenticated comparison artifact schema",
+    "7D authenticated test secret-handling guardrail",
+    "7E authenticated comparison artifact validator",
+    "7F validator no-wire guard",
+    "7G dry-run example artifacts",
+    "7H authenticated runner plan",
+    "7I runner no-create guard",
+    "7J manual local runner implementation",
+    "7K runner runtime isolation guard",
+    "7L runner artifact output no-commit guard",
+    "7M authenticated execution manual runbook"
+  ],
+  "readiness_status": {
+    "artifact_schema_ready": true,
+    "secret_handling_guardrail_ready": true,
+    "artifact_validator_ready": true,
+    "dry_run_examples_ready": true,
+    "manual_runner_ready": true,
+    "runner_runtime_isolated": true,
+    "runner_outputs_ignored": true,
+    "manual_runbook_ready": true,
+    "real_authenticated_comparison_executed": false
+  },
+  "manual_runner": {
+    "path": "ops/compare/run-authenticated-shadow-comparison.py",
+    "manual_ops_tool_only": true,
+    "offline_by_default": true,
+    "authenticated_execution_requires_explicit_flag": true,
+    "authenticated_execution_requires_confirmation": true,
+    "fails_closed_without_auth": true,
+    "auth_values_may_be_printed": false,
+    "auth_values_may_be_stored": false,
+    "raw_authenticated_response_may_be_stored": false
+  },
+  "safe_output_policy": {
+    "ignored_output_locations": [
+      "ops/compare/output/",
+      "docs/generated/authenticated-shadow-comparison-results/"
+    ],
+    "ignored_file_patterns": [
+      "*.local-auth-shadow.json",
+      "*.auth-shadow-comparison.json",
+      "*.authenticated-shadow-comparison.json"
+    ],
+    "tracked_examples_allowed": [
+      "docs/generated/stage-7g-study-authenticated-shadow-comparison-example-artifact.json",
+      "docs/generated/stage-7g-companion-authenticated-shadow-comparison-example-artifact.json"
+    ]
+  },
+  "not_ready_for_runtime_wiring_until": [
+    "real local authenticated Study comparison artifact is generated and reviewed",
+    "real local authenticated Companion comparison artifact is generated and reviewed",
+    "no user-visible regression is confirmed",
+    "dispatch policy is separately designed",
+    "rollback plan is separately documented",
+    "runtime wiring smoke plan is separately documented"
+  ],
+  "required_runtime_state": {
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false,
+    "runtime_wiring_changed": false
+  },
+  "safety_invariants": [
+    "no real authenticated comparison has been executed by checkpoint smoke",
+    "runner remains manual ops-only",
+    "runner remains absent from runtime/frontend/backend/gateway/systemd references",
+    "runner output artifacts remain ignored",
+    "auth values are not printed or stored",
+    "raw authenticated responses are not stored",
+    "router dry-run endpoint remains disabled by default",
+    "Study, Companion, Chat, Calendar, Profile, admin, power, worker, queue, and system behavior remain unchanged"
+  ]
+}
