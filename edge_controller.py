@@ -7494,6 +7494,90 @@ def _study_read_answer_for_current_session(user_id: int):
     }
 # STAGE_5P6A_STUDY_READ_ANSWER_END
 
+
+# STAGE_5P6B_STUDY_MARK_CARD_BEGIN
+def _study_session_queue_items(row):
+    try:
+        items = json.loads(row["queue_json"] or "[]")
+        if isinstance(items, list):
+            return [int(item) for item in items]
+    except Exception:
+        pass
+    return []
+
+
+def _study_mark_current_card_for_session(user_id: int, was_correct: bool):
+    row = _study_require_current_session_for_user(user_id)
+    status = row["status"]
+
+    if status == "paused":
+        raise HTTPException(status_code=400, detail="Cannot mark card while study session is paused")
+
+    if status not in ("active", "reviewing_answer", "waiting_for_mark"):
+        raise HTTPException(status_code=400, detail=f"Cannot mark card with session status {status}")
+
+    card = _study_get_card_for_session(row, user_id)
+    queue_items = _study_session_queue_items(row)
+    position = int(row["queue_position"] or 0)
+    next_position = position + 1
+    next_card_id = queue_items[next_position] if next_position < len(queue_items) else None
+    next_status = "active" if next_card_id else "completed"
+
+    now = datetime.now(timezone.utc).isoformat()
+    action = "mark_correct" if was_correct else "mark_incorrect"
+    intent = "study_mark_correct" if was_correct else "study_mark_incorrect"
+
+    with db() as conn:
+        conn.execute(
+            "INSERT INTO study_reviews ("
+            "user_id, deck_id, card_id, was_correct, confidence, response_time_ms, reviewed_at, notes"
+            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                int(user_id),
+                int(row["deck_id"]),
+                int(card["id"]),
+                1 if was_correct else 0,
+                None,
+                None,
+                now,
+                action,
+            ),
+        )
+
+        conn.execute(
+            "UPDATE study_sessions "
+            "SET status = ?, current_card_id = ?, queue_position = ?, ended_at = ?, "
+            "last_action = ?, last_intent = ?, updated_at = ? "
+            "WHERE id = ?",
+            (
+                next_status,
+                int(next_card_id) if next_card_id else None,
+                int(next_position),
+                now if next_status == "completed" else None,
+                action,
+                intent,
+                now,
+                int(row["id"]),
+            ),
+        )
+        conn.commit()
+
+        updated = conn.execute(
+            "SELECT * FROM study_sessions WHERE id = ?",
+            (int(row["id"]),),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "intent": intent,
+        "command": action,
+        "was_correct": bool(was_correct),
+        "completed": next_status == "completed",
+        "reviewed_card": _study_card_answer_payload(card),
+        "session": _study_session_row_to_public(updated),
+    }
+# STAGE_5P6B_STUDY_MARK_CARD_END
+
 # STAGE_5P5A_STUDY_SESSION_COMMAND_LIFECYCLE_BEGIN
 async def _study_execute_lifecycle_command(request: Request, parsed: dict, payload: dict):
     intent = parsed.get("intent")
@@ -7528,6 +7612,14 @@ async def _study_execute_lifecycle_command(request: Request, parsed: dict, paylo
     if intent == "study_read_answer" or command == "read_answer":
         user_id = _study_current_user_id(request)
         return _study_read_answer_for_current_session(user_id)
+
+    if intent == "study_mark_correct" or command == "mark_correct":
+        user_id = _study_current_user_id(request)
+        return _study_mark_current_card_for_session(user_id, True)
+
+    if intent == "study_mark_incorrect" or command == "mark_incorrect":
+        user_id = _study_current_user_id(request)
+        return _study_mark_current_card_for_session(user_id, False)
 
     return None
 
