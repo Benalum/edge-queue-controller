@@ -3352,6 +3352,20 @@ function renderQueuedChatPage() {
               <span>Queue</span>
               <strong id="queuedChatStatus">Ready</strong>
             </div>
+            <!-- STAGE_5P10F_COMPANION_QUEUE_POSITION_UI_BEGIN -->
+            <div class="stage5p8h-status-row stage5p10f-queue-row">
+              <span>Queue size</span>
+              <strong id="queuedChatQueueSize">—</strong>
+            </div>
+            <div class="stage5p8h-status-row stage5p10f-queue-row">
+              <span>Your position</span>
+              <strong id="queuedChatQueuePosition">—</strong>
+            </div>
+            <div class="stage5p8h-status-row stage5p10f-queue-row">
+              <span>Jobs ahead</span>
+              <strong id="queuedChatJobsAhead">—</strong>
+            </div>
+            <!-- STAGE_5P10F_COMPANION_QUEUE_POSITION_UI_END -->
             <div class="stage5p8h-status-row">
               <span>Worker</span>
               <strong>Companion queue worker</strong>
@@ -3408,6 +3422,108 @@ function queuedChatAuthHeaders() {
   return headers;
 }
 // STAGE_5P10D_COMPANION_QUEUE_AUTH_HEADERS_END
+
+
+
+// STAGE_5P10F_COMPANION_QUEUE_POSITION_LOGIC_BEGIN
+let stage5p10fQueuePollTimer = null;
+let stage5p10fLastJobId = "";
+
+function stage5p10fSetText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value || "—";
+}
+
+function stage5p10fUpdateQueueDisplay(data) {
+  const queue = data && data.queue ? data.queue : {};
+  const job = data && data.job ? data.job : null;
+
+  const waiting = Number(queue.waiting_count || 0);
+  const running = Number(queue.running_count || 0);
+  const total = Number(queue.total_active || 0);
+
+  if (total > 0) {
+    stage5p10fSetText("queuedChatQueueSize", `${total} active (${waiting} waiting, ${running} running)`);
+  } else {
+    stage5p10fSetText("queuedChatQueueSize", "0 active");
+  }
+
+  if (job && job.status && job.status !== "not_found") {
+    const status = String(job.status || "").toLowerCase();
+
+    if (job.position !== null && job.position !== undefined) {
+      stage5p10fSetText("queuedChatQueuePosition", String(job.position));
+    } else if (["running", "claimed", "processing", "in_progress"].includes(status)) {
+      stage5p10fSetText("queuedChatQueuePosition", "running");
+    } else if (["complete", "completed"].includes(status)) {
+      stage5p10fSetText("queuedChatQueuePosition", "complete");
+    } else {
+      stage5p10fSetText("queuedChatQueuePosition", status || "—");
+    }
+
+    if (job.ahead_count !== null && job.ahead_count !== undefined) {
+      stage5p10fSetText("queuedChatJobsAhead", String(job.ahead_count));
+    } else {
+      stage5p10fSetText("queuedChatJobsAhead", "—");
+    }
+  } else {
+    stage5p10fSetText("queuedChatQueuePosition", "—");
+    stage5p10fSetText("queuedChatJobsAhead", "—");
+  }
+}
+
+async function stage5p10fFetchQueueStatus(jobId) {
+  const cleanJobId = String(jobId || stage5p10fLastJobId || "").trim();
+  const url = cleanJobId
+    ? `/api/chat/queue/status?job_id=${encodeURIComponent(cleanJobId)}`
+    : "/api/chat/queue/status";
+
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      headers: queuedChatAuthHeaders()
+    });
+
+    const data = await res.json().catch(function () { return {}; });
+    if (!res.ok || data.ok === false) return null;
+
+    stage5p10fUpdateQueueDisplay(data);
+    return data;
+  } catch (err) {
+    return null;
+  }
+}
+
+function stage5p10fStopQueueStatusPolling() {
+  if (stage5p10fQueuePollTimer) {
+    window.clearInterval(stage5p10fQueuePollTimer);
+    stage5p10fQueuePollTimer = null;
+  }
+}
+
+function stage5p10fStartQueueStatusPolling(jobId) {
+  stage5p10fLastJobId = String(jobId || "").trim();
+  if (!stage5p10fLastJobId) return;
+
+  stage5p10fStopQueueStatusPolling();
+  stage5p10fFetchQueueStatus(stage5p10fLastJobId);
+
+  stage5p10fQueuePollTimer = window.setInterval(async function () {
+    const data = await stage5p10fFetchQueueStatus(stage5p10fLastJobId);
+    const status = String(data && data.job && data.job.status || "").toLowerCase();
+
+    if (["complete", "completed", "failed", "error", "cancelled", "not_found"].includes(status)) {
+      stage5p10fStopQueueStatusPolling();
+    }
+  }, 3000);
+}
+
+window.stage5p10fStartQueueStatusPolling = stage5p10fStartQueueStatusPolling;
+window.stage5p10fFetchQueueStatus = stage5p10fFetchQueueStatus;
+window.stage5p10fStopQueueStatusPolling = stage5p10fStopQueueStatusPolling;
+// STAGE_5P10F_COMPANION_QUEUE_POSITION_LOGIC_END
 
 async function queuedChatPollJob(jobId) {
   for (let i = 0; i < 80; i++) {
@@ -3507,6 +3623,12 @@ async function queuedChatSubmit(event) {
     });
     queuedChatRenderMessages();
 
+    // STAGE_5P10F_COMPANION_QUEUE_POSITION_SUBMIT_HOOK_BEGIN
+    if (typeof stage5p10fStartQueueStatusPolling === "function") {
+      stage5p10fStartQueueStatusPolling(jobId);
+    }
+    // STAGE_5P10F_COMPANION_QUEUE_POSITION_SUBMIT_HOOK_END
+
     const final = await queuedChatPollJob(jobId);
 
     queuedChatUiState.messages.push({
@@ -3515,6 +3637,9 @@ async function queuedChatSubmit(event) {
       detail: final.detail
     });
     queuedChatSetStatus("Complete");
+    if (typeof stage5p10fFetchQueueStatus === "function") {
+      stage5p10fFetchQueueStatus(jobId);
+    }
     queuedChatRenderMessages();
   } catch (err) {
     queuedChatUiState.messages.push({

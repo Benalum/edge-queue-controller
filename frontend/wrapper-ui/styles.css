@@ -2608,3 +2608,10 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   }
 }
 /* STAGE_5P8H_COMPANION_CANONICAL_RENDERER_END */
+
+
+/* STAGE_5P10F_COMPANION_QUEUE_POSITION_UI_BEGIN */
+.stage5p10f-queue-row strong {
+  color: rgba(125, 211, 252, 0.98);
+}
+/* STAGE_5P10F_COMPANION_QUEUE_POSITION_UI_END */

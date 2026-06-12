@@ -15162,6 +15162,107 @@ async def public_chat_queue_status(request: Request):
                     "ahead_count": None,
                 }
 
+    # STAGE_5P10F_REAL_USER_QUEUE_STATUS_BRIDGE_BEGIN
+    # Stage 5P-10B originally counted/looked up the older SQLite jobs table.
+    # Real-user Companion jobs are created through the Stage 5F-18/5F-19 app_jobs path
+    # and use ids like s5f18-job-....
+    try:
+        raw_counts = _s5f9_psql_at(
+            """
+            SELECT COALESCE(
+              (
+                SELECT row_to_json(x)::text
+                FROM (
+                  SELECT
+                    (
+                      SELECT COUNT(*)
+                      FROM app_jobs
+                      WHERE status IN ('queued', 'pending')
+                    ) AS waiting_count,
+                    (
+                      SELECT COUNT(*)
+                      FROM app_jobs
+                      WHERE status IN ('running', 'claimed', 'processing', 'in_progress')
+                    ) AS running_count,
+                    (
+                      SELECT COUNT(*)
+                      FROM app_jobs
+                      WHERE status IN ('queued', 'pending', 'running', 'claimed', 'processing', 'in_progress')
+                    ) AS total_active
+                ) x
+              ),
+              ''
+            );
+            """
+        )
+
+        if raw_counts:
+            parsed_counts = _s5f9_json.loads(raw_counts)
+            waiting_count += int(parsed_counts.get("waiting_count") or 0)
+            running_count += int(parsed_counts.get("running_count") or 0)
+            total_active += int(parsed_counts.get("total_active") or 0)
+    except Exception:
+        pass
+
+    if requested_job_id and (
+        not job_payload
+        or str((job_payload or {}).get("status") or "").lower() == "not_found"
+    ):
+        try:
+            raw_job = _s5f9_psql_at(
+                f"""
+                WITH queued AS (
+                  SELECT
+                    id,
+                    row_number() OVER (ORDER BY created_at ASC, id ASC) AS position
+                  FROM app_jobs
+                  WHERE status IN ('queued', 'pending')
+                )
+                SELECT COALESCE(
+                  (
+                    SELECT row_to_json(x)::text
+                    FROM (
+                      SELECT
+                        j.id AS job_id,
+                        j.id AS requested_job_id,
+                        j.status AS status,
+                        q.position AS position,
+                        CASE
+                          WHEN q.position IS NULL THEN NULL
+                          ELSE q.position - 1
+                        END AS ahead_count,
+                        j.user_id AS user_id,
+                        j.job_type AS job_type,
+                        j.requested_model AS requested_model
+                      FROM app_jobs j
+                      LEFT JOIN queued q
+                        ON q.id = j.id
+                      WHERE j.id = {_s5f9_sql_literal(requested_job_id)}
+                      LIMIT 1
+                    ) x
+                  ),
+                  ''
+                );
+                """
+            )
+
+            if raw_job:
+                parsed_job = _s5f9_json.loads(raw_job)
+                job_payload = {
+                    "job_id": str(parsed_job.get("job_id") or requested_job_id),
+                    "requested_job_id": requested_job_id,
+                    "status": str(parsed_job.get("status") or "unknown").lower(),
+                    "position": parsed_job.get("position"),
+                    "ahead_count": parsed_job.get("ahead_count"),
+                    "user_id": parsed_job.get("user_id"),
+                    "job_type": parsed_job.get("job_type"),
+                    "requested_model": parsed_job.get("requested_model"),
+                    "source": "app_jobs",
+                }
+        except Exception:
+            pass
+    # STAGE_5P10F_REAL_USER_QUEUE_STATUS_BRIDGE_END
+
     return {
         "ok": True,
         "queue": {
