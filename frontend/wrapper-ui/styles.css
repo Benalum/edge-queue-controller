@@ -2404,3 +2404,207 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   font-size: 0.88rem;
 }
 /* STAGE_5P9A_STUDY_DECK_SELECTOR_END */
+
+
+/* STAGE_5P8H_COMPANION_CANONICAL_RENDERER_BEGIN */
+.stage5p8h-companion-page {
+  display: grid;
+  gap: 22px;
+  padding: clamp(18px, 3vw, 30px);
+}
+
+.stage5p8h-companion-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  padding: clamp(22px, 4vw, 38px);
+  border: 1px solid rgba(148, 163, 184, 0.20);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top left, rgba(99, 102, 241, 0.28), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.74));
+  box-shadow: 0 28px 90px rgba(15, 23, 42, 0.34);
+}
+
+.stage5p8h-eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(165, 180, 252, 0.98);
+  font-weight: 900;
+}
+
+.stage5p8h-companion-hero h1 {
+  margin: 0;
+  color: rgba(248, 250, 252, 0.98);
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.98;
+}
+
+.stage5p8h-companion-hero p {
+  max-width: 720px;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.stage5p8h-hero-badge {
+  border: 1px solid rgba(129, 140, 248, 0.34);
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: rgba(224, 231, 255, 0.96);
+  background: rgba(79, 70, 229, 0.22);
+  white-space: nowrap;
+  font-weight: 900;
+}
+
+.stage5p8h-companion-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 18px;
+  align-items: start;
+}
+
+.stage5p8h-conversation-card,
+.stage5p8h-status-card {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 26px;
+  background: rgba(15, 23, 42, 0.72);
+  box-shadow: 0 22px 70px rgba(15, 23, 42, 0.24);
+}
+
+.stage5p8h-conversation-card {
+  padding: 18px;
+}
+
+.stage5p8h-empty-state {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 18px;
+  border: 1px dashed rgba(148, 163, 184, 0.24);
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.stage5p8h-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: rgba(99, 102, 241, 0.2);
+  font-size: 1.7rem;
+}
+
+.stage5p8h-message-stream {
+  margin-top: 18px;
+}
+
+.stage5p8h-message-stream h2 {
+  margin: 0 0 12px;
+}
+
+.stage5p8h-message-list {
+  display: grid;
+  gap: 12px;
+}
+
+.stage5p8h-message-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.stage5p8h-message-form label {
+  color: rgba(226, 232, 240, 0.86);
+  font-weight: 900;
+}
+
+.stage5p8h-message-form textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  border-radius: 20px;
+  padding: 14px;
+  color: rgba(248, 250, 252, 0.98);
+  background: rgba(15, 23, 42, 0.78);
+  outline: none;
+}
+
+.stage5p8h-message-form textarea:focus {
+  border-color: rgba(129, 140, 248, 0.68);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+.stage5p8h-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stage5p8h-send-button,
+.stage5p8h-clear-button {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.stage5p8h-send-button {
+  color: rgba(255, 255, 255, 0.98);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.96), rgba(14, 165, 233, 0.88));
+}
+
+.stage5p8h-clear-button {
+  color: rgba(226, 232, 240, 0.94);
+  background: rgba(15, 23, 42, 0.66);
+}
+
+.stage5p8h-status-rail {
+  display: grid;
+  gap: 14px;
+}
+
+.stage5p8h-status-card {
+  padding: 18px;
+}
+
+.stage5p8h-status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.stage5p8h-status-row span {
+  color: rgba(148, 163, 184, 0.92);
+}
+
+.stage5p8h-status-row strong {
+  color: rgba(248, 250, 252, 0.96);
+  text-align: right;
+}
+
+.stage5p8h-status-card p {
+  color: rgba(203, 213, 225, 0.82);
+}
+
+.stage5p8h-companion-public {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 26px;
+  background: rgba(15, 23, 42, 0.66);
+}
+
+@media (max-width: 920px) {
+  .stage5p8h-companion-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stage5p8h-companion-hero {
+    flex-direction: column;
+  }
+}
+/* STAGE_5P8H_COMPANION_CANONICAL_RENDERER_END */

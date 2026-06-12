@@ -3293,57 +3293,93 @@ function queuedChatRenderMessages() {
 function renderQueuedChatPage() {
   const signedIn = Boolean(authState?.token);
 
+  // STAGE_5P8H_COMPANION_CANONICAL_RENDERER_BEGIN
+  // Canonical Companion renderer. This directly renders the polished UI while preserving
+  // the existing queued chat IDs used by bindQueuedChatPage / queuedChatSubmit.
+  if (!signedIn) {
+    return `
+      <section class="page-card stage5p8h-companion-page stage5p8h-companion-public" data-stage5p8h-canonical-companion="true">
+        <p class="eyebrow">Companion</p>
+        <h1>A queued local AI companion for study and support.</h1>
+        <p class="subtitle">
+          Sign in to use the local queued Companion surface. Logged-out users stay on the public summary path.
+        </p>
+      </section>
+    `;
+  }
+
   return `
-    <section class="page-card">
-      <p class="eyebrow">Companion</p>
-      <h1>Companion</h1>
-      <p class="subtitle">
-        Send a message through the existing laptop-owned queued AI path. CT101 processes one Ollama job at a time while the UI presents one main Companion surface.
-      </p>
-
-      ${signedIn ? `
-        <div class="summary-grid">
-          <div class="summary-box">
-            <span>Status</span>
-            <strong id="queuedChatStatus">Ready</strong>
-            <p>Uses the existing queued worker path and polls the returned job id.</p>
-          </div>
-          <div class="summary-box">
-            <span>Worker</span>
-            <strong>Companion queue worker</strong>
-            <p>Current model fallback: gemma4:e4b.</p>
-          </div>
+    <section class="stage5p8h-companion-page" data-stage5p8h-canonical-companion="true" aria-label="Companion workspace">
+      <div class="stage5p8h-companion-hero">
+        <div>
+          <p class="stage5p8h-eyebrow">Companion</p>
+          <h1>Supportive chat workspace</h1>
+          <p>Talk with your local Companion while the queue handles work safely behind the scenes.</p>
         </div>
+        <div class="stage5p8h-hero-badge">Queue-aware UI</div>
+      </div>
 
-        <form id="queuedChatForm" class="form-grid">
-          <label>
-            Message
-            <textarea id="queuedChatInput" rows="5" placeholder="Ask Companion something..."></textarea>
-          </label>
-
-          <div class="actions">
-            <button class="primary-btn" type="submit" id="queuedChatSendBtn">Send message</button>
-            <button class="ghost-btn" type="button" id="queuedChatClearBtn">Clear</button>
+      <div class="stage5p8h-companion-grid">
+        <section class="stage5p8h-conversation-card" aria-label="Companion conversation">
+          <div class="stage5p8h-empty-state">
+            <div class="stage5p8h-empty-icon">💬</div>
+            <div>
+              <h2>Start a Companion conversation</h2>
+              <p>Send a message below. New work still uses the existing queued chat endpoint and polling flow.</p>
+            </div>
           </div>
-        </form>
 
-        <section class="system-section">
-          <h2>Conversation</h2>
-          <div id="queuedChatMessages" class="summary-grid"></div>
+          <section class="stage5p8h-message-stream">
+            <h2>Conversation</h2>
+            <div id="queuedChatMessages" class="stage5p8h-message-list"></div>
+          </section>
+
+          <form id="queuedChatForm" class="stage5p8h-message-form">
+            <label for="queuedChatInput">Message</label>
+            <textarea id="queuedChatInput" rows="5" placeholder="Message Companion..."></textarea>
+
+            <div class="stage5p8h-actions">
+              <button class="stage5p8h-send-button" type="submit" id="queuedChatSendBtn">Send message</button>
+              <button class="stage5p8h-clear-button" type="button" id="queuedChatClearBtn">Clear</button>
+            </div>
+          </form>
         </section>
-      ` : `
-        <div class="summary-box">
-          <span>Login required</span>
-          <strong>Please log in to use Companion.</strong>
-          <p>Companion uses your active account session to create real-user queue jobs.</p>
-        </div>
-        <div class="actions">
-          <button class="primary-btn" type="button" data-clean-login>Login / Register</button>
-        </div>
-      `}
+
+        <aside class="stage5p8h-status-rail" aria-label="Companion status">
+          <section class="stage5p8h-status-card">
+            <p class="stage5p8h-eyebrow">Companion status</p>
+            <div class="stage5p8h-status-row">
+              <span>Queue</span>
+              <strong id="queuedChatStatus">Ready</strong>
+            </div>
+            <div class="stage5p8h-status-row">
+              <span>Worker</span>
+              <strong>Companion queue worker</strong>
+            </div>
+            <div class="stage5p8h-status-row">
+              <span>Model</span>
+              <strong>fallback: gemma4:e4b</strong>
+            </div>
+          </section>
+
+          <section class="stage5p8h-status-card">
+            <p class="stage5p8h-eyebrow">How this works</p>
+            <p>
+              Messages continue through /api/chat/queued. The page polls the existing job status endpoint and displays the final assistant reply without changing backend behavior.
+            </p>
+          </section>
+
+          <section class="stage5p8h-status-card">
+            <p class="stage5p8h-eyebrow">Study context</p>
+            <p>Future toggle placeholder. No Study data is connected here yet.</p>
+          </section>
+        </aside>
+      </div>
     </section>
   `;
+  // STAGE_5P8H_COMPANION_CANONICAL_RENDERER_END
 }
+
 
 async function queuedChatPollJob(jobId) {
   for (let i = 0; i < 80; i++) {
@@ -7827,6 +7863,16 @@ async function handleResetPasswordRoute() {
 
   function stageEnhanceCompanion() {
     if (!stageRouteLooksCompanion()) return;
+
+    // STAGE_5P8H_COMPANION_CANONICAL_RENDERER_GUARD_BEGIN
+    // The Companion page now renders the polished layout directly in renderQueuedChatPage.
+    // Do not wrap/enhance it again.
+    const canonical = document.querySelector("[data-stage5p8h-canonical-companion='true']");
+    if (canonical) {
+      stageUpdateCards();
+      return;
+    }
+    // STAGE_5P8H_COMPANION_CANONICAL_RENDERER_GUARD_END
 
     // STAGE_5P8G_COMPANION_ENHANCE_THROTTLE_BEGIN
     // DOM updates from message/status rendering can trigger MutationObserver again.
