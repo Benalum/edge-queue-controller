@@ -2622,3 +2622,30 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   color: rgba(125, 211, 252, 0.98);
 }
 /* STAGE_5P10G_SIMPLIFIED_QUEUE_DISPLAY_END */
+
+
+/* STAGE_5P11A_COMPANION_STUDY_PHRASE_GUIDE_BEGIN */
+.stage5p11a-study-phrase-guide {
+  display: grid;
+  gap: 10px;
+}
+
+.stage5p11a-phrase-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.stage5p11a-phrase-list div {
+  padding: 9px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.42);
+  color: rgba(226, 232, 240, 0.88);
+  font-size: 0.92rem;
+}
+
+.stage5p11a-phrase-list strong {
+  color: rgba(248, 250, 252, 0.96);
+}
+/* STAGE_5P11A_COMPANION_STUDY_PHRASE_GUIDE_END */

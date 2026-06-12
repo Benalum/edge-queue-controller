@@ -3375,9 +3375,20 @@ function renderQueuedChatPage() {
             </p>
           </section>
 
-          <section class="stage5p8h-status-card">
-            <p class="stage5p8h-eyebrow">Study context</p>
-            <p>Future toggle placeholder. No Study data is connected here yet.</p>
+          <section class="stage5p8h-status-card stage5p11a-study-phrase-guide">
+            <!-- STAGE_5P11A_COMPANION_STUDY_PHRASE_GUIDE_BEGIN -->
+            <p class="stage5p8h-eyebrow">Study phrases</p>
+            <p>Use natural phrases with Companion to control Study sessions.</p>
+
+            <div class="stage5p11a-phrase-list">
+              <div><strong>Start:</strong> “Study session start” or “Start a study session.”</div>
+              <div><strong>Pause:</strong> “Study session pause.”</div>
+              <div><strong>Resume:</strong> “Study session resume.”</div>
+              <div><strong>Stop:</strong> “Study session stop.”</div>
+              <div><strong>Answer:</strong> “Read the answer.”</div>
+              <div><strong>Mark:</strong> “Correct,” “wrong,” or “skip.”</div>
+            </div>
+            <!-- STAGE_5P11A_COMPANION_STUDY_PHRASE_GUIDE_END -->
           </section>
         </aside>
       </div>
@@ -8130,7 +8141,7 @@ async function handleResetPasswordRoute() {
       '<section class="stage5o35-status-card stage5o35-toggle-card">',
       '<div>',
       '<h2>Study context</h2>',
-      '<p>Future toggle placeholder. No Study data is connected here yet.</p>',
+      '<p>Use the Study phrases above to control sessions through Companion.</p>',
       '</div>',
       '<button type="button" class="stage5o35-toggle" disabled aria-disabled="true">Coming next</button>',
       '</section>'
