@@ -492,6 +492,26 @@ async def tick():
         readiness_result = None
         worker_state = _power_lookup_worker_registry_state(target_name)
 
+        # Stage 7W-1: legacy /tick can auto-ready the worker before
+        # direct Ollama forwarding. Keep the post-start pause bounded and
+        # locally defined so the scheduler timer cannot crash with NameError.
+        web_presence_start_pause_minutes = _parse_int_env(
+            "WEB_POWER_START_PAUSE_MINUTES",
+            10,
+            minimum=1,
+            maximum=120,
+        )
+
+        # Stage 7W-1: legacy /tick can auto-ready the worker before
+        # direct Ollama forwarding. Keep the post-start pause bounded and
+        # locally defined so the scheduler timer cannot crash with NameError.
+        web_presence_start_pause_minutes = _parse_int_env(
+            "WEB_POWER_START_PAUSE_MINUTES",
+            10,
+            minimum=1,
+            maximum=120,
+        )
+
         actions.append(
             {
                 "action": "direct_ollama_mode_selected",
