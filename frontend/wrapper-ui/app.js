@@ -8498,3 +8498,291 @@ async function handleResetPasswordRoute() {
   window.setTimeout(install, 500);
 })();
  // STAGE_5P8C_STUDY_SESSION_CONTROL_BUTTONS_END
+
+
+// STAGE_5P9A_STUDY_DECK_SELECTOR_BEGIN
+(function () {
+  const statusCardId = "stage5p8a-study-session-status-card";
+  const selectorClass = "stage5p9a-study-deck-selector";
+  const selectedDeckKey = "stage5p9aSelectedStudyDeckId";
+  let installed = false;
+
+  function isStudyRoute() {
+    const path = String(window.location.pathname || "").replace(/\/+$/, "");
+    const hash = String(window.location.hash || "").toLowerCase();
+    return path === "/study" || path.endsWith("/study") || hash.includes("study");
+  }
+
+  function findStatusCard() {
+    return document.getElementById(statusCardId);
+  }
+
+  function readTokenCandidate(value) {
+    if (!value) return "";
+    const raw = String(value).trim();
+    if (!raw) return "";
+    if (raw.startsWith("eyJ") || raw.length > 40) return raw.replace(/^Bearer\s+/i, "");
+
+    try {
+      const data = JSON.parse(raw);
+      return String(
+        data.access_token
+        || data.accessToken
+        || data.token
+        || data.auth_token
+        || data.authToken
+        || (data.session && (data.session.access_token || data.session.accessToken || data.session.token))
+        || ""
+      ).replace(/^Bearer\s+/i, "");
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function findBearerToken() {
+    const keys = [
+      "access_token",
+      "accessToken",
+      "auth_token",
+      "authToken",
+      "token",
+      "session",
+      "auth",
+      "aiPlatformSession",
+      "ai_platform_session",
+      "aiPlatformAuth",
+      "ai_platform_auth",
+      "edgeSession",
+      "edgeAuthSession"
+    ];
+
+    try {
+      for (const key of keys) {
+        const token = readTokenCandidate(window.localStorage.getItem(key));
+        if (token) return token;
+      }
+
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (!key || !/token|auth|session/i.test(key)) continue;
+        const token = readTokenCandidate(window.localStorage.getItem(key));
+        if (token) return token;
+      }
+    } catch (err) {
+      /* localStorage may be unavailable */
+    }
+
+    return "";
+  }
+
+  function authHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    const token = findBearerToken();
+    if (token) headers.Authorization = "Bearer " + token;
+    return headers;
+  }
+
+  function normalizeDecks(data) {
+    if (!data || typeof data !== "object") return [];
+    const candidates = [
+      data.decks,
+      data.items,
+      data.results,
+      data.data,
+      data.study_decks,
+      data.studyDecks
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) return candidate;
+      if (candidate && Array.isArray(candidate.decks)) return candidate.decks;
+      if (candidate && Array.isArray(candidate.items)) return candidate.items;
+    }
+
+    return [];
+  }
+
+  function deckId(deck) {
+    return deck && (deck.id || deck.deck_id || deck.deckId || "");
+  }
+
+  function deckTitle(deck) {
+    return String(
+      (deck && (deck.title || deck.name || deck.deck_name || deck.deckName))
+      || ("Deck " + deckId(deck))
+    );
+  }
+
+  function selectedDeckId() {
+    try {
+      return window.localStorage.getItem(selectedDeckKey) || "";
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function setSelectedDeckId(id) {
+    try {
+      if (id) window.localStorage.setItem(selectedDeckKey, String(id));
+      else window.localStorage.removeItem(selectedDeckKey);
+    } catch (err) {
+      /* storage may be unavailable */
+    }
+  }
+
+  function setSelectorMessage(shell, message) {
+    const el = shell && shell.querySelector("[data-stage5p9a-message]");
+    if (el) el.textContent = message || "";
+  }
+
+  function setSelectedLabel(shell, deck) {
+    const el = shell && shell.querySelector("[data-stage5p9a-selected]");
+    if (!el) return;
+
+    if (!deck) {
+      const id = selectedDeckId();
+      el.textContent = id ? ("Selected deck id: " + id) : "No deck selected.";
+      return;
+    }
+
+    el.textContent = "Selected: " + deckTitle(deck) + " (#" + deckId(deck) + ")";
+  }
+
+  function renderDeckOptions(shell, decks) {
+    const list = shell.querySelector("[data-stage5p9a-list]");
+    if (!list) return;
+
+    list.innerHTML = "";
+
+    if (!decks.length) {
+      const empty = document.createElement("p");
+      empty.className = "stage5p9a-empty";
+      empty.textContent = "No decks found yet. Create or import a Study deck first.";
+      list.appendChild(empty);
+      setSelectedLabel(shell, null);
+      return;
+    }
+
+    const current = selectedDeckId();
+    let selectedDeck = null;
+
+    decks.forEach(function (deck) {
+      const id = String(deckId(deck));
+      if (!id) return;
+
+      if (String(current) === id) selectedDeck = deck;
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "stage5p9a-deck-option";
+      button.dataset.stage5p9aDeckId = id;
+      button.textContent = deckTitle(deck) + " (#" + id + ")";
+      button.setAttribute("aria-pressed", String(String(current) === id));
+
+      button.addEventListener("click", function () {
+        setSelectedDeckId(id);
+        shell.querySelectorAll(".stage5p9a-deck-option").forEach(function (other) {
+          other.setAttribute("aria-pressed", String(other.dataset.stage5p9aDeckId === id));
+        });
+        setSelectedLabel(shell, deck);
+        setSelectorMessage(shell, "Deck selected for the future Start button.");
+      });
+
+      list.appendChild(button);
+    });
+
+    setSelectedLabel(shell, selectedDeck);
+  }
+
+  async function loadDecks(shell) {
+    if (!shell) return;
+
+    const refresh = shell.querySelector("[data-stage5p9a-refresh]");
+    if (refresh) refresh.disabled = true;
+    setSelectorMessage(shell, "Loading decks...");
+
+    try {
+      const response = await fetch("/api/study/decks", {
+        method: "GET",
+        headers: authHeaders(),
+        credentials: "include"
+      });
+
+      const data = await response.json().catch(function () { return {}; });
+
+      if (response.status === 401 || response.status === 403) {
+        setSelectorMessage(shell, "Log in to load your Study decks.");
+        renderDeckOptions(shell, []);
+        return;
+      }
+
+      if (!response.ok || data.ok === false) {
+        setSelectorMessage(shell, data.detail || data.message || "Could not load decks.");
+        renderDeckOptions(shell, []);
+        return;
+      }
+
+      const decks = normalizeDecks(data);
+      renderDeckOptions(shell, decks);
+      setSelectorMessage(shell, decks.length ? "Choose a deck for the future Start button." : "No decks found.");
+    } catch (err) {
+      setSelectorMessage(shell, "Could not reach Study deck endpoint.");
+      renderDeckOptions(shell, []);
+    } finally {
+      if (refresh) refresh.disabled = false;
+    }
+  }
+
+  function ensureSelector() {
+    if (!isStudyRoute()) return;
+
+    const card = findStatusCard();
+    if (!card || card.querySelector("." + selectorClass)) return;
+
+    const shell = document.createElement("section");
+    shell.className = selectorClass;
+    shell.innerHTML = [
+      '<div class="stage5p9a-head">',
+      '  <div>',
+      '    <p class="stage5p9a-eyebrow">Deck selector</p>',
+      '    <h3>Choose a deck for Start</h3>',
+      '    <p data-stage5p9a-message>Deck selection is read-only in this stage.</p>',
+      '  </div>',
+      '  <button type="button" data-stage5p9a-refresh>Load decks</button>',
+      '</div>',
+      '<div class="stage5p9a-selected" data-stage5p9a-selected>No deck selected.</div>',
+      '<div class="stage5p9a-list" data-stage5p9a-list></div>',
+      '<p class="stage5p9a-note">Start is not wired yet. This only stores the selected deck id locally.</p>'
+    ].join("");
+
+    card.appendChild(shell);
+
+    const refresh = shell.querySelector("[data-stage5p9a-refresh]");
+    if (refresh) refresh.addEventListener("click", function () { loadDecks(shell); });
+
+    window.setTimeout(function () {
+      loadDecks(shell);
+    }, 250);
+  }
+
+  function install() {
+    if (installed) return;
+    installed = true;
+
+    ensureSelector();
+
+    if (window.MutationObserver) {
+      const observer = new MutationObserver(function () {
+        if (isStudyRoute()) ensureSelector();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    window.addEventListener("popstate", ensureSelector);
+    window.addEventListener("hashchange", ensureSelector);
+  }
+
+  document.addEventListener("DOMContentLoaded", install);
+  window.setTimeout(install, 700);
+})();
+ // STAGE_5P9A_STUDY_DECK_SELECTOR_END
