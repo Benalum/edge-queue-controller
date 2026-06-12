@@ -1,0 +1,93 @@
+[
+  {
+    "name": "study_next_en",
+    "body": {
+      "input": {"text": "next", "source": "study", "surface": "study_session"},
+      "context": {"active_page": "study"}
+    },
+    "expect": {
+      "intent": "study.next",
+      "language": "en",
+      "route": "/api/study/session/command",
+      "tier": "fast_intent"
+    }
+  },
+  {
+    "name": "study_skip_en",
+    "body": {
+      "input": {"text": "skip", "source": "study", "surface": "study_session"},
+      "context": {"active_page": "study"}
+    },
+    "expect": {
+      "intent": "study.skip",
+      "language": "en",
+      "route": "/api/study/session/command",
+      "tier": "fast_intent"
+    }
+  },
+  {
+    "name": "study_hint_en",
+    "body": {
+      "input": {"text": "hint", "source": "study", "surface": "study_session"},
+      "context": {"active_page": "study"}
+    },
+    "expect": {
+      "intent": "study.hint",
+      "language": "en",
+      "route": "/api/study/session/command",
+      "tier": "fast_intent"
+    }
+  },
+  {
+    "name": "study_next_es",
+    "body": {
+      "input": {"text": "siguiente", "source": "study", "surface": "study_session"},
+      "context": {"active_page": "study"}
+    },
+    "expect": {
+      "intent": "study.next",
+      "language": "es",
+      "route": "/api/study/session/command",
+      "tier": "fast_intent"
+    }
+  },
+  {
+    "name": "companion_chat_en",
+    "body": {
+      "input": {"text": "Can you help me plan my study session?", "source": "companion", "surface": "companion_chat"},
+      "context": {"active_page": "companion"}
+    },
+    "expect": {
+      "intent": "companion.chat",
+      "language": "en",
+      "route": "/api/companion/chat",
+      "tier": "medium_conversation"
+    }
+  },
+  {
+    "name": "unknown_general_chat_en",
+    "body": {
+      "input": {"text": "What should I work on next?", "source": "", "surface": ""},
+      "context": {"active_page": ""}
+    },
+    "expect": {
+      "intent": "unknown.general_chat",
+      "language": "en",
+      "route": "/api/companion/chat",
+      "tier": "medium_conversation"
+    }
+  },
+  {
+    "name": "empty_unsupported",
+    "body": {
+      "input": {"text": "", "source": "", "surface": ""},
+      "context": {"active_page": ""}
+    },
+    "expect": {
+      "intent": "unknown.unsupported",
+      "language": "en",
+      "route": null,
+      "tier": "fast_intent"
+    }
+  }
+]
