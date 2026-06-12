@@ -7423,6 +7423,77 @@ async def public_study_intent_parse(request: Request):
 # STAGE_5P4_STUDY_INTENT_PARSER_END
 
 
+
+# STAGE_5P6A_STUDY_READ_ANSWER_BEGIN
+def _study_get_card_for_session(row, user_id: int):
+    if not row:
+        raise HTTPException(status_code=404, detail="No active study session found")
+
+    card_id = row["current_card_id"]
+    deck_id = row["deck_id"]
+
+    if not card_id:
+        raise HTTPException(status_code=400, detail="Study session has no current card")
+
+    with db() as conn:
+        card = conn.execute(
+            "SELECT * FROM study_cards "
+            "WHERE id = ? AND user_id = ? AND deck_id = ? AND archived_at IS NULL "
+            "LIMIT 1",
+            (
+                int(card_id),
+                int(user_id),
+                int(deck_id),
+            ),
+        ).fetchone()
+
+    if not card:
+        raise HTTPException(status_code=404, detail="Current study card not found")
+
+    return card
+
+
+def _study_card_answer_payload(card):
+    item = _study_card_to_public(card)
+    return {
+        "id": item.get("id"),
+        "deck_id": item.get("deck_id"),
+        "question": item.get("question"),
+        "answer": item.get("answer"),
+        "hint": item.get("hint"),
+        "tags": item.get("tags") or [],
+    }
+
+
+def _study_read_answer_for_current_session(user_id: int):
+    row = _study_require_current_session_for_user(user_id)
+    status = row["status"]
+
+    if status == "paused":
+        raise HTTPException(status_code=400, detail="Cannot read answer while study session is paused")
+
+    if status not in ("active", "reviewing_answer", "waiting_for_mark"):
+        raise HTTPException(status_code=400, detail=f"Cannot read answer with session status {status}")
+
+    card = _study_get_card_for_session(row, user_id)
+
+    updated = _study_update_session_status(
+        row["id"],
+        "reviewing_answer",
+        "read_answer",
+        "study_read_answer",
+    )
+
+    return {
+        "ok": True,
+        "intent": "study_read_answer",
+        "command": "read_answer",
+        "session": _study_session_row_to_public(updated),
+        "card": _study_card_answer_payload(card),
+        "response": _study_card_answer_payload(card).get("answer"),
+    }
+# STAGE_5P6A_STUDY_READ_ANSWER_END
+
 # STAGE_5P5A_STUDY_SESSION_COMMAND_LIFECYCLE_BEGIN
 async def _study_execute_lifecycle_command(request: Request, parsed: dict, payload: dict):
     intent = parsed.get("intent")
@@ -7453,6 +7524,10 @@ async def _study_execute_lifecycle_command(request: Request, parsed: dict, paylo
 
     if intent == "study_session_stop" or command == "stop":
         return await public_study_session_stop(request)
+
+    if intent == "study_read_answer" or command == "read_answer":
+        user_id = _study_current_user_id(request)
+        return _study_read_answer_for_current_session(user_id)
 
     return None
 
