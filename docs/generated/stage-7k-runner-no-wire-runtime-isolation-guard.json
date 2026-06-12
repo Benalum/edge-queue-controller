@@ -1,0 +1,68 @@
+{
+  "stage": "7K",
+  "name": "runner_no_wire_runtime_isolation_guard",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_guardrails",
+  "purpose": "Prove the Stage 7J authenticated shadow comparison runner exists only as a manual ops tool and is not wired into runtime, frontend, backend, gateway, or systemd paths.",
+  "runner": {
+    "path": "ops/compare/run-authenticated-shadow-comparison.py",
+    "must_exist": true,
+    "manual_ops_tool_only": true,
+    "runtime_import_allowed": false,
+    "runtime_reference_allowed": false,
+    "frontend_reference_allowed": false,
+    "backend_reference_allowed": false,
+    "gateway_reference_allowed": false,
+    "systemd_reference_allowed": false,
+    "scheduled_execution_allowed": false,
+    "http_endpoint_exposed": false
+  },
+  "blocked_runtime_locations": [
+    "edge_controller.py",
+    "frontend/",
+    "backend/",
+    "public_gateway.py",
+    "ops/systemd/"
+  ],
+  "blocked_reference_patterns": [
+    "run-authenticated-shadow-comparison",
+    "ops/compare/run-authenticated-shadow-comparison.py",
+    "EDGE_AUTH_SHADOW_COMPARE",
+    "stage-7j",
+    "stage_7j",
+    "stage-7k",
+    "stage_7k"
+  ],
+  "allowed_locations": [
+    "docs/",
+    "ops/smoke/",
+    "ops/compare/",
+    "ops/validate/"
+  ],
+  "required_runner_behavior": {
+    "offline_default_generates_valid_artifact": true,
+    "authenticated_execution_requires_explicit_flag": true,
+    "authenticated_execution_requires_confirmation": true,
+    "authenticated_execution_fails_closed_without_auth": true,
+    "auth_values_not_printed": true,
+    "auth_values_not_stored": true
+  },
+  "required_runtime_state": {
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false,
+    "runtime_wiring_changed": false
+  },
+  "safety_invariants": [
+    "runner remains manual ops-only",
+    "runner is not imported by runtime handlers",
+    "runner is not referenced by frontend code",
+    "runner is not referenced by backend code",
+    "runner is not referenced by gateway code",
+    "runner is not referenced by systemd units",
+    "runner is not scheduled",
+    "runner is not exposed over HTTP",
+    "router dry-run endpoint remains disabled by default"
+  ]
+}
