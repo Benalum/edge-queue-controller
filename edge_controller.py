@@ -15020,6 +15020,164 @@ def _s5g14_mirror_trusted_edge_chat(
 
     return True
 
+
+# STAGE_5P10B_COMPANION_QUEUE_STATUS_BEGIN
+def _stage5p10b_table_columns(conn, table_name: str):
+    try:
+        return [str(row["name"]) for row in conn.execute(f"PRAGMA table_info({table_name})").fetchall()]
+    except Exception:
+        return []
+
+
+def _stage5p10b_pick_column(columns, candidates):
+    column_set = set(columns or [])
+    for candidate in candidates:
+        if candidate in column_set:
+            return candidate
+    return None
+
+
+def _stage5p10b_safe_count(conn, sql, params=()):
+    try:
+        row = conn.execute(sql, params).fetchone()
+        if row is None:
+            return 0
+        if isinstance(row, dict):
+            return int(row.get("n") or 0)
+        return int(row[0] or 0)
+    except Exception:
+        return 0
+
+
+@app.get("/api/chat/queue/status")
+@app.get("/public/chat/queue/status")
+async def public_chat_queue_status(request: Request):
+    user_row = _auth_current_user_from_request(request)
+    requested_job_id = str(request.query_params.get("job_id") or "").strip()
+
+    with db() as conn:
+        columns = _stage5p10b_table_columns(conn, "jobs")
+
+        if not columns:
+            return {
+                "ok": True,
+                "queue": {
+                    "waiting_count": 0,
+                    "running_count": 0,
+                    "total_active": 0,
+                },
+                "job": None,
+                "note": "jobs table is not available",
+            }
+
+        status_col = _stage5p10b_pick_column(columns, ("status", "state", "job_status"))
+        id_col = _stage5p10b_pick_column(columns, ("id", "job_id"))
+        created_col = _stage5p10b_pick_column(columns, ("created_at", "created_ts", "created", "submitted_at", "updated_at", "id"))
+        user_col = _stage5p10b_pick_column(columns, ("user_id", "owner_user_id", "account_id"))
+        job_type_col = _stage5p10b_pick_column(columns, ("job_type", "type", "kind"))
+
+        if not status_col or not id_col:
+            return {
+                "ok": True,
+                "queue": {
+                    "waiting_count": 0,
+                    "running_count": 0,
+                    "total_active": 0,
+                },
+                "job": None,
+                "note": "jobs table does not expose status/id columns",
+            }
+
+        waiting_count = _stage5p10b_safe_count(
+            conn,
+            f"SELECT COUNT(*) AS n FROM jobs WHERE {status_col} IN ('queued', 'pending')",
+        )
+        running_count = _stage5p10b_safe_count(
+            conn,
+            f"SELECT COUNT(*) AS n FROM jobs WHERE {status_col} IN ('running', 'claimed', 'processing', 'in_progress')",
+        )
+        total_active = _stage5p10b_safe_count(
+            conn,
+            f"SELECT COUNT(*) AS n FROM jobs WHERE {status_col} IN ('queued', 'pending', 'running', 'claimed', 'processing', 'in_progress')",
+        )
+
+        order_col = created_col or id_col
+        queued_rows = conn.execute(
+            f"SELECT * FROM jobs WHERE {status_col} IN ('queued', 'pending') ORDER BY {order_col} ASC, {id_col} ASC"
+        ).fetchall()
+
+        job_payload = None
+        if requested_job_id:
+            id_candidates = [id_col]
+            for extra in ("job_id", "public_id", "external_id", "request_id"):
+                if extra in columns and extra not in id_candidates:
+                    id_candidates.append(extra)
+
+            job_row = None
+            for col in id_candidates:
+                try:
+                    job_row = conn.execute(
+                        f"SELECT * FROM jobs WHERE CAST({col} AS TEXT) = ? LIMIT 1",
+                        (requested_job_id,),
+                    ).fetchone()
+                except Exception:
+                    job_row = None
+                if job_row:
+                    break
+
+            if job_row:
+                job_dict = row_to_dict(job_row)
+                job_status = str(job_dict.get(status_col) or "").lower()
+                position = None
+                ahead_count = None
+
+                if job_status in ("queued", "pending"):
+                    ahead_count = 0
+                    for idx, row in enumerate(queued_rows, start=1):
+                        row_dict = row_to_dict(row)
+                        if str(row_dict.get(id_col)) == str(job_dict.get(id_col)):
+                            position = idx
+                            ahead_count = idx - 1
+                            break
+
+                    if position is None:
+                        position = waiting_count
+                        ahead_count = max(0, waiting_count - 1)
+
+                job_payload = {
+                    "job_id": str(job_dict.get(id_col) or requested_job_id),
+                    "requested_job_id": requested_job_id,
+                    "status": job_status or "unknown",
+                    "position": position,
+                    "ahead_count": ahead_count,
+                    "user_id": job_dict.get(user_col) if user_col else None,
+                    "job_type": job_dict.get(job_type_col) if job_type_col else None,
+                }
+            else:
+                job_payload = {
+                    "job_id": requested_job_id,
+                    "requested_job_id": requested_job_id,
+                    "status": "not_found",
+                    "position": None,
+                    "ahead_count": None,
+                }
+
+    return {
+        "ok": True,
+        "queue": {
+            "waiting_count": int(waiting_count),
+            "running_count": int(running_count),
+            "total_active": int(total_active),
+        },
+        "job": job_payload,
+        "user": {
+            "id": int(user_row["id"]),
+        },
+    }
+# STAGE_5P10B_COMPANION_QUEUE_STATUS_END
+
+
+
 @app.post("/api/chat/queued")
 async def s5f9_create_queued_chat(
     request: _S5F9QueuedChatRequest,
