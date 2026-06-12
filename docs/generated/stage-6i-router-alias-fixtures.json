@@ -1,0 +1,42 @@
+[
+  {
+    "name": "study_next_n",
+    "body": {"input": {"text": "n", "source": "study", "surface": "study_session"}, "context": {"active_page": "study"}},
+    "expect": {"intent": "study.next", "language": "en", "route": "/api/study/session/command", "tier": "fast_intent"}
+  },
+  {
+    "name": "study_next_card",
+    "body": {"input": {"text": "next card", "source": "study", "surface": "study_session"}, "context": {"active_page": "study"}},
+    "expect": {"intent": "study.next", "language": "en", "route": "/api/study/session/command", "tier": "fast_intent"}
+  },
+  {
+    "name": "study_go_on",
+    "body": {"input": {"text": "go on", "source": "study", "surface": "study_session"}, "context": {"active_page": "study"}},
+    "expect": {"intent": "study.next", "language": "en", "route": "/api/study/session/command", "tier": "fast_intent"}
+  },
+  {
+    "name": "study_not_sure",
+    "body": {"input": {"text": "not sure", "source": "study", "surface": "study_session"}, "context": {"active_page": "study"}},
+    "expect": {"intent": "study.skip", "language": "en", "route": "/api/study/session/command", "tier": "fast_intent"}
+  },
+  {
+    "name": "study_dont_know",
+    "body": {"input": {"text": "dont know", "source": "study", "surface": "study_session"}, "context": {"active_page": "study"}},
+    "expect": {"intent": "study.skip", "language": "en", "route": "/api/study/session/command", "tier": "fast_intent"}
+  },
+  {
+    "name": "study_show_hint",
+    "body": {"input": {"text": "show hint", "source": "study", "surface": "study_session"}, "context": {"active_page": "study"}},
+    "expect": {"intent": "study.hint", "language": "en", "route": "/api/study/session/command", "tier": "fast_intent"}
+  },
+  {
+    "name": "study_omitir_es",
+    "body": {"input": {"text": "omitir", "source": "study", "surface": "study_session"}, "context": {"active_page": "study"}},
+    "expect": {"intent": "study.skip", "language": "es", "route": "/api/study/session/command", "tier": "fast_intent"}
+  },
+  {
+    "name": "study_ayuda_es",
+    "body": {"input": {"text": "ayuda", "source": "study", "surface": "study_session"}, "context": {"active_page": "study"}},
+    "expect": {"intent": "study.hint", "language": "es", "route": "/api/study/session/command", "tier": "fast_intent"}
+  }
+]

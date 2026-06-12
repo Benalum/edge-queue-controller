@@ -16907,7 +16907,7 @@ def _stage6f_router_response(body):
     study_context = source == "study" or surface.startswith("study") or active_page == "study"
     companion_context = source in {"companion", "chat"} or active_page in {"companion", "chat"}
 
-    language_detected = "es" if lowered in {"siguiente", "saltar", "omitir", "pista", "ayuda"} else "en"
+    language_detected = "es" if lowered in {"siguiente", "próximo", "proximo", "saltar", "omitir", "pista", "ayuda"} else "en"
 
     intent_name = "unknown.unsupported"
     confidence = 0.0
@@ -16916,19 +16916,19 @@ def _stage6f_router_response(body):
     tier = "fast_intent"
     reason = "No supported dry-run intent matched."
 
-    if study_context and lowered in {"next", "continue", "move on", "siguiente"}:
+    if study_context and lowered in {"next", "n", "continue", "move on", "go on", "next card", "siguiente", "próximo", "proximo"}:
         intent_name = "study.next"
         confidence = 0.98
         handler = "study.session.command"
         route = "/api/study/session/command"
         reason = "Short study navigation command."
-    elif study_context and lowered in {"skip", "pass", "i don't know", "idk", "saltar", "omitir"}:
+    elif study_context and lowered in {"skip", "pass", "i don't know", "i dont know", "idk", "don't know", "dont know", "not sure", "saltar", "omitir"}:
         intent_name = "study.skip"
         confidence = 0.96
         handler = "study.session.command"
         route = "/api/study/session/command"
         reason = "Short study skip command."
-    elif study_context and lowered in {"hint", "help", "pista", "ayuda"}:
+    elif study_context and lowered in {"hint", "help", "show hint", "give me a hint", "pista", "ayuda"}:
         intent_name = "study.hint"
         confidence = 0.94
         handler = "study.session.command"
