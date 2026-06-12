@@ -1,6 +1,7 @@
 import os
 import json
 import sqlite3
+from edge_router_schema import init_router_foundation_schema, router_foundation_table_names
 import subprocess
 import asyncio
 from datetime import datetime, timezone
@@ -61,6 +62,9 @@ def db() -> sqlite3.Connection:
 
 def init_db() -> None:
     with db() as conn:
+        # Stage 6AB: Universal Intent Router persistent schema foundation.
+        init_router_foundation_schema(conn)
+
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS jobs (
