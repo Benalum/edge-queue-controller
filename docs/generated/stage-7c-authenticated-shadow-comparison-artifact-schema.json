@@ -1,0 +1,140 @@
+{
+  "stage": "7C",
+  "name": "authenticated_shadow_comparison_artifact_schema",
+  "runtime_behavior_change": false,
+  "purpose": "Define the JSON artifact shape used by future authenticated Study and Companion shadow comparison stages.",
+  "schema_version": "stage-7c-v1",
+  "artifact_kind": "authenticated_shadow_comparison_result",
+  "supported_domains": [
+    "study",
+    "companion"
+  ],
+  "required_top_level_fields": [
+    "schema_version",
+    "artifact_kind",
+    "stage",
+    "domain",
+    "runtime_behavior_change",
+    "comparison_mode",
+    "test_identity",
+    "current_route_observation",
+    "shadow_observation",
+    "safety_observation",
+    "comparison_result",
+    "notes"
+  ],
+  "field_contract": {
+    "schema_version": "must equal stage-7c-v1",
+    "artifact_kind": "must equal authenticated_shadow_comparison_result",
+    "stage": "stage that produced the artifact, for example 7D or 7E",
+    "domain": "study or companion",
+    "runtime_behavior_change": "must be false for shadow comparison artifacts",
+    "comparison_mode": "must describe authenticated shadow comparison without dispatch",
+    "test_identity": {
+      "required_fields": [
+        "label",
+        "real_user_secret_stored",
+        "auth_method_summary"
+      ],
+      "secret_policy": "real user secrets must never be stored in artifacts"
+    },
+    "current_route_observation": {
+      "required_fields": [
+        "route",
+        "method",
+        "http_status",
+        "response_class",
+        "state_change_summary",
+        "raw_response_stored"
+      ],
+      "raw_response_policy": "raw responses should not be stored if they contain personal data or secrets"
+    },
+    "shadow_observation": {
+      "required_fields": [
+        "helper",
+        "intent",
+        "confidence_band",
+        "existing_route",
+        "rule_id",
+        "source_surface_policy_allowed",
+        "model_call_required",
+        "allowed_to_dispatch",
+        "dispatch_performed",
+        "behavior_changed"
+      ],
+      "required_false_fields": [
+        "model_call_required",
+        "allowed_to_dispatch",
+        "dispatch_performed",
+        "behavior_changed"
+      ]
+    },
+    "safety_observation": {
+      "required_fields": [
+        "router_endpoint_disabled_by_default",
+        "router_disabled_http_code",
+        "secrets_stored",
+        "dispatch_enabled",
+        "model_calls_enabled",
+        "runtime_wiring_changed"
+      ],
+      "required_values": {
+        "router_endpoint_disabled_by_default": true,
+        "router_disabled_http_code": 404,
+        "secrets_stored": false,
+        "dispatch_enabled": false,
+        "model_calls_enabled": false,
+        "runtime_wiring_changed": false
+      }
+    },
+    "comparison_result": {
+      "required_fields": [
+        "passed",
+        "intent_matches_expected",
+        "user_visible_regression_detected",
+        "safe_to_continue"
+      ]
+    },
+    "notes": "array of plain-language notes; must not contain secrets"
+  },
+  "domain_contracts": {
+    "study": {
+      "allowed_routes": [
+        "/api/study/intent/parse",
+        "/api/study/session/command"
+      ],
+      "shadow_helper": "_stage6q_study_adapter_shadow",
+      "expected_safe_intents": [
+        "study.next",
+        "study.skip",
+        "study.hint",
+        "study.answer",
+        "unknown.unsupported"
+      ]
+    },
+    "companion": {
+      "allowed_routes": [
+        "/api/companion/chat",
+        "/api/chat/queued"
+      ],
+      "shadow_helper": "_stage6v_companion_adapter_shadow",
+      "expected_safe_intents": [
+        "companion.chat",
+        "unknown.general_chat",
+        "unknown.unsupported"
+      ]
+    }
+  },
+  "global_safety_invariants": [
+    "no real user secrets stored",
+    "no router dispatch",
+    "no router model calls",
+    "no runtime route wiring changes",
+    "no frontend behavior changes",
+    "no auth bypass",
+    "no admin routing",
+    "no power routing",
+    "no Calendar writes",
+    "no Profile mutations"
+  ]
+}
