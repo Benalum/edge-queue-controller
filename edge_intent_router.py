@@ -10,6 +10,38 @@ It does not mutate application state.
 import os
 
 
+def _stage6f_confidence_band(confidence):
+    if confidence >= 0.90:
+        return "high"
+    if confidence >= 0.70:
+        return "medium"
+    if confidence > 0:
+        return "low"
+    return "none"
+
+
+def _stage6f_confirmation_policy(intent_name, route, confidence):
+    confidence_band = _stage6f_confidence_band(confidence)
+
+    write_like_prefixes = (
+        "calendar.write",
+        "profile.preference_update",
+        "admin.",
+    )
+
+    would_require_confirmation = intent_name.startswith(write_like_prefixes)
+
+    return {
+        "requires_confirmation": False,
+        "would_require_confirmation_if_dispatch_enabled": would_require_confirmation,
+        "confirmation_status": "not_required_for_dry_run",
+        "confidence_band": confidence_band,
+        "eligible_for_dispatch": False,
+        "dispatch_disabled_reason": "dry_run_endpoint_never_dispatches",
+        "route": route,
+    }
+
+
 def _stage6f_router_enabled():
     return str(os.getenv("EDGE_UNIVERSAL_INTENT_ROUTER_DRY_RUN_ENABLED", "0")).lower() in {"1", "true", "yes", "on"}
 
@@ -98,11 +130,16 @@ def _stage6f_router_response(body):
         reason = "General text input without strong page context."
         rule_id = "unknown.general_chat.text"
 
+    confidence_band = _stage6f_confidence_band(confidence)
+    confirmation_policy = _stage6f_confirmation_policy(intent_name, route, confidence)
+
     decision_trace.append(
         {
             "step": "rule_result",
             "rule_id": rule_id,
             "intent": intent_name,
+            "confidence": confidence,
+            "confidence_band": confidence_band,
             "handler": handler,
             "route": route,
             "model_tier": tier,
@@ -124,6 +161,7 @@ def _stage6f_router_response(body):
         "intent": {
             "name": intent_name,
             "confidence": confidence,
+            "confidence_band": confidence_band,
             "slots": {},
             "reason": reason,
         },
@@ -144,6 +182,7 @@ def _stage6f_router_response(body):
             "allowed_in_dry_run": True,
             "allowed_to_dispatch": False,
         },
+        "confirmation_policy": confirmation_policy,
         "actions": [
             {
                 "type": "would_dispatch" if route else "would_not_dispatch",
