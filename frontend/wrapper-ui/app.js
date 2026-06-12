@@ -8836,7 +8836,27 @@ async function handleResetPasswordRoute() {
   }
 
   function findBearerToken() {
+    // STAGE_5P11C_STUDY_DECK_SELECTOR_AUTH_REPAIR_BEGIN
+    // Prefer the wrapper's canonical logged-in token first. The deck selector
+    // was using an older generic token scan, which could miss the active
+    // edgeStudyToken session used by the rest of the wrapper.
+    try {
+      const directAuthStateToken = (
+        typeof authState !== "undefined"
+        && authState
+        && authState.token
+      ) ? String(authState.token || "").trim() : "";
+      if (directAuthStateToken) return directAuthStateToken.replace(/^Bearer\s+/i, "");
+
+      const edgeStudyToken = readTokenCandidate(window.localStorage.getItem("edgeStudyToken"));
+      if (edgeStudyToken) return edgeStudyToken;
+    } catch (err) {
+      /* authState/localStorage may be unavailable */
+    }
+    // STAGE_5P11C_STUDY_DECK_SELECTOR_AUTH_REPAIR_END
+
     const keys = [
+      "edgeStudyToken",
       "access_token",
       "accessToken",
       "auth_token",
@@ -8860,7 +8880,7 @@ async function handleResetPasswordRoute() {
 
       for (let i = 0; i < window.localStorage.length; i += 1) {
         const key = window.localStorage.key(i);
-        if (!key || !/token|auth|session/i.test(key)) continue;
+        if (!key || !/token|auth|session|edgeStudy/i.test(key)) continue;
         const token = readTokenCandidate(window.localStorage.getItem(key));
         if (token) return token;
       }
@@ -9020,7 +9040,7 @@ async function handleResetPasswordRoute() {
 
       const decks = normalizeDecks(data);
       renderDeckOptions(shell, decks);
-      setSelectorMessage(shell, decks.length ? "Choose a deck, then press Start." : "No decks found.");
+      setSelectorMessage(shell, decks.length ? ("Loaded " + decks.length + " deck" + (decks.length === 1 ? "" : "s") + ". Choose one, then press Start.") : "No decks found.");
     } catch (err) {
       setSelectorMessage(shell, "Could not reach Study deck endpoint.");
       renderDeckOptions(shell, []);

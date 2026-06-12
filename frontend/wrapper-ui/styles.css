@@ -2662,3 +2662,10 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   font-size: 0.9rem;
 }
 /* STAGE_5P11B_STUDY_START_BUTTON_END */
+
+
+/* STAGE_5P11C_STUDY_DECK_SELECTOR_AUTH_REPAIR_BEGIN */
+.stage5p9a-deck-option {
+  cursor: pointer;
+}
+/* STAGE_5P11C_STUDY_DECK_SELECTOR_AUTH_REPAIR_END */
