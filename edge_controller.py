@@ -455,6 +455,34 @@ async def tick():
       - EDGE_TICK_AUTO_READY_WORKER=1 lets /tick call the guarded wake/start readiness path first.
       - Actual Ollama forwarding still requires EDGE_DIRECT_OLLAMA_FORWARD=1.
     """
+    # Stage 7Y-2B: keep /tick as a fast compatibility endpoint only.
+    #
+    # The active automation is now handled by the dedicated modern timer endpoints:
+    # - /workers/remediation/tick
+    # - /power/auto/tick
+    # - /power/idle/tick
+    #
+    # Do not let the legacy scheduler path perform long worker readiness waits or
+    # direct job forwarding from this endpoint. The old scheduler timer may still
+    # call /tick, so this endpoint must return quickly and safely.
+    legacy_tick_compat_shim = _parse_bool_env("EDGE_LEGACY_TICK_COMPAT_SHIM", True)
+    if legacy_tick_compat_shim:
+        online, detail = await host_is_online()
+        return {
+            "ok": True,
+            "edge_dry_run": EDGE_DRY_RUN,
+            "mode": "legacy_tick_compatibility_shim",
+            "executed": False,
+            "host_online": online,
+            "host_detail": detail,
+            "modern_timer_endpoints": [
+                "/workers/remediation/tick",
+                "/power/auto/tick",
+                "/power/idle/tick",
+            ],
+            "reason": "Legacy /tick is retired as a scheduler executor. Modern timer endpoints own remediation and power automation.",
+        }
+
     with db() as conn:
         queued_jobs = conn.execute(
             """
