@@ -3218,7 +3218,87 @@ async def power_auto_tick():
     if queue_demand.get("has_start_demand"):
         start_plan_blocked_reason = worker_start_plan.get("blocked_reason") or ""
 
-        if worker_start_plan.get("eligible"):
+        # STAGE_5P15_HOST_FIRST_WAKE_ON_INVENTORY_UNAVAILABLE_V1
+        # If logged-in web presence requires the host/container and Proxmox is offline,
+        # CT inventory cannot be evaluated yet. In that case, send host WOL first,
+        # mark the host as booting, and let a later tick start CT101 after inventory returns.
+        if (
+            worker_start_plan.get("inventory_error")
+            and (web_host_required or web_container_required)
+            and bool((wake_plan.get("wake") or {}).get("eligible"))
+        ):
+            if boot_grace_active:
+                actions.append(
+                    {
+                        "area": "worker_start",
+                        "action": "defer_worker_start_during_host_boot_grace",
+                        "executed": False,
+                        "reason": "Host boot grace is active; worker start inventory will be rechecked after the host returns.",
+                        "queue_demand": queue_demand,
+                        "worker_registry_state": worker_registry_state,
+                        "worker_start_plan": worker_start_plan,
+                        "wake_plan": wake_plan,
+                        "booting_marker": booting_marker,
+                    }
+                )
+            elif not execute_wake_enabled:
+                actions.append(
+                    {
+                        "area": "worker_start",
+                        "action": "blocked_host_first_wake_execution_disabled",
+                        "executed": False,
+                        "reason": "Host/container is required and inventory is unavailable, but EDGE_POWER_EXECUTE_WAKE=0.",
+                        "queue_demand": queue_demand,
+                        "worker_registry_state": worker_registry_state,
+                        "worker_start_plan": worker_start_plan,
+                        "wake_plan": wake_plan,
+                    }
+                )
+            else:
+                wake_result = system_boot_pveso(
+                    {
+                        "confirm": "BOOT_PVESO",
+                        "source": "power_auto_tick_host_first_wake",
+                        "decision": {
+                            "reason": "web_presence_requires_host_but_inventory_unavailable",
+                            "web_host_required": web_host_required,
+                            "web_container_required": web_container_required,
+                            "queue_demand": queue_demand,
+                            "worker_start_plan": worker_start_plan,
+                            "wake_plan": wake_plan,
+                        },
+                    }
+                )
+
+                try:
+                    booting_marker = _system_read_booting_marker()
+                except Exception as e:
+                    booting_marker = {
+                        "active": False,
+                        "error": str(e),
+                    }
+
+                boot_grace_active = bool(
+                    isinstance(booting_marker, dict)
+                    and booting_marker.get("active")
+                )
+
+                actions.append(
+                    {
+                        "area": "worker_start",
+                        "action": "auto_wake_host_first_due_to_inventory_unavailable",
+                        "executed": bool(wake_result.get("boot_sent")),
+                        "reason": "Host/container is required but Proxmox inventory is unavailable, so host Wake-on-LAN was attempted before CT start planning.",
+                        "queue_demand": queue_demand,
+                        "worker_registry_state": worker_registry_state,
+                        "worker_start_plan": worker_start_plan,
+                        "wake_plan": wake_plan,
+                        "booting_marker": booting_marker,
+                        "result": wake_result,
+                    }
+                )
+
+        elif worker_start_plan.get("eligible"):
             if not auto_start_workers:
                 actions.append(
                     {
