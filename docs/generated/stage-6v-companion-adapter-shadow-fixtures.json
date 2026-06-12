@@ -1,0 +1,100 @@
+[
+  {
+    "name": "shadow_companion_text",
+    "payload": {
+      "text": "Can you help me plan my study time?"
+    },
+    "expect": {
+      "allowed": true,
+      "intent": "companion.chat",
+      "route": "/api/companion/chat",
+      "rule_id": "companion.chat.text",
+      "model_tier": "medium_conversation"
+    }
+  },
+  {
+    "name": "shadow_companion_message",
+    "payload": {
+      "message": "I want to talk through an idea."
+    },
+    "expect": {
+      "allowed": true,
+      "intent": "companion.chat",
+      "route": "/api/companion/chat",
+      "rule_id": "companion.chat.text",
+      "model_tier": "medium_conversation"
+    }
+  },
+  {
+    "name": "shadow_chat_source",
+    "payload": {
+      "text": "Hello from chat",
+      "source": "chat",
+      "surface": "chat_box",
+      "active_page": "chat"
+    },
+    "expect": {
+      "allowed": true,
+      "intent": "companion.chat",
+      "route": "/api/companion/chat",
+      "rule_id": "companion.chat.text",
+      "model_tier": "medium_conversation"
+    }
+  },
+  {
+    "name": "shadow_prompt_field",
+    "payload": {
+      "prompt": "What should I work on next?"
+    },
+    "expect": {
+      "allowed": true,
+      "intent": "companion.chat",
+      "route": "/api/companion/chat",
+      "rule_id": "companion.chat.text",
+      "model_tier": "medium_conversation"
+    }
+  },
+  {
+    "name": "shadow_empty_input",
+    "payload": {},
+    "expect": {
+      "allowed": true,
+      "intent": "unknown.unsupported",
+      "route": null,
+      "rule_id": "unknown.unsupported.empty_or_no_match",
+      "model_tier": "fast_intent"
+    }
+  },
+  {
+    "name": "shadow_blocked_admin_source",
+    "payload": {
+      "text": "status",
+      "source": "admin",
+      "surface": "admin_panel",
+      "active_page": "admin"
+    },
+    "expect": {
+      "allowed": false,
+      "intent": "unknown.unsupported",
+      "route": null,
+      "rule_id": "policy.source_surface.blocked",
+      "model_tier": "fast_intent"
+    }
+  },
+  {
+    "name": "shadow_blocked_power_surface",
+    "payload": {
+      "text": "turn on server",
+      "source": "companion",
+      "surface": "power_control",
+      "active_page": "companion"
+    },
+    "expect": {
+      "allowed": false,
+      "intent": "unknown.unsupported",
+      "route": null,
+      "rule_id": "policy.source_surface.blocked",
+      "model_tier": "fast_intent"
+    }
+  }
+]

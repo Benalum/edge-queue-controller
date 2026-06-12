@@ -355,3 +355,95 @@ def _stage6q_study_adapter_shadow(payload):
         "errors": [],
     }
 
+
+def _stage6v_extract_companion_text(payload):
+    if not isinstance(payload, dict):
+        return ""
+
+    input_obj = payload.get("input") if isinstance(payload.get("input"), dict) else {}
+
+    for value in [
+        input_obj.get("text"),
+        payload.get("text"),
+        payload.get("message"),
+        payload.get("prompt"),
+        payload.get("content"),
+        payload.get("input_text"),
+    ]:
+        text = str(value or "").strip()
+        if text:
+            return text
+
+    return ""
+
+
+def _stage6v_companion_adapter_shadow(payload):
+    """Return a dry-run-only Companion adapter shadow result.
+
+    This helper does not dispatch.
+    This helper does not call models.
+    This helper does not mutate Companion, Calendar, Profile, or Study state.
+    This helper is not wired into any Companion or Chat route.
+    """
+
+    if not isinstance(payload, dict):
+        payload = {}
+
+    input_obj = payload.get("input") if isinstance(payload.get("input"), dict) else {}
+    context_obj = payload.get("context") if isinstance(payload.get("context"), dict) else {}
+
+    text = _stage6v_extract_companion_text(payload)
+
+    source = str(input_obj.get("source") or payload.get("source") or "companion").strip() or "companion"
+    surface = str(input_obj.get("surface") or payload.get("surface") or "companion_chat").strip() or "companion_chat"
+    active_page = str(context_obj.get("active_page") or payload.get("active_page") or "companion").strip() or "companion"
+
+    router_body = {
+        "input": {
+            "text": text,
+            "source": source,
+            "surface": surface,
+            "locale_hint": payload.get("locale_hint") or "en-US",
+        },
+        "context": {
+            "active_page": active_page,
+            "profile_language": payload.get("profile_language") or "en",
+            "role": payload.get("role") or "user",
+        },
+        "page_context": {
+            "shadow_adapter": "stage6v_companion",
+            "mode": payload.get("mode") or "conversation",
+        },
+        "router_options": {
+            "dry_run": True,
+            "allow_dispatch": False,
+            "allow_model_call": False,
+            "max_model_tier": payload.get("max_model_tier") or "medium",
+        },
+    }
+
+    router_result = _stage6f_router_response(router_body)
+
+    return {
+        "ok": True,
+        "stage": "6V",
+        "adapter": "companion_shadow_dry_run",
+        "behavior_changed": False,
+        "dispatch_performed": False,
+        "model_call_required": router_result["model_routing"]["model_call_required"],
+        "allowed_to_dispatch": False,
+        "source_payload_keys": sorted(str(k) for k in payload.keys()),
+        "normalized_router_input": router_body,
+        "router_result": router_result,
+        "shadow_summary": {
+            "text_present": bool(text),
+            "intent": router_result["intent"]["name"],
+            "confidence_band": router_result["intent"]["confidence_band"],
+            "existing_route": router_result["target"]["existing_route"],
+            "rule_id": router_result["decision_trace"][-1]["rule_id"],
+            "model_tier": router_result["model_routing"]["tier"],
+            "source_surface_allowed": router_result["source_surface_policy"]["allowed"],
+        },
+        "errors": [],
+    }
+
