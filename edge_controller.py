@@ -13301,6 +13301,268 @@ async def system_support_ticket_reply(ticket_id: int, request: Request):
 
 
 # ============================================================
+
+# STAGE_5P11N_RETENTION_POLICY_DRY_RUN_BEGIN
+from datetime import timedelta as _stage5p11n_timedelta
+
+def _retention_now():
+    return datetime.now(timezone.utc)
+
+
+def _retention_parse_dt(value):
+    if not value:
+        return None
+    try:
+        text = str(value).strip()
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        dt = datetime.fromisoformat(text)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    except Exception:
+        return None
+
+
+def _retention_cutoff_iso(days: int):
+    days = max(1, int(days))
+    return (_retention_now() - _stage5p11n_timedelta(days=days)).isoformat()
+
+
+def _retention_user_days_for_plan(plan):
+    plan_value = str(plan or "free").strip().lower()
+
+    # Current policy:
+    # - free/local users: 7 days of detailed history
+    # - paid/pro users: future longer retention, defaulting to 30 days for now
+    # This is dry-run only in Stage 5P-11N.
+    if plan_value in {"pro", "paid", "plus", "enterprise"}:
+        return int(os.getenv("AI_PLATFORM_PAID_DETAIL_RETENTION_DAYS", "30") or "30")
+
+    return int(os.getenv("AI_PLATFORM_FREE_DETAIL_RETENTION_DAYS", "7") or "7")
+
+
+def _retention_count_table(conn, table, where_sql="", params=()):
+    try:
+        row = conn.execute(
+            f"SELECT COUNT(*) AS n FROM {table} {where_sql}",
+            tuple(params),
+        ).fetchone()
+        return int(row["n"] if row and "n" in row.keys() else row[0])
+    except Exception:
+        return None
+
+
+def _retention_table_exists(conn, table):
+    row = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+        (table,),
+    ).fetchone()
+    return bool(row)
+
+
+def _retention_plan_rows():
+    _auth_init_tables()
+    _study_init_session_tables()
+
+    detail_tables = [
+        {
+            "table": "study_session_events",
+            "time_column": "created_at",
+            "user_column": "user_id",
+            "category": "study_detail",
+            "note": "Per-card Study session event history. Safe to delete after rollup exists.",
+        },
+        {
+            "table": "study_sessions",
+            "time_column": "updated_at",
+            "user_column": "user_id",
+            "category": "study_detail",
+            "extra_where": "status IN ('completed', 'stopped')",
+            "note": "Completed/stopped Study session rows. Keep active sessions.",
+        },
+        {
+            "table": "study_reviews",
+            "time_column": "reviewed_at",
+            "user_column": "user_id",
+            "category": "study_detail",
+            "note": "Detailed Study reviews. Delete only after cumulative study totals are proven.",
+        },
+        {
+            "table": "jobs",
+            "time_column": "updated_at",
+            "user_column": "user_id",
+            "category": "chat_queue_detail",
+            "extra_where": "status IN ('completed', 'failed', 'cancelled')",
+            "note": "Local queue job prompts/status rows.",
+        },
+        {
+            "table": "job_results",
+            "time_column": "updated_at",
+            "user_column": None,
+            "category": "chat_queue_detail",
+            "note": "Local queue result text/json rows. Job ownership must be joined before deleting per plan.",
+        },
+        {
+            "table": "web_presence",
+            "time_column": "last_seen_at",
+            "user_column": "user_id",
+            "category": "presence_detail",
+            "note": "Presence/activity history. Recent rows power live presence; old rows can be removed.",
+        },
+        {
+            "table": "power_events",
+            "time_column": "created_at",
+            "user_column": None,
+            "category": "system_detail",
+            "system_retention_days": 7,
+            "note": "System power event log.",
+        },
+        {
+            "table": "web_power_policy_events",
+            "time_column": "created_at",
+            "user_column": None,
+            "category": "system_detail",
+            "system_retention_days": 7,
+            "note": "Web presence power-policy event log.",
+        },
+        {
+            "table": "worker_events",
+            "time_column": "created_at",
+            "user_column": None,
+            "category": "system_detail",
+            "system_retention_days": 7,
+            "note": "Worker event log.",
+        },
+    ]
+
+    with db() as conn:
+        conn.row_factory = sqlite3.Row
+
+        users = conn.execute(
+            """
+            SELECT id, email, plan, billing_status
+            FROM app_users
+            WHERE COALESCE(status, 'active') != 'deleted'
+            ORDER BY id ASC
+            """
+        ).fetchall()
+
+        user_policy = []
+        for user in users:
+            detail_days = _retention_user_days_for_plan(user["plan"])
+            user_policy.append({
+                "user_id": int(user["id"]),
+                "email": user["email"],
+                "plan": user["plan"] or "free",
+                "billing_status": user["billing_status"],
+                "detail_retention_days": detail_days,
+                "cutoff": _retention_cutoff_iso(detail_days),
+            })
+
+        plan_rows = []
+
+        for spec in detail_tables:
+            table = spec["table"]
+            time_column = spec["time_column"]
+
+            if not _retention_table_exists(conn, table):
+                plan_rows.append({
+                    **spec,
+                    "exists": False,
+                    "total_rows": None,
+                    "eligible_rows": None,
+                    "eligible_by_plan": [],
+                })
+                continue
+
+            total_rows = _retention_count_table(conn, table)
+            eligible_by_plan = []
+            eligible_total = 0
+
+            if spec.get("user_column"):
+                for policy in user_policy:
+                    where_parts = [
+                        f"{spec['user_column']} = ?",
+                        f"{time_column} < ?",
+                    ]
+                    params = [policy["user_id"], policy["cutoff"]]
+
+                    if spec.get("extra_where"):
+                        where_parts.append(f"({spec['extra_where']})")
+
+                    n = _retention_count_table(
+                        conn,
+                        table,
+                        "WHERE " + " AND ".join(where_parts),
+                        params,
+                    )
+
+                    n = int(n or 0)
+                    eligible_total += n
+
+                    if n:
+                        eligible_by_plan.append({
+                            "user_id": policy["user_id"],
+                            "plan": policy["plan"],
+                            "detail_retention_days": policy["detail_retention_days"],
+                            "eligible_rows": n,
+                            "cutoff": policy["cutoff"],
+                        })
+            else:
+                days = int(spec.get("system_retention_days") or 7)
+                cutoff = _retention_cutoff_iso(days)
+                where_parts = [f"{time_column} < ?"]
+                params = [cutoff]
+
+                if spec.get("extra_where"):
+                    where_parts.append(f"({spec['extra_where']})")
+
+                eligible_total = int(_retention_count_table(
+                    conn,
+                    table,
+                    "WHERE " + " AND ".join(where_parts),
+                    params,
+                ) or 0)
+
+                eligible_by_plan.append({
+                    "plan": "system",
+                    "detail_retention_days": days,
+                    "eligible_rows": eligible_total,
+                    "cutoff": cutoff,
+                })
+
+            plan_rows.append({
+                **spec,
+                "exists": True,
+                "total_rows": total_rows,
+                "eligible_rows": eligible_total,
+                "eligible_by_plan": eligible_by_plan,
+            })
+
+        return {
+            "ok": True,
+            "mode": "dry_run",
+            "policy": {
+                "free_detail_retention_days": int(os.getenv("AI_PLATFORM_FREE_DETAIL_RETENTION_DAYS", "7") or "7"),
+                "paid_detail_retention_days": int(os.getenv("AI_PLATFORM_PAID_DETAIL_RETENTION_DAYS", "30") or "30"),
+                "delete_enabled": False,
+                "cumulative_totals_required_before_study_review_delete": True,
+            },
+            "users": user_policy,
+            "tables": plan_rows,
+        }
+
+
+@app.get("/system/retention/dry-run")
+@app.get("/api/system/retention/dry-run")
+async def system_retention_dry_run(request: Request):
+    await _require_admin(request)
+    return _retention_plan_rows()
+# STAGE_5P11N_RETENTION_POLICY_DRY_RUN_END
+
+
+
 # Session presence heartbeat
 # Lets the frontend keep logged-in users marked online.
 # ============================================================
