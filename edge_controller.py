@@ -10401,6 +10401,114 @@ def system_boot_pveso(payload: dict = _sys_Body(default={})):
 # Requires valid Bearer session token but does not require the public API key.
 # ============================================================
 
+
+
+# STAGE_5P11T_SESSION_ME_PRESENCE_TOUCH_BEGIN
+def _stage5p11t_touch_authenticated_web_presence_from_session_me(request: Request, user_row):
+    """
+    /system/session/me is already called by the logged-in browser.
+
+    Use it as the reliable authenticated presence heartbeat so power automation
+    can keep pveso + CT101 online for logged-in users even when there are no
+    queued jobs.
+    """
+    if not user_row:
+        return {
+            "ok": False,
+            "reason": "missing_user_row",
+        }
+
+    try:
+        _web_presence_init_tables()
+
+        user_id = int(user_row["id"])
+        role = str(user_row["role"] if "role" in user_row.keys() else "").strip().lower()
+        is_admin = 1 if role == "admin" else 0
+
+        now = _web_presence_now()
+        route = request.headers.get("x-ah-route") or request.headers.get("referer") or "/session/me"
+        route = str(route or "/session/me")[:250]
+
+        visibility = request.headers.get("x-ah-visibility") or "visible"
+        visibility = str(visibility or "visible")[:50]
+
+        # One row per authenticated user is enough for power policy.
+        visitor_id = f"session-me-user-{user_id}"
+
+        user_agent = request.headers.get("user-agent", "")
+        xff = request.headers.get("x-forwarded-for", "")
+        client_host = getattr(request.client, "host", "") if request.client else ""
+
+        user_agent_hash = _web_presence_hash(user_agent)
+        ip_hash = _web_presence_hash(xff or client_host)
+
+        metadata = {
+            "reason": "session-me-authenticated-touch",
+            "logged_in": True,
+            "source": "/system/session/me",
+        }
+
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute(
+                """
+                INSERT INTO web_presence (
+                    visitor_id,
+                    user_id,
+                    route,
+                    is_authenticated,
+                    is_admin,
+                    active_seconds,
+                    visibility,
+                    first_seen_at,
+                    last_seen_at,
+                    user_agent_hash,
+                    ip_hash,
+                    metadata_json
+                )
+                VALUES (?, ?, ?, 1, ?, 20, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(visitor_id) DO UPDATE SET
+                    user_id = excluded.user_id,
+                    route = excluded.route,
+                    is_authenticated = 1,
+                    is_admin = excluded.is_admin,
+                    active_seconds = MAX(web_presence.active_seconds, excluded.active_seconds),
+                    visibility = excluded.visibility,
+                    last_seen_at = excluded.last_seen_at,
+                    user_agent_hash = excluded.user_agent_hash,
+                    ip_hash = excluded.ip_hash,
+                    metadata_json = excluded.metadata_json
+                """,
+                (
+                    visitor_id,
+                    user_id,
+                    route,
+                    is_admin,
+                    visibility,
+                    now,
+                    now,
+                    user_agent_hash,
+                    ip_hash,
+                    json.dumps(metadata),
+                ),
+            )
+            conn.commit()
+
+        return {
+            "ok": True,
+            "visitor_id": visitor_id,
+            "user_id": user_id,
+            "is_admin": bool(is_admin),
+            "seen_at": now,
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "reason": "presence_touch_failed",
+            "error": str(e),
+        }
+# STAGE_5P11T_SESSION_ME_PRESENCE_TOUCH_END
+
+
 @app.get("/system/session/me")
 async def system_session_me(request: Request):
     _account_init_tables()
@@ -10417,9 +10525,14 @@ async def system_session_me(request: Request):
             (user_row["id"],),
         ).fetchone()
 
+    # STAGE_5P11T_SESSION_ME_PRESENCE_CALL_BEGIN
+    presence_touch = _stage5p11t_touch_authenticated_web_presence_from_session_me(request, row)
+    # STAGE_5P11T_SESSION_ME_PRESENCE_CALL_END
+
     return {
         "ok": True,
         "user": _account_enriched_public_user(row),
+        "presence_touch": presence_touch,
     }
 
 
