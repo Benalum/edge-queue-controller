@@ -1,0 +1,87 @@
+{
+  "stage": "7A",
+  "name": "authenticated_study_shadow_comparison_plan",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_planning",
+  "purpose": "Define the safe future procedure for comparing authenticated Study route behavior against Universal Intent Router Study shadow output before any router wiring.",
+  "foundation_required": {
+    "stage_6z_complete": true,
+    "router_foundation_status": "ready_for_next_phase",
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "study_shadow_helper": "_stage6q_study_adapter_shadow",
+    "study_shadow_helper_wired_into_runtime": false
+  },
+  "study_routes_under_comparison": [
+    {
+      "route": "/api/study/intent/parse",
+      "method": "POST",
+      "comparison_role": "current authenticated Study intent parsing behavior"
+    },
+    {
+      "route": "/api/study/session/command",
+      "method": "POST",
+      "comparison_role": "current authenticated Study command behavior"
+    }
+  ],
+  "future_authenticated_inputs": [
+    {
+      "name": "next command",
+      "study_payload_candidate": {"command": "next"},
+      "shadow_payload_candidate": {"command": "next"},
+      "expected_shadow_intent": "study.next"
+    },
+    {
+      "name": "skip command",
+      "study_payload_candidate": {"command": "skip"},
+      "shadow_payload_candidate": {"command": "skip"},
+      "expected_shadow_intent": "study.skip"
+    },
+    {
+      "name": "hint command",
+      "study_payload_candidate": {"text": "show hint"},
+      "shadow_payload_candidate": {"text": "show hint"},
+      "expected_shadow_intent": "study.hint"
+    },
+    {
+      "name": "answer text",
+      "study_payload_candidate": {"answer": "sample answer"},
+      "shadow_payload_candidate": {"answer": "sample answer"},
+      "expected_shadow_intent": "study.answer"
+    }
+  ],
+  "future_comparison_fields": [
+    "authenticated_user_id_or_test_user_label",
+    "study_route",
+    "study_http_status",
+    "study_response_class",
+    "study_state_change_summary",
+    "shadow_intent",
+    "shadow_confidence_band",
+    "shadow_existing_route",
+    "shadow_rule_id",
+    "shadow_source_surface_policy_allowed",
+    "shadow_model_call_required",
+    "shadow_allowed_to_dispatch",
+    "shadow_dispatch_performed",
+    "user_visible_behavior_changed"
+  ],
+  "safety_rules": [
+    "do not bypass authentication",
+    "do not store real user secrets in docs or fixtures",
+    "do not enable router dispatch",
+    "do not enable router model calls",
+    "do not mutate Study state through the router",
+    "do not wire the Study shadow helper into edge_controller.py",
+    "do not alter frontend Study behavior",
+    "do not run destructive Study commands during comparison"
+  ],
+  "success_criteria_for_future_stage": [
+    "authenticated Study route behavior is captured",
+    "Study shadow output is captured for equivalent payloads",
+    "shadow output agrees with expected safe intent class",
+    "router dispatch remains disabled",
+    "router model calls remain disabled",
+    "no user-visible Study regression is observed"
+  ]
+}
