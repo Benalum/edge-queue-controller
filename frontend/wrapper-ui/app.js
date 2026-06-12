@@ -8563,14 +8563,13 @@ async function handleResetPasswordRoute() {
   function updateButtonState(card) {
     // STAGE_5P11D_STUDY_STOPPED_STATE_BUTTON_REPAIR_BEGIN
     // Stopped/completed sessions must not lock the Study controls.
-    // After Stop, the user should still be able to Refresh or Start a new session.
+    // After Stop, the user should still be able to Start a new session. The top status-card Refresh remains available.
     if (!card) return;
 
     const state = String(card.dataset.sessionState || "none").toLowerCase();
     const busy = card.dataset.stage5p8cBusy === "true";
 
     const start = card.querySelector("[data-stage5p8c-command='start']");
-    const refresh = card.querySelector("[data-stage5p8c-command='refresh']");
     const pause = card.querySelector("[data-stage5p8c-command='pause']");
     const resume = card.querySelector("[data-stage5p8c-command='resume']");
     const stop = card.querySelector("[data-stage5p8c-command='stop']");
@@ -8582,7 +8581,6 @@ async function handleResetPasswordRoute() {
     const canStart = ["none", "stopped", "completed", "signed out", "error", "offline", "unknown"].includes(state);
 
     if (start) start.disabled = busy || !canStart;
-    if (refresh) refresh.disabled = busy;
     if (pause) pause.disabled = busy || !canPause;
     if (resume) resume.disabled = busy || !canResume;
     if (stop) stop.disabled = busy || !canStop;
@@ -8735,7 +8733,9 @@ async function handleResetPasswordRoute() {
     controls.className = controlsClass;
     controls.innerHTML = [
       '<button type="button" data-stage5p8c-command="start">Start</button>',
-      '<button type="button" data-stage5p8c-command="refresh">Refresh</button>',
+      // STAGE_5P11E_REMOVE_DUPLICATE_STUDY_REFRESH_BEGIN
+      // The status card already has a top Refresh button, so the lower command row stays focused on session actions.
+      // STAGE_5P11E_REMOVE_DUPLICATE_STUDY_REFRESH_END
       '<button type="button" data-stage5p8c-command="pause">Pause</button>',
       '<button type="button" data-stage5p8c-command="resume">Resume</button>',
       '<button type="button" data-stage5p8c-command="stop">Stop</button>',
@@ -8750,13 +8750,11 @@ async function handleResetPasswordRoute() {
     }
 
     const start = controls.querySelector("[data-stage5p8c-command='start']");
-    const refresh = controls.querySelector("[data-stage5p8c-command='refresh']");
     const pause = controls.querySelector("[data-stage5p8c-command='pause']");
     const resume = controls.querySelector("[data-stage5p8c-command='resume']");
     const stop = controls.querySelector("[data-stage5p8c-command='stop']");
 
     if (start) start.addEventListener("click", function () { startSession(card); });
-    if (refresh) refresh.addEventListener("click", function () { refreshStatus(card); });
     if (pause) pause.addEventListener("click", function () { sendCommand(card, "pause", "Study Session Pause"); });
     if (resume) resume.addEventListener("click", function () { sendCommand(card, "resume", "Study Session Resume"); });
     if (stop) stop.addEventListener("click", function () { sendCommand(card, "stop", "Study Session Stop"); });
