@@ -1,0 +1,28 @@
+{
+  "stage": "6W",
+  "name": "companion_shadow_adapter_no_wire_guard",
+  "runtime_behavior_change": false,
+  "purpose": "Prove the Stage 6V Companion shadow adapter helper exists but is not wired into runtime request handling.",
+  "helper": "_stage6v_companion_adapter_shadow",
+  "helper_allowed_file": "edge_intent_router.py",
+  "must_not_be_wired_in": [
+    "edge_controller.py",
+    "frontend/",
+    "backend/",
+    "public_gateway.py",
+    "ops/systemd/"
+  ],
+  "required_runtime_state": {
+    "router_dry_run_endpoint_disabled_by_default": true,
+    "expected_disabled_http_code": 404
+  },
+  "safety_invariants": [
+    "Companion shadow adapter helper may exist only as a helper",
+    "Companion shadow adapter must not be imported into edge_controller.py",
+    "Companion shadow adapter must not be called by any HTTP route",
+    "Companion shadow adapter must not be called by frontend code",
+    "Companion shadow adapter must not change Companion behavior",
+    "Companion shadow adapter must not change Chat behavior",
+    "router dry-run endpoint remains disabled by default"
+  ]
+}
