@@ -6964,11 +6964,46 @@ def _study_session_row_to_public(row):
     except Exception:
         queue_count = 0
 
+    # STAGE_5P11F_STUDY_CURRENT_CARD_QUESTION_BEGIN
+    current_card = None
+    current_card_id = item.get("current_card_id")
+
+    if current_card_id:
+        try:
+            with sqlite3.connect(DB_PATH) as card_conn:
+                card_conn.row_factory = sqlite3.Row
+                card_row = card_conn.execute(
+                    """
+                    SELECT id, deck_id, question, answer, explanation, difficulty, tags_json
+                    FROM study_cards
+                    WHERE id = ?
+                      AND user_id = ?
+                      AND archived_at IS NULL
+                    LIMIT 1
+                    """,
+                    (current_card_id, item.get("user_id")),
+                ).fetchone()
+
+            if card_row:
+                current_card = {
+                    "id": card_row["id"],
+                    "deck_id": card_row["deck_id"],
+                    "question": card_row["question"],
+                    "answer": card_row["answer"],
+                    "explanation": card_row["explanation"],
+                    "difficulty": card_row["difficulty"],
+                    "tags_json": card_row["tags_json"],
+                }
+        except Exception:
+            current_card = None
+    # STAGE_5P11F_STUDY_CURRENT_CARD_QUESTION_END
+
     return {
         "id": item.get("id"),
         "status": item.get("status") or "none",
         "deck_id": item.get("deck_id"),
-        "current_card_id": item.get("current_card_id"),
+        "current_card_id": current_card_id,
+        "current_card": current_card,
         "queue_position": int(item.get("queue_position") or 0),
         "queue_count": queue_count,
         "last_action": item.get("last_action"),

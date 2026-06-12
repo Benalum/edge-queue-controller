@@ -8315,12 +8315,12 @@ async function handleResetPasswordRoute() {
       '<div class="stage5p8a-study-session-grid">',
       '  <div><span>Status</span><strong data-stage5p8a-field="state">checking</strong></div>',
       '  <div><span>Deck</span><strong data-stage5p8a-field="deck">—</strong></div>',
-      '  <div><span>Current card</span><strong data-stage5p8a-field="card">—</strong></div>',
+      '  <div class="stage5p11f-current-card"><span>Current question</span><strong data-stage5p8a-field="card">—</strong></div>',
       '  <div><span>Queue</span><strong data-stage5p8a-field="queue">—</strong></div>',
       '  <div><span>Last action</span><strong data-stage5p8a-field="lastAction">—</strong></div>',
       '  <div><span>Updated</span><strong data-stage5p8a-field="updated">—</strong></div>',
       '</div>',
-      '<p class="stage5p8a-study-session-note">Read-only for this stage. Command buttons come later.</p>'
+      '<p class="stage5p8a-study-session-note">Use the session actions below, or use natural Study phrases in Companion.</p>'
     ].join("");
 
     const first = root.firstElementChild;
@@ -8385,7 +8385,11 @@ async function handleResetPasswordRoute() {
 
       setState(card, status, status === "none" ? "No active durable Study session." : "Durable Study session is available.");
       setField(card, "deck", session.deck_id ? String(session.deck_id) : "—");
-      setField(card, "card", session.current_card_id ? String(session.current_card_id) : "—");
+      // STAGE_5P11F_STUDY_CURRENT_CARD_QUESTION_FRONTEND_BEGIN
+      const currentCard = session.current_card || {};
+      const currentQuestion = String(currentCard.question || "").trim();
+      setField(card, "card", currentQuestion || (session.current_card_id ? String(session.current_card_id) : "—"));
+      // STAGE_5P11F_STUDY_CURRENT_CARD_QUESTION_FRONTEND_END
       setField(card, "queue", queueLabel);
       setField(card, "lastAction", session.last_action || session.last_intent || "—");
       setField(card, "updated", session.updated_at ? new Date(session.updated_at).toLocaleString() : "—");
@@ -8629,7 +8633,11 @@ async function handleResetPasswordRoute() {
 
       if (stateField) stateField.textContent = session.status || "none";
       if (deckField) deckField.textContent = session.deck_id ? String(session.deck_id) : "—";
-      if (cardField) cardField.textContent = session.current_card_id ? String(session.current_card_id) : "—";
+      // STAGE_5P11F_STUDY_CURRENT_CARD_QUESTION_REFRESH_BEGIN
+      const currentCard = session.current_card || {};
+      const currentQuestion = String(currentCard.question || "").trim();
+      if (cardField) cardField.textContent = currentQuestion || (session.current_card_id ? String(session.current_card_id) : "—");
+      // STAGE_5P11F_STUDY_CURRENT_CARD_QUESTION_REFRESH_END
       if (queueField) queueField.textContent = queueCount ? String(queuePosition + 1) + " / " + String(queueCount) : "—";
       if (actionField) actionField.textContent = session.last_action || session.last_intent || "—";
       if (updatedField) updatedField.textContent = session.updated_at ? new Date(session.updated_at).toLocaleString() : "—";

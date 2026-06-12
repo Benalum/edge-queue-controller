@@ -2677,3 +2677,16 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   cursor: not-allowed;
 }
 /* STAGE_5P11D_STUDY_STOPPED_STATE_BUTTON_REPAIR_END */
+
+
+/* STAGE_5P11F_STUDY_CURRENT_CARD_QUESTION_BEGIN */
+.stage5p11f-current-card {
+  grid-column: 1 / -1;
+}
+
+.stage5p11f-current-card strong {
+  display: block;
+  white-space: normal;
+  line-height: 1.35;
+}
+/* STAGE_5P11F_STUDY_CURRENT_CARD_QUESTION_END */
