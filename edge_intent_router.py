@@ -8,6 +8,81 @@ It does not mutate application state.
 """
 
 import os
+import sqlite3
+from pathlib import Path
+
+from edge_router_lookup import lookup_router_exact_phrase, normalize_router_phrase
+
+
+def _stage6af_router_db_path():
+    """Return the SQLite DB path used for read-only router phrase lookup."""
+
+    return Path(os.getenv("EDGE_ROUTER_SQLITE_DB_PATH", "edge_queue.sqlite3"))
+
+
+def _stage6af_lookup_context_domain(study_context, companion_context):
+    """Choose a safe context domain for read-only phrase lookup."""
+
+    if study_context:
+        return "study"
+    if companion_context:
+        return "companion"
+    return "global"
+
+
+def _stage6af_sqlite_phrase_lookup(text, language_code, context_domain):
+    """Stage 6AF: read-only SQLite phrase lookup for dry-run observability.
+
+    This helper never dispatches.
+    This helper never calls a model.
+    This helper returns lookup metadata only.
+    """
+
+    safe_result = {
+        "ok": False,
+        "matched": False,
+        "source": "global_phrase_bank",
+        "input_text": text,
+        "language_code": language_code,
+        "context_domain": context_domain,
+        "intent_key": None,
+        "intent": None,
+        "route": None,
+        "dispatch_performed": False,
+        "model_call_required": False,
+    }
+
+    if not str(text or "").strip():
+        safe_result["error_code"] = "empty_input"
+        return safe_result
+
+    db_path = _stage6af_router_db_path()
+    safe_result["db_path"] = str(db_path)
+
+    if not db_path.exists():
+        safe_result["error_code"] = "router_db_not_found"
+        return safe_result
+
+    try:
+        conn = sqlite3.connect(db_path)
+        try:
+            result = lookup_router_exact_phrase(
+                conn,
+                text,
+                language_code=language_code,
+                context_domain=context_domain,
+            )
+            result["db_path"] = str(db_path)
+            result["dispatch_performed"] = False
+            result["model_call_required"] = False
+            return result
+        finally:
+            conn.close()
+    except Exception as exc:  # pragma: no cover - defensive runtime guard
+        safe_result["error_code"] = "router_db_lookup_failed"
+        safe_result["error"] = repr(exc)
+        return safe_result
+
 
 
 def _stage6f_confidence_band(confidence):
@@ -119,6 +194,7 @@ def _stage6f_router_response(body):
 
     text = str(input_obj.get("text") or "").strip()
     lowered = text.lower()
+    normalized_phrase = normalize_router_phrase(text)
     source = str(input_obj.get("source") or "").lower()
     surface = str(input_obj.get("surface") or "").lower()
     active_page = str(context_obj.get("active_page") or "").lower()
@@ -128,7 +204,7 @@ def _stage6f_router_response(body):
     study_context = source_surface_policy["allowed"] and (source == "study" or surface.startswith("study") or active_page == "study")
     companion_context = source_surface_policy["allowed"] and (source in {"companion", "chat"} or active_page in {"companion", "chat"})
 
-    language_detected = "es" if lowered in {"siguiente", "próximo", "proximo", "saltar", "omitir", "pista", "ayuda"} else "en"
+    language_detected = "es" if normalized_phrase in {"siguiente", "proximo", "saltar", "omitir", "pista", "ayuda", "mostrar respuesta", "respuesta", "correcto", "incorrecto"} else "en"
 
     intent_name = "unknown.unsupported"
     confidence = 0.0
@@ -143,6 +219,7 @@ def _stage6f_router_response(body):
             "step": "normalize_input",
             "text_present": bool(text),
             "normalized_text": lowered,
+            "normalized_phrase": normalized_phrase,
             "source": source,
             "surface": surface,
             "active_page": active_page,
@@ -151,6 +228,45 @@ def _stage6f_router_response(body):
             "source_surface_policy": source_surface_policy,
         }
     ]
+
+    lookup_context_domain = _stage6af_lookup_context_domain(study_context, companion_context)
+
+    if source_surface_policy["allowed"]:
+        sqlite_phrase_lookup = _stage6af_sqlite_phrase_lookup(
+            text,
+            language_detected,
+            lookup_context_domain,
+        )
+    else:
+        sqlite_phrase_lookup = {
+            "ok": False,
+            "matched": False,
+            "source": "global_phrase_bank",
+            "input_text": text,
+            "normalized_phrase": normalized_phrase,
+            "language_code": language_detected,
+            "context_domain": lookup_context_domain,
+            "intent_key": None,
+            "intent": None,
+            "route": None,
+            "error_code": "source_surface_policy_blocked",
+            "dispatch_performed": False,
+            "model_call_required": False,
+        }
+
+    decision_trace.append(
+        {
+            "step": "sqlite_phrase_lookup",
+            "lookup_enabled": True,
+            "lookup_source": sqlite_phrase_lookup.get("source"),
+            "matched": bool(sqlite_phrase_lookup.get("matched")),
+            "intent_key": sqlite_phrase_lookup.get("intent_key"),
+            "context_domain": sqlite_phrase_lookup.get("context_domain"),
+            "language_code": sqlite_phrase_lookup.get("language_code"),
+            "error_code": sqlite_phrase_lookup.get("error_code"),
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+        }
+    )
 
     if not source_surface_policy["allowed"]:
         intent_name = "unknown.unsupported"
@@ -228,6 +344,12 @@ def _stage6f_router_response(body):
         "dispatch_performed": False,
         "source_surface_policy": source_surface_policy,
         "decision_trace": decision_trace,
+        "router_lookup": {
+            "stage": "6AF",
+            "sqlite_phrase_lookup": sqlite_phrase_lookup,
+            "dispatch_performed": False,
+            "model_call_required": False,
+        },
         "language": {
             "detected": language_detected,
             "profile_default": "en",
