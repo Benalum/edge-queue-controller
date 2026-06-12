@@ -1,0 +1,459 @@
+Stage 5P-10A Companion Queue Position Audit Report
+
+=== Backend queue route/function markers ===
+18:DB_PATH = Path("edge_queue.sqlite3")
+35:HEARTBEAT_SHARED_SECRET = os.getenv("HEARTBEAT_SHARED_SECRET", "")
+45:    title="Edge Queue Controller",
+47:    description="Always-on edge queue and future Wake-on-LAN controller.",
+65:            CREATE TABLE IF NOT EXISTS jobs (
+70:                status TEXT NOT NULL DEFAULT 'queued',
+170:            VALUES (?, ?, ?, 'queued', ?, ?)
+207:@app.get("/queue/summary")
+208:def queue_summary():
+227:        "queued": 0,
+324:        "source": "laptop-edge-queue",
+393:    If no healthy/capable worker exists, the edge job stays queued.
+454:        queued_jobs = conn.execute(
+457:            WHERE status = 'queued'
+465:    if not queued_jobs:
+477:                    "reason": "No queued edge jobs.",
+493:                "queued_jobs": len(queued_jobs),
+529:                        "action": "kept_queued_worker_not_ready",
+577:                "queued_jobs": len(queued_jobs),
+594:    for row in queued_jobs:
+615:                    "action": "kept_queued",
+654:            CREATE TABLE IF NOT EXISTS workers (
+663:                queue_depth INTEGER NOT NULL DEFAULT 0,
+674:                last_heartbeat_at TEXT NOT NULL,
+682:            CREATE TABLE IF NOT EXISTS worker_events (
+695:class WorkerHeartbeatRequest(BaseModel):
+705:    queue_depth: int = 0
+751:    heartbeat_age_seconds = None
+752:    last_heartbeat_at = data.get("last_heartbeat_at")
+754:    if last_heartbeat_at:
+756:            text = str(last_heartbeat_at).replace("Z", "+00:00")
+760:            heartbeat_age_seconds = max(0, int((_datetime.now(_timezone.utc) - parsed).total_seconds()))
+762:            heartbeat_age_seconds = None
+764:    data["heartbeat_age_seconds"] = heartbeat_age_seconds
+771:                "WORKER_HEARTBEAT_STALE_SECONDS",
+772:                _os.getenv("EDGE_WORKER_HEARTBEAT_STALE_SECONDS", "120"),
+795:    elif heartbeat_age_seconds is None or heartbeat_age_seconds > stale_after_seconds:
+866:    score += int(worker.get("queue_depth") or 0) * 100
+880:@app.post("/workers/heartbeat")
+881:def worker_heartbeat(
+882:    payload: WorkerHeartbeatRequest,
+883:    x_heartbeat_token: str | None = Header(default=None, alias="X-Heartbeat-Token"),
+885:    if not HEARTBEAT_SHARED_SECRET:
+886:        raise HTTPException(status_code=500, detail="HEARTBEAT_SHARED_SECRET is not configured.")
+888:    if not x_heartbeat_token or x_heartbeat_token != HEARTBEAT_SHARED_SECRET:
+889:        raise HTTPException(status_code=401, detail="Invalid heartbeat token.")
+914:                    queue_depth = ?,
+922:                    last_heartbeat_at = ?,
+934:                    payload.queue_depth,
+959:                    queue_depth,
+970:                    last_heartbeat_at,
+984:                    payload.queue_depth,
+1003:                VALUES (?, 'first_seen', 'Worker registered by heartbeat.', ?)
+1062:            WHERE status = 'queued'
+1120:        "queued_jobs": len(plans),
+1447:            "queue_controller.db",
+1448:            "queue_controller.sqlite",
+1449:            "queue_controller.sqlite3",
+1596:      1. If the queue has been empty for EDGE_IDLE_CONTAINER_SECONDS,
+1666:            "edge_queue.sqlite3",
+1667:            "edge_queue.sqlite",
+1668:            "edge_queue.db",
+1672:            "queue_controller.db",
+1673:            "queue_controller.sqlite",
+1674:            "queue_controller.sqlite3",
+1696:            CREATE TABLE IF NOT EXISTS power_idle_state (
+1706:            CREATE TABLE IF NOT EXISTS power_events (
+1812:        worker_queue_depth_total = 0
+1821:                worker_queue_depth_total += int(worker.get("queue_depth") or 0)
+1823:                worker_queue_depth_total += 0
+1827:        queue_now_empty = (
+1831:            and worker_queue_depth_total == 0
+1834:        previous_queue_empty_since = get_state("queue_empty_since")
+1836:        if queue_now_empty:
+1837:            if not previous_queue_empty_since:
+1838:                previous_queue_empty_since = now.isoformat()
+1839:                set_state("queue_empty_since", previous_queue_empty_since)
+1841:            clear_state("queue_empty_since")
+1842:            previous_queue_empty_since = None
+1844:        queue_empty_for_seconds = seconds_since(previous_queue_empty_since)
+1859:                queue_depth = int(worker.get("queue_depth") or 0)
+1861:                queue_depth = 0
+1866:            if not queue_now_empty:
+1867:                action = "no_action_queue_not_empty_or_unknown"
+1868:                reason = "Queue is not empty, jobs table could not be evaluated, or worker still has work."
+1869:            elif queue_empty_for_seconds < container_idle_seconds_required:
+1871:                reason = f"Queue empty for {queue_empty_for_seconds}s; waiting for {container_idle_seconds_required}s."
+1872:            elif current_jobs != 0 or queue_depth != 0:
+1874:                reason = "Worker still reports current jobs or queue depth."
+1883:                reason = "Queue has been empty long enough and target is allowlisted, but dry-run is enabled."
+1886:                reason = "Queue has been empty long enough and target is allowlisted; guarded stop execution is enabled."
+1894:                    "queue_depth": queue_depth,
+1916:            queue_now_empty
+1917:            and queue_empty_for_seconds >= container_idle_seconds_required
+1940:        # Only query Proxmox inventory after the queue/container idle grace period
+1957:                host_reason = "Queue/container idle requirements are not satisfied yet."
+2015:            "queue": {
+2021:                "worker_queue_depth_total": worker_queue_depth_total,
+2022:                "queue_now_empty": queue_now_empty,
+2023:                "queue_empty_since": previous_queue_empty_since,
+2024:                "queue_empty_for_seconds": queue_empty_for_seconds,
+2475:            "queue": idle_result.get("queue"),
+2826:    queue = idle_result.get("queue", {})
+2830:    queue_now_empty = bool(queue.get("queue_now_empty"))
+2831:    active_jobs_count = queue.get("active_jobs_count")
+2832:    worker_busy_count = queue.get("worker_busy_count")
+2833:    worker_queue_depth_total = queue.get("worker_queue_depth_total")
+2843:        and queue_now_empty
+2856:    if not queue_now_empty:
+2857:        blocked_reasons.append("Queue is not empty or could not be safely evaluated.")
+2865:    if worker_queue_depth_total not in (0, None):
+2866:        blocked_reasons.append(f"worker_queue_depth_total is {worker_queue_depth_total}, not 0.")
+2892:        "queue": queue,
+3095:    queue_demand = _power_auto_queue_demand_state()
+3172:    # as start demand even when there are no queued jobs.
+3173:    if web_container_required and not queue_demand.get("has_start_demand"):
+3174:        queue_demand["has_start_demand"] = True
+3175:        queue_demand["reason"] = "web_presence_container_required"
+3176:        queue_demand["source"] = "web_presence_power_policy"
+3177:        queue_demand["web_presence_container_required"] = True
+3179:        # Queue auto-start can remain off for normal jobs, but authenticated
+3188:        0 if queue_demand.get("web_presence_container_required") else 10
+3218:    if queue_demand.get("has_start_demand"):
+3228:                        "reason": "Queued jobs exist and worker target is stopped/eligible, but EDGE_POWER_AUTO_START_WORKERS=0.",
+3229:                        "queue_demand": queue_demand,
+3240:                        "reason": "Queued jobs exist and worker target is stopped/eligible, but EDGE_POWER_EXECUTE_WAKE_AND_START=0.",
+3241:                        "queue_demand": queue_demand,
+3259:                        "reason": "Queued jobs exist, worker target is stopped/eligible, and guarded wake-and-start execution was called.",
+3260:                        "queue_demand": queue_demand,
+3273:                    "reason": "Queued jobs exist, worker target is already running, and worker registry shows available.",
+3274:                    "queue_demand": queue_demand,
+3288:                        "queue_demand": queue_demand,
+3300:                        "queue_demand": queue_demand,
+3319:                        "queue_demand": queue_demand,
+3333:                    "queue_demand": queue_demand,
+3344:                "reason": "No queued jobs require a worker start.",
+3345:                "queue_demand": queue_demand,
+3353:    if queue_demand.get("has_start_demand"):
+3357:                "action": "skip_worker_stop_due_to_queue_demand",
+3359:                "reason": "Queued jobs exist, so auto-stop is skipped.",
+3360:                "queue_demand": queue_demand,
+3540:        "edge_queue.sqlite3",
+3541:        "edge_queue.sqlite",
+3542:        "edge_queue.db",
+3546:        "queue_controller.db",
+3547:        "queue_controller.sqlite",
+3548:        "queue_controller.sqlite3",
+3566:        CREATE TABLE IF NOT EXISTS power_auto_state (
+4661:        last_heartbeat_at = worker.get("last_heartbeat_at")
+4662:        heartbeat_age_seconds = None
+4664:        if last_heartbeat_at:
+4666:                heartbeat_dt = datetime.fromisoformat(str(last_heartbeat_at))
+4667:                if heartbeat_dt.tzinfo is None:
+4668:                    heartbeat_dt = heartbeat_dt.replace(tzinfo=timezone.utc)
+4669:                heartbeat_age_seconds = int((now - heartbeat_dt).total_seconds())
+4671:                heartbeat_age_seconds = None
+4677:        queue_depth = int(worker.get("queue_depth") or 0)
+4685:        elif heartbeat_age_seconds is None or heartbeat_age_seconds > stale_after_seconds:
+4689:        elif current_jobs >= max_concurrent_jobs or queue_depth > 0:
+4694:        worker["heartbeat_age_seconds"] = heartbeat_age_seconds
+4712:# Power auto-start queue demand helper
+4714:def _power_auto_queue_demand_state():
+4716:    Read queued job demand directly from SQLite.
+4740:                "queued_job_count": 0,
+4759:            "queued",
+4773:        queued_job_count = sum(
+4789:            "queued_job_count": queued_job_count,
+4792:            "has_start_demand": queued_job_count > 0,
+4808:    This avoids waiting for a heartbeat POST while the controller is already inside
+4850:                queue_depth = 0,
+4852:                last_heartbeat_at = ?,
+4934:        "status": "queued",
+5030:    Directly forward queued ollama_chat jobs to Ollama.
+5057:            WHERE status = 'queued'
+5064:    queued_jobs = [row_to_dict(row) for row in rows]
+5065:    ollama_jobs = [job for job in queued_jobs if job.get("job_type") == "ollama_chat"]
+5071:    if not queued_jobs:
+5076:            "reason": "No queued jobs.",
+5087:            "reason": "Queued jobs exist, but none are ollama_chat jobs.",
+5088:            "queued_job_count": len(queued_jobs),
+5101:            "queued_job_count": len(queued_jobs),
+5115:            "queued_job_count": len(queued_jobs),
+5130:            "queued_job_count": len(queued_jobs),
+5150:        "queued_job_count": len(queued_jobs),
+5208:                queue_depth = 0,
+5274:            CREATE TABLE IF NOT EXISTS job_results (
+5417:            VALUES (?, ?, ?, ?, 'queued', 0, NULL, ?, ?, NULL)
+5487:        "message": "Job queued. Poll the job URL for status and result.",
+5624:        "queue": {
+5626:            "queued": job_counts.get("queued", 0),
+5661:            CREATE TABLE IF NOT EXISTS app_users (
+5676:            CREATE TABLE IF NOT EXISTS user_sessions (
+5692:            CREATE TABLE IF NOT EXISTS pending_email_signups (
+5711:            CREATE TABLE IF NOT EXISTS password_reset_tokens (
+5908:            raise HTTPException(status_code=400, detail="Verification link expired. Please register again.")
+6378:@app.post("/public/auth/register")
+6379:async def public_auth_register(request: Request):
+6766:            CREATE TABLE IF NOT EXISTS study_decks (
+6781:            CREATE TABLE IF NOT EXISTS study_cards (
+6801:            CREATE TABLE IF NOT EXISTS study_reviews (
+6913:            "CREATE TABLE IF NOT EXISTS study_sessions ("
+6919:            "queue_json TEXT, "
+6920:            "queue_position INTEGER NOT NULL DEFAULT 0, "
+6947:            "queue_position": 0,
+6948:            "queue_count": 0,
+6959:    queue_count = 0
+6961:        queue_items = json.loads(item.get("queue_json") or "[]")
+6962:        if isinstance(queue_items, list):
+6963:            queue_count = len(queue_items)
+6965:        queue_count = 0
+6972:        "queue_position": int(item.get("queue_position") or 0),
+6973:        "queue_count": queue_count,
+7016:def _study_build_session_queue(user_id: int, deck_id: int):
+7051:    queue = _study_build_session_queue(user_id, deck_id)
+7052:    if not queue:
+7070:            "user_id, deck_id, status, current_card_id, queue_json, queue_position, "
+7077:                int(queue[0]),
+7078:                json.dumps(queue),
+7263:            "queue_lane": "companion-small",
+7273:            "queue_lane": "study-small",
+
+=== Frontend queued Companion markers ===
+3253:// Minimal wrapper-native Chat UI wired to the already working /api/chat/queued API.
+3255:const queuedChatUiState = {
+3261:function queuedChatEscape(value) {
+3270:function queuedChatSetStatus(text) {
+3271:  const el = document.getElementById("queuedChatStatus");
+3275:function queuedChatRenderMessages() {
+3276:  const el = document.getElementById("queuedChatMessages");
+3279:  if (!queuedChatUiState.messages.length) {
+3284:  el.innerHTML = queuedChatUiState.messages.map((msg) => `
+3286:      <span>${queuedChatEscape(msg.role)}</span>
+3287:      <strong>${queuedChatEscape(msg.content)}</strong>
+3288:      ${msg.detail ? `<p>${queuedChatEscape(msg.detail)}</p>` : ""}
+3293:function renderQueuedChatPage() {
+3298:  // the existing queued chat IDs used by bindQueuedChatPage / queuedChatSubmit.
+3301:      <section class="page-card stage5p8h-companion-page stage5p8h-companion-public" data-stage5p8h-canonical-companion="true">
+3312:    <section class="stage5p8h-companion-page" data-stage5p8h-canonical-companion="true" aria-label="Companion workspace">
+3313:      <div class="stage5p8h-companion-hero">
+3315:          <p class="stage5p8h-eyebrow">Companion</p>
+3319:        <div class="stage5p8h-hero-badge">Queue-aware UI</div>
+3322:      <div class="stage5p8h-companion-grid">
+3323:        <section class="stage5p8h-conversation-card" aria-label="Companion conversation">
+3324:          <div class="stage5p8h-empty-state">
+3325:            <div class="stage5p8h-empty-icon">💬</div>
+3332:          <section class="stage5p8h-message-stream">
+3334:            <div id="queuedChatMessages" class="stage5p8h-message-list"></div>
+3337:          <form id="queuedChatForm" class="stage5p8h-message-form">
+3338:            <label for="queuedChatInput">Message</label>
+3339:            <textarea id="queuedChatInput" rows="5" placeholder="Message Companion..."></textarea>
+3341:            <div class="stage5p8h-actions">
+3342:              <button class="stage5p8h-send-button" type="submit" id="queuedChatSendBtn">Send message</button>
+3343:              <button class="stage5p8h-clear-button" type="button" id="queuedChatClearBtn">Clear</button>
+3348:        <aside class="stage5p8h-status-rail" aria-label="Companion status">
+3349:          <section class="stage5p8h-status-card">
+3350:            <p class="stage5p8h-eyebrow">Companion status</p>
+3351:            <div class="stage5p8h-status-row">
+3353:              <strong id="queuedChatStatus">Ready</strong>
+3355:            <div class="stage5p8h-status-row">
+3359:            <div class="stage5p8h-status-row">
+3365:          <section class="stage5p8h-status-card">
+3366:            <p class="stage5p8h-eyebrow">How this works</p>
+3368:              Messages continue through /api/chat/queued. The page polls the existing job status endpoint and displays the final assistant reply without changing backend behavior.
+3372:          <section class="stage5p8h-status-card">
+3373:            <p class="stage5p8h-eyebrow">Study context</p>
+3384:async function queuedChatPollJob(jobId) {
+3386:    queuedChatSetStatus(`Waiting for worker... poll ${i + 1}`);
+3388:    const res = await fetch(`/api/chat/queued/${encodeURIComponent(jobId)}`, {
+3421:async function queuedChatSubmit(event) {
+3424:  if (queuedChatUiState.busy) return;
+3426:  const input = document.getElementById("queuedChatInput");
+3427:  const button = document.getElementById("queuedChatSendBtn");
+3431:    queuedChatSetStatus("Enter a message first.");
+3435:  queuedChatUiState.busy = true;
+3438:  queuedChatUiState.messages.push({ role: "You", content: message });
+3439:  queuedChatRenderMessages();
+3444:    queuedChatSetStatus("Creating queued job...");
+3446:    const res = await fetch("/api/chat/queued", {
+3470:    queuedChatUiState.lastJobId = jobId;
+3471:    queuedChatUiState.messages.push({
+3476:    queuedChatRenderMessages();
+3478:    const final = await queuedChatPollJob(jobId);
+3480:    queuedChatUiState.messages.push({
+3485:    queuedChatSetStatus("Complete");
+3486:    queuedChatRenderMessages();
+3488:    queuedChatUiState.messages.push({
+3492:    queuedChatSetStatus("Error");
+3493:    queuedChatRenderMessages();
+3495:    queuedChatUiState.busy = false;
+3500:function bindQueuedChatPage() {
+3501:  queuedChatRenderMessages();
+3503:  const form = document.getElementById("queuedChatForm");
+3505:    form.onsubmit = queuedChatSubmit;
+3508:  const clearBtn = document.getElementById("queuedChatClearBtn");
+3511:      queuedChatUiState.messages = [];
+3512:      queuedChatSetStatus("Ready");
+3513:      queuedChatRenderMessages();
+3831:    $("app").innerHTML = renderQueuedChatPage();
+3832:    bindQueuedChatPage();
+6418:(function stage5f31QueuedChatFlagDetection(root) {
+6445:(function stage5f32QueuedChatSendBranch(root) {
+6448:  async function stage5f32SendQueuedChat(payload) {
+6472:    const response = await fetch("/api/chat/queued", {
+6498:    sendQueuedChat: stage5f32SendQueuedChat,
+6516:(function stage5f35QueuedChatStatusPollBranch(root) {
+6519:  async function stage5f35PollQueuedChatStatus(jobId, options) {
+6531:    const helper = root.QueuedChatStatusHelper;
+6533:    if (!helper || typeof helper.queuedChatBuildStatusView !== "function") {
+6549:    const response = await fetch(`/api/chat/queued/${encodeURIComponent(cleanJobId)}`, {
+6569:    const view = helper.queuedChatBuildStatusView(job, elapsedMs);
+6583:    pollQueuedChatStatus: stage5f35PollQueuedChatStatus,
+6601:(function stage5f37QueuedChatAssistantPlaceholderBranch(root) {
+6616:    const helper = root.QueuedChatStatusHelper;
+6618:    if (!helper || typeof helper.queuedChatBuildStatusView !== "function") {
+6626:    const view = helper.queuedChatBuildStatusView(job || {}, elapsedMs);
+6661:(function stage5f40QueuedChatSubmitDecisionBranch(root) {
+6664:  function stage5f40ShouldUseQueuedChatForSubmit(context) {
+6673:        shouldUseQueuedChat: false,
+6689:        shouldUseQueuedChat: false,
+6700:        shouldUseQueuedChat: false,
+6710:      shouldUseQueuedChat: true,
+6726:    shouldUseQueuedChatForSubmit: stage5f40ShouldUseQueuedChatForSubmit,
+6748:(function stage5f45QueuedChatSubmitDryRunBranch(root) {
+6751:  function stage5f45BuildQueuedChatSubmitDryRun(context) {
+6776:      wouldUseQueuedChat: false,
+6795:    buildQueuedChatSubmitDryRun: stage5f45BuildQueuedChatSubmitDryRun,
+6816:(function stage5f48QueuedChatSubmitPayloadBranch(root) {
+6819:  function stage5f48BuildQueuedChatSubmitPayload(context) {
+6856:    buildQueuedChatSubmitPayload: stage5f48BuildQueuedChatSubmitPayload,
+6874:(function stage5f51QueuedChatSubmitOrchestrationBranch(root) {
+6877:  async function stage5f51RunQueuedChatSubmitOrchestration(context, options) {
+6899:    if (!payloadBranch || typeof payloadBranch.buildQueuedChatSubmitPayload !== "function") {
+6910:    const payloadResult = payloadBranch.buildQueuedChatSubmitPayload(context || {});
+6923:    if (!decisionBranch || typeof decisionBranch.shouldUseQueuedChatForSubmit !== "function") {
+6934:    const decisionResult = decisionBranch.shouldUseQueuedChatForSubmit(payloadResult.payload);
+6936:    if (!decisionResult || decisionResult.shouldUseQueuedChat !== true) {
+6949:    if (!sendBranch || typeof sendBranch.sendQueuedChat !== "function") {
+6960:    const sendResult = await sendBranch.sendQueuedChat(payloadResult.payload);
+6989:    if (pollBranch && typeof pollBranch.pollQueuedChatStatus === "function") {
+6991:      statusResult = await pollBranch.pollQueuedChatStatus(sendResult.job_id, options || {});
+7015:    runQueuedChatSubmitOrchestration: stage5f51RunQueuedChatSubmitOrchestration,
+7659:  const stageClass = "stage5o35";
+7660:  const snapshotKey = "stage5o35CompanionQueueSnapshot";
+7744:    if (!url || !String(url).includes("/api/chat/queued") || !response || !response.clone) return;
+7764:    if (window.__stage5o35CompanionFetchObserver || typeof window.fetch !== "function") return;
+7773:    window.__stage5o35CompanionFetchObserver = true;
+7777:    const shell = document.querySelector(".stage5o35-companion-shell");
+7778:    return shell ? shell.querySelector("[data-stage5o35-field='" + name + "']") : null;
+7782:    const shell = document.querySelector(".stage5o35-companion-shell");
+7789:    const shell = document.querySelector(".stage5o35-companion-shell");
+7796:    const shell = document.querySelector(".stage5o35-companion-shell");
+7808:    const shell = document.querySelector(".stage5o35-companion-shell");
+7833:    const empty = shell.querySelector(".stage5o35-empty-state");
+7843:      input.classList.add("stage5o35-message-input");
+7852:        button.classList.add("stage5o35-send-button");
+7858:      msg.classList.add("stage5o35-message-bubble");
+7859:      if (role.includes("user")) msg.classList.add("stage5o35-user-bubble");
+7860:      if (role.includes("assistant")) msg.classList.add("stage5o35-assistant-bubble");
+7868:    // The Companion page now renders the polished layout directly in renderQueuedChatPage.
+7870:    const canonical = document.querySelector("[data-stage5p8h-canonical-companion='true']");
+7888:    const existingShell = root.querySelector(".stage5o35-companion-shell");
+7896:      return !child.classList.contains("stage5o35-companion-shell");
+7901:    shell.className = "stage5o35-companion-shell";
+7905:    hero.className = "stage5o35-companion-hero";
+7907:      '<div class="stage5o35-companion-hero-copy">',
+7908:      '<p class="stage5o35-eyebrow">Companion</p>',
+7912:      '<div class="stage5o35-companion-hero-badge">Queue-aware UI</div>'
+7916:    grid.className = "stage5o35-companion-grid";
+7919:    main.className = "stage5o35-companion-main";
+7922:    conversation.className = "stage5o35-conversation-card";
+7925:    empty.className = "stage5o35-empty-state";
+7927:      '<div class="stage5o35-empty-icon">💬</div>',
+7935:    legacy.className = "stage5o35-existing-companion-ui";
+7945:    aside.className = "stage5o35-companion-aside";
+7947:      '<section class="stage5o35-status-card">',
+7948:      '<div class="stage5o35-card-title-row"><h2>Companion status</h2><span class="stage5o35-live-dot"></span></div>',
+7950:      '<div><dt>Queue</dt><dd data-stage5o35-field="queueStatus">ready</dd></div>',
+7951:      '<div><dt>Worker</dt><dd data-stage5o35-field="worker">local worker pool</dd></div>',
+7952:      '<div><dt>Model</dt><dd data-stage5o35-field="model">backend default</dd></div>',
+7955:      '<section class="stage5o35-status-card">',
+7958:      '<div><dt>Job id</dt><dd data-stage5o35-field="jobId">no recent job</dd></div>',
+7959:      '<div><dt>Updated</dt><dd data-stage5o35-field="updatedAt">not started this session</dd></div>',
+7962:      '<section class="stage5o35-status-card stage5o35-how-card">',
+7964:      '<p>Messages continue through <code>/api/chat/queued</code>. The page watches the same polling flow and displays queue state without changing backend behavior.</p>',
+7966:      '<section class="stage5o35-status-card stage5o35-toggle-card">',
+7971:      '<button type="button" class="stage5o35-toggle" disabled aria-disabled="true">Coming next</button>',
+
+=== SQLite queue-like tables ===
+Database: edge_queue.sqlite3
+
+Table: job_results
+Columns:
+  - job_id INTEGER
+  - model TEXT
+  - response_text TEXT
+  - response_json TEXT
+  - error TEXT
+  - created_at TEXT
+  - updated_at TEXT
+Row count: 6
+
+Table: jobs
+Columns:
+  - id INTEGER
+  - job_type TEXT
+  - prompt TEXT
+  - requested_model TEXT
+  - status TEXT
+  - attempts INTEGER
+  - last_error TEXT
+  - created_at TEXT
+  - updated_at TEXT
+  - forwarded_at TEXT
+  - user_id INTEGER
+Row count: 20
+
+Table: worker_events
+Columns:
+  - id INTEGER
+  - worker_id TEXT
+  - event_type TEXT
+  - message TEXT
+  - created_at TEXT
+Row count: 3
+
+Table: workers
+Columns:
+  - worker_id TEXT
+  - name TEXT
+  - host_id TEXT
+  - target_name TEXT
+  - status TEXT
+  - capabilities_json TEXT
+  - current_jobs INTEGER
+  - max_concurrent_jobs INTEGER
+  - queue_depth INTEGER
+  - cpu_percent REAL
+  - ram_total_mb INTEGER
+  - ram_free_mb INTEGER
+  - gpu_name TEXT
+  - vram_total_mb INTEGER
+  - vram_free_mb INTEGER
+  - consecutive_failures INTEGER
+  - restart_attempts INTEGER
+  - last_error TEXT
+  - first_seen_at TEXT
+  - last_heartbeat_at TEXT
+  - updated_at TEXT
+Row count: 1
+
+=== Recommended next implementation ===
+Add GET /api/chat/queue/status with optional job_id.
+Use existing queue table ordering by created_at/id for queued jobs.
+Return waiting_count, running_count, total_active, job_status, position, and ahead_count.
+Frontend should display this in the canonical Companion status rail.
+Do not change POST /api/chat/queued or worker claim behavior.
