@@ -2,6 +2,7 @@ import os
 import json
 import sqlite3
 import subprocess
+import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -2105,7 +2106,8 @@ async def proxmox_inventory():
     ]
 
     try:
-        result = subprocess.run(
+        result = await asyncio.to_thread(
+            subprocess.run,
             cmd,
             text=True,
             capture_output=True,
