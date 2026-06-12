@@ -5046,7 +5046,7 @@ async function loadSystemStatus() {
 
   systemStatusLoadInFlight = (async () => {
   try {
-    const data = await api("/system/public-status", {
+    const data = await api("/system/status", {
       method: "GET",
     });
     lastStatus = data;
