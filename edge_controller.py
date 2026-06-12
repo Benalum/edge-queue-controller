@@ -15178,6 +15178,137 @@ async def public_chat_queue_status(request: Request):
 
 
 
+
+# STAGE_5P10E_NATIVE_QUEUE_SESSION_BRIDGE_BEGIN
+def _s5p10e_native_queue_auth_user_from_session_token(session_token: str | None):
+    clean_token = str(session_token or "").strip()
+    if not clean_token:
+        return None
+
+    try:
+        token_hash = _auth_hash_token(clean_token)
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            row = conn.execute(
+                """
+                SELECT
+                    s.id AS native_session_id,
+                    s.user_id AS native_user_id,
+                    u.email AS email,
+                    COALESCE(u.display_name, '') AS display_name,
+                    COALESCE(u.role, '') AS role,
+                    COALESCE(u.status, '') AS status
+                FROM user_sessions s
+                JOIN app_users u
+                  ON u.id = s.user_id
+                WHERE s.token_hash = ?
+                  AND s.revoked_at IS NULL
+                  AND s.expires_at > ?
+                  AND u.status = 'active'
+                LIMIT 1
+                """,
+                (token_hash, _auth_now_iso()),
+            ).fetchone()
+    except Exception:
+        row = None
+
+    if not row:
+        return None
+
+    from edge_modules.chat_queue_persistence import _psql_run, _sql_literal
+    from edge_modules.chat_queue_session_auth import hash_session_token
+
+    native_user_id = str(row["native_user_id"])
+    queue_user_id = "native:" + native_user_id
+    queue_session_id = "native-edge-session-" + str(row["native_session_id"])
+    email = str(row["email"] or f"native+{native_user_id}@local").strip()
+    display_name = str(row["display_name"] or email.split("@", 1)[0]).strip()
+    is_admin = str(row["role"] or "").strip().lower() == "admin"
+    queue_token_hash = hash_session_token(clean_token)
+
+    _psql_run(
+        f"""
+        BEGIN;
+
+        INSERT INTO app_users (
+          id,
+          email,
+          display_name,
+          password_hash,
+          is_active,
+          is_admin,
+          created_at,
+          updated_at
+        )
+        VALUES (
+          {_sql_literal(queue_user_id)},
+          {_sql_literal(email)},
+          {_sql_literal(display_name)},
+          NULL,
+          TRUE,
+          {'TRUE' if is_admin else 'FALSE'},
+          now(),
+          now()
+        )
+        ON CONFLICT (id) DO UPDATE
+        SET email = EXCLUDED.email,
+            display_name = EXCLUDED.display_name,
+            is_active = TRUE,
+            is_admin = EXCLUDED.is_admin,
+            updated_at = now();
+
+        DELETE FROM app_sessions
+        WHERE token_hash = {_sql_literal(queue_token_hash)}
+          AND id <> {_sql_literal(queue_session_id)};
+
+        INSERT INTO app_sessions (
+          id,
+          user_id,
+          token_hash,
+          created_at,
+          expires_at,
+          revoked_at
+        )
+        VALUES (
+          {_sql_literal(queue_session_id)},
+          {_sql_literal(queue_user_id)},
+          {_sql_literal(queue_token_hash)},
+          now(),
+          now() + interval '12 hours',
+          NULL
+        )
+        ON CONFLICT (id) DO UPDATE
+        SET user_id = EXCLUDED.user_id,
+            token_hash = EXCLUDED.token_hash,
+            expires_at = EXCLUDED.expires_at,
+            revoked_at = NULL;
+
+        COMMIT;
+        """
+    )
+
+    return _S5G14TrustedQueuedAuthUser(
+        user_id=queue_user_id,
+        session_id=queue_session_id,
+        email=email,
+    )
+
+
+def _s5p10e_resolve_queue_auth_user(session_token: str | None):
+    try:
+        return _s5f17_resolve_authenticated_user_from_session_token(
+            session_token=session_token
+        )
+    except _S5F17_QueuedChatSessionAuthError:
+        native_user = _s5p10e_native_queue_auth_user_from_session_token(session_token)
+        if native_user:
+            return native_user
+
+        raise
+# STAGE_5P10E_NATIVE_QUEUE_SESSION_BRIDGE_END
+
+
+
 @app.post("/api/chat/queued")
 async def s5f9_create_queued_chat(
     request: _S5F9QueuedChatRequest,
@@ -15233,7 +15364,7 @@ async def s5f9_create_queued_chat(
             if trusted_user_for_refresh:
                 auth_user = _s5g14_trusted_queued_auth_user(trusted_user_for_refresh)
             else:
-                auth_user = _s5f17_resolve_authenticated_user_from_session_token(
+                auth_user = _s5p10e_resolve_queue_auth_user(
                     session_token=x_queued_chat_session_token
                 )
         except _S5F17_QueuedChatSessionAuthError as exc:
@@ -15385,7 +15516,7 @@ async def s5f9_get_queued_chat_status(
             if trusted_user_for_refresh:
                 auth_user = _s5g14_trusted_queued_auth_user(trusted_user_for_refresh)
             else:
-                auth_user = _s5f17_resolve_authenticated_user_from_session_token(
+                auth_user = _s5p10e_resolve_queue_auth_user(
                     session_token=x_queued_chat_session_token
                 )
         except _S5F17_QueuedChatSessionAuthError as exc:

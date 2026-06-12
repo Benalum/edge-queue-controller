@@ -3381,13 +3381,42 @@ function renderQueuedChatPage() {
 }
 
 
+
+
+// STAGE_5P10D_COMPANION_QUEUE_AUTH_HEADERS_BEGIN
+function queuedChatSessionToken() {
+  try {
+    return String(
+      authState?.token
+      || window.localStorage.getItem("edgeStudyToken")
+      || ""
+    ).trim();
+  } catch (err) {
+    return String(authState?.token || "").trim();
+  }
+}
+
+function queuedChatAuthHeaders() {
+  const headers = { "Content-Type": "application/json" };
+  const token = queuedChatSessionToken();
+
+  if (token) {
+    headers.Authorization = "Bearer " + token;
+    headers["X-Queued-Chat-Session-Token"] = token;
+  }
+
+  return headers;
+}
+// STAGE_5P10D_COMPANION_QUEUE_AUTH_HEADERS_END
+
 async function queuedChatPollJob(jobId) {
   for (let i = 0; i < 80; i++) {
     queuedChatSetStatus(`Waiting for worker... poll ${i + 1}`);
 
     const res = await fetch(`/api/chat/queued/${encodeURIComponent(jobId)}`, {
       credentials: "include",
-      cache: "no-store"
+      cache: "no-store",
+      headers: queuedChatAuthHeaders()
     });
 
     const text = await res.text();
@@ -3446,11 +3475,14 @@ async function queuedChatSubmit(event) {
     const res = await fetch("/api/chat/queued", {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: queuedChatAuthHeaders(),
       body: JSON.stringify({
         message,
         requested_model: "gemma4:e4b",
-        chat_id: `wrapper-chat-${Date.now()}`,
+        // STAGE_5P10E_COMPANION_OMIT_CLIENT_CHAT_ID_BEGIN
+        // Let the server create an owned chat for the authenticated user.
+        // Sending a new client chat_id fails ownership validation.
+        // STAGE_5P10E_COMPANION_OMIT_CLIENT_CHAT_ID_END
         mode: "chat"
       })
     });
