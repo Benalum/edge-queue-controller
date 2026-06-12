@@ -7228,6 +7228,202 @@ async def public_study_session_stop(request: Request):
 # STAGE_5P3B_STUDY_SESSION_LIFECYCLE_END
 
 
+# STAGE_5P4_STUDY_INTENT_PARSER_BEGIN
+def _study_normalize_intent_text(message: str) -> str:
+    raw = str(message or "").strip().lower()
+    cleaned = []
+    for ch in raw:
+        if ch.isalnum() or ch.isspace():
+            cleaned.append(ch)
+        else:
+            cleaned.append(" ")
+    return " ".join("".join(cleaned).split())
+
+
+def _study_text_has_any(text: str, words: tuple[str, ...]) -> bool:
+    tokens = set(text.split())
+    return any(word in tokens for word in words)
+
+
+def _study_parse_deterministic_intent(message: str, session_status: str = "none"):
+    text = _study_normalize_intent_text(message)
+    tokens = set(text.split())
+
+    has_study = "study" in tokens
+    has_session = "session" in tokens
+    active_statuses = {"active", "reviewing_answer", "waiting_for_mark", "paused"}
+    has_active_session = str(session_status or "none") in active_statuses
+
+    if not text:
+        return {
+            "intent": "unknown",
+            "command": None,
+            "session_required": False,
+            "model_tier": "small",
+            "queue_lane": "companion-small",
+            "reason": "Empty message.",
+        }
+
+    if has_study and has_session and _study_text_has_any(text, ("start", "begin", "deck", "cards")):
+        return {
+            "intent": "study_session_start",
+            "command": "start",
+            "session_required": False,
+            "model_tier": "small",
+            "queue_lane": "study-small",
+            "reason": "Message contains study + session + start/begin/deck/cards.",
+        }
+
+    if has_study and has_session and _study_text_has_any(text, ("pause", "hold")):
+        return {
+            "intent": "study_session_pause",
+            "command": "pause",
+            "session_required": True,
+            "model_tier": "small",
+            "queue_lane": "study-small",
+            "reason": "Message contains study + session + pause/hold.",
+        }
+
+    if has_study and has_session and _study_text_has_any(text, ("resume", "continue")):
+        return {
+            "intent": "study_session_resume",
+            "command": "resume",
+            "session_required": True,
+            "model_tier": "small",
+            "queue_lane": "study-small",
+            "reason": "Message contains study + session + resume/continue.",
+        }
+
+    if has_study and has_session and _study_text_has_any(text, ("stop", "end", "finish", "quit")):
+        return {
+            "intent": "study_session_stop",
+            "command": "stop",
+            "session_required": True,
+            "model_tier": "small",
+            "queue_lane": "study-small",
+            "reason": "Message contains study + session + stop/end/finish/quit.",
+        }
+
+    if has_study and has_session and _study_text_has_any(text, ("status", "state", "progress")):
+        return {
+            "intent": "study_session_status",
+            "command": "status",
+            "session_required": False,
+            "model_tier": "small",
+            "queue_lane": "study-small",
+            "reason": "Message contains study + session + status/state/progress.",
+        }
+
+    if has_active_session:
+        if "answer" in tokens and _study_text_has_any(text, ("read", "show", "tell", "what")):
+            return {
+                "intent": "study_read_answer",
+                "command": "read_answer",
+                "session_required": True,
+                "model_tier": "small",
+                "queue_lane": "study-small",
+                "reason": "Active study session and user requested the answer.",
+            }
+
+        if _study_text_has_any(text, ("correct", "right")) or "got it" in text:
+            return {
+                "intent": "study_mark_correct",
+                "command": "mark_correct",
+                "session_required": True,
+                "model_tier": "small",
+                "queue_lane": "study-small",
+                "reason": "Active study session and user marked correct.",
+            }
+
+        if _study_text_has_any(text, ("incorrect", "wrong")) or "missed it" in text:
+            return {
+                "intent": "study_mark_incorrect",
+                "command": "mark_incorrect",
+                "session_required": True,
+                "model_tier": "small",
+                "queue_lane": "study-small",
+                "reason": "Active study session and user marked incorrect.",
+            }
+
+        if _study_text_has_any(text, ("skip", "pass")):
+            return {
+                "intent": "study_skip",
+                "command": "skip",
+                "session_required": True,
+                "model_tier": "small",
+                "queue_lane": "study-small",
+                "reason": "Active study session and user requested skip/pass.",
+            }
+
+        if _study_text_has_any(text, ("next",)):
+            return {
+                "intent": "study_next_card",
+                "command": "next_card",
+                "session_required": True,
+                "model_tier": "small",
+                "queue_lane": "study-small",
+                "reason": "Active study session and user requested next card.",
+            }
+
+        return {
+            "intent": "study_answer_attempt",
+            "command": "submit_answer",
+            "session_required": True,
+            "model_tier": "small",
+            "queue_lane": "study-small",
+            "reason": "Active study session and message did not match a control command.",
+        }
+
+    if "explain" in tokens or "why" in tokens or "help" in tokens:
+        return {
+            "intent": "companion_study_help" if has_study else "general_companion_message",
+            "command": None,
+            "session_required": False,
+            "model_tier": "medium",
+            "queue_lane": "companion-medium",
+            "reason": "Message appears to request help or explanation.",
+        }
+
+    return {
+        "intent": "general_companion_message",
+        "command": None,
+        "session_required": False,
+        "model_tier": "small",
+        "queue_lane": "companion-small",
+        "reason": "No study-session command matched.",
+    }
+
+
+@app.post("/public/study/intent/parse")
+@app.post("/api/study/intent/parse")
+async def public_study_intent_parse(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    message = payload.get("message") if isinstance(payload, dict) else ""
+    session_status = payload.get("session_status") if isinstance(payload, dict) else None
+
+    if not session_status:
+        row = _study_get_current_session_for_user(user_id)
+        session_status = row["status"] if row else "none"
+
+    parsed = _study_parse_deterministic_intent(message, session_status=session_status)
+
+    return {
+        "ok": True,
+        "message": message,
+        "session_status": session_status,
+        **parsed,
+    }
+# STAGE_5P4_STUDY_INTENT_PARSER_END
+
+
+
 
 @app.post("/public/study/decks")
 @app.post("/api/study/decks")
