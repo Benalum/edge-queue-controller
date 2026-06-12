@@ -5,6 +5,6 @@ Requires=edge-queue-controller.service
 
 [Service]
 Type=oneshot
-TimeoutStartSec=10
-RuntimeMaxSec=12
-ExecStart=/usr/bin/true
+TimeoutStartSec=50
+RuntimeMaxSec=55
+ExecStart=/bin/bash -lc 'set -o pipefail; mkdir -p /var/log/edge-queue-controller; curl -fsS --connect-timeout 3 --max-time 45 -X POST http://127.0.0.1:7070/power/auto/tick | tee /var/log/edge-queue-controller/power-auto-tick-last.json >/dev/null'
