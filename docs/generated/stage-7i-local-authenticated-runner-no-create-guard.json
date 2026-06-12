@@ -1,0 +1,55 @@
+{
+  "stage": "7I",
+  "name": "local_authenticated_runner_no_create_guard",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_guardrails",
+  "purpose": "Prove the future authenticated shadow comparison runner has not been created yet and its references remain documentation/smoke-only.",
+  "future_runner": {
+    "planned_path": "ops/compare/run-authenticated-shadow-comparison.py",
+    "must_not_exist_yet": true,
+    "created_in_this_stage": false,
+    "runtime_wired": false,
+    "http_endpoint_exposed": false,
+    "frontend_wired": false,
+    "backend_wired": false,
+    "gateway_wired": false,
+    "systemd_wired": false
+  },
+  "allowed_reference_locations": [
+    "docs/generated/stage-7h-authenticated-shadow-comparison-runner-plan.json",
+    "docs/stage-7h-authenticated-shadow-comparison-runner-plan.md",
+    "ops/smoke/check-stage-7h-authenticated-shadow-comparison-runner-plan.sh",
+    "docs/generated/stage-7i-local-authenticated-runner-no-create-guard.json",
+    "docs/stage-7i-local-authenticated-runner-no-create-guard.md",
+    "ops/smoke/check-stage-7i-local-authenticated-runner-no-create-guard.sh"
+  ],
+  "blocked_runtime_locations": [
+    "edge_controller.py",
+    "frontend/",
+    "backend/",
+    "public_gateway.py",
+    "ops/systemd/"
+  ],
+  "guarded_reference_patterns": [
+    "ops/compare/run-authenticated-shadow-comparison.py",
+    "run-authenticated-shadow-comparison",
+    "EDGE_AUTH_SHADOW_COMPARE"
+  ],
+  "required_runtime_state": {
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false,
+    "runtime_wiring_changed": false
+  },
+  "safety_invariants": [
+    "runner has not been created",
+    "runner references are documentation/smoke-only",
+    "no auth environment variables are used by runtime code",
+    "no auth environment variables are used by frontend code",
+    "no auth environment variables are used by backend code",
+    "no auth environment variables are used by gateway code",
+    "no auth environment variables are used by systemd units",
+    "router dry-run endpoint remains disabled by default"
+  ]
+}
