@@ -7624,6 +7624,11 @@ async function handleResetPasswordRoute() {
   const snapshotKey = "stage5o35CompanionQueueSnapshot";
   let stageScheduled = false;
 
+  // STAGE_5P8G_COMPANION_REFRESH_LOOP_GUARD_BEGIN
+  let stageLastEnhanceAt = 0;
+  let stageLastCardUpdateAt = 0;
+  // STAGE_5P8G_COMPANION_REFRESH_LOOP_GUARD_END
+
   function stageRouteLooksCompanion() {
     const path = String(window.location.pathname || "").replace(/\/+$/, "");
     const hash = String(window.location.hash || "").toLowerCase();
@@ -7767,6 +7772,13 @@ async function handleResetPasswordRoute() {
     const shell = document.querySelector(".stage5o35-companion-shell");
     if (!shell) return;
 
+    // STAGE_5P8G_COMPANION_CARD_UPDATE_THROTTLE_BEGIN
+    // Prevent Companion card text mutations from retriggering the enhancer in a rapid loop.
+    const now = Date.now();
+    if (now - stageLastCardUpdateAt < 750) return;
+    stageLastCardUpdateAt = now;
+    // STAGE_5P8G_COMPANION_CARD_UPDATE_THROTTLE_END
+
     const snapshot = stageReadSnapshot();
     const status = snapshot.status || stageFindStatusFromText() || "ready";
     const model = snapshot.model || stageFindModelFromText() || "backend default";
@@ -7815,6 +7827,14 @@ async function handleResetPasswordRoute() {
 
   function stageEnhanceCompanion() {
     if (!stageRouteLooksCompanion()) return;
+
+    // STAGE_5P8G_COMPANION_ENHANCE_THROTTLE_BEGIN
+    // DOM updates from message/status rendering can trigger MutationObserver again.
+    // Throttle enhancement so Companion does not appear to constantly refresh.
+    const enhanceNow = Date.now();
+    if (enhanceNow - stageLastEnhanceAt < 1000) return;
+    stageLastEnhanceAt = enhanceNow;
+    // STAGE_5P8G_COMPANION_ENHANCE_THROTTLE_END
 
     const root = stageFindRoot();
     if (!stageHasInteractiveCompanion(root)) return;
