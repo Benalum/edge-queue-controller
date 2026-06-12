@@ -1,0 +1,81 @@
+{
+  "schema_name": "stage_6n_universal_intent_router_response_schema",
+  "required_top_level": [
+    "ok",
+    "dry_run",
+    "dispatch_performed",
+    "source_surface_policy",
+    "decision_trace",
+    "language",
+    "intent",
+    "target",
+    "model_routing",
+    "safety",
+    "confirmation_policy",
+    "actions",
+    "errors"
+  ],
+  "required_nested": {
+    "source_surface_policy": [
+      "allowed",
+      "policy",
+      "reason",
+      "source",
+      "surface",
+      "active_page",
+      "restricted_match",
+      "blocked_surface_groups"
+    ],
+    "language": [
+      "detected",
+      "profile_default",
+      "response_language",
+      "confidence"
+    ],
+    "intent": [
+      "name",
+      "confidence",
+      "confidence_band",
+      "slots",
+      "reason"
+    ],
+    "target": [
+      "route_class",
+      "handler",
+      "existing_route",
+      "method"
+    ],
+    "model_routing": [
+      "tier",
+      "model",
+      "model_call_required"
+    ],
+    "safety": [
+      "safety_class",
+      "requires_confirmation",
+      "allowed_in_dry_run",
+      "allowed_to_dispatch"
+    ],
+    "confirmation_policy": [
+      "requires_confirmation",
+      "would_require_confirmation_if_dispatch_enabled",
+      "confirmation_status",
+      "confidence_band",
+      "eligible_for_dispatch",
+      "dispatch_disabled_reason",
+      "route"
+    ]
+  },
+  "required_decision_trace_steps": [
+    "normalize_input",
+    "rule_result"
+  ],
+  "required_safety_values": {
+    "ok": true,
+    "dry_run": true,
+    "dispatch_performed": false,
+    "model_call_required": false,
+    "allowed_to_dispatch": false,
+    "eligible_for_dispatch": false
+  }
+}
