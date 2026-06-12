@@ -1,0 +1,78 @@
+{
+  "stage": "6U",
+  "name": "companion_router_adapter_plan",
+  "runtime_behavior_change": false,
+  "adapter_scope": "companion_only",
+  "purpose": "Define the future Companion adapter boundary before any Universal Intent Router wiring.",
+  "current_routes": [
+    {
+      "route": "/api/companion/chat",
+      "method": "POST",
+      "classification": "router_candidate",
+      "future_adapter_role": "route Companion conversational input through router observation before existing handler"
+    },
+    {
+      "route": "/api/chat/queued",
+      "method": "POST",
+      "classification": "router_candidate",
+      "future_adapter_role": "preserve queued chat behavior while adding router observation later"
+    }
+  ],
+  "initial_supported_intents": [
+    "companion.chat",
+    "unknown.general_chat"
+  ],
+  "explicitly_out_of_scope": [
+    "study command dispatch",
+    "calendar write",
+    "profile mutation",
+    "admin",
+    "auth",
+    "power",
+    "internal",
+    "system",
+    "worker",
+    "queue control",
+    "billing",
+    "password",
+    "security",
+    "model tier escalation without policy"
+  ],
+  "future_adapter_contract": {
+    "input": {
+      "text": "user text",
+      "source": "companion",
+      "surface": "companion_chat",
+      "active_page": "companion"
+    },
+    "router_requirements": {
+      "dry_run": true,
+      "dispatch_performed": false,
+      "allowed_to_dispatch": false,
+      "source_surface_policy_allowed": true,
+      "decision_trace_required": true,
+      "confirmation_policy_required": true
+    },
+    "future_model_requirements": {
+      "model_call_policy_required": true,
+      "tier_must_be_explicit": true,
+      "user_visible_behavior_must_not_change_during_shadow": true
+    }
+  },
+  "migration_steps": [
+    "keep existing Companion and queued chat handlers unchanged",
+    "add a Companion shadow adapter in a future stage",
+    "run router dry-run beside current Companion handling",
+    "compare router intent and model tier against current behavior",
+    "prove no user-visible behavior regression",
+    "only later enable safe adapter routing behind an explicit flag"
+  ],
+  "safety_invariants": [
+    "never dispatch during Stage 6U",
+    "never call a model during Stage 6U",
+    "never mutate calendar or profile state during Stage 6U",
+    "never route admin/auth/power/internal/system inputs through Companion adapter",
+    "preserve existing Companion behavior",
+    "preserve existing queued chat behavior"
+  ]
+}
