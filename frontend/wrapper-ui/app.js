@@ -3449,20 +3449,27 @@ function stage5p10fUpdateQueueDisplay(data) {
       return;
     }
 
+    // STAGE_5P10H_COMPANION_QUEUE_DISPLAY_POLISH_BEGIN
     if (["running", "claimed", "processing", "in_progress"].includes(status)) {
-      stage5p10fSetText("queuedChatQueueSummary", "running");
+      stage5p10fSetText("queuedChatQueueSummary", "Running");
       return;
     }
 
     if (["complete", "completed"].includes(status)) {
-      stage5p10fSetText("queuedChatQueueSummary", "complete");
+      stage5p10fSetText("queuedChatQueueSummary", "Done");
       return;
     }
 
-    if (["failed", "error", "cancelled"].includes(status)) {
-      stage5p10fSetText("queuedChatQueueSummary", status);
+    if (["failed", "error"].includes(status)) {
+      stage5p10fSetText("queuedChatQueueSummary", "Failed");
       return;
     }
+
+    if (["cancelled", "canceled"].includes(status)) {
+      stage5p10fSetText("queuedChatQueueSummary", "Cancelled");
+      return;
+    }
+    // STAGE_5P10H_COMPANION_QUEUE_DISPLAY_POLISH_END
   }
 
   if (total > 0) {
