@@ -7002,29 +7002,65 @@ async function sendWebPresence(reason = "") {
 
   webPresenceLastSentAt = now;
 
-  webPresenceInFlight = fetch(`${API_BASE}/presence/web`, {
-    method: "POST",
-    credentials: "include",
-    headers: webPresenceAuthHeaders(),
-    body: JSON.stringify({
-      visitor_id: getWebPresenceVisitorId(),
-      route: location.pathname,
-      active_seconds: activeSeconds,
-      visibility: document.visibilityState,
+  const presencePayload = {
+    visitor_id: getWebPresenceVisitorId(),
+    route: location.pathname,
+    active_seconds: activeSeconds,
+    visibility: document.visibilityState,
+    logged_in: webPresenceIsLoggedIn(),
+    metadata: {
+      reason,
       logged_in: webPresenceIsLoggedIn(),
-      metadata: {
-        reason,
-        logged_in: webPresenceIsLoggedIn(),
-        private_app: PRIVATE_APP_ROUTE_SET.has(location.pathname),
-      },
-    }),
-  }).then(async (response) => {
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || data.ok === false) {
-      throw new Error(data.detail || data.error || `presence HTTP ${response.status}`);
+      private_app: PRIVATE_APP_ROUTE_SET.has(location.pathname),
+    },
+  };
+
+  // STAGE_5P11S_PRESENCE_SEND_FALLBACK_BEGIN
+  // Use the wrapper api helper first because it knows the deployed route prefix.
+  // If that fails, fall back to direct backend routes for local/dev deployments.
+  webPresenceInFlight = (async () => {
+    const errors = [];
+
+    try {
+      return await api("/presence/web", {
+        method: "POST",
+        headers: webPresenceAuthHeaders(),
+        body: JSON.stringify(presencePayload),
+      });
+    } catch (err) {
+      errors.push("api:/presence/web: " + (err?.message || String(err)));
     }
-    return data;
-  })
+
+    const directUrls = [
+      "/system/presence/web",
+      "/api/presence/web",
+      `${API_BASE}/presence/web`,
+    ];
+
+    for (const url of directUrls) {
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          credentials: "include",
+          headers: webPresenceAuthHeaders(),
+          body: JSON.stringify(presencePayload),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data.ok === false) {
+          throw new Error(data.detail || data.error || `presence HTTP ${response.status}`);
+        }
+
+        return data;
+      } catch (err) {
+        errors.push(url + ": " + (err?.message || String(err)));
+      }
+    }
+
+    throw new Error("presence send failed: " + errors.join(" | "));
+  })()
+  // STAGE_5P11S_PRESENCE_SEND_FALLBACK_END
     .catch((err) => {
       console.warn("[presence] web presence failed", err);
     })

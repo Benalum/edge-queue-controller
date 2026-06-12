@@ -14270,6 +14270,10 @@ def _web_presence_hash(value):
     return _web_presence_hashlib.sha256(raw).hexdigest()
 
 
+# STAGE_5P11S_PRESENCE_ROUTE_ALIASES_BEGIN
+@app.post("/api/presence/web")
+@app.post("/presence/web")
+# STAGE_5P11S_PRESENCE_ROUTE_ALIASES_END
 @app.post("/system/presence/web")
 async def system_web_presence(request: Request):
     _web_presence_init_tables()
