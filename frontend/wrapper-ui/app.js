@@ -8170,6 +8170,13 @@ async function handleResetPasswordRoute() {
     const card = renderCard(root);
     if (!card) return;
 
+    // STAGE_5P8F_REFRESH_LOOP_GUARD_BEGIN
+    // Prevent status text mutations from causing MutationObserver -> enhance -> loadStatus loops.
+    // Manual Refresh and command buttons still update the card when clicked.
+    if (card.dataset.stage5p8aStatusLoaded === "true") return;
+    card.dataset.stage5p8aStatusLoaded = "true";
+    // STAGE_5P8F_REFRESH_LOOP_GUARD_END
+
     window.clearTimeout(refreshTimer);
     refreshTimer = window.setTimeout(function () {
       loadStatus(card);
@@ -8478,10 +8485,13 @@ async function handleResetPasswordRoute() {
 
     window.addEventListener("popstate", enhance);
     window.addEventListener("hashchange", enhance);
+    // STAGE_5P8F_CONTROL_INTERVAL_GUARD_BEGIN
+    // Keep button state updated, but avoid unnecessary rapid background UI churn.
     window.setInterval(function () {
       const card = findCard();
       if (isStudyRoute() && card) updateButtonState(card);
-    }, 2000);
+    }, 10000);
+    // STAGE_5P8F_CONTROL_INTERVAL_GUARD_END
   }
 
   document.addEventListener("DOMContentLoaded", install);
