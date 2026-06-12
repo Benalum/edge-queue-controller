@@ -1,0 +1,39 @@
+{
+  "stage": "7F",
+  "name": "authenticated_shadow_comparison_validator_no_wire_guard",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_guardrails",
+  "purpose": "Prove the Stage 7E artifact validator exists as an offline utility only and is not wired into runtime request handling.",
+  "validator": {
+    "path": "ops/validate/validate-authenticated-shadow-comparison-artifact.py",
+    "allowed_location": "ops/validate/",
+    "runtime_wired": false,
+    "http_endpoint_exposed": false,
+    "frontend_wired": false,
+    "backend_wired": false,
+    "gateway_wired": false,
+    "systemd_wired": false
+  },
+  "must_not_be_referenced_from": [
+    "edge_controller.py",
+    "frontend/",
+    "backend/",
+    "public_gateway.py",
+    "ops/systemd/"
+  ],
+  "required_runtime_state": {
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false
+  },
+  "safety_invariants": [
+    "validator remains offline-only",
+    "validator does not authenticate",
+    "validator does not call HTTP routes",
+    "validator does not dispatch router actions",
+    "validator does not call models",
+    "validator does not mutate Study, Companion, Chat, Calendar, Profile, admin, power, or system state",
+    "router dry-run endpoint remains disabled by default"
+  ]
+}
