@@ -3621,7 +3621,15 @@ function stage5p11iLooksLikeStudyCommand(message) {
     "skip",
     "pass",
     "next",
-    "next card"
+    "next card",
+    "list decks",
+    "list my decks",
+    "show decks",
+    "show my decks",
+    "what decks do i have",
+    "select deck",
+    "choose deck",
+    "use deck"
   ]);
 
   if (exact.has(text)) return true;
@@ -3629,6 +3637,14 @@ function stage5p11iLooksLikeStudyCommand(message) {
   const hasStudy = /\bstudy\b/.test(text);
   const hasSession = /\bsession\b/.test(text);
   const hasLifecycle = /\b(start|pause|resume|stop|end|status)\b/.test(text);
+
+  // STAGE_5P11P_COMPANION_DECK_SELECTION_LOOKS_LIKE_BEGIN
+  if (/\b(list|show)\b/.test(text) && /\bdecks?\b/.test(text)) return true;
+  if (/\b(what|which)\b/.test(text) && /\bdecks?\b/.test(text)) return true;
+  if (/\b(select|choose|use|switch to|change to)\b/.test(text) && /\bdecks?\b/.test(text)) return true;
+  if (/\bstart\b/.test(text) && /\bdecks?\b/.test(text)) return true;
+  if (/\bstart\b/.test(text) && /\b(my\s+)?[a-z0-9+#.'-]+\s+deck\b/.test(text)) return true;
+  // STAGE_5P11P_COMPANION_DECK_SELECTION_LOOKS_LIKE_END
 
   if (hasStudy && hasSession && hasLifecycle) return true;
   if (/\bread\b/.test(text) && /\banswer\b/.test(text)) return true;
@@ -3645,6 +3661,255 @@ function stage5p11iSelectedDeckId() {
     return "";
   }
 }
+
+// STAGE_5P11P_COMPANION_DECK_SELECTION_BEGIN
+function stage5p11pSetSelectedDeckId(deckId) {
+  const clean = String(deckId || "").trim();
+  if (!clean) return false;
+
+  try {
+    window.localStorage.setItem("stage5p9aSelectedStudyDeckId", clean);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function stage5p11pDeckTitle(deck) {
+  return String((deck && (deck.title || deck.name || deck.deck_title)) || "").trim();
+}
+
+function stage5p11pDeckId(deck) {
+  return String((deck && (deck.id || deck.deck_id)) || "").trim();
+}
+
+function stage5p11pDeckSearchText(deck) {
+  return stage5p11iNormalizeStudyPhrase(stage5p11pDeckTitle(deck));
+}
+
+function stage5p11pDecksFromPayload(data) {
+  if (!data || typeof data !== "object") return [];
+
+  const candidates = [
+    data.decks,
+    data.items,
+    data.results,
+    data.by_deck,
+    data.deck_totals
+  ];
+
+  for (const value of candidates) {
+    if (Array.isArray(value)) return value;
+  }
+
+  if (data.totals && Array.isArray(data.totals.deck_totals)) {
+    return data.totals.deck_totals;
+  }
+
+  return [];
+}
+
+async function stage5p11pFetchDecks() {
+  const response = await fetch("/api/study/decks", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    headers: queuedChatAuthHeaders()
+  });
+
+  const data = await response.json().catch(function () { return {}; });
+
+  if (!response.ok || data.ok === false) {
+    const detail = data.detail || data.message || "Could not list Study decks.";
+    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+  }
+
+  return stage5p11pDecksFromPayload(data)
+    .filter(function (deck) {
+      return stage5p11pDeckId(deck) && stage5p11pDeckTitle(deck);
+    });
+}
+
+function stage5p11pFormatDeckList(decks) {
+  if (!decks.length) {
+    return "You do not have any Study decks yet. Create a deck in Study first.";
+  }
+
+  const selectedId = stage5p11iSelectedDeckId();
+
+  const lines = decks.slice(0, 12).map(function (deck, index) {
+    const id = stage5p11pDeckId(deck);
+    const title = stage5p11pDeckTitle(deck);
+    const cardCount = Number(deck.card_count || deck.cards_count || deck.total_cards || 0);
+    const selected = selectedId && selectedId === id ? " selected" : "";
+    return String(index + 1) + ". " + title + " — deck " + id + " · " + cardCount + " cards" + selected;
+  });
+
+  let reply = "Your Study decks:\n" + lines.join("\n");
+  reply += "\n\nSay “Select deck 2” or “Select my math deck.”";
+
+  return reply;
+}
+
+function stage5p11pDeckQueryFromMessage(message) {
+  let text = stage5p11iNormalizeStudyPhrase(message);
+
+  text = text
+    .replace(/\bplease\b/g, " ")
+    .replace(/\bcan you\b/g, " ")
+    .replace(/\bcould you\b/g, " ")
+    .replace(/\bselect\b/g, " ")
+    .replace(/\bchoose\b/g, " ")
+    .replace(/\buse\b/g, " ")
+    .replace(/\bswitch to\b/g, " ")
+    .replace(/\bchange to\b/g, " ")
+    .replace(/\bstart\b/g, " ")
+    .replace(/\bstudy\b/g, " ")
+    .replace(/\bsession\b/g, " ")
+    .replace(/\bmy\b/g, " ")
+    .replace(/\bthe\b/g, " ")
+    .replace(/\bdeck\b/g, " ")
+    .replace(/\bdecks\b/g, " ")
+    .replace(/\bgo over\b/g, " ")
+    .replace(/\bsome\b/g, " ")
+    .replace(/\bcards\b/g, " ")
+    .replace(/\blets\b/g, " ")
+    .replace(/\blet s\b/g, " ")
+    .replace(/\bwith\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return text;
+}
+
+function stage5p11pFindDeckForMessage(message, decks) {
+  const normalized = stage5p11iNormalizeStudyPhrase(message);
+  const query = stage5p11pDeckQueryFromMessage(message);
+
+  const byDeckNumber = normalized.match(/\bdeck\s+(\d+)\b/);
+  if (byDeckNumber) {
+    const raw = byDeckNumber[1];
+    const byId = decks.find(function (deck) {
+      return stage5p11pDeckId(deck) === raw;
+    });
+
+    if (byId) return byId;
+
+    const index = Number(raw) - 1;
+    if (Number.isInteger(index) && index >= 0 && index < decks.length) {
+      return decks[index];
+    }
+  }
+
+  const plainNumber = normalized.match(/^(?:select|choose|use)\s+(\d+)$/);
+  if (plainNumber) {
+    const index = Number(plainNumber[1]) - 1;
+    if (Number.isInteger(index) && index >= 0 && index < decks.length) {
+      return decks[index];
+    }
+  }
+
+  if (!query) return null;
+
+  const exact = decks.find(function (deck) {
+    return stage5p11pDeckSearchText(deck) === query;
+  });
+  if (exact) return exact;
+
+  const contains = decks.find(function (deck) {
+    const title = stage5p11pDeckSearchText(deck);
+    return title && (title.includes(query) || query.includes(title));
+  });
+  if (contains) return contains;
+
+  const tokens = query.split(/\s+/).filter(Boolean);
+  if (tokens.length) {
+    return decks.find(function (deck) {
+      const title = stage5p11pDeckSearchText(deck);
+      return tokens.every(function (token) {
+        return title.includes(token);
+      });
+    }) || null;
+  }
+
+  return null;
+}
+
+function stage5p11pIsListDecksMessage(message) {
+  const text = stage5p11iNormalizeStudyPhrase(message);
+  return (/\b(list|show)\b/.test(text) && /\bdecks?\b/.test(text))
+    || (/\b(what|which)\b/.test(text) && /\bdecks?\b/.test(text));
+}
+
+function stage5p11pIsDeckSelectOrStartMessage(message) {
+  const text = stage5p11iNormalizeStudyPhrase(message);
+  return (/\b(select|choose|use|switch to|change to)\b/.test(text) && /\bdecks?\b/.test(text))
+    || (/\bstart\b/.test(text) && /\bdecks?\b/.test(text))
+    || (/\bstart\b/.test(text) && /\b(my\s+)?[a-z0-9+#.'-]+\s+deck\b/.test(text));
+}
+
+async function stage5p11pRouteCompanionDeckCommand(message) {
+  const decks = await stage5p11pFetchDecks();
+
+  if (stage5p11pIsListDecksMessage(message)) {
+    return {
+      handled: true,
+      reply: stage5p11pFormatDeckList(decks)
+    };
+  }
+
+  if (!stage5p11pIsDeckSelectOrStartMessage(message)) {
+    return {
+      handled: false
+    };
+  }
+
+  const deck = stage5p11pFindDeckForMessage(message, decks);
+
+  if (!deck) {
+    return {
+      handled: true,
+      reply: "I could not find that deck.\n\n" + stage5p11pFormatDeckList(decks)
+    };
+  }
+
+  const deckId = stage5p11pDeckId(deck);
+  const title = stage5p11pDeckTitle(deck);
+  stage5p11pSetSelectedDeckId(deckId);
+
+  const normalized = stage5p11iNormalizeStudyPhrase(message);
+  const shouldStart = /\bstart\b/.test(normalized) || (/\bgo over\b/.test(normalized) && /\bcards?\b/.test(normalized));
+
+  if (!shouldStart) {
+    return {
+      handled: true,
+      reply: "Selected Study deck: " + title + " — deck " + deckId + ".\n\nSay “Study session start” when you are ready."
+    };
+  }
+
+  const response = await fetch("/api/study/session/command", {
+    method: "POST",
+    credentials: "include",
+    headers: queuedChatAuthHeaders(),
+    body: JSON.stringify({
+      message: "Study session start",
+      deck_id: deckId
+    })
+  });
+
+  const data = await response.json().catch(function () { return {}; });
+
+  if (!response.ok || data.ok === false) {
+    const detail = data.detail || data.message || "Could not start Study session.";
+    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+  }
+
+  return {
+    handled: true,
+    reply: "Selected Study deck: " + title + " — deck " + deckId + ".\n\n" + stage5p11iAssistantSummary(data)
+  };
+}
+// STAGE_5P11P_COMPANION_DECK_SELECTION_END
 
 function stage5p11iAssistantSummary(data) {
   const session = data && data.session ? data.session : {};
@@ -3678,6 +3943,17 @@ function stage5p11iAssistantSummary(data) {
 }
 
 async function stage5p11iRouteCompanionStudyCommand(message) {
+  // STAGE_5P11P_COMPANION_DECK_SELECTION_ROUTE_HOOK_BEGIN
+  const deckRoute = await stage5p11pRouteCompanionDeckCommand(message);
+  if (deckRoute && deckRoute.handled) {
+    return {
+      ok: true,
+      data: {},
+      reply: deckRoute.reply
+    };
+  }
+  // STAGE_5P11P_COMPANION_DECK_SELECTION_ROUTE_HOOK_END
+
   const payload = { message: message };
   const normalized = stage5p11iNormalizeStudyPhrase(message);
   const deckId = stage5p11iSelectedDeckId();
