@@ -84,3 +84,11 @@ __pycache__/
 .cleanup-backups/
 *-journal
 *.sqlite3-journal
+
+# Stage 7L local authenticated shadow comparison outputs
+ops/compare/output/
+docs/generated/authenticated-shadow-comparison-results/
+*.auth-shadow-comparison.json
+*.authenticated-shadow-comparison.json
+*.local-auth-shadow.json
+# End Stage 7L local authenticated shadow comparison outputs

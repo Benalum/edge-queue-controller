@@ -1,0 +1,63 @@
+{
+  "stage": "7L",
+  "name": "runner_artifact_output_no_commit_guard",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_guardrails",
+  "purpose": "Prevent future local authenticated shadow comparison artifacts from accidentally becoming commit candidates.",
+  "guard_strategy": {
+    "use_gitignore": true,
+    "ignored_output_locations": [
+      "ops/compare/output/",
+      "docs/generated/authenticated-shadow-comparison-results/"
+    ],
+    "ignored_file_patterns": [
+      "*.auth-shadow-comparison.json",
+      "*.authenticated-shadow-comparison.json",
+      "*.local-auth-shadow.json"
+    ],
+    "tracked_examples_allowed": [
+      "docs/generated/stage-7g-study-authenticated-shadow-comparison-example-artifact.json",
+      "docs/generated/stage-7g-companion-authenticated-shadow-comparison-example-artifact.json"
+    ]
+  },
+  "runner": {
+    "path": "ops/compare/run-authenticated-shadow-comparison.py",
+    "manual_ops_tool_only": true,
+    "default_output_safe": true,
+    "explicit_output_must_prefer_ignored_locations": true,
+    "auth_values_may_be_printed": false,
+    "auth_values_may_be_stored": false,
+    "raw_authenticated_response_may_be_stored": false
+  },
+  "required_checks": [
+    "gitignore contains Stage 7L output rules",
+    "runner can write a sanitized artifact into an ignored output path",
+    "ignored output artifact validates with Stage 7E validator",
+    "ignored output artifact does not appear in normal git status",
+    "git check-ignore confirms ignored output path",
+    "auth environment value is not printed or stored",
+    "runner remains absent from blocked runtime locations"
+  ],
+  "blocked_runtime_locations": [
+    "edge_controller.py",
+    "frontend/",
+    "backend/",
+    "public_gateway.py",
+    "ops/systemd/"
+  ],
+  "required_runtime_state": {
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false,
+    "runtime_wiring_changed": false
+  },
+  "safety_invariants": [
+    "real authenticated comparison artifacts should be kept out of normal commits",
+    "tracked dry-run examples remain allowed",
+    "runner output directories are ignored",
+    "runner output filename patterns are ignored",
+    "no runtime behavior changes",
+    "router dry-run endpoint remains disabled by default"
+  ]
+}
