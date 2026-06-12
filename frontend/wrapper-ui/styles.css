@@ -2285,3 +2285,47 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   }
 }
 /* STAGE_5P8A_STUDY_SESSION_STATUS_CARD_END */
+
+
+/* STAGE_5P8C_STUDY_SESSION_CONTROL_BUTTONS_BEGIN */
+.stage5p8c-study-session-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.stage5p8c-study-session-controls button {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: rgba(248, 250, 252, 0.96);
+  background: rgba(15, 23, 42, 0.66);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.stage5p8c-study-session-controls button:not(:disabled):hover {
+  transform: translateY(-1px);
+  border-color: rgba(165, 180, 252, 0.5);
+}
+
+.stage5p8c-study-session-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.stage5p8c-study-session-controls p {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 0.86rem;
+}
+
+.stage5p8a-study-session-card[data-stage5p8c-busy="true"] {
+  opacity: 0.92;
+}
+/* STAGE_5P8C_STUDY_SESSION_CONTROL_BUTTONS_END */

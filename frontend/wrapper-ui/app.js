@@ -8206,3 +8206,285 @@ async function handleResetPasswordRoute() {
   }, 300);
 })();
  // STAGE_5P8A_STUDY_SESSION_STATUS_CARD_END
+
+
+// STAGE_5P8C_STUDY_SESSION_CONTROL_BUTTONS_BEGIN
+(function () {
+  const cardId = "stage5p8a-study-session-status-card";
+  const controlsClass = "stage5p8c-study-session-controls";
+  let installing = false;
+
+  function isStudyRoute() {
+    const path = String(window.location.pathname || "").replace(/\/+$/, "");
+    const hash = String(window.location.hash || "").toLowerCase();
+    return path === "/study" || path.endsWith("/study") || hash.includes("study");
+  }
+
+  function findCard() {
+    return document.getElementById(cardId);
+  }
+
+  function readTokenCandidate(value) {
+    if (!value) return "";
+    const raw = String(value).trim();
+    if (!raw) return "";
+
+    if (raw.startsWith("eyJ") || raw.length > 40) {
+      return raw.replace(/^Bearer\s+/i, "");
+    }
+
+    try {
+      const data = JSON.parse(raw);
+      return String(
+        data.access_token
+        || data.accessToken
+        || data.token
+        || data.auth_token
+        || data.authToken
+        || (data.session && (data.session.access_token || data.session.accessToken || data.session.token))
+        || ""
+      ).replace(/^Bearer\s+/i, "");
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function findBearerToken() {
+    const keys = [
+      "access_token",
+      "accessToken",
+      "auth_token",
+      "authToken",
+      "token",
+      "session",
+      "auth",
+      "aiPlatformSession",
+      "ai_platform_session",
+      "aiPlatformAuth",
+      "ai_platform_auth",
+      "edgeSession",
+      "edgeAuthSession"
+    ];
+
+    try {
+      for (const key of keys) {
+        const token = readTokenCandidate(window.localStorage.getItem(key));
+        if (token) return token;
+      }
+
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (!key || !/token|auth|session/i.test(key)) continue;
+        const token = readTokenCandidate(window.localStorage.getItem(key));
+        if (token) return token;
+      }
+    } catch (err) {
+      /* localStorage may be unavailable */
+    }
+
+    return "";
+  }
+
+  function authHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    const token = findBearerToken();
+    if (token) headers.Authorization = "Bearer " + token;
+    return headers;
+  }
+
+  function setMessage(card, message) {
+    const field = card && card.querySelector("[data-stage5p8a-field='message']");
+    if (field) field.textContent = message || "";
+  }
+
+  function getState(card) {
+    return String(card && card.dataset && card.dataset.sessionState || "unknown").toLowerCase();
+  }
+
+  function setBusy(card, busy) {
+    if (!card) return;
+    card.dataset.stage5p8cBusy = busy ? "true" : "false";
+    card.querySelectorAll("[data-stage5p8c-command]").forEach(function (button) {
+      button.disabled = !!busy || !button.dataset.stage5p8cEnabled;
+    });
+  }
+
+  function updateButtonState(card) {
+    if (!card) return;
+    const state = getState(card);
+
+    const pause = card.querySelector("[data-stage5p8c-command='pause']");
+    const resume = card.querySelector("[data-stage5p8c-command='resume']");
+    const stop = card.querySelector("[data-stage5p8c-command='stop']");
+
+    function enable(button, yes) {
+      if (!button) return;
+      if (yes) {
+        button.dataset.stage5p8cEnabled = "true";
+      } else {
+        delete button.dataset.stage5p8cEnabled;
+      }
+      button.disabled = !yes || card.dataset.stage5p8cBusy === "true";
+    }
+
+    enable(pause, ["active", "reviewing_answer", "waiting_for_mark"].includes(state));
+    enable(resume, state === "paused");
+    enable(stop, ["active", "paused", "reviewing_answer", "waiting_for_mark"].includes(state));
+  }
+
+  async function refreshStatus(card) {
+    if (!card) return;
+    const refresh = card.querySelector("[data-stage5p8c-command='refresh']");
+    if (refresh) refresh.disabled = true;
+
+    try {
+      const response = await fetch("/api/study/session/status", {
+        method: "GET",
+        headers: authHeaders(),
+        credentials: "include"
+      });
+      const data = await response.json().catch(function () { return {}; });
+
+      if (response.status === 401 || response.status === 403) {
+        card.dataset.sessionState = "signed out";
+        setMessage(card, "Log in to view durable Study session status.");
+        updateButtonState(card);
+        return;
+      }
+
+      if (!response.ok || data.ok === false) {
+        card.dataset.sessionState = "error";
+        setMessage(card, data.detail || data.message || "Could not refresh Study session status.");
+        updateButtonState(card);
+        return;
+      }
+
+      const session = data.session || {};
+      card.dataset.sessionState = String(session.status || "none").toLowerCase();
+
+      const stateField = card.querySelector("[data-stage5p8a-field='state']");
+      const deckField = card.querySelector("[data-stage5p8a-field='deck']");
+      const cardField = card.querySelector("[data-stage5p8a-field='card']");
+      const queueField = card.querySelector("[data-stage5p8a-field='queue']");
+      const actionField = card.querySelector("[data-stage5p8a-field='lastAction']");
+      const updatedField = card.querySelector("[data-stage5p8a-field='updated']");
+
+      const queuePosition = Number(session.queue_position || 0);
+      const queueCount = Number(session.queue_count || 0);
+
+      if (stateField) stateField.textContent = session.status || "none";
+      if (deckField) deckField.textContent = session.deck_id ? String(session.deck_id) : "—";
+      if (cardField) cardField.textContent = session.current_card_id ? String(session.current_card_id) : "—";
+      if (queueField) queueField.textContent = queueCount ? String(queuePosition + 1) + " / " + String(queueCount) : "—";
+      if (actionField) actionField.textContent = session.last_action || session.last_intent || "—";
+      if (updatedField) updatedField.textContent = session.updated_at ? new Date(session.updated_at).toLocaleString() : "—";
+
+      setMessage(card, session.status === "none" ? "No active durable Study session." : "Durable Study session is available.");
+      updateButtonState(card);
+    } catch (err) {
+      card.dataset.sessionState = "offline";
+      setMessage(card, "Could not reach Study session status endpoint.");
+      updateButtonState(card);
+    } finally {
+      if (refresh) refresh.disabled = false;
+    }
+  }
+
+  async function sendCommand(card, command, message) {
+    if (!card) return;
+    setBusy(card, true);
+    setMessage(card, "Sending " + command + " command...");
+
+    try {
+      const response = await fetch("/api/study/session/command", {
+        method: "POST",
+        headers: authHeaders(),
+        credentials: "include",
+        body: JSON.stringify({ message: message })
+      });
+
+      const data = await response.json().catch(function () { return {}; });
+
+      if (!response.ok || data.ok === false) {
+        setMessage(card, data.detail || data.message || "Command failed.");
+        return;
+      }
+
+      const session = data.session || {};
+      card.dataset.sessionState = String(session.status || "none").toLowerCase();
+      setMessage(card, "Command complete: " + command + ".");
+      await refreshStatus(card);
+    } catch (err) {
+      setMessage(card, "Could not send Study session command.");
+    } finally {
+      setBusy(card, false);
+      updateButtonState(card);
+    }
+  }
+
+  function ensureControls(card) {
+    if (!card || card.querySelector("." + controlsClass)) return;
+
+    const controls = document.createElement("div");
+    controls.className = controlsClass;
+    controls.innerHTML = [
+      '<button type="button" data-stage5p8c-command="refresh">Refresh</button>',
+      '<button type="button" data-stage5p8c-command="pause">Pause</button>',
+      '<button type="button" data-stage5p8c-command="resume">Resume</button>',
+      '<button type="button" data-stage5p8c-command="stop">Stop</button>',
+      '<p>Start is intentionally not wired yet because it needs a reliable deck id source.</p>'
+    ].join("");
+
+    const note = card.querySelector(".stage5p8a-study-session-note");
+    if (note) {
+      card.insertBefore(controls, note);
+    } else {
+      card.appendChild(controls);
+    }
+
+    const refresh = controls.querySelector("[data-stage5p8c-command='refresh']");
+    const pause = controls.querySelector("[data-stage5p8c-command='pause']");
+    const resume = controls.querySelector("[data-stage5p8c-command='resume']");
+    const stop = controls.querySelector("[data-stage5p8c-command='stop']");
+
+    if (refresh) refresh.addEventListener("click", function () { refreshStatus(card); });
+    if (pause) pause.addEventListener("click", function () { sendCommand(card, "pause", "Study Session Pause"); });
+    if (resume) resume.addEventListener("click", function () { sendCommand(card, "resume", "Study Session Resume"); });
+    if (stop) stop.addEventListener("click", function () { sendCommand(card, "stop", "Study Session Stop"); });
+
+    updateButtonState(card);
+  }
+
+  function enhance() {
+    if (!isStudyRoute()) return;
+    const card = findCard();
+    if (!card) return;
+    ensureControls(card);
+    updateButtonState(card);
+  }
+
+  function install() {
+    if (installing) return;
+    installing = true;
+
+    enhance();
+
+    if (window.MutationObserver) {
+      const observer = new MutationObserver(function () {
+        enhance();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    window.addEventListener("popstate", enhance);
+    window.addEventListener("hashchange", enhance);
+    window.setInterval(function () {
+      const card = findCard();
+      if (isStudyRoute() && card) updateButtonState(card);
+    }, 2000);
+  }
+
+  document.addEventListener("DOMContentLoaded", install);
+  window.setTimeout(install, 500);
+})();
+ // STAGE_5P8C_STUDY_SESSION_CONTROL_BUTTONS_END
