@@ -1,0 +1,32 @@
+[
+  {
+    "name": "shadow_command_next",
+    "payload": {"command": "next"},
+    "expect": {"intent": "study.next", "route": "/api/study/session/command", "rule_id": "study.next.alias"}
+  },
+  {
+    "name": "shadow_action_skip",
+    "payload": {"action": "skip"},
+    "expect": {"intent": "study.skip", "route": "/api/study/session/command", "rule_id": "study.skip.alias"}
+  },
+  {
+    "name": "shadow_text_hint",
+    "payload": {"text": "show hint"},
+    "expect": {"intent": "study.hint", "route": "/api/study/session/command", "rule_id": "study.hint.alias"}
+  },
+  {
+    "name": "shadow_answer_text",
+    "payload": {"answer": "The mitochondria is the powerhouse of the cell."},
+    "expect": {"intent": "study.answer", "route": "/api/study/session/command", "rule_id": "study.answer.text"}
+  },
+  {
+    "name": "shadow_nested_input_spanish_next",
+    "payload": {"input": {"text": "siguiente"}, "locale_hint": "es"},
+    "expect": {"intent": "study.next", "route": "/api/study/session/command", "rule_id": "study.next.alias", "language": "es"}
+  },
+  {
+    "name": "shadow_empty_input",
+    "payload": {},
+    "expect": {"intent": "unknown.unsupported", "route": null, "rule_id": "unknown.unsupported.empty_or_no_match"}
+  }
+]

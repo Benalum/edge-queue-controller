@@ -269,3 +269,89 @@ def _stage6f_router_response(body):
         ],
         "errors": [],
     }
+
+
+def _stage6q_extract_study_text(payload):
+    if not isinstance(payload, dict):
+        return ""
+
+    input_obj = payload.get("input") if isinstance(payload.get("input"), dict) else {}
+
+    for value in [
+        input_obj.get("text"),
+        payload.get("text"),
+        payload.get("command"),
+        payload.get("action"),
+        payload.get("answer"),
+        payload.get("message"),
+        payload.get("input_text"),
+    ]:
+        text = str(value or "").strip()
+        if text:
+            return text
+
+    return ""
+
+
+def _stage6q_study_adapter_shadow(payload):
+    """Return a dry-run-only Study adapter shadow result.
+
+    This helper does not dispatch.
+    This helper does not call models.
+    This helper does not mutate Study state.
+    This helper is not wired into any Study route.
+    """
+
+    if not isinstance(payload, dict):
+        payload = {}
+
+    text = _stage6q_extract_study_text(payload)
+
+    router_body = {
+        "input": {
+            "text": text,
+            "source": "study",
+            "surface": "study_session",
+            "locale_hint": payload.get("locale_hint") or "en-US",
+        },
+        "context": {
+            "active_page": "study",
+            "profile_language": payload.get("profile_language") or "en",
+            "role": payload.get("role") or "user",
+        },
+        "page_context": {
+            "shadow_adapter": "stage6q_study",
+            "mode": payload.get("mode") or "review",
+        },
+        "router_options": {
+            "dry_run": True,
+            "allow_dispatch": False,
+            "allow_model_call": False,
+            "max_model_tier": "fast_intent",
+        },
+    }
+
+    router_result = _stage6f_router_response(router_body)
+
+    return {
+        "ok": True,
+        "stage": "6Q",
+        "adapter": "study_shadow_dry_run",
+        "behavior_changed": False,
+        "dispatch_performed": False,
+        "model_call_required": router_result["model_routing"]["model_call_required"],
+        "allowed_to_dispatch": False,
+        "source_payload_keys": sorted(str(k) for k in payload.keys()),
+        "normalized_router_input": router_body,
+        "router_result": router_result,
+        "shadow_summary": {
+            "text_present": bool(text),
+            "intent": router_result["intent"]["name"],
+            "confidence_band": router_result["intent"]["confidence_band"],
+            "existing_route": router_result["target"]["existing_route"],
+            "rule_id": router_result["decision_trace"][-1]["rule_id"],
+            "source_surface_allowed": router_result["source_surface_policy"]["allowed"],
+        },
+        "errors": [],
+    }
+
