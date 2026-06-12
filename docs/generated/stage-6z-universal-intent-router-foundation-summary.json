@@ -1,0 +1,69 @@
+{
+  "stage": "6Z",
+  "name": "universal_intent_router_foundation_completion_checkpoint",
+  "runtime_behavior_change": false,
+  "purpose": "Summarize and verify the Universal Intent Router foundation from Stage 6A through Stage 6Y before any real runtime wiring.",
+  "foundation_status": "ready_for_next_phase",
+  "completed_stage_groups": [
+    {
+      "group": "planning_and_inventory",
+      "stages": ["6A", "6B", "6C", "6D", "6E"],
+      "result": "router foundation, input surfaces, route inventory, route classification, and dry-run contract defined"
+    },
+    {
+      "group": "dry_run_endpoint_and_schema",
+      "stages": ["6F", "6G", "6H", "6I", "6J", "6K", "6L", "6M", "6N", "6O"],
+      "result": "disabled endpoint, fixtures, aliases, helper module, traces, confidence, source policy, schema, and HTTP proof established"
+    },
+    {
+      "group": "study_shadow_path",
+      "stages": ["6P", "6Q", "6R", "6S", "6T"],
+      "result": "Study adapter plan, shadow helper, no-wire guard, route baseline, and HTTP probe plan established"
+    },
+    {
+      "group": "companion_shadow_path",
+      "stages": ["6U", "6V", "6W", "6X"],
+      "result": "Companion adapter plan, shadow helper, no-wire guard, and route baseline established"
+    },
+    {
+      "group": "registry_planning",
+      "stages": ["6Y"],
+      "result": "unified shadow adapter registry plan established"
+    }
+  ],
+  "required_current_state": {
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false,
+    "study_shadow_helper_exists": true,
+    "companion_shadow_helper_exists": true,
+    "shadow_helpers_wired_into_runtime": false,
+    "study_routes_auth_protected_baseline": true,
+    "companion_routes_auth_protected_baseline": true
+  },
+  "next_phase_allowed_work": [
+    "authenticated shadow comparison for Study",
+    "authenticated shadow comparison for Companion",
+    "runtime registry implementation behind disabled flag",
+    "read-only observability wiring behind disabled flag"
+  ],
+  "next_phase_not_allowed_without_new_guardrails": [
+    "router dispatch",
+    "model calls from router",
+    "calendar writes",
+    "profile mutations",
+    "admin or power routing",
+    "frontend behavior changes",
+    "auth bypass"
+  ],
+  "completion_invariants": [
+    "no route is wired to router dispatch",
+    "no shadow helper is wired into edge_controller.py",
+    "no frontend calls any shadow helper",
+    "router dry-run endpoint remains disabled by default",
+    "all router outputs remain dry-run-only",
+    "no model calls are enabled",
+    "no state mutation is enabled"
+  ]
+}
