@@ -7,6 +7,7 @@ Authenticated HTTP execution requires:
   --execute-authenticated
   --confirm-existing-route-call YES_EXISTING_ROUTE_MAY_CHANGE_STATE
   EDGE_AUTH_SHADOW_COMPARE_COOKIE or EDGE_AUTH_SHADOW_COMPARE_BEARER
+  EDGE_AUTH_SHADOW_COMPARE_PUBLIC_API_KEY for routes guarded by x-edge-api-key
 
 This tool never prints auth values and never stores auth values in artifacts.
 """
@@ -120,20 +121,26 @@ def classify_response(status_code: int, content_type: str, body: bytes) -> str:
 def require_auth_env() -> dict[str, str]:
     cookie = os.environ.get("EDGE_AUTH_SHADOW_COMPARE_COOKIE")
     bearer = os.environ.get("EDGE_AUTH_SHADOW_COMPARE_BEARER")
+    public_api_key = (
+        os.environ.get("EDGE_AUTH_SHADOW_COMPARE_PUBLIC_API_KEY")
+        or os.environ.get("EDGE_PUBLIC_API_KEY")
+        or ""
+    ).strip()
 
     if not cookie and not bearer:
-        raise ValueError(
+        raise SystemExit(
             "authenticated execution requires EDGE_AUTH_SHADOW_COMPARE_COOKIE or EDGE_AUTH_SHADOW_COMPARE_BEARER"
         )
 
     headers = {"Content-Type": "application/json"}
     if cookie:
         headers["Cookie"] = cookie
-    elif bearer:
+    if bearer:
         headers["Authorization"] = f"Bearer {bearer}"
+    if public_api_key:
+        headers["x-edge-api-key"] = public_api_key
 
     return headers
-
 
 def execute_existing_route(base_url: str, case: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]:
     base_url = base_url.rstrip("/")
