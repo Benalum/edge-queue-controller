@@ -7519,18 +7519,57 @@ def _study_session_active_placeholders():
     return ",".join("?" for _ in _STUDY_SESSION_ACTIVE_STATUSES)
 
 
-def _study_build_session_queue(user_id: int, deck_id: int):
-    _study_init_session_tables()
+# STAGE_5P11Q_REVIEW_STYLE_SESSION_START_BEGIN
+def _study_normalize_review_mode(value):
+    mode = str(value or "balanced").strip().lower()
+    aliases = {
+        "": "balanced",
+        "default": "balanced",
+        "mixed": "balanced",
+        "mix": "balanced",
+        "normal": "balanced",
+        "review": "balanced",
+        "new cards": "new",
+        "new card": "new",
+        "hard cards": "hard",
+        "medium cards": "medium",
+        "easy cards": "easy",
+        "balanced cards": "balanced",
+    }
+    mode = aliases.get(mode, mode)
+    if mode not in {"balanced", "new", "hard", "medium", "easy"}:
+        raise HTTPException(status_code=400, detail="review_mode must be balanced, new, hard, medium, or easy.")
+    return mode
+
+
+def _study_build_session_queue(user_id: int, deck_id: int, review_mode: str = "balanced"):
+    mode = _study_normalize_review_mode(review_mode)
+
+    try:
+        data = _study_card_stats_for_deck(user_id=user_id, deck_id=deck_id)
+        selected = _study_select_review_queue(data["cards"], mode=mode, limit=10000)
+        queue = [
+            int(card["id"])
+            for card in selected.get("queue", [])
+            if card.get("id") is not None
+        ]
+        if queue:
+            return queue
+    except HTTPException:
+        raise
+    except Exception:
+        pass
 
     with db() as conn:
         rows = conn.execute(
             "SELECT id FROM study_cards "
             "WHERE user_id = ? AND deck_id = ? AND archived_at IS NULL "
-            "ORDER BY id ASC",
+            "ORDER BY created_at ASC, id ASC",
             (int(user_id), int(deck_id)),
         ).fetchall()
 
     return [int(row["id"]) for row in rows]
+# STAGE_5P11Q_REVIEW_STYLE_SESSION_START_END
 
 
 @app.post("/public/study/session/start")
@@ -7554,7 +7593,14 @@ async def public_study_session_start(request: Request):
     if not deck:
         raise HTTPException(status_code=404, detail="Study deck not found")
 
-    queue = _study_build_session_queue(user_id, deck_id)
+    review_mode = _study_normalize_review_mode(
+        payload.get("review_mode")
+        or payload.get("mode")
+        or payload.get("study_style")
+        or "balanced"
+    )
+
+    queue = _study_build_session_queue(user_id, deck_id, review_mode=review_mode)
     if not queue:
         raise HTTPException(status_code=400, detail="Study deck has no active cards")
 
@@ -9067,8 +9113,8 @@ def _study_card_stats_for_deck(user_id: int, deck_id: int):
 
 def _study_select_review_queue(cards, mode: str, limit: int):
     mode = str(mode or "balanced").strip().lower()
-    if mode not in {"balanced", "hard", "medium", "easy"}:
-        raise HTTPException(status_code=400, detail="mode must be balanced, hard, medium, or easy.")
+    if mode not in {"balanced", "new", "hard", "medium", "easy"}:
+        raise HTTPException(status_code=400, detail="mode must be balanced, new, hard, medium, or easy.")
 
     try:
         limit = int(limit)
@@ -9107,7 +9153,12 @@ def _study_select_review_queue(cards, mode: str, limit: int):
                 if count <= 0:
                     return
 
-    if mode == "balanced":
+    if mode == "new":
+        for bucket in ["new", "hard", "medium", "easy"]:
+            add_from(bucket, limit)
+        explanation = "New mode prioritizes cards that have not been reviewed yet."
+
+    elif mode == "balanced":
         # Balanced learning favors weak/new cards, but keeps some medium/easy practice.
         hard_target = max(1, round(limit * 0.40))
         medium_target = max(1, round(limit * 0.35))

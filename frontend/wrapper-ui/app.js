@@ -3598,6 +3598,11 @@ function stage5p11iLooksLikeStudyCommand(message) {
   const text = stage5p11iNormalizeStudyPhrase(message);
   if (!text) return false;
 
+  // STAGE_5P11Q_COMPANION_REVIEW_STYLE_LOOKS_LIKE_BEGIN
+  if (/^(balanced|new|hard|medium|easy)$/.test(text)) return true;
+  if (/\b(balanced|new|hard|medium|easy)\b/.test(text) && /\b(mode|style|review|cards?)\b/.test(text)) return true;
+  // STAGE_5P11Q_COMPANION_REVIEW_STYLE_LOOKS_LIKE_END
+
   const exact = new Set([
     "study session start",
     "start study session",
@@ -3661,6 +3666,103 @@ function stage5p11iSelectedDeckId() {
     return "";
   }
 }
+
+// STAGE_5P11Q_COMPANION_REVIEW_STYLE_BEGIN
+function stage5p11qReviewStyleKey() {
+  return "stage5p11qSelectedStudyReviewStyle";
+}
+
+function stage5p11qAllowedReviewStyles() {
+  return ["balanced", "new", "hard", "medium", "easy"];
+}
+
+function stage5p11qReviewStyleLabel(mode) {
+  const labels = {
+    balanced: "Balanced",
+    new: "New",
+    hard: "Hard",
+    medium: "Medium",
+    easy: "Easy"
+  };
+  return labels[String(mode || "").trim().toLowerCase()] || "";
+}
+
+function stage5p11qSelectedReviewStyle() {
+  try {
+    const value = String(window.localStorage.getItem(stage5p11qReviewStyleKey()) || "").trim().toLowerCase();
+    return stage5p11qAllowedReviewStyles().includes(value) ? value : "";
+  } catch (err) {
+    return "";
+  }
+}
+
+function stage5p11qSetSelectedReviewStyle(mode) {
+  const clean = String(mode || "").trim().toLowerCase();
+  if (!stage5p11qAllowedReviewStyles().includes(clean)) return false;
+  try {
+    window.localStorage.setItem(stage5p11qReviewStyleKey(), clean);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function stage5p11qReviewStyleFromMessage(message) {
+  const text = stage5p11iNormalizeStudyPhrase(message);
+  if (/\bbalanced\b/.test(text) || /\bmixed\b/.test(text) || /\bnormal\b/.test(text)) return "balanced";
+  if (/\bnew\b/.test(text)) return "new";
+  if (/\bhard\b/.test(text)) return "hard";
+  if (/\bmedium\b/.test(text)) return "medium";
+  if (/\beasy\b/.test(text)) return "easy";
+  return "";
+}
+
+function stage5p11qReviewStylePrompt(deckLabel) {
+  const prefix = deckLabel ? "Selected Study deck: " + deckLabel + ".\n\n" : "";
+  return prefix
+    + "Which review style do you want?\n\n"
+    + "Balanced — mix hard/new, medium, and easy cards\n"
+    + "New — cards you have not reviewed yet\n"
+    + "Hard — cards you are struggling with\n"
+    + "Medium — reinforcement cards\n"
+    + "Easy — confidence practice\n\n"
+    + "Reply with Balanced, New, Hard, Medium, or Easy.";
+}
+
+function stage5p11qLooksLikeReviewStyleCommand(message) {
+  const text = stage5p11iNormalizeStudyPhrase(message);
+  if (/^(balanced|new|hard|medium|easy)$/.test(text)) return true;
+  if (/\b(balanced|new|hard|medium|easy)\b/.test(text) && /\b(mode|style|review|cards?)\b/.test(text)) return true;
+  if (/\b(use|select|choose|start|review)\b/.test(text) && /\b(balanced|new|hard|medium|easy)\b/.test(text)) return true;
+  return false;
+}
+
+function stage5p11qRouteCompanionReviewStyleCommand(message) {
+  if (!stage5p11qLooksLikeReviewStyleCommand(message)) return { handled: false };
+
+  const mode = stage5p11qReviewStyleFromMessage(message);
+  if (!mode) {
+    return { handled: true, reply: stage5p11qReviewStylePrompt("") };
+  }
+
+  stage5p11qSetSelectedReviewStyle(mode);
+
+  const deckId = stage5p11iSelectedDeckId();
+  const label = stage5p11qReviewStyleLabel(mode);
+
+  if (!deckId) {
+    return {
+      handled: true,
+      reply: "Review style selected: " + label + ".\n\nNow choose a Study deck. Say “List my decks” or “Select my math deck.”"
+    };
+  }
+
+  return {
+    handled: true,
+    reply: "Review style selected: " + label + ".\n\nSay “Study session start” when you are ready."
+  };
+}
+// STAGE_5P11Q_COMPANION_REVIEW_STYLE_END
 
 // STAGE_5P11P_COMPANION_DECK_SELECTION_BEGIN
 function stage5p11pSetSelectedDeckId(deckId) {
@@ -3880,10 +3982,26 @@ async function stage5p11pRouteCompanionDeckCommand(message) {
   const normalized = stage5p11iNormalizeStudyPhrase(message);
   const shouldStart = /\bstart\b/.test(normalized) || (/\bgo over\b/.test(normalized) && /\bcards?\b/.test(normalized));
 
+  const explicitReviewMode = stage5p11qReviewStyleFromMessage(message);
+  const reviewMode = explicitReviewMode || stage5p11qSelectedReviewStyle();
+
+  if (explicitReviewMode) {
+    stage5p11qSetSelectedReviewStyle(explicitReviewMode);
+  }
+
   if (!shouldStart) {
     return {
       handled: true,
-      reply: "Selected Study deck: " + title + " — deck " + deckId + ".\n\nSay “Study session start” when you are ready."
+      reply: reviewMode
+        ? "Selected Study deck: " + title + " — deck " + deckId + ".\n\nReview style selected: " + stage5p11qReviewStyleLabel(reviewMode) + ".\n\nSay “Study session start” when you are ready."
+        : stage5p11qReviewStylePrompt(title + " — deck " + deckId)
+    };
+  }
+
+  if (!reviewMode) {
+    return {
+      handled: true,
+      reply: stage5p11qReviewStylePrompt(title + " — deck " + deckId)
     };
   }
 
@@ -3893,7 +4011,8 @@ async function stage5p11pRouteCompanionDeckCommand(message) {
     headers: queuedChatAuthHeaders(),
     body: JSON.stringify({
       message: "Study session start",
-      deck_id: deckId
+      deck_id: deckId,
+      review_mode: reviewMode
     })
   });
 
@@ -3906,7 +4025,7 @@ async function stage5p11pRouteCompanionDeckCommand(message) {
 
   return {
     handled: true,
-    reply: "Selected Study deck: " + title + " — deck " + deckId + ".\n\n" + stage5p11iAssistantSummary(data)
+    reply: "Selected Study deck: " + title + " — deck " + deckId + ".\nReview style: " + stage5p11qReviewStyleLabel(reviewMode) + ".\n\n" + stage5p11iAssistantSummary(data)
   };
 }
 // STAGE_5P11P_COMPANION_DECK_SELECTION_END
@@ -3943,6 +4062,17 @@ function stage5p11iAssistantSummary(data) {
 }
 
 async function stage5p11iRouteCompanionStudyCommand(message) {
+  // STAGE_5P11Q_COMPANION_REVIEW_STYLE_ROUTE_HOOK_BEGIN
+  const styleRoute = stage5p11qRouteCompanionReviewStyleCommand(message);
+  if (styleRoute && styleRoute.handled) {
+    return {
+      ok: true,
+      data: {},
+      reply: styleRoute.reply
+    };
+  }
+  // STAGE_5P11Q_COMPANION_REVIEW_STYLE_ROUTE_HOOK_END
+
   // STAGE_5P11P_COMPANION_DECK_SELECTION_ROUTE_HOOK_BEGIN
   const deckRoute = await stage5p11pRouteCompanionDeckCommand(message);
   if (deckRoute && deckRoute.handled) {
@@ -3959,7 +4089,18 @@ async function stage5p11iRouteCompanionStudyCommand(message) {
   const deckId = stage5p11iSelectedDeckId();
 
   if (/\bstart\b/.test(normalized) && /\bstudy\b/.test(normalized) && deckId) {
+    const reviewMode = stage5p11qSelectedReviewStyle();
+
+    if (!reviewMode) {
+      return {
+        ok: true,
+        data: {},
+        reply: stage5p11qReviewStylePrompt("")
+      };
+    }
+
     payload.deck_id = deckId;
+    payload.review_mode = reviewMode;
   }
 
   const response = await fetch("/api/study/session/command", {
