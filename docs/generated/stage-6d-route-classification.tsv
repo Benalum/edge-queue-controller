@@ -1,0 +1,152 @@
+source	line	method	path	route_class	safety_class	router_candidate	migration_priority	confirmation_required	notes
+edge_controller.py	141	GET	/health	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	155	POST	/jobs	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	191	GET	/jobs	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	207	GET	/queue/summary	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	440	POST	/tick	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	640	POST	/wake-test	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	880	POST	/workers/heartbeat	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	1021	GET	/workers/registry	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	1053	GET	/scheduler/preview	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	1234	POST	/workers/remediation/tick	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	1379	GET	/workers/events	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	1406	POST	/workers/{worker_id}/remediation/reset	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	1590	POST	/power/idle/tick	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	2054	POST	/power/proxmox/inventory	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	2279	POST	/power/stop-plan	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	2489	POST	/power/execute-stop-plan	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	2660	POST	/power/wake-plan	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	2717	POST	/power/execute-wake	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	2809	POST	/power/host-shutdown-plan	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	2899	POST	/power/execute-host-shutdown	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	3006	POST	/power/auto/tick	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	3655	POST	/power/auto/status	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	3747	POST	/power/auto/pause	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	3811	POST	/power/auto/resume	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	3863	POST	/power/start-worker-plan	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	4022	POST	/power/execute-start-worker	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	4141	POST	/power/wake-and-start-worker-plan	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	4305	POST	/power/execute-wake-and-start-worker	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	5102	POST	/tick/ollama-direct	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	5523	POST	/public/jobs	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	5571	GET	/public/jobs/{job_id}	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	5640	GET	/public/jobs	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	5656	GET	/public/status	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	6458	POST	/public/auth/register	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6491	GET	/public/auth/verify-email	auth_security	auth_security	no	never_direct_router_execute	no	authentication/security route
+edge_controller.py	6506	POST	/public/auth/resend-verification	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6557	GET	/api/auth/verify-email	auth_security	auth_security	no	never_direct_router_execute	no	authentication/security route
+edge_controller.py	6562	POST	/api/auth/resend-verification	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6567	POST	/public/auth/login	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6637	GET	/public/me	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	6655	POST	/public/auth/forgot-password	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6677	POST	/public/auth/reset-password	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6701	POST	/system/session/forgot-password	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6721	POST	/system/session/reset-password	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6743	POST	/public/auth/change-password	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6775	POST	/system/session/change-password	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	6805	POST	/public/auth/logout	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	7584	GET	/public/study/session/status	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	7585	GET	/api/study/session/status	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	7655	POST	/public/study/session/start	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	7656	POST	/api/study/session/start	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	7800	POST	/public/study/session/pause	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	7801	POST	/api/study/session/pause	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	7833	POST	/public/study/session/resume	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	7834	POST	/api/study/session/resume	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	7866	POST	/public/study/session/stop	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	7867	POST	/api/study/session/stop	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8054	POST	/public/study/intent/parse	router_candidate	user_content_write	yes	priority_1	no	natural-language or flexible command input
+edge_controller.py	8055	POST	/api/study/intent/parse	router_candidate	user_content_write	yes	priority_1	no	natural-language or flexible command input
+edge_controller.py	8377	POST	/public/study/session/command	router_candidate	user_content_write	yes	priority_1	no	natural-language or flexible command input
+edge_controller.py	8378	POST	/api/study/session/command	router_candidate	user_content_write	yes	priority_1	no	natural-language or flexible command input
+edge_controller.py	8420	POST	/public/study/decks	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8421	POST	/api/study/decks	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8484	GET	/public/study/decks	direct_application	read_only	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8485	GET	/api/study/decks	direct_application	read_only	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8530	DELETE	/public/study/decks/{deck_id}	direct_application	user_content_write	maybe_later	priority_2_or_3	yes	study app route; router may assist later but should not replace handler now
+edge_controller.py	8531	DELETE	/api/study/decks/{deck_id}	direct_application	user_content_write	maybe_later	priority_2_or_3	yes	study app route; router may assist later but should not replace handler now
+edge_controller.py	8556	POST	/public/study/decks/{deck_id}/cards	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8557	POST	/api/study/decks/{deck_id}/cards	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8657	GET	/public/study/decks/{deck_id}/cards	direct_application	read_only	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8658	GET	/api/study/decks/{deck_id}/cards	direct_application	read_only	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8709	DELETE	/public/study/cards/{card_id}	direct_application	user_content_write	maybe_later	priority_2_or_3	yes	study app route; router may assist later but should not replace handler now
+edge_controller.py	8710	DELETE	/api/study/cards/{card_id}	direct_application	user_content_write	maybe_later	priority_2_or_3	yes	study app route; router may assist later but should not replace handler now
+edge_controller.py	8731	POST	/public/study/cards/{card_id}/reviews	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8732	POST	/api/study/cards/{card_id}/reviews	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	8866	POST	/system/study/totals/rebuild	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	8867	POST	/api/system/study/totals/rebuild	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	8889	GET	/public/study/totals	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	8890	GET	/api/study/totals	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	8903	GET	/public/study/progress	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	8904	GET	/api/study/progress	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	9282	GET	/public/study/decks/{deck_id}/card-stats	direct_application	read_only	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	9283	GET	/api/study/decks/{deck_id}/card-stats	direct_application	read_only	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	9300	GET	/public/study/decks/{deck_id}/review-queue	direct_application	read_only	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	9301	GET	/api/study/decks/{deck_id}/review-queue	direct_application	read_only	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	9393	POST	/public/companion/study/grade	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	9394	POST	/api/companion/study/grade	direct_application	user_content_write	maybe_later	priority_2_or_3	no	study app route; router may assist later but should not replace handler now
+edge_controller.py	9660	GET	/public/companion/context	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	9661	GET	/api/companion/context	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	9674	POST	/public/companion/chat	router_candidate	user_content_write	yes	priority_1	no	natural-language or flexible command input
+edge_controller.py	9675	POST	/api/companion/chat	router_candidate	user_content_write	yes	priority_1	no	natural-language or flexible command input
+edge_controller.py	10236	GET	/system/local-health	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	10245	GET	/system/status	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	10407	POST	/system/pveso/boot	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	10592	GET	/system/session/me	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	10626	POST	/system/session/login	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	10689	POST	/system/session/register	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	10719	POST	/system/session/logout	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	10842	POST	/system/account/bootstrap-admin	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	10891	GET	/system/account/me	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	11177	GET	/system/account/credits	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	11183	POST	/system/credits/reserve	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	11288	POST	/system/credits/commit	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	11424	POST	/system/credits/refund	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	11495	POST	/system/credits/grant	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	11822	GET	/system/account/credit-pools	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	11828	POST	/system/credits/reserve-v2	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	11953	POST	/system/credits/commit-v2	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	12114	POST	/system/credits/refund-v2	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	12192	POST	/system/credits/grant-free	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	12229	POST	/system/credits/grant-paid	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	12293	GET	/system/ads/reward/status	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	12304	POST	/system/ads/reward/claim	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	12479	GET	/system/gpu/catalog	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	12496	POST	/system/gpu/quote	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	12599	POST	/system/gpu/reserve-quote	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	12832	GET	/system/gpu/sessions	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	12861	POST	/system/gpu/start-reserved	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	13039	POST	/system/gpu/stop-session	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	13245	POST	/system/gpu/cleanup-mock-session	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	13498	GET	/system/admin/users	admin_system	admin_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	13579	POST	/system/support/tickets	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	13663	GET	/system/support/tickets	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	13700	GET	/system/admin/support/tickets	admin_system	admin_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	13766	GET	/system/support/tickets/{ticket_id}/messages	direct_application	read_only	no	not_planned	no	direct application route
+edge_controller.py	13818	POST	/system/support/tickets/{ticket_id}/messages	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	14156	GET	/system/retention/dry-run	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	14157	GET	/api/system/retention/dry-run	admin_system	infrastructure_read	no	never_direct_router_execute	no	guarded admin/system route
+edge_controller.py	14169	POST	/system/session/presence	direct_application	user_content_write	no	not_planned	no	presence heartbeat route
+edge_controller.py	14189	POST	/system/support/tickets/{ticket_id}/status	direct_application	user_content_write	no	not_planned	no	direct application route
+edge_controller.py	14299	POST	/system/session/logout-safe	auth_security	auth_security	no	never_direct_router_execute	yes	authentication/security route
+edge_controller.py	14467	POST	/api/presence/web	direct_application	user_content_write	no	not_planned	no	presence heartbeat route
+edge_controller.py	14468	POST	/presence/web	direct_application	user_content_write	no	not_planned	no	presence heartbeat route
+edge_controller.py	14470	POST	/system/presence/web	direct_application	user_content_write	no	not_planned	no	presence heartbeat route
+edge_controller.py	14767	GET	/system/presence/power-policy	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	14951	POST	/system/presence/apply-power-policy	admin_system	admin_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
+edge_controller.py	15228	GET	/internal/laptop-queue/summary	internal_service	internal_worker_only	no	never_direct_router_execute	n/a	internal worker/queue service route
+edge_controller.py	15270	POST	/internal/laptop-queue/synthetic/setup	internal_service	internal_worker_only	no	never_direct_router_execute	n/a	internal worker/queue service route
+edge_controller.py	15342	POST	/internal/laptop-queue/jobs/claim	internal_service	internal_worker_only	no	never_direct_router_execute	n/a	internal worker/queue service route
+edge_controller.py	15361	POST	/internal/laptop-queue/jobs/{job_id}/complete	internal_service	internal_worker_only	no	never_direct_router_execute	n/a	internal worker/queue service route
+edge_controller.py	15387	POST	/internal/laptop-queue/synthetic/cleanup	internal_service	internal_worker_only	no	never_direct_router_execute	n/a	internal worker/queue service route
+edge_controller.py	15477	POST	/internal/laptop-queue/workers/register	internal_service	internal_worker_only	no	never_direct_router_execute	n/a	internal worker/queue service route
+edge_controller.py	15598	POST	/internal/laptop-queue/workers/heartbeat	internal_service	internal_worker_only	no	never_direct_router_execute	n/a	internal worker/queue service route
+edge_controller.py	15722	POST	/internal/laptop-queue/recover	internal_service	internal_worker_only	no	never_direct_router_execute	n/a	internal worker/queue service route
+edge_controller.py	16162	GET	/api/chat/queue/status	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	16163	GET	/public/chat/queue/status	direct_application	read_only	no	not_planned	no	read-only status/account route
+edge_controller.py	16523	POST	/api/chat/queued	router_candidate	user_content_write	yes	priority_1	no	natural-language or flexible command input
+edge_controller.py	16698	GET	/api/chat/queued/{job_id}	direct_application	read_only	no	not_planned	no	direct application route
+public_gateway.py	75	GET	/gateway/health	direct_application	read_only	no	not_planned	no	direct application route
+public_gateway.py	201	GET	/system/status	direct_application	read_only	no	not_planned	no	read-only status/account route
+public_gateway.py	206	POST	/system/pveso/boot	admin_system	infrastructure_write_confirmed	no	never_direct_router_execute	yes	guarded admin/system route
