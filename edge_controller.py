@@ -6961,8 +6961,324 @@ def _study_init_session_tables():
             "ON study_session_events(user_id, created_at)"
         )
         # STAGE_5P11L_STUDY_SESSION_EVENTS_END
+
+        # STAGE_5P11O_CUMULATIVE_STUDY_TOTALS_BEGIN
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS study_user_totals ("
+            "user_id INTEGER PRIMARY KEY, "
+            "total_cards_reviewed INTEGER NOT NULL DEFAULT 0, "
+            "total_answered INTEGER NOT NULL DEFAULT 0, "
+            "total_correct INTEGER NOT NULL DEFAULT 0, "
+            "total_wrong INTEGER NOT NULL DEFAULT 0, "
+            "total_skipped INTEGER NOT NULL DEFAULT 0, "
+            "total_study_seconds INTEGER NOT NULL DEFAULT 0, "
+            "updated_at TEXT NOT NULL, "
+            "FOREIGN KEY(user_id) REFERENCES app_users(id)"
+            ")"
+        )
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS study_deck_totals ("
+            "user_id INTEGER NOT NULL, "
+            "deck_id INTEGER NOT NULL, "
+            "total_cards_reviewed INTEGER NOT NULL DEFAULT 0, "
+            "total_answered INTEGER NOT NULL DEFAULT 0, "
+            "total_correct INTEGER NOT NULL DEFAULT 0, "
+            "total_wrong INTEGER NOT NULL DEFAULT 0, "
+            "total_skipped INTEGER NOT NULL DEFAULT 0, "
+            "total_study_seconds INTEGER NOT NULL DEFAULT 0, "
+            "updated_at TEXT NOT NULL, "
+            "PRIMARY KEY(user_id, deck_id), "
+            "FOREIGN KEY(user_id) REFERENCES app_users(id), "
+            "FOREIGN KEY(deck_id) REFERENCES study_decks(id)"
+            ")"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_study_deck_totals_user "
+            "ON study_deck_totals(user_id, updated_at)"
+        )
+        # STAGE_5P11O_CUMULATIVE_STUDY_TOTALS_END
         conn.commit()
 
+
+
+
+# STAGE_5P11O_CUMULATIVE_STUDY_TOTALS_HELPERS_BEGIN
+def _study_parse_elapsed_seconds(started_at, ended_at):
+    if not started_at or not ended_at:
+        return 0
+
+    try:
+        start_dt = datetime.fromisoformat(str(started_at))
+        end_dt = datetime.fromisoformat(str(ended_at))
+
+        if start_dt.tzinfo is None:
+            start_dt = start_dt.replace(tzinfo=timezone.utc)
+        if end_dt.tzinfo is None:
+            end_dt = end_dt.replace(tzinfo=timezone.utc)
+
+        return max(0, int((end_dt - start_dt).total_seconds()))
+    except Exception:
+        return 0
+
+
+def _study_blank_total():
+    return {
+        "total_cards_reviewed": 0,
+        "total_answered": 0,
+        "total_correct": 0,
+        "total_wrong": 0,
+        "total_skipped": 0,
+        "total_study_seconds": 0,
+    }
+
+
+def _study_rebuild_cumulative_totals(user_id=None):
+    """
+    Rebuild cumulative Study totals from durable detailed rows.
+
+    Correct/wrong come from study_reviews.
+    Skipped comes from study_session_events.
+    Study time comes from completed/stopped study_sessions.
+
+    This allows old detailed rows to be deleted later while keeping cumulative totals.
+    """
+    _study_init_session_tables()
+
+    now = datetime.now(timezone.utc).isoformat()
+    user_filter = ""
+    params = []
+
+    if user_id is not None:
+        user_filter = "WHERE user_id = ?"
+        params = [int(user_id)]
+
+    deck_totals = {}
+    user_totals = {}
+
+    def ensure_user(uid):
+        uid = int(uid)
+        if uid not in user_totals:
+            user_totals[uid] = _study_blank_total()
+        return user_totals[uid]
+
+    def ensure_deck(uid, did):
+        uid = int(uid)
+        did = int(did)
+        key = (uid, did)
+        if key not in deck_totals:
+            deck_totals[key] = _study_blank_total()
+        ensure_user(uid)
+        return deck_totals[key]
+
+    with db() as conn:
+        conn.row_factory = sqlite3.Row
+
+        review_rows = conn.execute(
+            f"""
+            SELECT
+                user_id,
+                deck_id,
+                COUNT(*) AS total_answered,
+                COALESCE(SUM(CASE WHEN was_correct = 1 THEN 1 ELSE 0 END), 0) AS total_correct,
+                COALESCE(SUM(CASE WHEN was_correct = 0 THEN 1 ELSE 0 END), 0) AS total_wrong
+            FROM study_reviews
+            {user_filter}
+            GROUP BY user_id, deck_id
+            """,
+            tuple(params),
+        ).fetchall()
+
+        for row in review_rows:
+            uid = int(row["user_id"])
+            did = row["deck_id"]
+            answered = int(row["total_answered"] or 0)
+            correct = int(row["total_correct"] or 0)
+            wrong = int(row["total_wrong"] or 0)
+
+            ut = ensure_user(uid)
+            ut["total_answered"] += answered
+            ut["total_cards_reviewed"] += answered
+            ut["total_correct"] += correct
+            ut["total_wrong"] += wrong
+
+            if did is not None:
+                dt = ensure_deck(uid, did)
+                dt["total_answered"] += answered
+                dt["total_cards_reviewed"] += answered
+                dt["total_correct"] += correct
+                dt["total_wrong"] += wrong
+
+        skip_rows = conn.execute(
+            f"""
+            SELECT
+                user_id,
+                deck_id,
+                COUNT(*) AS total_skipped
+            FROM study_session_events
+            WHERE event_type = 'skip'
+            {"AND user_id = ?" if user_id is not None else ""}
+            GROUP BY user_id, deck_id
+            """,
+            tuple(params),
+        ).fetchall()
+
+        for row in skip_rows:
+            uid = int(row["user_id"])
+            did = row["deck_id"]
+            skipped = int(row["total_skipped"] or 0)
+
+            ut = ensure_user(uid)
+            ut["total_skipped"] += skipped
+            ut["total_cards_reviewed"] += skipped
+
+            if did is not None:
+                dt = ensure_deck(uid, did)
+                dt["total_skipped"] += skipped
+                dt["total_cards_reviewed"] += skipped
+
+        session_rows = conn.execute(
+            f"""
+            SELECT user_id, deck_id, started_at, ended_at
+            FROM study_sessions
+            WHERE started_at IS NOT NULL
+              AND ended_at IS NOT NULL
+              {"AND user_id = ?" if user_id is not None else ""}
+            """,
+            tuple(params),
+        ).fetchall()
+
+        for row in session_rows:
+            uid = int(row["user_id"])
+            did = row["deck_id"]
+            seconds = _study_parse_elapsed_seconds(row["started_at"], row["ended_at"])
+
+            ut = ensure_user(uid)
+            ut["total_study_seconds"] += seconds
+
+            if did is not None:
+                dt = ensure_deck(uid, did)
+                dt["total_study_seconds"] += seconds
+
+        if user_id is not None:
+            conn.execute("DELETE FROM study_user_totals WHERE user_id = ?", (int(user_id),))
+            conn.execute("DELETE FROM study_deck_totals WHERE user_id = ?", (int(user_id),))
+        else:
+            conn.execute("DELETE FROM study_user_totals")
+            conn.execute("DELETE FROM study_deck_totals")
+
+        for uid, total in sorted(user_totals.items()):
+            conn.execute(
+                """
+                INSERT INTO study_user_totals (
+                    user_id,
+                    total_cards_reviewed,
+                    total_answered,
+                    total_correct,
+                    total_wrong,
+                    total_skipped,
+                    total_study_seconds,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    int(uid),
+                    int(total["total_cards_reviewed"]),
+                    int(total["total_answered"]),
+                    int(total["total_correct"]),
+                    int(total["total_wrong"]),
+                    int(total["total_skipped"]),
+                    int(total["total_study_seconds"]),
+                    now,
+                ),
+            )
+
+        for (uid, did), total in sorted(deck_totals.items()):
+            conn.execute(
+                """
+                INSERT INTO study_deck_totals (
+                    user_id,
+                    deck_id,
+                    total_cards_reviewed,
+                    total_answered,
+                    total_correct,
+                    total_wrong,
+                    total_skipped,
+                    total_study_seconds,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    int(uid),
+                    int(did),
+                    int(total["total_cards_reviewed"]),
+                    int(total["total_answered"]),
+                    int(total["total_correct"]),
+                    int(total["total_wrong"]),
+                    int(total["total_skipped"]),
+                    int(total["total_study_seconds"]),
+                    now,
+                ),
+            )
+
+        conn.commit()
+
+    return {
+        "ok": True,
+        "user_id": int(user_id) if user_id is not None else None,
+        "user_total_rows": len(user_totals),
+        "deck_total_rows": len(deck_totals),
+        "updated_at": now,
+    }
+
+
+def _study_get_cumulative_totals_for_user(user_id):
+    _study_init_session_tables()
+
+    _study_rebuild_cumulative_totals(user_id=int(user_id))
+
+    with db() as conn:
+        conn.row_factory = sqlite3.Row
+
+        user_total = conn.execute(
+            """
+            SELECT *
+            FROM study_user_totals
+            WHERE user_id = ?
+            """,
+            (int(user_id),),
+        ).fetchone()
+
+        deck_totals = conn.execute(
+            """
+            SELECT
+                t.*,
+                d.title AS deck_title
+            FROM study_deck_totals t
+            LEFT JOIN study_decks d
+                ON d.id = t.deck_id
+               AND d.user_id = t.user_id
+            WHERE t.user_id = ?
+            ORDER BY t.updated_at DESC, t.deck_id DESC
+            """,
+            (int(user_id),),
+        ).fetchall()
+
+    return {
+        "user_total": row_to_dict(user_total) if user_total else {
+            "user_id": int(user_id),
+            "total_cards_reviewed": 0,
+            "total_answered": 0,
+            "total_correct": 0,
+            "total_wrong": 0,
+            "total_skipped": 0,
+            "total_study_seconds": 0,
+            "updated_at": None,
+        },
+        "deck_totals": [row_to_dict(row) for row in deck_totals],
+    }
+# STAGE_5P11O_CUMULATIVE_STUDY_TOTALS_HELPERS_END
 
 
 # STAGE_5P11L_STUDY_SESSION_SUMMARY_HELPERS_BEGIN
@@ -8417,6 +8733,45 @@ async def public_study_review_card(card_id: int, request: Request):
             "accuracy": round(correct_reviews / total_reviews, 4) if total_reviews else None,
         },
     }
+
+
+
+# STAGE_5P11O_CUMULATIVE_STUDY_TOTALS_ENDPOINT_BEGIN
+@app.post("/system/study/totals/rebuild")
+@app.post("/api/system/study/totals/rebuild")
+async def system_study_totals_rebuild(request: Request):
+    await _require_admin(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    requested_user_id = payload.get("user_id") if isinstance(payload, dict) else None
+
+    if requested_user_id in (None, "", "all"):
+        result = _study_rebuild_cumulative_totals()
+    else:
+        try:
+            result = _study_rebuild_cumulative_totals(user_id=int(requested_user_id))
+        except Exception:
+            raise HTTPException(status_code=400, detail="user_id must be an integer or 'all'.")
+
+    return result
+
+
+@app.get("/public/study/totals")
+@app.get("/api/study/totals")
+async def public_study_totals(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+    totals = _study_get_cumulative_totals_for_user(user_id)
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "totals": totals,
+    }
+# STAGE_5P11O_CUMULATIVE_STUDY_TOTALS_ENDPOINT_END
 
 
 @app.get("/public/study/progress")
