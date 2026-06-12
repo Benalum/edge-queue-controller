@@ -495,22 +495,11 @@ async def tick():
         # Stage 7W-1: legacy /tick can auto-ready the worker before
         # direct Ollama forwarding. Keep the post-start pause bounded and
         # locally defined so the scheduler timer cannot crash with NameError.
-        web_presence_start_pause_minutes = _parse_int_env(
-            "WEB_POWER_START_PAUSE_MINUTES",
-            10,
-            minimum=1,
-            maximum=120,
-        )
-
-        # Stage 7W-1: legacy /tick can auto-ready the worker before
-        # direct Ollama forwarding. Keep the post-start pause bounded and
-        # locally defined so the scheduler timer cannot crash with NameError.
-        web_presence_start_pause_minutes = _parse_int_env(
-            "WEB_POWER_START_PAUSE_MINUTES",
-            10,
-            minimum=1,
-            maximum=120,
-        )
+        try:
+            web_presence_start_pause_minutes = int(os.getenv("WEB_POWER_START_PAUSE_MINUTES", "10"))
+        except (TypeError, ValueError):
+            web_presence_start_pause_minutes = 10
+        web_presence_start_pause_minutes = max(1, min(120, web_presence_start_pause_minutes))
 
         actions.append(
             {
