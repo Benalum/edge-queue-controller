@@ -6934,7 +6934,149 @@ def _study_init_session_tables():
             "CREATE INDEX IF NOT EXISTS idx_study_sessions_user_status "
             "ON study_sessions(user_id, status, updated_at)"
         )
+        # STAGE_5P11L_STUDY_SESSION_EVENTS_BEGIN
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS study_session_events ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "session_id INTEGER NOT NULL, "
+            "user_id INTEGER NOT NULL, "
+            "deck_id INTEGER, "
+            "card_id INTEGER, "
+            "event_type TEXT NOT NULL, "
+            "was_correct INTEGER, "
+            "created_at TEXT NOT NULL, "
+            "metadata_json TEXT, "
+            "FOREIGN KEY(session_id) REFERENCES study_sessions(id), "
+            "FOREIGN KEY(user_id) REFERENCES app_users(id), "
+            "FOREIGN KEY(deck_id) REFERENCES study_decks(id), "
+            "FOREIGN KEY(card_id) REFERENCES study_cards(id)"
+            ")"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_study_session_events_session "
+            "ON study_session_events(session_id, created_at)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_study_session_events_user "
+            "ON study_session_events(user_id, created_at)"
+        )
+        # STAGE_5P11L_STUDY_SESSION_EVENTS_END
         conn.commit()
+
+
+
+# STAGE_5P11L_STUDY_SESSION_SUMMARY_HELPERS_BEGIN
+def _study_insert_session_event_conn(
+    conn,
+    *,
+    session_id: int,
+    user_id: int,
+    deck_id=None,
+    card_id=None,
+    event_type: str,
+    was_correct=None,
+    created_at: str | None = None,
+    metadata: dict | None = None,
+):
+    event = str(event_type or "").strip()
+    if not event:
+        return
+
+    ts = created_at or datetime.now(timezone.utc).isoformat()
+
+    try:
+        metadata_json = json.dumps(metadata or {}, sort_keys=True)
+    except Exception:
+        metadata_json = "{}"
+
+    conn.execute(
+        """
+        INSERT INTO study_session_events (
+            session_id,
+            user_id,
+            deck_id,
+            card_id,
+            event_type,
+            was_correct,
+            created_at,
+            metadata_json
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            int(session_id),
+            int(user_id),
+            int(deck_id) if deck_id is not None else None,
+            int(card_id) if card_id is not None else None,
+            event,
+            None if was_correct is None else (1 if was_correct else 0),
+            ts,
+            metadata_json,
+        ),
+    )
+
+
+def _study_session_summary_for_row(item: dict, queue_count: int):
+    session_id = item.get("id")
+    user_id = item.get("user_id")
+
+    summary = {
+        "cards_total": int(queue_count or 0),
+        "cards_reviewed": 0,
+        "correct_count": 0,
+        "wrong_count": 0,
+        "skipped_count": 0,
+        "answered_count": 0,
+        "accuracy": None,
+        "elapsed_seconds": None,
+        "started_at": item.get("started_at"),
+        "ended_at": item.get("ended_at"),
+    }
+
+    if not session_id or not user_id:
+        return summary
+
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            event_stats = conn.execute(
+                """
+                SELECT
+                    COUNT(CASE WHEN event_type IN ('mark_correct', 'mark_incorrect', 'skip') THEN 1 END) AS cards_reviewed,
+                    COUNT(CASE WHEN event_type = 'mark_correct' THEN 1 END) AS correct_count,
+                    COUNT(CASE WHEN event_type = 'mark_incorrect' THEN 1 END) AS wrong_count,
+                    COUNT(CASE WHEN event_type = 'skip' THEN 1 END) AS skipped_count
+                FROM study_session_events
+                WHERE session_id = ?
+                  AND user_id = ?
+                """,
+                (int(session_id), int(user_id)),
+            ).fetchone()
+
+        if event_stats:
+            summary["cards_reviewed"] = int(event_stats["cards_reviewed"] or 0)
+            summary["correct_count"] = int(event_stats["correct_count"] or 0)
+            summary["wrong_count"] = int(event_stats["wrong_count"] or 0)
+            summary["skipped_count"] = int(event_stats["skipped_count"] or 0)
+    except Exception:
+        pass
+
+    summary["answered_count"] = int(summary["correct_count"]) + int(summary["wrong_count"])
+    if summary["answered_count"]:
+        summary["accuracy"] = round(summary["correct_count"] / summary["answered_count"], 4)
+
+    try:
+        start_raw = item.get("started_at")
+        end_raw = item.get("ended_at") or item.get("updated_at")
+        if start_raw and end_raw:
+            start_dt = datetime.fromisoformat(str(start_raw))
+            end_dt = datetime.fromisoformat(str(end_raw))
+            summary["elapsed_seconds"] = max(0, int((end_dt - start_dt).total_seconds()))
+    except Exception:
+        summary["elapsed_seconds"] = None
+
+    return summary
+# STAGE_5P11L_STUDY_SESSION_SUMMARY_HELPERS_END
 
 
 def _study_session_row_to_public(row):
@@ -6953,6 +7095,18 @@ def _study_session_row_to_public(row):
             "ended_at": None,
             "created_at": None,
             "updated_at": None,
+            "summary": {
+                "cards_total": 0,
+                "cards_reviewed": 0,
+                "correct_count": 0,
+                "wrong_count": 0,
+                "skipped_count": 0,
+                "answered_count": 0,
+                "accuracy": None,
+                "elapsed_seconds": None,
+                "started_at": None,
+                "ended_at": None,
+            },
         }
 
     item = row_to_dict(row)
@@ -7013,6 +7167,7 @@ def _study_session_row_to_public(row):
         "ended_at": item.get("ended_at"),
         "created_at": item.get("created_at"),
         "updated_at": item.get("updated_at"),
+        "summary": _study_session_summary_for_row(item, queue_count),
     }
 
 
@@ -7121,6 +7276,16 @@ async def public_study_session_start(request: Request):
                 now,
             ),
         )
+        _study_insert_session_event_conn(
+            conn,
+            session_id=int(cur.lastrowid),
+            user_id=int(user_id),
+            deck_id=int(deck_id),
+            card_id=int(queue[0]),
+            event_type="start",
+            created_at=now,
+            metadata={"queue_count": len(queue)},
+        )
         conn.commit()
 
         row = conn.execute(
@@ -7168,6 +7333,21 @@ def _study_update_session_status(session_id: int, status: str, action: str, inte
                 int(session_id),
             ),
         )
+        session_row = conn.execute(
+            "SELECT * FROM study_sessions WHERE id = ?",
+            (int(session_id),),
+        ).fetchone()
+        if session_row:
+            _study_insert_session_event_conn(
+                conn,
+                session_id=int(session_id),
+                user_id=int(session_row["user_id"]),
+                deck_id=session_row["deck_id"],
+                card_id=session_row["current_card_id"],
+                event_type=str(action or intent or status),
+                created_at=now,
+                metadata={"status": status, "intent": intent},
+            )
         conn.commit()
         return conn.execute(
             "SELECT * FROM study_sessions WHERE id = ?",
@@ -7595,6 +7775,21 @@ def _study_mark_current_card_for_session(user_id: int, was_correct: bool):
                 int(row["id"]),
             ),
         )
+        _study_insert_session_event_conn(
+            conn,
+            session_id=int(row["id"]),
+            user_id=int(user_id),
+            deck_id=int(row["deck_id"]),
+            card_id=int(card["id"]),
+            event_type=action,
+            was_correct=bool(was_correct),
+            created_at=now,
+            metadata={
+                "intent": intent,
+                "next_status": next_status,
+                "next_card_id": int(next_card_id) if next_card_id else None,
+            },
+        )
         conn.commit()
 
         updated = conn.execute(
@@ -7649,6 +7844,21 @@ def _study_advance_current_session_without_review(user_id: int, action: str, int
                 now,
                 int(row["id"]),
             ),
+        )
+        _study_insert_session_event_conn(
+            conn,
+            session_id=int(row["id"]),
+            user_id=int(user_id),
+            deck_id=int(row["deck_id"]),
+            card_id=int(card["id"]),
+            event_type=action,
+            was_correct=None,
+            created_at=now,
+            metadata={
+                "intent": intent,
+                "next_status": next_status,
+                "next_card_id": int(next_card_id) if next_card_id else None,
+            },
         )
         conn.commit()
 
