@@ -42,6 +42,70 @@ def _stage6f_confirmation_policy(intent_name, route, confidence):
     }
 
 
+
+def _stage6f_source_surface_policy(source, surface, active_page):
+    restricted_tokens = {
+        "admin",
+        "auth",
+        "internal",
+        "power",
+        "security",
+        "system",
+        "worker",
+        "queue",
+        "password",
+        "billing",
+        "account-bootstrap",
+    }
+
+    values = {
+        "source": str(source or "").strip().lower(),
+        "surface": str(surface or "").strip().lower(),
+        "active_page": str(active_page or "").strip().lower(),
+    }
+
+    restricted_match = None
+
+    for field, value in values.items():
+        if not value:
+            continue
+
+        parts = {
+            value,
+            value.split("_", 1)[0],
+            value.split("-", 1)[0],
+            value.split("/", 1)[0],
+        }
+
+        if value in restricted_tokens:
+            restricted_match = {"field": field, "value": value}
+            break
+
+        if parts & restricted_tokens:
+            restricted_match = {"field": field, "value": value}
+            break
+
+        for token in restricted_tokens:
+            if value.startswith(token + "_") or value.startswith(token + "-") or value.startswith(token + "/"):
+                restricted_match = {"field": field, "value": value}
+                break
+
+        if restricted_match:
+            break
+
+    allowed = restricted_match is None
+
+    return {
+        "allowed": allowed,
+        "policy": "stage6m_user_surface_allowlist",
+        "reason": "allowed_user_facing_surface" if allowed else "blocked_restricted_surface",
+        "source": values["source"],
+        "surface": values["surface"],
+        "active_page": values["active_page"],
+        "restricted_match": restricted_match,
+        "blocked_surface_groups": sorted(restricted_tokens),
+    }
+
 def _stage6f_router_enabled():
     return str(os.getenv("EDGE_UNIVERSAL_INTENT_ROUTER_DRY_RUN_ENABLED", "0")).lower() in {"1", "true", "yes", "on"}
 
@@ -59,8 +123,10 @@ def _stage6f_router_response(body):
     surface = str(input_obj.get("surface") or "").lower()
     active_page = str(context_obj.get("active_page") or "").lower()
 
-    study_context = source == "study" or surface.startswith("study") or active_page == "study"
-    companion_context = source in {"companion", "chat"} or active_page in {"companion", "chat"}
+    source_surface_policy = _stage6f_source_surface_policy(source, surface, active_page)
+
+    study_context = source_surface_policy["allowed"] and (source == "study" or surface.startswith("study") or active_page == "study")
+    companion_context = source_surface_policy["allowed"] and (source in {"companion", "chat"} or active_page in {"companion", "chat"})
 
     language_detected = "es" if lowered in {"siguiente", "próximo", "proximo", "saltar", "omitir", "pista", "ayuda"} else "en"
 
@@ -82,10 +148,19 @@ def _stage6f_router_response(body):
             "active_page": active_page,
             "study_context": study_context,
             "companion_context": companion_context,
+            "source_surface_policy": source_surface_policy,
         }
     ]
 
-    if study_context and lowered in {"next", "n", "continue", "move on", "go on", "next card", "siguiente", "próximo", "proximo"}:
+    if not source_surface_policy["allowed"]:
+        intent_name = "unknown.unsupported"
+        confidence = 0.0
+        handler = None
+        route = None
+        tier = "fast_intent"
+        reason = "Input source, surface, or active page is blocked by router source/surface policy."
+        rule_id = "policy.source_surface.blocked"
+    elif study_context and lowered in {"next", "n", "continue", "move on", "go on", "next card", "siguiente", "próximo", "proximo"}:
         intent_name = "study.next"
         confidence = 0.98
         handler = "study.session.command"
@@ -151,6 +226,7 @@ def _stage6f_router_response(body):
         "ok": True,
         "dry_run": True,
         "dispatch_performed": False,
+        "source_surface_policy": source_surface_policy,
         "decision_trace": decision_trace,
         "language": {
             "detected": language_detected,

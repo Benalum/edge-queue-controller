@@ -1,0 +1,32 @@
+[
+  {
+    "name": "blocked_admin_source",
+    "body": {"input": {"text": "status", "source": "admin", "surface": "admin_panel"}, "context": {"active_page": "admin"}},
+    "expect": {"allowed": false, "intent": "unknown.unsupported", "route": null, "rule_id": "policy.source_surface.blocked"}
+  },
+  {
+    "name": "blocked_power_surface",
+    "body": {"input": {"text": "turn on server", "source": "system", "surface": "power_control"}, "context": {"active_page": "system"}},
+    "expect": {"allowed": false, "intent": "unknown.unsupported", "route": null, "rule_id": "policy.source_surface.blocked"}
+  },
+  {
+    "name": "blocked_internal_surface",
+    "body": {"input": {"text": "heartbeat", "source": "internal", "surface": "worker_heartbeat"}, "context": {"active_page": "internal"}},
+    "expect": {"allowed": false, "intent": "unknown.unsupported", "route": null, "rule_id": "policy.source_surface.blocked"}
+  },
+  {
+    "name": "allowed_study_surface",
+    "body": {"input": {"text": "next card", "source": "study", "surface": "study_session"}, "context": {"active_page": "study"}},
+    "expect": {"allowed": true, "intent": "study.next", "route": "/api/study/session/command", "rule_id": "study.next.alias"}
+  },
+  {
+    "name": "allowed_companion_surface",
+    "body": {"input": {"text": "Can you help?", "source": "companion", "surface": "companion_chat"}, "context": {"active_page": "companion"}},
+    "expect": {"allowed": true, "intent": "companion.chat", "route": "/api/companion/chat", "rule_id": "companion.chat.text"}
+  },
+  {
+    "name": "allowed_blank_general_user_input",
+    "body": {"input": {"text": "What should I work on next?", "source": "", "surface": ""}, "context": {"active_page": ""}},
+    "expect": {"allowed": true, "intent": "unknown.general_chat", "route": "/api/companion/chat", "rule_id": "unknown.general_chat.text"}
+  }
+]
