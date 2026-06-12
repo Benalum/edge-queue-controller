@@ -6924,6 +6924,40 @@ const WEB_PRESENCE_STARTED_AT = Date.now();
 let webPresenceLastSentAt = 0;
 let webPresenceInFlight = null;
 
+// STAGE_5P11R_AUTH_PRESENCE_FORCE_BEGIN
+let webPresenceLastAuthState = null;
+
+function webPresenceIsLoggedIn() {
+  return Boolean(authState && authState.token);
+}
+
+function webPresenceAuthHeaders() {
+  const headers = { "Content-Type": "application/json" };
+
+  if (webPresenceIsLoggedIn()) {
+    headers.Authorization = "Bearer " + authState.token;
+  }
+
+  return headers;
+}
+
+function webPresenceShouldBypassDebounce(reason) {
+  const loggedIn = webPresenceIsLoggedIn();
+  const authStateKey = loggedIn ? "auth" : "anon";
+
+  if (webPresenceLastAuthState !== authStateKey) {
+    webPresenceLastAuthState = authStateKey;
+    return true;
+  }
+
+  return reason === "force"
+    || reason === "startup-logged-in"
+    || reason === "auth-login-success"
+    || reason === "private-app-heartbeat"
+    || reason === "15-second-logged-in-heartbeat";
+}
+// STAGE_5P11R_AUTH_PRESENCE_FORCE_END
+
 function getWebPresenceVisitorId() {
   let id = localStorage.getItem(WEB_PRESENCE_VISITOR_KEY);
 
@@ -6960,25 +6994,36 @@ async function sendWebPresence(reason = "") {
 
   const now = Date.now();
 
-  // Debounce normal presence sends.
-  if (reason !== "force" && now - webPresenceLastSentAt < 55_000) {
+  // Debounce normal presence sends, but never debounce the first logged-in
+  // heartbeat after auth state changes. This is what powers CT101 for logged-in users.
+  if (!webPresenceShouldBypassDebounce(reason) && now - webPresenceLastSentAt < 55_000) {
     return;
   }
 
   webPresenceLastSentAt = now;
 
-  webPresenceInFlight = api("/presence/web", {
+  webPresenceInFlight = fetch(`${API_BASE}/presence/web`, {
     method: "POST",
+    credentials: "include",
+    headers: webPresenceAuthHeaders(),
     body: JSON.stringify({
       visitor_id: getWebPresenceVisitorId(),
       route: location.pathname,
       active_seconds: activeSeconds,
       visibility: document.visibilityState,
+      logged_in: webPresenceIsLoggedIn(),
       metadata: {
         reason,
-        logged_in: Boolean(authState?.token),
+        logged_in: webPresenceIsLoggedIn(),
+        private_app: PRIVATE_APP_ROUTE_SET.has(location.pathname),
       },
     }),
+  }).then(async (response) => {
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) {
+      throw new Error(data.detail || data.error || `presence HTTP ${response.status}`);
+    }
+    return data;
   })
     .catch((err) => {
       console.warn("[presence] web presence failed", err);
@@ -6999,9 +7044,21 @@ setTimeout(() => {
   sendWebPresence("15-second-intent");
 }, 15_000);
 
+// STAGE_5P11R_LOGGED_IN_15_SECOND_HEARTBEAT_BEGIN
+setTimeout(() => {
+  if (webPresenceIsLoggedIn()) {
+    sendWebPresence("15-second-logged-in-heartbeat");
+  }
+}, 15_000);
+
 setInterval(() => {
-  sendWebPresence("interval");
+  if (webPresenceIsLoggedIn()) {
+    sendWebPresence("private-app-heartbeat");
+  } else {
+    sendWebPresence("interval");
+  }
 }, 60_000);
+// STAGE_5P11R_LOGGED_IN_15_SECOND_HEARTBEAT_END
 
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "hidden") {
