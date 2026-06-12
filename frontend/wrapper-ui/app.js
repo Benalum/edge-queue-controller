@@ -7943,3 +7943,266 @@ async function handleResetPasswordRoute() {
 })();
 // STAGE_5O35_COMPANION_UX_END
 
+
+
+// STAGE_5P8A_STUDY_SESSION_STATUS_CARD_BEGIN
+(function () {
+  const cardId = "stage5p8a-study-session-status-card";
+  let observerInstalled = false;
+  let refreshTimer = null;
+
+  function isStudyRoute() {
+    const path = String(window.location.pathname || "").replace(/\/+$/, "");
+    const hash = String(window.location.hash || "").toLowerCase();
+    return path === "/study" || path.endsWith("/study") || hash.includes("study");
+  }
+
+  function findRoot() {
+    return document.querySelector("#app")
+      || document.querySelector("#root")
+      || document.querySelector("main")
+      || document.querySelector(".app-main")
+      || document.body;
+  }
+
+  function pageLooksPublicSummary(root) {
+    const text = String(root && root.innerText || "").toLowerCase();
+    return text.includes("log in")
+      && text.includes("create account")
+      && !text.includes("deck")
+      && !text.includes("card");
+  }
+
+  function readTokenCandidate(value) {
+    if (!value) return "";
+    const raw = String(value).trim();
+    if (!raw) return "";
+
+    if (raw.startsWith("eyJ") || raw.length > 40) {
+      return raw.replace(/^Bearer\s+/i, "");
+    }
+
+    try {
+      const data = JSON.parse(raw);
+      const direct = data.access_token
+        || data.accessToken
+        || data.token
+        || data.auth_token
+        || data.authToken
+        || (data.session && (data.session.access_token || data.session.accessToken || data.session.token))
+        || "";
+      if (direct) return String(direct).replace(/^Bearer\s+/i, "");
+    } catch (err) {
+      /* not JSON */
+    }
+
+    return "";
+  }
+
+  function findBearerToken() {
+    const preferredKeys = [
+      "access_token",
+      "accessToken",
+      "auth_token",
+      "authToken",
+      "token",
+      "session",
+      "auth",
+      "aiPlatformSession",
+      "ai_platform_session",
+      "aiPlatformAuth",
+      "ai_platform_auth",
+      "edgeSession",
+      "edgeAuthSession"
+    ];
+
+    try {
+      for (const key of preferredKeys) {
+        const token = readTokenCandidate(window.localStorage.getItem(key));
+        if (token) return token;
+      }
+
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (!key || !/token|auth|session/i.test(key)) continue;
+        const token = readTokenCandidate(window.localStorage.getItem(key));
+        if (token) return token;
+      }
+    } catch (err) {
+      /* localStorage may be unavailable */
+    }
+
+    return "";
+  }
+
+  function authHeaders() {
+    const headers = {
+      "Content-Type": "application/json"
+    };
+    const token = findBearerToken();
+    if (token) headers.Authorization = "Bearer " + token;
+    return headers;
+  }
+
+  function setField(card, name, value) {
+    const el = card.querySelector("[data-stage5p8a-field='" + name + "']");
+    if (el) el.textContent = value || "—";
+  }
+
+  function setState(card, state, message) {
+    card.dataset.sessionState = String(state || "unknown").toLowerCase();
+    setField(card, "state", state || "unknown");
+    setField(card, "message", message || "");
+  }
+
+  function renderCard(root) {
+    if (!root || root.querySelector("#" + cardId)) return root && root.querySelector("#" + cardId);
+
+    const card = document.createElement("section");
+    card.id = cardId;
+    card.className = "stage5p8a-study-session-card";
+    card.setAttribute("aria-label", "Study session status");
+    card.innerHTML = [
+      '<div class="stage5p8a-study-session-head">',
+      '  <div>',
+      '    <p class="stage5p8a-eyebrow">Study session</p>',
+      '    <h2>Session status</h2>',
+      '    <p data-stage5p8a-field="message">Checking current session...</p>',
+      '  </div>',
+      '  <button type="button" class="stage5p8a-refresh" data-stage5p8a-refresh>Refresh</button>',
+      '</div>',
+      '<div class="stage5p8a-study-session-grid">',
+      '  <div><span>Status</span><strong data-stage5p8a-field="state">checking</strong></div>',
+      '  <div><span>Deck</span><strong data-stage5p8a-field="deck">—</strong></div>',
+      '  <div><span>Current card</span><strong data-stage5p8a-field="card">—</strong></div>',
+      '  <div><span>Queue</span><strong data-stage5p8a-field="queue">—</strong></div>',
+      '  <div><span>Last action</span><strong data-stage5p8a-field="lastAction">—</strong></div>',
+      '  <div><span>Updated</span><strong data-stage5p8a-field="updated">—</strong></div>',
+      '</div>',
+      '<p class="stage5p8a-study-session-note">Read-only for this stage. Command buttons come later.</p>'
+    ].join("");
+
+    const first = root.firstElementChild;
+    if (first) {
+      root.insertBefore(card, first);
+    } else {
+      root.appendChild(card);
+    }
+
+    const refresh = card.querySelector("[data-stage5p8a-refresh]");
+    if (refresh) {
+      refresh.addEventListener("click", function () {
+        loadStatus(card);
+      });
+    }
+
+    return card;
+  }
+
+  async function loadStatus(card) {
+    if (!card) return;
+
+    setState(card, "checking", "Checking current session...");
+    const refresh = card.querySelector("[data-stage5p8a-refresh]");
+    if (refresh) refresh.disabled = true;
+
+    try {
+      const response = await fetch("/api/study/session/status", {
+        method: "GET",
+        headers: authHeaders(),
+        credentials: "include"
+      });
+
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (err) {
+        data = { raw: text };
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        setState(card, "signed out", "Log in to view durable Study session status.");
+        setField(card, "deck", "—");
+        setField(card, "card", "—");
+        setField(card, "queue", "—");
+        setField(card, "lastAction", "—");
+        setField(card, "updated", "—");
+        return;
+      }
+
+      if (!response.ok || data.ok === false) {
+        setState(card, "error", data.detail || data.message || "Could not load Study session status.");
+        return;
+      }
+
+      const session = data.session || {};
+      const status = session.status || "none";
+      const queuePosition = Number(session.queue_position || 0);
+      const queueCount = Number(session.queue_count || 0);
+      const queueLabel = queueCount ? String(queuePosition + 1) + " / " + String(queueCount) : "—";
+
+      setState(card, status, status === "none" ? "No active durable Study session." : "Durable Study session is available.");
+      setField(card, "deck", session.deck_id ? String(session.deck_id) : "—");
+      setField(card, "card", session.current_card_id ? String(session.current_card_id) : "—");
+      setField(card, "queue", queueLabel);
+      setField(card, "lastAction", session.last_action || session.last_intent || "—");
+      setField(card, "updated", session.updated_at ? new Date(session.updated_at).toLocaleString() : "—");
+    } catch (err) {
+      setState(card, "offline", "Could not reach Study session status endpoint.");
+    } finally {
+      if (refresh) refresh.disabled = false;
+    }
+  }
+
+  function enhanceStudyPage() {
+    if (!isStudyRoute()) return;
+
+    const root = findRoot();
+    if (!root) return;
+
+    if (pageLooksPublicSummary(root)) {
+      const existing = root.querySelector("#" + cardId);
+      if (existing) existing.remove();
+      return;
+    }
+
+    const card = renderCard(root);
+    if (!card) return;
+
+    window.clearTimeout(refreshTimer);
+    refreshTimer = window.setTimeout(function () {
+      loadStatus(card);
+    }, 150);
+  }
+
+  function installObserver() {
+    if (observerInstalled) return;
+    observerInstalled = true;
+
+    const root = findRoot();
+    if (!root || !window.MutationObserver) return;
+
+    const observer = new MutationObserver(function () {
+      if (isStudyRoute()) enhanceStudyPage();
+    });
+
+    observer.observe(root, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  window.addEventListener("popstate", enhanceStudyPage);
+  window.addEventListener("hashchange", enhanceStudyPage);
+  document.addEventListener("DOMContentLoaded", function () {
+    installObserver();
+    enhanceStudyPage();
+  });
+
+  window.setTimeout(function () {
+    installObserver();
+    enhanceStudyPage();
+  }, 300);
+})();
+ // STAGE_5P8A_STUDY_SESSION_STATUS_CARD_END
