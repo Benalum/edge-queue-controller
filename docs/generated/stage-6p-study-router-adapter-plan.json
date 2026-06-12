@@ -1,0 +1,77 @@
+{
+  "stage": "6P",
+  "name": "study_router_adapter_plan",
+  "runtime_behavior_change": false,
+  "adapter_scope": "study_only",
+  "current_routes": [
+    {
+      "route": "/api/study/intent/parse",
+      "method": "POST",
+      "classification": "router_candidate",
+      "future_adapter_role": "parse natural-language Study intent without replacing handler behavior"
+    },
+    {
+      "route": "/api/study/session/command",
+      "method": "POST",
+      "classification": "router_candidate",
+      "future_adapter_role": "dispatch safe Study session commands after dry-run proof"
+    }
+  ],
+  "initial_supported_intents": [
+    "study.next",
+    "study.skip",
+    "study.hint",
+    "study.answer"
+  ],
+  "explicitly_out_of_scope": [
+    "admin",
+    "auth",
+    "power",
+    "internal",
+    "system",
+    "worker",
+    "queue",
+    "calendar",
+    "profile",
+    "billing",
+    "delete_without_confirmation",
+    "model_call_required_routing"
+  ],
+  "future_adapter_contract": {
+    "input": {
+      "text": "user text",
+      "source": "study",
+      "surface": "study_session",
+      "active_page": "study"
+    },
+    "router_requirements": {
+      "dry_run": true,
+      "dispatch_performed": false,
+      "model_call_required": false,
+      "allowed_to_dispatch": false,
+      "source_surface_policy_allowed": true
+    },
+    "future_dispatch_requirements": {
+      "route_class": "router_candidate",
+      "confidence_band": "high_or_medium",
+      "source_surface_policy_allowed": true,
+      "confirmation_required": false,
+      "target_handler": "existing_study_handler_only"
+    }
+  },
+  "migration_steps": [
+    "keep existing Study handlers unchanged",
+    "add adapter wrapper in a future stage",
+    "run router in dry-run mode beside existing Study command handling",
+    "log or inspect router result without changing user-visible behavior",
+    "compare adapter intent with existing handler outcome",
+    "only later allow dispatch for safe high-confidence Study commands"
+  ],
+  "safety_invariants": [
+    "never dispatch during Stage 6P",
+    "never call a model during Stage 6P",
+    "never mutate Study state through the router during Stage 6P",
+    "never route admin/auth/power/internal/system inputs through Study adapter",
+    "preserve existing Study behavior"
+  ]
+}
