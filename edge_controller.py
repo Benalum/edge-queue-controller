@@ -10012,13 +10012,17 @@ def _system_power_automation_status(checked_at):
     remediation_active = remediation.get("active") == "active"
     legacy_active = legacy.get("active") == "active"
     legacy_enabled = legacy.get("enabled") == "enabled"
+    legacy_tick_retired = _parse_bool_env("EDGE_LEGACY_TICK_COMPAT_SHIM", True)
 
     if power_auto_active and remediation_active and legacy_active:
         state = "online"
         detail_prefix = "All power/scheduler timers are active."
+    elif power_auto_active and remediation_active and legacy_tick_retired and not legacy_active and not legacy_enabled:
+        state = "online"
+        detail_prefix = "Modern power/remediation timers are active; legacy /tick scheduler is retired and intentionally disabled."
     elif power_auto_active and remediation_active and not legacy_active and not legacy_enabled:
         state = "degraded"
-        detail_prefix = "Modern power/remediation timers are active; legacy /tick scheduler is intentionally disabled until controlled restart."
+        detail_prefix = "Modern power/remediation timers are active; legacy /tick scheduler is disabled but not marked retired."
     elif power_auto_active or remediation_active:
         state = "degraded"
         detail_prefix = "Some power automation timers are active."
