@@ -7423,6 +7423,81 @@ async def public_study_intent_parse(request: Request):
 # STAGE_5P4_STUDY_INTENT_PARSER_END
 
 
+# STAGE_5P5A_STUDY_SESSION_COMMAND_LIFECYCLE_BEGIN
+async def _study_execute_lifecycle_command(request: Request, parsed: dict, payload: dict):
+    intent = parsed.get("intent")
+    command = parsed.get("command")
+
+    if intent == "study_session_status" or command == "status":
+        user_id = _study_current_user_id(request)
+        row = _study_get_current_session_for_user(user_id)
+        return {
+            "ok": True,
+            "intent": intent,
+            "command": "status",
+            "session": _study_session_row_to_public(row),
+            "router": parsed,
+        }
+
+    if intent == "study_session_start" or command == "start":
+        deck_id = payload.get("deck_id")
+        if deck_id is None:
+            raise HTTPException(status_code=400, detail="deck_id is required to start a study session")
+        return await public_study_session_start(request)
+
+    if intent == "study_session_pause" or command == "pause":
+        return await public_study_session_pause(request)
+
+    if intent == "study_session_resume" or command == "resume":
+        return await public_study_session_resume(request)
+
+    if intent == "study_session_stop" or command == "stop":
+        return await public_study_session_stop(request)
+
+    return None
+
+
+@app.post("/public/study/session/command")
+@app.post("/api/study/session/command")
+async def public_study_session_command(request: Request):
+    await _require_public_api_key(request)
+    user_id = _study_current_user_id(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required")
+
+    message = str(payload.get("message") or "")
+    session_status = payload.get("session_status")
+
+    if not session_status:
+        row = _study_get_current_session_for_user(user_id)
+        session_status = row["status"] if row else "none"
+
+    parsed = _study_parse_deterministic_intent(message, session_status=session_status)
+    lifecycle_result = await _study_execute_lifecycle_command(request, parsed, payload)
+
+    if lifecycle_result is not None:
+        lifecycle_result["parsed"] = parsed
+        return lifecycle_result
+
+    return {
+        "ok": True,
+        "executed": False,
+        "intent": parsed.get("intent"),
+        "command": parsed.get("command"),
+        "session_status": session_status,
+        "parsed": parsed,
+        "reason": "Intent parsed but command execution is not implemented in Stage 5P-5A.",
+    }
+# STAGE_5P5A_STUDY_SESSION_COMMAND_LIFECYCLE_END
+
+
+
 
 
 @app.post("/public/study/decks")
