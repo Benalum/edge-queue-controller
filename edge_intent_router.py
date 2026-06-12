@@ -38,6 +38,20 @@ def _stage6f_router_response(body):
     route = None
     tier = "fast_intent"
     reason = "No supported dry-run intent matched."
+    rule_id = "unknown.unsupported.empty_or_no_match"
+
+    decision_trace = [
+        {
+            "step": "normalize_input",
+            "text_present": bool(text),
+            "normalized_text": lowered,
+            "source": source,
+            "surface": surface,
+            "active_page": active_page,
+            "study_context": study_context,
+            "companion_context": companion_context,
+        }
+    ]
 
     if study_context and lowered in {"next", "n", "continue", "move on", "go on", "next card", "siguiente", "próximo", "proximo"}:
         intent_name = "study.next"
@@ -45,24 +59,28 @@ def _stage6f_router_response(body):
         handler = "study.session.command"
         route = "/api/study/session/command"
         reason = "Short study navigation command."
+        rule_id = "study.next.alias"
     elif study_context and lowered in {"skip", "pass", "i don't know", "i dont know", "idk", "don't know", "dont know", "not sure", "saltar", "omitir"}:
         intent_name = "study.skip"
         confidence = 0.96
         handler = "study.session.command"
         route = "/api/study/session/command"
         reason = "Short study skip command."
+        rule_id = "study.skip.alias"
     elif study_context and lowered in {"hint", "help", "show hint", "give me a hint", "pista", "ayuda"}:
         intent_name = "study.hint"
         confidence = 0.94
         handler = "study.session.command"
         route = "/api/study/session/command"
         reason = "Short study hint command."
+        rule_id = "study.hint.alias"
     elif study_context and text:
         intent_name = "study.answer"
         confidence = 0.70
         handler = "study.session.command"
         route = "/api/study/session/command"
         reason = "Study text input."
+        rule_id = "study.answer.text"
     elif companion_context and text:
         intent_name = "companion.chat"
         confidence = 0.75
@@ -70,6 +88,7 @@ def _stage6f_router_response(body):
         route = "/api/companion/chat"
         tier = "medium_conversation"
         reason = "Companion/chat text input."
+        rule_id = "companion.chat.text"
     elif text:
         intent_name = "unknown.general_chat"
         confidence = 0.35
@@ -77,11 +96,25 @@ def _stage6f_router_response(body):
         route = "/api/companion/chat"
         tier = "medium_conversation"
         reason = "General text input without strong page context."
+        rule_id = "unknown.general_chat.text"
+
+    decision_trace.append(
+        {
+            "step": "rule_result",
+            "rule_id": rule_id,
+            "intent": intent_name,
+            "handler": handler,
+            "route": route,
+            "model_tier": tier,
+            "dispatch_blocked_reason": "dry_run_endpoint_never_dispatches",
+        }
+    )
 
     return {
         "ok": True,
         "dry_run": True,
         "dispatch_performed": False,
+        "decision_trace": decision_trace,
         "language": {
             "detected": language_detected,
             "profile_default": "en",
