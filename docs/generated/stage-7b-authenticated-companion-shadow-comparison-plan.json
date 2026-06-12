@@ -1,0 +1,89 @@
+{
+  "stage": "7B",
+  "name": "authenticated_companion_shadow_comparison_plan",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_planning",
+  "purpose": "Define the safe future procedure for comparing authenticated Companion and queued Chat route behavior against Universal Intent Router Companion shadow output before any router wiring.",
+  "foundation_required": {
+    "stage_6z_complete": true,
+    "stage_7a_complete": true,
+    "router_foundation_status": "ready_for_next_phase",
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "companion_shadow_helper": "_stage6v_companion_adapter_shadow",
+    "companion_shadow_helper_wired_into_runtime": false
+  },
+  "companion_routes_under_comparison": [
+    {
+      "route": "/api/companion/chat",
+      "method": "POST",
+      "comparison_role": "current authenticated Companion chat behavior"
+    },
+    {
+      "route": "/api/chat/queued",
+      "method": "POST",
+      "comparison_role": "current authenticated queued Chat behavior"
+    }
+  ],
+  "future_authenticated_inputs": [
+    {
+      "name": "basic companion chat",
+      "route_candidate": "/api/companion/chat",
+      "current_payload_candidate": {"message": "Can you help me plan my study time?"},
+      "shadow_payload_candidate": {"message": "Can you help me plan my study time?"},
+      "expected_shadow_intent": "companion.chat"
+    },
+    {
+      "name": "chat source text",
+      "route_candidate": "/api/chat/queued",
+      "current_payload_candidate": {"text": "What should I work on next?"},
+      "shadow_payload_candidate": {"text": "What should I work on next?", "source": "chat", "surface": "chat_box", "active_page": "chat"},
+      "expected_shadow_intent": "companion.chat"
+    },
+    {
+      "name": "general planning prompt",
+      "route_candidate": "/api/companion/chat",
+      "current_payload_candidate": {"prompt": "Help me organize my next step."},
+      "shadow_payload_candidate": {"prompt": "Help me organize my next step."},
+      "expected_shadow_intent": "companion.chat"
+    }
+  ],
+  "future_comparison_fields": [
+    "authenticated_user_id_or_test_user_label",
+    "companion_route",
+    "companion_http_status",
+    "companion_response_class",
+    "queued_chat_job_or_response_summary",
+    "shadow_intent",
+    "shadow_confidence_band",
+    "shadow_existing_route",
+    "shadow_rule_id",
+    "shadow_source_surface_policy_allowed",
+    "shadow_model_call_required",
+    "shadow_allowed_to_dispatch",
+    "shadow_dispatch_performed",
+    "user_visible_behavior_changed"
+  ],
+  "safety_rules": [
+    "do not bypass authentication",
+    "do not store real user secrets in docs or fixtures",
+    "do not enable router dispatch",
+    "do not enable router model calls",
+    "do not mutate Companion state through the router",
+    "do not enqueue Chat jobs through the router",
+    "do not wire the Companion shadow helper into edge_controller.py",
+    "do not alter frontend Companion behavior",
+    "do not alter frontend Chat behavior",
+    "do not write Calendar entries",
+    "do not mutate Profile preferences"
+  ],
+  "success_criteria_for_future_stage": [
+    "authenticated Companion route behavior is captured",
+    "authenticated queued Chat route behavior is captured",
+    "Companion shadow output is captured for equivalent payloads",
+    "shadow output agrees with expected safe intent class",
+    "router dispatch remains disabled",
+    "router model calls remain disabled",
+    "no user-visible Companion or Chat regression is observed"
+  ]
+}
