@@ -2669,3 +2669,11 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   cursor: pointer;
 }
 /* STAGE_5P11C_STUDY_DECK_SELECTOR_AUTH_REPAIR_END */
+
+
+/* STAGE_5P11D_STUDY_STOPPED_STATE_BUTTON_REPAIR_BEGIN */
+.stage5p8c-study-session-controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+/* STAGE_5P11D_STUDY_STOPPED_STATE_BUTTON_REPAIR_END */

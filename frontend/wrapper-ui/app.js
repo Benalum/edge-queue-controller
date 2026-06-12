@@ -8561,26 +8561,32 @@ async function handleResetPasswordRoute() {
   }
 
   function updateButtonState(card) {
+    // STAGE_5P11D_STUDY_STOPPED_STATE_BUTTON_REPAIR_BEGIN
+    // Stopped/completed sessions must not lock the Study controls.
+    // After Stop, the user should still be able to Refresh or Start a new session.
     if (!card) return;
-    const state = getState(card);
 
+    const state = String(card.dataset.sessionState || "none").toLowerCase();
+    const busy = card.dataset.stage5p8cBusy === "true";
+
+    const start = card.querySelector("[data-stage5p8c-command='start']");
+    const refresh = card.querySelector("[data-stage5p8c-command='refresh']");
     const pause = card.querySelector("[data-stage5p8c-command='pause']");
     const resume = card.querySelector("[data-stage5p8c-command='resume']");
     const stop = card.querySelector("[data-stage5p8c-command='stop']");
 
-    function enable(button, yes) {
-      if (!button) return;
-      if (yes) {
-        button.dataset.stage5p8cEnabled = "true";
-      } else {
-        delete button.dataset.stage5p8cEnabled;
-      }
-      button.disabled = !yes || card.dataset.stage5p8cBusy === "true";
-    }
+    const activeStates = ["active", "reviewing_answer", "waiting_for_mark"];
+    const canPause = activeStates.includes(state);
+    const canResume = state === "paused";
+    const canStop = activeStates.includes(state) || state === "paused";
+    const canStart = ["none", "stopped", "completed", "signed out", "error", "offline", "unknown"].includes(state);
 
-    enable(pause, ["active", "reviewing_answer", "waiting_for_mark"].includes(state));
-    enable(resume, state === "paused");
-    enable(stop, ["active", "paused", "reviewing_answer", "waiting_for_mark"].includes(state));
+    if (start) start.disabled = busy || !canStart;
+    if (refresh) refresh.disabled = busy;
+    if (pause) pause.disabled = busy || !canPause;
+    if (resume) resume.disabled = busy || !canResume;
+    if (stop) stop.disabled = busy || !canStop;
+    // STAGE_5P11D_STUDY_STOPPED_STATE_BUTTON_REPAIR_END
   }
 
   async function refreshStatus(card) {
