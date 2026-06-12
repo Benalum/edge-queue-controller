@@ -1,0 +1,70 @@
+{
+  "request": {
+    "input": {
+      "text": "next",
+      "source": "study",
+      "surface": "study_session",
+      "locale_hint": "en-US"
+    },
+    "context": {
+      "user_id": "current-authenticated-user",
+      "role": "user",
+      "profile_language": "en",
+      "active_page": "study",
+      "session_id": "optional-session-id"
+    },
+    "page_context": {
+      "deck_id": "optional",
+      "card_id": "optional",
+      "mode": "review"
+    },
+    "router_options": {
+      "dry_run": true,
+      "allow_dispatch": false,
+      "allow_model_call": false,
+      "max_model_tier": "fast_intent"
+    }
+  },
+  "response": {
+    "ok": true,
+    "dry_run": true,
+    "dispatch_performed": false,
+    "language": {
+      "detected": "en",
+      "profile_default": "en",
+      "response_language": "en",
+      "confidence": 0.99
+    },
+    "intent": {
+      "name": "study.next",
+      "confidence": 0.98,
+      "slots": {},
+      "reason": "Short command requesting the next study card."
+    },
+    "target": {
+      "route_class": "router_candidate",
+      "handler": "study.session.command",
+      "existing_route": "/api/study/session/command",
+      "method": "POST"
+    },
+    "model_routing": {
+      "tier": "fast_intent",
+      "model": "local-fast-intent",
+      "model_call_required": false
+    },
+    "safety": {
+      "safety_class": "user_content_write",
+      "requires_confirmation": false,
+      "allowed_in_dry_run": true,
+      "allowed_to_dispatch": false
+    },
+    "actions": [
+      {
+        "type": "would_dispatch",
+        "handler": "study.session.command",
+        "route": "/api/study/session/command"
+      }
+    ],
+    "errors": []
+  }
+}
