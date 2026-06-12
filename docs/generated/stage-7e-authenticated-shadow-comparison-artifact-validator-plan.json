@@ -1,0 +1,49 @@
+{
+  "stage": "7E",
+  "name": "authenticated_shadow_comparison_artifact_validator",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_guardrails",
+  "purpose": "Add a non-runtime validator for future authenticated Study and Companion shadow comparison artifacts.",
+  "validator": {
+    "path": "ops/validate/validate-authenticated-shadow-comparison-artifact.py",
+    "runtime_wired": false,
+    "http_endpoint_exposed": false,
+    "frontend_wired": false,
+    "systemd_wired": false
+  },
+  "prerequisites": {
+    "stage_6z_complete": true,
+    "stage_7a_complete": true,
+    "stage_7b_complete": true,
+    "stage_7c_complete": true,
+    "stage_7d_complete": true,
+    "artifact_schema_version": "stage-7c-v1"
+  },
+  "validator_requirements": [
+    "validate required top-level fields",
+    "validate supported domain",
+    "validate route allowed for domain",
+    "validate shadow helper allowed for domain",
+    "validate safe intent allowed for domain",
+    "validate required false fields",
+    "validate required safety values",
+    "reject secret-like values",
+    "reject raw response storage by default",
+    "reject dispatch enabled",
+    "reject model calls enabled",
+    "reject runtime wiring changed"
+  ],
+  "must_remain_true": [
+    "router endpoint disabled by default",
+    "shadow helpers remain isolated",
+    "comparison artifacts contain no secrets",
+    "validator is not runtime-wired"
+  ],
+  "must_remain_false": [
+    "runtime_behavior_change",
+    "router_dispatch_enabled",
+    "router_model_calls_enabled",
+    "runtime_wiring_changed",
+    "validator_http_endpoint_exposed"
+  ]
+}
