@@ -7578,6 +7578,61 @@ def _study_mark_current_card_for_session(user_id: int, was_correct: bool):
     }
 # STAGE_5P6B_STUDY_MARK_CARD_END
 
+
+# STAGE_5P6D_STUDY_SKIP_NEXT_BEGIN
+def _study_advance_current_session_without_review(user_id: int, action: str, intent: str):
+    row = _study_require_current_session_for_user(user_id)
+    status = row["status"]
+
+    if status == "paused":
+        raise HTTPException(status_code=400, detail="Cannot advance card while study session is paused")
+
+    if status not in ("active", "reviewing_answer", "waiting_for_mark"):
+        raise HTTPException(status_code=400, detail=f"Cannot advance card with session status {status}")
+
+    card = _study_get_card_for_session(row, user_id)
+    queue_items = _study_session_queue_items(row)
+    position = int(row["queue_position"] or 0)
+    next_position = position + 1
+    next_card_id = queue_items[next_position] if next_position < len(queue_items) else None
+    next_status = "active" if next_card_id else "completed"
+    now = datetime.now(timezone.utc).isoformat()
+
+    with db() as conn:
+        conn.execute(
+            "UPDATE study_sessions "
+            "SET status = ?, current_card_id = ?, queue_position = ?, ended_at = ?, "
+            "last_action = ?, last_intent = ?, updated_at = ? "
+            "WHERE id = ?",
+            (
+                next_status,
+                int(next_card_id) if next_card_id else None,
+                int(next_position),
+                now if next_status == "completed" else None,
+                action,
+                intent,
+                now,
+                int(row["id"]),
+            ),
+        )
+        conn.commit()
+
+        updated = conn.execute(
+            "SELECT * FROM study_sessions WHERE id = ?",
+            (int(row["id"]),),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "intent": intent,
+        "command": action,
+        "skipped": action == "skip",
+        "completed": next_status == "completed",
+        "previous_card": _study_card_answer_payload(card),
+        "session": _study_session_row_to_public(updated),
+    }
+# STAGE_5P6D_STUDY_SKIP_NEXT_END
+
 # STAGE_5P5A_STUDY_SESSION_COMMAND_LIFECYCLE_BEGIN
 async def _study_execute_lifecycle_command(request: Request, parsed: dict, payload: dict):
     intent = parsed.get("intent")
@@ -7620,6 +7675,14 @@ async def _study_execute_lifecycle_command(request: Request, parsed: dict, paylo
     if intent == "study_mark_incorrect" or command == "mark_incorrect":
         user_id = _study_current_user_id(request)
         return _study_mark_current_card_for_session(user_id, False)
+
+    if intent == "study_skip" or command == "skip":
+        user_id = _study_current_user_id(request)
+        return _study_advance_current_session_without_review(user_id, "skip", "study_skip")
+
+    if intent == "study_next_card" or command == "next_card":
+        user_id = _study_current_user_id(request)
+        return _study_advance_current_session_without_review(user_id, "next_card", "study_next_card")
 
     return None
 
