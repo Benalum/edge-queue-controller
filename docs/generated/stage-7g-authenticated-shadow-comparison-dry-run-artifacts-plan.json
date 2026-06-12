@@ -1,0 +1,50 @@
+{
+  "stage": "7G",
+  "name": "authenticated_shadow_comparison_dry_run_artifact_examples",
+  "runtime_behavior_change": false,
+  "phase": "authenticated_shadow_comparison_guardrails",
+  "purpose": "Generate safe example artifacts for future authenticated Study and Companion shadow comparisons and validate them with the Stage 7E validator.",
+  "artifact_schema_version": "stage-7c-v1",
+  "validator": "ops/validate/validate-authenticated-shadow-comparison-artifact.py",
+  "example_artifacts": [
+    {
+      "domain": "study",
+      "path": "docs/generated/stage-7g-study-authenticated-shadow-comparison-example-artifact.json",
+      "helper": "_stage6q_study_adapter_shadow",
+      "example_payload": {"command": "next"},
+      "expected_intent": "study.next",
+      "route": "/api/study/session/command"
+    },
+    {
+      "domain": "companion",
+      "path": "docs/generated/stage-7g-companion-authenticated-shadow-comparison-example-artifact.json",
+      "helper": "_stage6v_companion_adapter_shadow",
+      "example_payload": {"message": "Can you help me plan my study time?"},
+      "expected_intent": "companion.chat",
+      "route": "/api/companion/chat"
+    }
+  ],
+  "example_limits": [
+    "examples are offline artifacts only",
+    "examples do not use real authentication",
+    "examples do not call authenticated routes",
+    "examples do not store raw route responses",
+    "examples do not store cookies, tokens, passwords, or secrets",
+    "examples do not enable router dispatch",
+    "examples do not enable model calls",
+    "examples do not change runtime wiring"
+  ],
+  "prerequisites": {
+    "stage_7c_schema_exists": true,
+    "stage_7d_secret_guardrail_exists": true,
+    "stage_7e_validator_exists": true,
+    "stage_7f_validator_no_wire_guard_exists": true
+  },
+  "required_runtime_state": {
+    "router_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false,
+    "runtime_wiring_changed": false
+  }
+}
