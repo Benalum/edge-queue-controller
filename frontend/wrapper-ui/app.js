@@ -3581,6 +3581,133 @@ async function queuedChatPollJob(jobId) {
   throw new Error("Queued job did not finish before polling timed out.");
 }
 
+
+// STAGE_5P11I_COMPANION_STUDY_COMMAND_ROUTING_BEGIN
+function stage5p11iNormalizeStudyPhrase(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[“”]/g, '"')
+    .replace(/[’]/g, "'")
+    .replace(/[^a-z0-9+#.\s'-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stage5p11iLooksLikeStudyCommand(message) {
+  const text = stage5p11iNormalizeStudyPhrase(message);
+  if (!text) return false;
+
+  const exact = new Set([
+    "study session start",
+    "start study session",
+    "start a study session",
+    "study session pause",
+    "pause study session",
+    "study session resume",
+    "resume study session",
+    "study session stop",
+    "stop study session",
+    "end study session",
+    "end the study session",
+    "read answer",
+    "read the answer",
+    "show answer",
+    "show the answer",
+    "correct",
+    "right",
+    "wrong",
+    "incorrect",
+    "skip",
+    "pass",
+    "next",
+    "next card"
+  ]);
+
+  if (exact.has(text)) return true;
+
+  const hasStudy = /\bstudy\b/.test(text);
+  const hasSession = /\bsession\b/.test(text);
+  const hasLifecycle = /\b(start|pause|resume|stop|end|status)\b/.test(text);
+
+  if (hasStudy && hasSession && hasLifecycle) return true;
+  if (/\bread\b/.test(text) && /\banswer\b/.test(text)) return true;
+  if (/\bshow\b/.test(text) && /\banswer\b/.test(text)) return true;
+  if (/\b(mark|answer|that was|it was|i was)\b/.test(text) && /\b(correct|right|wrong|incorrect)\b/.test(text)) return true;
+
+  return false;
+}
+
+function stage5p11iSelectedDeckId() {
+  try {
+    return String(window.localStorage.getItem("stage5p9aSelectedStudyDeckId") || "").trim();
+  } catch (err) {
+    return "";
+  }
+}
+
+function stage5p11iAssistantSummary(data) {
+  const session = data && data.session ? data.session : {};
+  const status = String(session.status || "").toLowerCase();
+  const command = String((data && (data.command || data.intent)) || "").toLowerCase();
+  const current = session.current_card || {};
+  const question = String(current.question || "").trim();
+
+  if (status === "reviewing_answer" || status === "waiting_for_mark") {
+    const answer = String(current.answer || "").trim();
+    const explanation = String(current.explanation || "").trim();
+    if (answer && explanation) return "Answer revealed: " + answer + "\n\nExplanation: " + explanation + "\n\nMark it Correct, Wrong, or Skip.";
+    if (answer) return "Answer revealed: " + answer + "\n\nMark it Correct, Wrong, or Skip.";
+    return "Answer revealed. Mark it Correct, Wrong, or Skip.";
+  }
+
+  if (status === "active") {
+    if (question) return "Study session is active. Current question: " + question;
+    return "Study session is active. Continue with Read answer, Correct, Wrong, or Skip.";
+  }
+
+  if (status === "completed") return "Study session completed. Nice work.";
+  if (status === "paused") return "Study session paused. Say “Study session resume” when you are ready.";
+  if (status === "stopped") return "Study session stopped.";
+
+  if (command.includes("skip")) return "Skipped. Moving to the next card.";
+  if (command.includes("correct")) return "Marked correct.";
+  if (command.includes("incorrect") || command.includes("wrong")) return "Marked wrong.";
+
+  return "Study command handled.";
+}
+
+async function stage5p11iRouteCompanionStudyCommand(message) {
+  const payload = { message: message };
+  const normalized = stage5p11iNormalizeStudyPhrase(message);
+  const deckId = stage5p11iSelectedDeckId();
+
+  if (/\bstart\b/.test(normalized) && /\bstudy\b/.test(normalized) && deckId) {
+    payload.deck_id = deckId;
+  }
+
+  const response = await fetch("/api/study/session/command", {
+    method: "POST",
+    credentials: "include",
+    headers: queuedChatAuthHeaders(),
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json().catch(function () { return {}; });
+
+  if (!response.ok || data.ok === false) {
+    const detail = data.detail || data.message || "Study command failed.";
+    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+  }
+
+  return {
+    ok: true,
+    data: data,
+    reply: stage5p11iAssistantSummary(data)
+  };
+}
+// STAGE_5P11I_COMPANION_STUDY_COMMAND_ROUTING_END
+
 async function queuedChatSubmit(event) {
   event.preventDefault();
 
@@ -3594,6 +3721,41 @@ async function queuedChatSubmit(event) {
     queuedChatSetStatus("Enter a message first.");
     return;
   }
+
+  // STAGE_5P11I_COMPANION_STUDY_COMMAND_ROUTING_SUBMIT_HOOK_BEGIN
+  if (stage5p11iLooksLikeStudyCommand(message)) {
+    queuedChatUiState.messages.push({ role: "You", content: message });
+    queuedChatRenderMessages();
+
+    if (input) input.value = "";
+    queuedChatUiState.busy = true;
+    if (button) button.disabled = true;
+    queuedChatSetStatus("Handling Study command...");
+
+    try {
+      const routed = await stage5p11iRouteCompanionStudyCommand(message);
+      queuedChatUiState.messages.push({
+        role: "Assistant",
+        content: routed.reply,
+        detail: "Study session command"
+      });
+      queuedChatSetStatus("Study command complete");
+    } catch (err) {
+      queuedChatUiState.messages.push({
+        role: "Error",
+        content: "I could not complete that Study command.",
+        detail: err && err.message ? err.message : String(err)
+      });
+      queuedChatSetStatus("Study command failed");
+    } finally {
+      queuedChatUiState.busy = false;
+      if (button) button.disabled = false;
+      queuedChatRenderMessages();
+    }
+
+    return;
+  }
+  // STAGE_5P11I_COMPANION_STUDY_COMMAND_ROUTING_SUBMIT_HOOK_END
 
   queuedChatUiState.busy = true;
   if (button) button.disabled = true;
