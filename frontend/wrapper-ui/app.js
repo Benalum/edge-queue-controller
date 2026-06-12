@@ -3708,6 +3708,171 @@ async function stage5p11iRouteCompanionStudyCommand(message) {
 }
 // STAGE_5P11I_COMPANION_STUDY_COMMAND_ROUTING_END
 
+
+// STAGE_5P11J_COMPANION_STUDY_ANSWER_CAPTURE_BEGIN
+function stage5p11jNormalizeAnswer(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[“”]/g, '"')
+    .replace(/[’]/g, "'")
+    .replace(/\s+/g, " ")
+    .replace(/[.。]+$/g, "")
+    .trim();
+}
+
+function stage5p11jCompactAnswer(value) {
+  return stage5p11jNormalizeAnswer(value)
+    .replace(/[^a-z0-9+\-*/=().]/g, "");
+}
+
+function stage5p11jParseNumericAnswer(value) {
+  const raw = stage5p11jNormalizeAnswer(value)
+    .replace(/,/g, "")
+    .replace(/−/g, "-");
+
+  if (/^[+-]?\d+(?:\.\d+)?\s*\/\s*[+-]?\d+(?:\.\d+)?$/.test(raw)) {
+    const parts = raw.split("/");
+    const a = Number(parts[0].trim());
+    const b = Number(parts[1].trim());
+    if (Number.isFinite(a) && Number.isFinite(b) && b !== 0) return a / b;
+  }
+
+  if (/^[+-]?\d+(?:\.\d+)?$/.test(raw)) {
+    const n = Number(raw);
+    if (Number.isFinite(n)) return n;
+  }
+
+  return null;
+}
+
+function stage5p11jCompareAnswer(userAnswer, correctAnswer) {
+  const user = stage5p11jNormalizeAnswer(userAnswer);
+  const expected = stage5p11jNormalizeAnswer(correctAnswer);
+
+  if (!user || !expected) return "uncertain";
+
+  if (user === expected) return "correct";
+  if (stage5p11jCompactAnswer(user) === stage5p11jCompactAnswer(expected)) return "correct";
+
+  const userNumber = stage5p11jParseNumericAnswer(user);
+  const expectedNumber = stage5p11jParseNumericAnswer(expected);
+
+  if (userNumber !== null && expectedNumber !== null) {
+    return Math.abs(userNumber - expectedNumber) < 1e-9 ? "correct" : "wrong";
+  }
+
+  return "uncertain";
+}
+
+function stage5p11jLooksLikeAnswerAttempt(message) {
+  const text = String(message || "").trim();
+  const normalized = stage5p11iNormalizeStudyPhrase(text);
+
+  if (!normalized) return false;
+  if (normalized.length > 240) return false;
+  if (/[?？]\s*$/.test(text)) return false;
+
+  if (/^(what|why|how|explain|tell me|can you|could you|please explain)\b/.test(normalized)) {
+    return false;
+  }
+
+  return true;
+}
+
+async function stage5p11jFetchStudyStatus() {
+  const response = await fetch("/api/study/session/status", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    headers: queuedChatAuthHeaders()
+  });
+
+  const data = await response.json().catch(function () { return {}; });
+
+  if (!response.ok || data.ok === false) {
+    return null;
+  }
+
+  return data.session || null;
+}
+
+async function stage5p11jSendStudyCommand(message) {
+  const response = await fetch("/api/study/session/command", {
+    method: "POST",
+    credentials: "include",
+    headers: queuedChatAuthHeaders(),
+    body: JSON.stringify({ message: message })
+  });
+
+  const data = await response.json().catch(function () { return {}; });
+
+  if (!response.ok || data.ok === false) {
+    const detail = data.detail || data.message || "Study command failed.";
+    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+  }
+
+  return data;
+}
+
+function stage5p11jNextQuestionSummary(data, prefix) {
+  const session = data && data.session ? data.session : {};
+  const status = String(session.status || "").toLowerCase();
+  const current = session.current_card || {};
+  const question = String(current.question || "").trim();
+
+  if (status === "completed") {
+    return prefix + " Session complete. Nice work.";
+  }
+
+  if (question) {
+    return prefix + " Next question: " + question;
+  }
+
+  return prefix;
+}
+
+async function stage5p11jRouteCompanionStudyAnswer(message) {
+  if (!stage5p11jLooksLikeAnswerAttempt(message)) {
+    return { handled: false };
+  }
+
+  const session = await stage5p11jFetchStudyStatus();
+  if (!session) return { handled: false };
+
+  const status = String(session.status || "").toLowerCase();
+  if (status !== "active") return { handled: false };
+
+  const current = session.current_card || {};
+  const expectedAnswer = String(current.answer || "").trim();
+
+  if (!expectedAnswer) return { handled: false };
+
+  const verdict = stage5p11jCompareAnswer(message, expectedAnswer);
+
+  if (verdict === "correct") {
+    const data = await stage5p11jSendStudyCommand("Correct");
+    return {
+      handled: true,
+      reply: stage5p11jNextQuestionSummary(data, "Correct.")
+    };
+  }
+
+  if (verdict === "wrong") {
+    const data = await stage5p11jSendStudyCommand("Wrong");
+    return {
+      handled: true,
+      reply: stage5p11jNextQuestionSummary(data, "Marked wrong. Correct answer was: " + expectedAnswer + ".")
+    };
+  }
+
+  return {
+    handled: true,
+    reply: "I am not certain whether that matches the answer. Your answer was: " + String(message || "").trim() + ". Expected answer: " + expectedAnswer + ". Say Correct, Wrong, or Skip."
+  };
+}
+// STAGE_5P11J_COMPANION_STUDY_ANSWER_CAPTURE_END
+
 async function queuedChatSubmit(event) {
   event.preventDefault();
 
@@ -3756,6 +3921,51 @@ async function queuedChatSubmit(event) {
     return;
   }
   // STAGE_5P11I_COMPANION_STUDY_COMMAND_ROUTING_SUBMIT_HOOK_END
+
+
+  // STAGE_5P11J_COMPANION_STUDY_ANSWER_CAPTURE_SUBMIT_HOOK_BEGIN
+  if (stage5p11jLooksLikeAnswerAttempt(message)) {
+    queuedChatSetStatus("Checking Study answer...");
+
+    try {
+      const answerAttempt = await stage5p11jRouteCompanionStudyAnswer(message);
+
+      if (answerAttempt && answerAttempt.handled) {
+        queuedChatUiState.messages.push({ role: "You", content: message });
+        queuedChatRenderMessages();
+
+        if (input) input.value = "";
+        queuedChatUiState.busy = true;
+        if (button) button.disabled = true;
+
+        queuedChatUiState.messages.push({
+          role: "Assistant",
+          content: answerAttempt.reply,
+          detail: "Study answer check"
+        });
+
+        queuedChatSetStatus("Study answer checked");
+        queuedChatUiState.busy = false;
+        if (button) button.disabled = false;
+        queuedChatRenderMessages();
+        return;
+      }
+    } catch (err) {
+      queuedChatUiState.messages.push({ role: "You", content: message });
+      queuedChatUiState.messages.push({
+        role: "Error",
+        content: "I could not check that Study answer.",
+        detail: err && err.message ? err.message : String(err)
+      });
+      if (input) input.value = "";
+      queuedChatSetStatus("Study answer check failed");
+      queuedChatRenderMessages();
+      return;
+    }
+
+    queuedChatSetStatus("Ready");
+  }
+  // STAGE_5P11J_COMPANION_STUDY_ANSWER_CAPTURE_SUBMIT_HOOK_END
 
   queuedChatUiState.busy = true;
   if (button) button.disabled = true;
