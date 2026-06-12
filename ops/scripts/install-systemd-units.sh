@@ -49,6 +49,9 @@ sudo cp ops/systemd/edge-queue-controller-power-auto-pause-override.conf \
 
 sudo cp ops/systemd/edge-queue-controller-worker-start-override.conf \
   /etc/systemd/system/edge-queue-controller.service.d/90-worker-start.conf
+sudo cp ops/systemd/edge-queue-controller.service.d/95-current-proxmox-power-inventory.conf \
+  /etc/systemd/system/edge-queue-controller.service.d/95-current-proxmox-power-inventory.conf
+
 
 sudo cp ops/systemd/edge-queue-controller-wake-and-start-override.conf \
   /etc/systemd/system/edge-queue-controller.service.d/100-wake-and-start.conf
