@@ -2615,3 +2615,10 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   color: rgba(125, 211, 252, 0.98);
 }
 /* STAGE_5P10F_COMPANION_QUEUE_POSITION_UI_END */
+
+
+/* STAGE_5P10G_SIMPLIFIED_QUEUE_DISPLAY_BEGIN */
+.stage5p10g-queue-row strong {
+  color: rgba(125, 211, 252, 0.98);
+}
+/* STAGE_5P10G_SIMPLIFIED_QUEUE_DISPLAY_END */

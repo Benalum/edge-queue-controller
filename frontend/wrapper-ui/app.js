@@ -3349,23 +3349,15 @@ function renderQueuedChatPage() {
           <section class="stage5p8h-status-card">
             <p class="stage5p8h-eyebrow">Companion status</p>
             <div class="stage5p8h-status-row">
-              <span>Queue</span>
+              <span>Status</span>
               <strong id="queuedChatStatus">Ready</strong>
             </div>
-            <!-- STAGE_5P10F_COMPANION_QUEUE_POSITION_UI_BEGIN -->
-            <div class="stage5p8h-status-row stage5p10f-queue-row">
-              <span>Queue size</span>
-              <strong id="queuedChatQueueSize">—</strong>
+            <!-- STAGE_5P10G_SIMPLIFIED_QUEUE_DISPLAY_BEGIN -->
+            <div class="stage5p8h-status-row stage5p10g-queue-row">
+              <span>Queue</span>
+              <strong id="queuedChatQueueSummary">—</strong>
             </div>
-            <div class="stage5p8h-status-row stage5p10f-queue-row">
-              <span>Your position</span>
-              <strong id="queuedChatQueuePosition">—</strong>
-            </div>
-            <div class="stage5p8h-status-row stage5p10f-queue-row">
-              <span>Jobs ahead</span>
-              <strong id="queuedChatJobsAhead">—</strong>
-            </div>
-            <!-- STAGE_5P10F_COMPANION_QUEUE_POSITION_UI_END -->
+            <!-- STAGE_5P10G_SIMPLIFIED_QUEUE_DISPLAY_END -->
             <div class="stage5p8h-status-row">
               <span>Worker</span>
               <strong>Companion queue worker</strong>
@@ -3442,36 +3434,44 @@ function stage5p10fUpdateQueueDisplay(data) {
   const running = Number(queue.running_count || 0);
   const total = Number(queue.total_active || 0);
 
-  if (total > 0) {
-    stage5p10fSetText("queuedChatQueueSize", `${total} active (${waiting} waiting, ${running} running)`);
-  } else {
-    stage5p10fSetText("queuedChatQueueSize", "0 active");
-  }
-
+  // STAGE_5P10G_SIMPLIFIED_QUEUE_DISPLAY_LOGIC_BEGIN
+  // Show one compact Queue value:
+  // - queued job: "position / total"
+  // - running job: "running"
+  // - completed job: "complete"
+  // - no active queue: "0 / 0"
   if (job && job.status && job.status !== "not_found") {
     const status = String(job.status || "").toLowerCase();
 
     if (job.position !== null && job.position !== undefined) {
-      stage5p10fSetText("queuedChatQueuePosition", String(job.position));
-    } else if (["running", "claimed", "processing", "in_progress"].includes(status)) {
-      stage5p10fSetText("queuedChatQueuePosition", "running");
-    } else if (["complete", "completed"].includes(status)) {
-      stage5p10fSetText("queuedChatQueuePosition", "complete");
-    } else {
-      stage5p10fSetText("queuedChatQueuePosition", status || "—");
+      const denominator = total > 0 ? total : waiting;
+      stage5p10fSetText("queuedChatQueueSummary", `${job.position} / ${Math.max(denominator, job.position)}`);
+      return;
     }
 
-    if (job.ahead_count !== null && job.ahead_count !== undefined) {
-      stage5p10fSetText("queuedChatJobsAhead", String(job.ahead_count));
-    } else {
-      stage5p10fSetText("queuedChatJobsAhead", "—");
+    if (["running", "claimed", "processing", "in_progress"].includes(status)) {
+      stage5p10fSetText("queuedChatQueueSummary", "running");
+      return;
     }
-  } else {
-    stage5p10fSetText("queuedChatQueuePosition", "—");
-    stage5p10fSetText("queuedChatJobsAhead", "—");
+
+    if (["complete", "completed"].includes(status)) {
+      stage5p10fSetText("queuedChatQueueSummary", "complete");
+      return;
+    }
+
+    if (["failed", "error", "cancelled"].includes(status)) {
+      stage5p10fSetText("queuedChatQueueSummary", status);
+      return;
+    }
   }
-}
 
+  if (total > 0) {
+    stage5p10fSetText("queuedChatQueueSummary", `— / ${total}`);
+  } else {
+    stage5p10fSetText("queuedChatQueueSummary", "0 / 0");
+  }
+  // STAGE_5P10G_SIMPLIFIED_QUEUE_DISPLAY_LOGIC_END
+}
 async function stage5p10fFetchQueueStatus(jobId) {
   const cleanJobId = String(jobId || stage5p10fLastJobId || "").trim();
   const url = cleanJobId
