@@ -1,0 +1,47 @@
+{
+  "stage": "6S",
+  "name": "study_route_behavior_baseline_before_router_wiring",
+  "runtime_behavior_change": false,
+  "purpose": "Capture a pre-wiring baseline for existing Study routes before any Universal Intent Router adapter is connected.",
+  "study_routes": [
+    {
+      "route": "/api/study/intent/parse",
+      "method": "POST",
+      "classification": "router_candidate",
+      "baseline_expectation": "route remains owned by existing Study handler before router wiring"
+    },
+    {
+      "route": "/api/study/session/command",
+      "method": "POST",
+      "classification": "router_candidate",
+      "baseline_expectation": "route remains owned by existing Study handler before router wiring"
+    }
+  ],
+  "router_state_required": {
+    "dry_run_endpoint_exists": true,
+    "dry_run_endpoint_disabled_by_default": true,
+    "expected_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false
+  },
+  "shadow_adapter_state_required": {
+    "helper_exists": true,
+    "helper_wired_into_runtime": false,
+    "helper_allowed_file": "edge_intent_router.py",
+    "helper_name": "_stage6q_study_adapter_shadow"
+  },
+  "must_not_change": [
+    "edge_controller.py Study route behavior",
+    "frontend Study behavior",
+    "backend Study behavior",
+    "public_gateway.py behavior",
+    "systemd environment",
+    "power automation behavior",
+    "auth behavior"
+  ],
+  "future_comparison_target": {
+    "before_router_wiring": "Stage 6S",
+    "after_shadow_wiring": "future stage",
+    "required_result": "no user-visible Study behavior regression"
+  }
+}
