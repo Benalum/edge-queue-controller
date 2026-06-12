@@ -1,0 +1,27 @@
+{
+  "stage": "6R",
+  "name": "study_shadow_adapter_no_wire_guard",
+  "runtime_behavior_change": false,
+  "purpose": "Prove the Stage 6Q Study shadow adapter helper exists but is not wired into runtime request handling.",
+  "helper": "_stage6q_study_adapter_shadow",
+  "helper_allowed_file": "edge_intent_router.py",
+  "must_not_be_wired_in": [
+    "edge_controller.py",
+    "frontend/",
+    "backend/",
+    "public_gateway.py",
+    "ops/systemd/"
+  ],
+  "required_runtime_state": {
+    "router_dry_run_endpoint_disabled_by_default": true,
+    "expected_disabled_http_code": 404
+  },
+  "safety_invariants": [
+    "Study shadow adapter helper may exist only as a helper",
+    "Study shadow adapter must not be imported into edge_controller.py",
+    "Study shadow adapter must not be called by any HTTP route",
+    "Study shadow adapter must not be called by frontend code",
+    "Study shadow adapter must not change Study behavior",
+    "router dry-run endpoint remains disabled by default"
+  ]
+}
