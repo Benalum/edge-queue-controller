@@ -1,0 +1,10 @@
+Stage 5P-8B Study Deck / Session UI Audit Report
+
+Audit-only result:
+- Backend command endpoint exists.
+- Stage 5P-8A status card exists.
+- Study session status can be displayed without executing commands.
+- Start requires a reliable deck id source.
+- Pause / Resume / Stop can be added first because they operate on the current session.
+- Recommended next stage: Stage 5P-8C add Pause / Resume / Stop / Refresh controls only.
+- Recommended later stage: add Start after deck selector/current deck source is confirmed.
