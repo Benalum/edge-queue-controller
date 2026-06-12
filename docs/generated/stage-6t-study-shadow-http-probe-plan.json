@@ -1,0 +1,50 @@
+{
+  "stage": "6T",
+  "name": "study_shadow_http_probe_plan",
+  "runtime_behavior_change": false,
+  "purpose": "Define the future authenticated HTTP comparison plan between existing Study behavior and Universal Intent Router Study shadow output.",
+  "baseline_from": "Stage 6S",
+  "current_unauthenticated_baseline": {
+    "expected_study_http_code": 401,
+    "routes": [
+      "/api/study/intent/parse",
+      "/api/study/session/command"
+    ]
+  },
+  "router_required_state": {
+    "dry_run_endpoint_disabled_by_default": true,
+    "expected_router_disabled_http_code": 404,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false
+  },
+  "future_authenticated_probe_sequence": [
+    "authenticate as normal app user",
+    "submit existing Study command request to current Study route",
+    "submit equivalent payload to Study shadow adapter helper",
+    "compare current Study route outcome with shadow router intent",
+    "record intent, confidence band, existing route, rule id, and safety flags",
+    "prove user-visible Study behavior is unchanged",
+    "keep dispatch disabled until a later explicit wiring stage"
+  ],
+  "comparison_fields": [
+    "input text",
+    "current Study route HTTP status",
+    "current Study route response class",
+    "shadow intent",
+    "shadow confidence_band",
+    "shadow existing_route",
+    "shadow rule_id",
+    "shadow source_surface_policy.allowed",
+    "shadow model_call_required",
+    "shadow allowed_to_dispatch",
+    "shadow dispatch_performed"
+  ],
+  "must_not_do": [
+    "do not wire router into Study routes",
+    "do not bypass auth",
+    "do not enable dispatch",
+    "do not enable model calls",
+    "do not mutate Study state through the router",
+    "do not alter frontend Study behavior"
+  ]
+}
