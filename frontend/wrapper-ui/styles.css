@@ -2649,3 +2649,16 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   color: rgba(248, 250, 252, 0.96);
 }
 /* STAGE_5P11A_COMPANION_STUDY_PHRASE_GUIDE_END */
+
+
+/* STAGE_5P11B_STUDY_START_BUTTON_BEGIN */
+.stage5p8c-study-session-controls [data-stage5p8c-command="start"] {
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.stage5p8c-study-session-controls [data-stage5p11b-start-note] {
+  margin: 4px 0 0;
+  color: rgba(226, 232, 240, 0.76);
+  font-size: 0.9rem;
+}
+/* STAGE_5P11B_STUDY_START_BUTTON_END */

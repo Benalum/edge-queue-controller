@@ -8460,6 +8460,9 @@ async function handleResetPasswordRoute() {
 (function () {
   const cardId = "stage5p8a-study-session-status-card";
   const controlsClass = "stage5p8c-study-session-controls";
+  // STAGE_5P11B_STUDY_START_BUTTON_BEGIN
+  const selectedDeckKey = "stage5p9aSelectedStudyDeckId";
+  // STAGE_5P11B_STUDY_START_BUTTON_END
   let installing = false;
 
   function isStudyRoute() {
@@ -8638,6 +8641,55 @@ async function handleResetPasswordRoute() {
     }
   }
 
+  // STAGE_5P11B_STUDY_START_BUTTON_LOGIC_BEGIN
+  function selectedDeckId() {
+    try {
+      return String(window.localStorage.getItem(selectedDeckKey) || "").trim();
+    } catch (err) {
+      return "";
+    }
+  }
+
+  async function startSession(card) {
+    if (!card) return;
+
+    const deckId = selectedDeckId();
+    if (!deckId) {
+      setMessage(card, "Choose a Study deck before starting a session.");
+      return;
+    }
+
+    setBusy(card, true);
+    setMessage(card, "Starting Study session...");
+
+    try {
+      const response = await fetch("/api/study/session/start", {
+        method: "POST",
+        headers: authHeaders(),
+        credentials: "include",
+        body: JSON.stringify({ deck_id: deckId })
+      });
+
+      const data = await response.json().catch(function () { return {}; });
+
+      if (!response.ok || data.ok === false) {
+        setMessage(card, data.detail || data.message || "Could not start Study session.");
+        return;
+      }
+
+      const session = data.session || {};
+      card.dataset.sessionState = String(session.status || "active").toLowerCase();
+      setMessage(card, "Study session started.");
+      await refreshStatus(card);
+    } catch (err) {
+      setMessage(card, "Could not reach Study session start endpoint.");
+    } finally {
+      setBusy(card, false);
+      updateButtonState(card);
+    }
+  }
+  // STAGE_5P11B_STUDY_START_BUTTON_LOGIC_END
+
   async function sendCommand(card, command, message) {
     if (!card) return;
     setBusy(card, true);
@@ -8676,11 +8728,12 @@ async function handleResetPasswordRoute() {
     const controls = document.createElement("div");
     controls.className = controlsClass;
     controls.innerHTML = [
+      '<button type="button" data-stage5p8c-command="start">Start</button>',
       '<button type="button" data-stage5p8c-command="refresh">Refresh</button>',
       '<button type="button" data-stage5p8c-command="pause">Pause</button>',
       '<button type="button" data-stage5p8c-command="resume">Resume</button>',
       '<button type="button" data-stage5p8c-command="stop">Stop</button>',
-      '<p>Start is intentionally not wired yet because it needs a reliable deck id source.</p>'
+      '<p data-stage5p11b-start-note>Choose a deck below, then press Start.</p>'
     ].join("");
 
     const note = card.querySelector(".stage5p8a-study-session-note");
@@ -8690,11 +8743,13 @@ async function handleResetPasswordRoute() {
       card.appendChild(controls);
     }
 
+    const start = controls.querySelector("[data-stage5p8c-command='start']");
     const refresh = controls.querySelector("[data-stage5p8c-command='refresh']");
     const pause = controls.querySelector("[data-stage5p8c-command='pause']");
     const resume = controls.querySelector("[data-stage5p8c-command='resume']");
     const stop = controls.querySelector("[data-stage5p8c-command='stop']");
 
+    if (start) start.addEventListener("click", function () { startSession(card); });
     if (refresh) refresh.addEventListener("click", function () { refreshStatus(card); });
     if (pause) pause.addEventListener("click", function () { sendCommand(card, "pause", "Study Session Pause"); });
     if (resume) resume.addEventListener("click", function () { sendCommand(card, "resume", "Study Session Resume"); });
@@ -8926,7 +8981,7 @@ async function handleResetPasswordRoute() {
           other.setAttribute("aria-pressed", String(other.dataset.stage5p9aDeckId === id));
         });
         setSelectedLabel(shell, deck);
-        setSelectorMessage(shell, "Deck selected for the future Start button.");
+        setSelectorMessage(shell, "Deck selected. Press Start to begin.");
       });
 
       list.appendChild(button);
@@ -8965,7 +9020,7 @@ async function handleResetPasswordRoute() {
 
       const decks = normalizeDecks(data);
       renderDeckOptions(shell, decks);
-      setSelectorMessage(shell, decks.length ? "Choose a deck for the future Start button." : "No decks found.");
+      setSelectorMessage(shell, decks.length ? "Choose a deck, then press Start." : "No decks found.");
     } catch (err) {
       setSelectorMessage(shell, "Could not reach Study deck endpoint.");
       renderDeckOptions(shell, []);
@@ -8987,13 +9042,13 @@ async function handleResetPasswordRoute() {
       '  <div>',
       '    <p class="stage5p9a-eyebrow">Deck selector</p>',
       '    <h3>Choose a deck for Start</h3>',
-      '    <p data-stage5p9a-message>Deck selection is read-only in this stage.</p>',
+      '    <p data-stage5p9a-message>Choose a deck, then press Start.</p>',
       '  </div>',
       '  <button type="button" data-stage5p9a-refresh>Load decks</button>',
       '</div>',
       '<div class="stage5p9a-selected" data-stage5p9a-selected>No deck selected.</div>',
       '<div class="stage5p9a-list" data-stage5p9a-list></div>',
-      '<p class="stage5p9a-note">Start is not wired yet. This only stores the selected deck id locally.</p>'
+      '<p class="stage5p9a-note">Start uses the selected deck id to create a durable Study session.</p>'
     ].join("");
 
     card.appendChild(shell);
