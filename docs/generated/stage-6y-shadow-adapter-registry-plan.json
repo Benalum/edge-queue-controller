@@ -1,0 +1,76 @@
+{
+  "stage": "6Y",
+  "name": "unified_shadow_adapter_registry_plan",
+  "runtime_behavior_change": false,
+  "purpose": "Define a future registry plan for managing Study and Companion shadow adapters before any runtime wiring.",
+  "registry_scope": "shadow_adapters_only",
+  "adapters": [
+    {
+      "adapter_id": "study",
+      "helper": "_stage6q_study_adapter_shadow",
+      "allowed_file": "edge_intent_router.py",
+      "plan_stage": "6P",
+      "helper_stage": "6Q",
+      "guard_stage": "6R",
+      "baseline_stage": "6S",
+      "http_probe_plan_stage": "6T",
+      "user_surfaces": [
+        "study",
+        "study_session"
+      ],
+      "router_candidate_routes": [
+        "/api/study/intent/parse",
+        "/api/study/session/command"
+      ],
+      "initial_intents": [
+        "study.next",
+        "study.skip",
+        "study.hint",
+        "study.answer"
+      ],
+      "wired_into_runtime": false
+    },
+    {
+      "adapter_id": "companion",
+      "helper": "_stage6v_companion_adapter_shadow",
+      "allowed_file": "edge_intent_router.py",
+      "plan_stage": "6U",
+      "helper_stage": "6V",
+      "guard_stage": "6W",
+      "baseline_stage": "6X",
+      "http_probe_plan_stage": "future",
+      "user_surfaces": [
+        "companion",
+        "companion_chat",
+        "chat"
+      ],
+      "router_candidate_routes": [
+        "/api/companion/chat",
+        "/api/chat/queued"
+      ],
+      "initial_intents": [
+        "companion.chat",
+        "unknown.general_chat"
+      ],
+      "wired_into_runtime": false
+    }
+  ],
+  "future_registry_requirements": {
+    "single_lookup_by_adapter_id": true,
+    "helper_must_remain_dry_run_until_explicit_wiring_stage": true,
+    "dispatch_enabled_by_default": false,
+    "model_calls_enabled_by_default": false,
+    "source_surface_policy_required": true,
+    "confirmation_policy_required": true,
+    "decision_trace_required": true
+  },
+  "must_not_do": [
+    "do not wire registry into edge_controller.py during Stage 6Y",
+    "do not expose registry through an HTTP endpoint during Stage 6Y",
+    "do not enable router dispatch during Stage 6Y",
+    "do not enable model calls during Stage 6Y",
+    "do not modify frontend behavior during Stage 6Y",
+    "do not modify Study behavior during Stage 6Y",
+    "do not modify Companion or Chat behavior during Stage 6Y"
+  ]
+}
