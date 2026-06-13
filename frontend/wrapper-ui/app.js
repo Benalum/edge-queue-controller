@@ -2598,7 +2598,7 @@ function renderSystemPage() {
 
   if (!phase11eHasLiveStatus) {
     return `
-      <section class="system-section">
+      <section class="system-section" id="phase11fSystemStatusLoading">
         <h2>APIs</h2>
         <div class="notice">
           <strong>Loading live platform status...</strong>
@@ -2610,6 +2610,42 @@ function renderSystemPage() {
 
   return phase11eRenderSystemPageOriginal();
 }
+
+// PHASE_11F_SYSTEM_LOADING_COMPLETION_REPAIR_BEGIN
+// Replace the stable loading placeholder with the live System render once loadSystemStatus()
+// has populated adminStatus. This avoids a full route rerender and keeps the repair
+// frontend-only.
+function phase11fRefreshSystemPageIfReady() {
+  try {
+    if (location.pathname !== "/system") return;
+    if (!adminStatus) return;
+
+    const loadingSection = document.getElementById("phase11fSystemStatusLoading");
+    if (!loadingSection) return;
+
+    const html = phase11eRenderSystemPageOriginal();
+    const template = document.createElement("template");
+    template.innerHTML = html.trim();
+
+    if (!template.content.childNodes.length) return;
+
+    loadingSection.replaceWith(template.content);
+
+    const openButton = document.getElementById("openSystemBtn");
+    if (openButton && typeof openSystemDrawer === "function" && !openButton.dataset.phase11fBound) {
+      openButton.dataset.phase11fBound = "1";
+      openButton.addEventListener("click", openSystemDrawer);
+    }
+
+    if (typeof cleanRemoveAdminInfrastructureFromSystemPage === "function") {
+      cleanRemoveAdminInfrastructureFromSystemPage();
+    }
+  } catch (error) {
+    console.warn("[phase11f] System page refresh after status load failed", error);
+  }
+}
+// PHASE_11F_SYSTEM_LOADING_COMPLETION_REPAIR_END
+
 // PHASE_11E_SYSTEM_STABLE_RENDER_END
 
 
@@ -5108,6 +5144,7 @@ async function loadSystemStatus() {
 
   renderPage();
   renderSystemDrawer();
+      phase11fRefreshSystemPageIfReady();
   })();
 
   try {
