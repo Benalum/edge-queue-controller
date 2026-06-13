@@ -10121,3 +10121,113 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   }
 }
 
+// Stage 9D disabled narrow browser-surface router shadow-read wiring.
+// This bridge intentionally stays disabled by default. It never stores the
+// backend endpoint in app.js; endpoint ownership remains in router_shadow_read_stub.js.
+(function () {
+  "use strict";
+
+  const ROUTER_SHADOW_READ_SURFACE_ALLOWLIST = Object.freeze([
+    "manual-diagnostic",
+    "study-card-action"
+  ]);
+
+  const ROUTER_SHADOW_READ_DEFAULT_REASON = "router_shadow_read_surface_disabled";
+
+  function getRouterShadowReadNamespace() {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    return window.EdgeRouterShadowRead || null;
+  }
+
+  function browserSurfaceShadowReadEnabled(surface) {
+    const shadow = getRouterShadowReadNamespace();
+
+    if (!shadow) {
+      return false;
+    }
+
+    if (shadow.ROUTER_SHADOW_READ_ENABLED !== true) {
+      return false;
+    }
+
+    if (shadow.ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT !== true) {
+      return false;
+    }
+
+    if (!ROUTER_SHADOW_READ_SURFACE_ALLOWLIST.includes(String(surface || ""))) {
+      return false;
+    }
+
+    if (typeof shadow.sendRouterDryRunShadowRead !== "function") {
+      return false;
+    }
+
+    return true;
+  }
+
+  function buildBrowserSurfaceShadowReadInput(surface, input) {
+    const value = input && typeof input === "object" ? input : {};
+
+    return {
+      text: String(value.text || ""),
+      source: String(value.source || "browser-surface-shadow-read"),
+      surface: String(surface || value.surface || "unknown-surface"),
+      route_hint: value.route_hint || null,
+      dry_run: true,
+      dispatch_requested: false,
+      dispatch_performed: false
+    };
+  }
+
+  async function requestBrowserSurfaceRouterShadowRead(surface, input, options) {
+    const normalizedSurface = String(surface || "");
+    const shadow = getRouterShadowReadNamespace();
+
+    if (!browserSurfaceShadowReadEnabled(normalizedSurface)) {
+      return {
+        ok: true,
+        skipped: true,
+        reason: ROUTER_SHADOW_READ_DEFAULT_REASON,
+        surface: normalizedSurface,
+        dispatch_requested: false,
+        dispatch_performed: false
+      };
+    }
+
+    const opts = options && typeof options === "object" ? options : {};
+    const request = buildBrowserSurfaceShadowReadInput(normalizedSurface, input);
+
+    if (request.dry_run !== true ||
+        request.dispatch_requested !== false ||
+        request.dispatch_performed !== false) {
+      return {
+        ok: false,
+        skipped: true,
+        reason: "router_shadow_read_invalid_non_dispatch_contract",
+        surface: normalizedSurface,
+        dispatch_requested: false,
+        dispatch_performed: false
+      };
+    }
+
+    return shadow.sendRouterDryRunShadowRead(request, opts);
+  }
+
+  if (typeof window !== "undefined") {
+    window.EdgeRouterShadowReadSurface = Object.assign(
+      {},
+      window.EdgeRouterShadowReadSurface || {},
+      {
+        ROUTER_SHADOW_READ_SURFACE_ALLOWLIST,
+        ROUTER_SHADOW_READ_DEFAULT_REASON,
+        browserSurfaceShadowReadEnabled,
+        buildBrowserSurfaceShadowReadInput,
+        requestBrowserSurfaceRouterShadowRead
+      }
+    );
+  }
+})();
+// End Stage 9D disabled narrow browser-surface router shadow-read wiring.
