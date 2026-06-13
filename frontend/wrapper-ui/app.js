@@ -2547,7 +2547,7 @@ function renderCreditsPage() {
 }
 
 
-function renderSystemPage() {
+function phase11eRenderSystemPageOriginal() {
   const isAdmin = Boolean(adminStatus?.admin);
   const platformGroups = normalizedPlatformGroups() || apiGroups();
   const infraGroups = normalizedInfrastructureGroups() || infrastructureGroups();
@@ -2579,6 +2579,38 @@ function renderSystemPage() {
     ` : ""}
   `;
 }
+
+// PHASE_11E_SYSTEM_STABLE_RENDER_BEGIN
+// Keep /system from flashing the older static API catalog before live status loads.
+// The original renderer is preserved above and used once adminStatus has the live payload.
+function renderSystemPage() {
+  const phase11eStatus = adminStatus || {};
+  const phase11eHasLiveStatus = Boolean(
+    adminStatus &&
+    (
+      Array.isArray(phase11eStatus.services) ||
+      Array.isArray(phase11eStatus.nodes) ||
+      Array.isArray(phase11eStatus.groups) ||
+      Object.prototype.hasOwnProperty.call(phase11eStatus, "ok") ||
+      Object.prototype.hasOwnProperty.call(phase11eStatus, "admin")
+    )
+  );
+
+  if (!phase11eHasLiveStatus) {
+    return `
+      <section class="system-section">
+        <h2>APIs</h2>
+        <div class="notice">
+          <strong>Loading live platform status...</strong>
+          <p>Checking backend, frontend, queue, worker, and power automation status.</p>
+        </div>
+      </section>
+    `;
+  }
+
+  return phase11eRenderSystemPageOriginal();
+}
+// PHASE_11E_SYSTEM_STABLE_RENDER_END
 
 
 
