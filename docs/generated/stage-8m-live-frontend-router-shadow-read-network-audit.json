@@ -1,0 +1,20 @@
+{
+  "audit_type": "live_frontend_asset_network_audit",
+  "frontend_router_request_expected": false,
+  "frontend_router_request_observed_in_assets": false,
+  "live_app_contains_router_dry_run_endpoint": false,
+  "live_app_has_stage8l_observer": true,
+  "live_index_loaded": true,
+  "live_stub_disabled": true,
+  "live_stub_namespace": true,
+  "router_enabled_env": false,
+  "safety": {
+    "dispatch_enabled": false,
+    "live_controller_restarted": false,
+    "model_calls_enabled": false,
+    "router_enabled": false,
+    "wrapper_restarted": false
+  },
+  "stage": "8M",
+  "wrapper_base_url": "http://127.0.0.1:8787"
+}
