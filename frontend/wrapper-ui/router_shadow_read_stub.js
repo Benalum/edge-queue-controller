@@ -134,3 +134,97 @@ if (typeof module !== "undefined" && module.exports) {
     routerShadowRead,
   };
 }
+
+
+// Stage 8W disabled backend dry-run call boundary.
+// This block intentionally lets the frontend stub know the backend dry-run
+// endpoint while keeping all browser traffic disabled by default.
+(function () {
+  "use strict";
+
+  const ROUTER_DRY_RUN_ENDPOINT = "/api/router/dry-run";
+
+  function routerShadowReadFlagsEnabled() {
+    const shadow = window.EdgeRouterShadowRead || {};
+    return shadow.ROUTER_SHADOW_READ_ENABLED === true &&
+      shadow.ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT === true;
+  }
+
+  function buildRouterDryRunShadowReadRequest(input) {
+    const value = input && typeof input === "object" ? input : {};
+
+    return {
+      text: String(value.text || ""),
+      source: String(value.source || "frontend-shadow-read"),
+      surface: String(value.surface || "browser-disabled-boundary"),
+      route_hint: value.route_hint || null,
+      dry_run: true,
+      dispatch_requested: false,
+      dispatch_performed: false
+    };
+  }
+
+  async function sendRouterDryRunShadowRead(input, options) {
+    const opts = options && typeof options === "object" ? options : {};
+    const transport = typeof opts.fetch === "function"
+      ? opts.fetch
+      : (typeof fetch === "function" ? fetch : null);
+
+    if (!routerShadowReadFlagsEnabled()) {
+      return {
+        ok: true,
+        skipped: true,
+        reason: "router_shadow_read_disabled",
+        endpoint: ROUTER_DRY_RUN_ENDPOINT,
+        dispatch_requested: false,
+        dispatch_performed: false
+      };
+    }
+
+    if (!transport) {
+      return {
+        ok: false,
+        skipped: true,
+        reason: "fetch_unavailable",
+        endpoint: ROUTER_DRY_RUN_ENDPOINT,
+        dispatch_requested: false,
+        dispatch_performed: false
+      };
+    }
+
+    const response = await transport(ROUTER_DRY_RUN_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(buildRouterDryRunShadowReadRequest(input))
+    });
+
+    let body = null;
+    try {
+      body = await response.json();
+    } catch (error) {
+      body = {
+        ok: false,
+        error: "router_shadow_read_invalid_json",
+        detail: String(error && error.message ? error.message : error)
+      };
+    }
+
+    return {
+      ok: response.ok === true,
+      status: response.status,
+      endpoint: ROUTER_DRY_RUN_ENDPOINT,
+      dispatch_requested: false,
+      dispatch_performed: false,
+      body
+    };
+  }
+
+  window.EdgeRouterShadowRead = Object.assign({}, window.EdgeRouterShadowRead || {}, {
+    ROUTER_DRY_RUN_ENDPOINT,
+    buildRouterDryRunShadowReadRequest,
+    sendRouterDryRunShadowRead
+  });
+})();
+// End Stage 8W disabled backend dry-run call boundary.
