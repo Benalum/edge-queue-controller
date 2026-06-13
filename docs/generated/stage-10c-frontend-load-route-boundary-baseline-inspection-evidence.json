@@ -1,0 +1,106 @@
+{
+  "app_js_bytes": 323331,
+  "env_absent": "true",
+  "final_result": "pass",
+  "generated_at": "2026-06-13T05:31:41.947709+00:00",
+  "health_code": "200",
+  "post_code": "404",
+  "purpose": "frontend load-time and route-boundary baseline inspection",
+  "queue_clean": "true",
+  "route_metrics": [
+    {
+      "code": "200",
+      "name": "root",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.009592",
+      "url": "http://127.0.0.1:8787/"
+    },
+    {
+      "code": "200",
+      "name": "chat",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.002270",
+      "url": "http://127.0.0.1:8787/chat"
+    },
+    {
+      "code": "200",
+      "name": "study",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.002271",
+      "url": "http://127.0.0.1:8787/study"
+    },
+    {
+      "code": "200",
+      "name": "companion",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.001588",
+      "url": "http://127.0.0.1:8787/companion"
+    },
+    {
+      "code": "200",
+      "name": "profile",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.002474",
+      "url": "http://127.0.0.1:8787/profile"
+    },
+    {
+      "code": "200",
+      "name": "admin",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.001572",
+      "url": "http://127.0.0.1:8787/admin"
+    },
+    {
+      "code": "200",
+      "name": "system",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.002396",
+      "url": "http://127.0.0.1:8787/system"
+    },
+    {
+      "code": "200",
+      "name": "styles_css",
+      "size_download_bytes": "57138",
+      "time_total_seconds": "0.003077",
+      "url": "http://127.0.0.1:8787/styles.css"
+    },
+    {
+      "code": "200",
+      "name": "app_js",
+      "size_download_bytes": "323331",
+      "time_total_seconds": "0.001896",
+      "url": "http://127.0.0.1:8787/app.js"
+    },
+    {
+      "code": "200",
+      "name": "queued_chat_config",
+      "size_download_bytes": "911",
+      "time_total_seconds": "0.001824",
+      "url": "http://127.0.0.1:8787/queued_chat_config.js"
+    },
+    {
+      "code": "200",
+      "name": "queued_chat_status",
+      "size_download_bytes": "3840",
+      "time_total_seconds": "0.002310",
+      "url": "http://127.0.0.1:8787/queued_chat_status.js"
+    },
+    {
+      "code": "200",
+      "name": "router_shadow_read_stub",
+      "size_download_bytes": "6830",
+      "time_total_seconds": "0.001420",
+      "url": "http://127.0.0.1:8787/router_shadow_read_stub.js"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "2.058351",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    }
+  ],
+  "stage": "10C",
+  "status_code": "200",
+  "stub_bytes": 6830
+}
