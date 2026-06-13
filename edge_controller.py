@@ -10636,7 +10636,12 @@ def _stage5p12o_persistent_lane_cutover_readiness(registered_capacity):
             "historical_no_lane_jobs": [],
             "lane_contract_first_seen_at": None,
             "recent_no_lane_jobs_after_lane_contract": [],
+            "no_lane_fallback_worker_present": False,
+            "no_lane_fallback_worker_candidates": [],
+            "no_lane_fallback_worker_required": False,
+            "no_lane_fallback_requirement_source": "not_required_without_current_no_lane_risk",
         },
+        "warnings": [],
         "notes": [
             "Read-only status gate only.",
             "No service changes are performed by this helper.",
@@ -10871,12 +10876,29 @@ def _stage5p12o_persistent_lane_cutover_readiness(registered_capacity):
         ]
         plan["blockers"]["fallback_worker_present"] = bool(fallback_candidates)
         plan["blockers"]["fallback_worker_candidates"] = fallback_candidates
+        plan["evidence"]["no_lane_fallback_worker_present"] = bool(fallback_candidates)
+        plan["evidence"]["no_lane_fallback_worker_candidates"] = fallback_candidates
 
         if plan["blockers"]["missing_active_recent_lane_workers"]:
             add_reason("persistent_lane_workers_not_active")
 
-        if not fallback_candidates:
+        current_no_lane_risk = bool(
+            plan["blockers"].get("active_unsupported_jobs")
+            or plan["blockers"].get("recent_no_lane_jobs_after_lane_contract")
+        )
+        plan["evidence"]["no_lane_fallback_worker_required"] = bool(
+            current_no_lane_risk and not fallback_candidates
+        )
+        plan["evidence"]["no_lane_fallback_requirement_source"] = (
+            "required_due_to_current_no_lane_risk"
+            if current_no_lane_risk
+            else "not_required_without_current_no_lane_risk"
+        )
+
+        if current_no_lane_risk and not fallback_candidates:
             add_reason("no_no_lane_fallback_worker")
+        elif not fallback_candidates:
+            plan["warnings"].append("no_no_lane_fallback_worker_absent_but_no_current_no_lane_risk")
 
     except Exception as exc:
         plan["error"] = str(exc)
