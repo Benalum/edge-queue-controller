@@ -4219,10 +4219,172 @@ function stage5p11jCompactAnswer(value) {
     .replace(/[^a-z0-9+\-*/=().]/g, "");
 }
 
+// STAGE_5P11K_DETERMINISTIC_NUMBER_WORD_NORMALIZER_BEGIN
+function stage5p11kParseIntegerNumberWords(tokens) {
+  const small = {
+    zero: 0,
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+    six: 6,
+    seven: 7,
+    eight: 8,
+    nine: 9,
+    ten: 10,
+    eleven: 11,
+    twelve: 12,
+    thirteen: 13,
+    fourteen: 14,
+    fifteen: 15,
+    sixteen: 16,
+    seventeen: 17,
+    eighteen: 18,
+    nineteen: 19
+  };
+
+  const tens = {
+    twenty: 20,
+    thirty: 30,
+    forty: 40,
+    fourty: 40,
+    fifty: 50,
+    sixty: 60,
+    seventy: 70,
+    eighty: 80,
+    ninety: 90
+  };
+
+  const scales = {
+    thousand: 1000,
+    million: 1000000
+  };
+
+  let total = 0;
+  let current = 0;
+  let seen = false;
+
+  for (let i = 0; i < tokens.length; i += 1) {
+    const token = tokens[i];
+
+    if (token === "and") {
+      continue;
+    }
+
+    if (token === "a" || token === "an") {
+      const next = tokens[i + 1] || "";
+      if (next === "hundred" || Object.prototype.hasOwnProperty.call(scales, next)) {
+        current += 1;
+        seen = true;
+        continue;
+      }
+      return null;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(small, token)) {
+      current += small[token];
+      seen = true;
+      continue;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(tens, token)) {
+      current += tens[token];
+      seen = true;
+      continue;
+    }
+
+    if (token === "hundred") {
+      if (!seen && current === 0) current = 1;
+      current *= 100;
+      seen = true;
+      continue;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(scales, token)) {
+      if (!seen && current === 0) current = 1;
+      total += current * scales[token];
+      current = 0;
+      seen = true;
+      continue;
+    }
+
+    return null;
+  }
+
+  if (!seen) return null;
+  return total + current;
+}
+
+function stage5p11kParseNumberWords(value) {
+  const digitWords = {
+    zero: "0",
+    oh: "0",
+    one: "1",
+    two: "2",
+    three: "3",
+    four: "4",
+    five: "5",
+    six: "6",
+    seven: "7",
+    eight: "8",
+    nine: "9"
+  };
+
+  let raw = String(value || "")
+    .toLowerCase()
+    .replace(/[−–—]/g, "-")
+    .replace(/-/g, " ")
+    .replace(/[^a-z\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!raw) return null;
+
+  let tokens = raw.split(/\s+/).filter(Boolean);
+  let sign = 1;
+
+  if (tokens[0] === "minus" || tokens[0] === "negative") {
+    sign = -1;
+    tokens = tokens.slice(1);
+  }
+
+  if (!tokens.length) return null;
+
+  const pointIndex = tokens.indexOf("point");
+
+  if (pointIndex !== -1) {
+    if (tokens.indexOf("point", pointIndex + 1) !== -1) return null;
+
+    const wholeTokens = tokens.slice(0, pointIndex);
+    const decimalTokens = tokens.slice(pointIndex + 1);
+
+    if (!decimalTokens.length) return null;
+
+    const whole = wholeTokens.length ? stage5p11kParseIntegerNumberWords(wholeTokens) : 0;
+    if (whole === null) return null;
+
+    const digits = [];
+    for (const token of decimalTokens) {
+      if (!Object.prototype.hasOwnProperty.call(digitWords, token)) return null;
+      digits.push(digitWords[token]);
+    }
+
+    const parsed = Number(String(whole) + "." + digits.join(""));
+    return Number.isFinite(parsed) ? sign * parsed : null;
+  }
+
+  const parsedInteger = stage5p11kParseIntegerNumberWords(tokens);
+  return parsedInteger === null ? null : sign * parsedInteger;
+}
+
 function stage5p11jParseNumericAnswer(value) {
   const raw = stage5p11jNormalizeAnswer(value)
     .replace(/,/g, "")
     .replace(/−/g, "-");
+
+  const wordNumber = stage5p11kParseNumberWords(raw);
+  if (wordNumber !== null && Number.isFinite(wordNumber)) return wordNumber;
 
   if (/^[+-]?\d+(?:\.\d+)?\s*\/\s*[+-]?\d+(?:\.\d+)?$/.test(raw)) {
     const parts = raw.split("/");
@@ -4238,6 +4400,8 @@ function stage5p11jParseNumericAnswer(value) {
 
   return null;
 }
+// STAGE_5P11K_DETERMINISTIC_NUMBER_WORD_NORMALIZER_END
+
 
 function stage5p11jCompareAnswer(userAnswer, correctAnswer) {
   const user = stage5p11jNormalizeAnswer(userAnswer);
