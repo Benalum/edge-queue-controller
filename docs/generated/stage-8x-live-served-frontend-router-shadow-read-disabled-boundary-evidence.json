@@ -1,0 +1,11 @@
+{
+  "final_result": "pass",
+  "generated_at": "2026-06-13T04:14:00.877603+00:00",
+  "live_runtime": "pass",
+  "live_stub_code": "200",
+  "local_runtime": "pass",
+  "post_code": "404",
+  "purpose": "live-served frontend router shadow-read disabled boundary smoke",
+  "queue_clean": "true",
+  "stage": "8X"
+}
