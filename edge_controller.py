@@ -10471,10 +10471,27 @@ def _stage5p12r_model_memory_status_read_only() -> dict:
         "installed_models": [],
         "loaded_models": [],
         "memory": {
+            "note": "Deprecated alias retained during Phase 12R-G; use controller_memory and ct101_memory.",
             "mem_total_mb": None,
             "mem_available_mb": None,
             "swap_total_mb": None,
             "swap_free_mb": None,
+        },
+        "controller_memory": {
+            "source": "controller_host_proc_meminfo",
+            "mem_total_mb": None,
+            "mem_available_mb": None,
+            "swap_total_mb": None,
+            "swap_free_mb": None,
+        },
+        "ct101_memory": {
+            "source": "ct101_ollama_host_proc_meminfo_via_pveso_pct_exec",
+            "available": False,
+            "mem_total_mb": None,
+            "mem_available_mb": None,
+            "swap_total_mb": None,
+            "swap_free_mb": None,
+            "error": None,
         },
         "safe_eviction_candidates": [],
         "active_models": [],
@@ -10539,18 +10556,62 @@ def _stage5p12r_model_memory_status_read_only() -> dict:
                         meminfo[key] = int(parts[1])
                     except ValueError:
                         pass
-        status["memory"] = {
+        controller_memory = {
+            "source": "controller_host_proc_meminfo",
             "mem_total_mb": round(meminfo.get("MemTotal", 0) / 1024) if meminfo.get("MemTotal") else None,
             "mem_available_mb": round(meminfo.get("MemAvailable", 0) / 1024) if meminfo.get("MemAvailable") else None,
             "swap_total_mb": round(meminfo.get("SwapTotal", 0) / 1024) if meminfo.get("SwapTotal") else None,
             "swap_free_mb": round(meminfo.get("SwapFree", 0) / 1024) if meminfo.get("SwapFree") else None,
         }
+        status["controller_memory"] = controller_memory
+        status["memory"].update({k: v for k, v in controller_memory.items() if k != "source"})
     except Exception as exc:
         status["warnings"].append({
             "warning": "memory_snapshot_unavailable",
             "error": type(exc).__name__,
             "message": str(exc)[:240],
         })
+
+    try:
+        import subprocess as _stage5p12r_subprocess
+
+        ssh_target = _stage5p12r_os.getenv("EDGE_MODEL_MEMORY_CT101_SSH_TARGET", "root@100.88.194.19")
+        remote_cmd = (
+            "pct exec 101 -- bash -lc "
+            + repr("cat /proc/meminfo | grep -E 'MemTotal|MemAvailable|SwapTotal|SwapFree'")
+        )
+        completed = _stage5p12r_subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=3", ssh_target, remote_cmd],
+            text=True,
+            capture_output=True,
+            timeout=6,
+            check=False,
+        )
+        if completed.returncode == 0:
+            ct_meminfo = {}
+            for line in completed.stdout.splitlines():
+                parts = line.split()
+                if len(parts) >= 2:
+                    key = parts[0].rstrip(":")
+                    try:
+                        ct_meminfo[key] = int(parts[1])
+                    except ValueError:
+                        pass
+            status["ct101_memory"] = {
+                "source": "ct101_ollama_host_proc_meminfo_via_pveso_pct_exec",
+                "available": True,
+                "mem_total_mb": round(ct_meminfo.get("MemTotal", 0) / 1024) if ct_meminfo.get("MemTotal") else None,
+                "mem_available_mb": round(ct_meminfo.get("MemAvailable", 0) / 1024) if ct_meminfo.get("MemAvailable") else None,
+                "swap_total_mb": round(ct_meminfo.get("SwapTotal", 0) / 1024) if ct_meminfo.get("SwapTotal") else None,
+                "swap_free_mb": round(ct_meminfo.get("SwapFree", 0) / 1024) if ct_meminfo.get("SwapFree") else None,
+                "error": None,
+            }
+        else:
+            status["ct101_memory"]["error"] = (completed.stderr or completed.stdout or "ct101_memory_probe_failed")[:240]
+            status["warnings"].append({"warning": "ct101_memory_snapshot_unavailable"})
+    except Exception as exc:
+        status["ct101_memory"]["error"] = f"{type(exc).__name__}: {str(exc)[:200]}"
+        status["warnings"].append({"warning": "ct101_memory_snapshot_unavailable"})
 
     if not status["ollama_reachable"]:
         status["warnings"].append({"warning": "ollama_not_reachable_read_only_status"})
