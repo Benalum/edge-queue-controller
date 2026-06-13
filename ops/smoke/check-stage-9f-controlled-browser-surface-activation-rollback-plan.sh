@@ -1,0 +1,330 @@
+#!/usr/bin/env bash
+set -u
+
+fail=0
+
+pass() {
+  echo "PASS: $1"
+}
+
+check_fail() {
+  echo "CHECK: $1"
+  fail=1
+}
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." 2>/dev/null && pwd)"
+cd "$ROOT" || {
+  echo "CHECK: could not cd into repo root"
+  exit 1
+}
+
+REPORT="docs/generated/stage-9f-controlled-browser-surface-activation-rollback-plan.md"
+SMOKE="ops/smoke/check-stage-9f-controlled-browser-surface-activation-rollback-plan.sh"
+
+STAGE9D_EVIDENCE="docs/generated/stage-9d-disabled-narrow-browser-surface-shadow-read-wiring-evidence.json"
+STAGE9E_EVIDENCE="docs/generated/stage-9e-live-served-disabled-browser-surface-bridge-verification-evidence.json"
+
+APP_JS="frontend/wrapper-ui/app.js"
+STUB="frontend/wrapper-ui/router_shadow_read_stub.js"
+
+BASE="http://127.0.0.1:7070"
+FRONTEND_BASE="http://127.0.0.1:8787"
+STATUS_URL="http://127.0.0.1:8787/api/system/status"
+
+LIVE_APP="/tmp/stage9f-live-app.js"
+LIVE_STUB="/tmp/stage9f-live-router-shadow-read-stub.js"
+
+echo "=== Stage 9F smoke: controlled browser-surface activation rollback plan only ==="
+
+echo
+echo "=== report/script checks ==="
+[ -f "$REPORT" ] && pass "Stage 9F report exists" || check_fail "Stage 9F report missing"
+[ -x "$SMOKE" ] && pass "Stage 9F smoke script is executable" || check_fail "Stage 9F smoke script missing or not executable"
+
+for needle in \
+  "Stage 9F prepares the controlled browser-surface router shadow-read activation and rollback plan only." \
+  "Stage 9F does not modify frontend/wrapper-ui/app.js." \
+  "Stage 9F does not enable browser router traffic." \
+  "Stage 9F does not enable backend router dry-run." \
+  "Stage 9F does not restart live services." \
+  "Stage 9F does not send frontend router POST traffic." \
+  "Stage 9D evidence final_result remains pass." \
+  "Stage 9E evidence final_result remains pass." \
+  "frontend/wrapper-ui/app.js contains EdgeRouterShadowReadSurface." \
+  "frontend/wrapper-ui/app.js contains requestBrowserSurfaceRouterShadowRead." \
+  "frontend/wrapper-ui/app.js contains no /api/router/dry-run." \
+  "Live-served app.js contains EdgeRouterShadowReadSurface." \
+  "Live-served app.js contains requestBrowserSurfaceRouterShadowRead." \
+  "Live-served app.js contains no /api/router/dry-run." \
+  "POST /api/router/dry-run remains HTTP 404." \
+  "EDGE_UNIVERSAL_INTENT_ROUTER_DRY_RUN_ENABLED=1 remains absent." \
+  "Stage 9G may perform one controlled browser-surface activation and rollback." \
+  "Call requestBrowserSurfaceRouterShadowRead exactly once." \
+  "Confirm exactly one request is sent." \
+  "Confirm dispatch_requested = false." \
+  "Confirm dispatch_performed = false." \
+  "Stage 9G should not enable browser router traffic automatically." \
+  "Stage 9G requires explicit operator approval before activation."
+do
+  if grep -Fq "$needle" "$REPORT"; then
+    pass "report contains: $needle"
+  else
+    check_fail "report missing required text: $needle"
+  fi
+done
+
+echo
+echo "=== Stage 9D/9E evidence validation ==="
+[ -f "$STAGE9D_EVIDENCE" ] && pass "Stage 9D evidence exists" || check_fail "Stage 9D evidence missing"
+[ -f "$STAGE9E_EVIDENCE" ] && pass "Stage 9E evidence exists" || check_fail "Stage 9E evidence missing"
+
+python3 - "$STAGE9D_EVIDENCE" "$STAGE9E_EVIDENCE" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+stage9d = Path(sys.argv[1])
+stage9e = Path(sys.argv[2])
+
+checks = [
+    (stage9d, {
+        "final_result": {"pass"},
+        "local_disabled_runtime": {"pass"},
+        "post_code": {"404"},
+        "env_absent": {"true", "True"},
+        "queue_clean": {"true", "True"},
+    }),
+    (stage9e, {
+        "final_result": {"pass"},
+        "live_app_code": {"200"},
+        "live_stub_code": {"200"},
+        "live_disabled_runtime": {"pass"},
+        "post_code": {"404"},
+        "env_absent": {"true", "True"},
+        "queue_clean": {"true", "True"},
+    }),
+]
+
+bad = []
+for path, expected in checks:
+    if not path.exists():
+        bad.append((str(path), "missing", "missing"))
+        continue
+    data = json.loads(path.read_text(encoding="utf-8"))
+    for key, allowed in expected.items():
+        actual = str(data.get(key))
+        print(f"{path.name}:{key}={actual}")
+        if actual not in allowed:
+            bad.append((f"{path.name}:{key}", sorted(allowed), actual))
+
+if bad:
+    print("CHECK: evidence validation failed")
+    for item in bad:
+        print(item)
+    sys.exit(2)
+
+print("PASS: Stage 9D and Stage 9E evidence values confirmed")
+PY
+if [ "$?" = "0" ]; then
+  pass "Stage 9D/9E evidence values confirmed"
+else
+  check_fail "Stage 9D/9E evidence validation failed"
+fi
+
+echo
+echo "=== local frontend state checks ==="
+[ -f "$APP_JS" ] && pass "app.js exists" || check_fail "missing $APP_JS"
+[ -f "$STUB" ] && pass "router shadow-read stub exists" || check_fail "missing $STUB"
+
+grep -q "EdgeRouterShadowReadSurface" "$APP_JS" 2>/dev/null \
+  && pass "app.js contains EdgeRouterShadowReadSurface" \
+  || check_fail "app.js missing EdgeRouterShadowReadSurface"
+
+grep -q "requestBrowserSurfaceRouterShadowRead" "$APP_JS" 2>/dev/null \
+  && pass "app.js contains requestBrowserSurfaceRouterShadowRead" \
+  || check_fail "app.js missing requestBrowserSurfaceRouterShadowRead"
+
+if grep -q "/api/router/dry-run" "$APP_JS" 2>/dev/null; then
+  check_fail "app.js directly contains /api/router/dry-run"
+  grep -n "/api/router/dry-run" "$APP_JS" | sed -n '1,80p'
+else
+  pass "app.js contains no /api/router/dry-run"
+fi
+
+grep -q 'const ROUTER_DRY_RUN_ENDPOINT = "/api/router/dry-run";' "$STUB" 2>/dev/null \
+  && pass "stub contains backend dry-run endpoint boundary" \
+  || check_fail "stub missing backend dry-run endpoint boundary"
+
+grep -q "const ROUTER_SHADOW_READ_ENABLED = false;" "$STUB" 2>/dev/null \
+  && pass "ROUTER_SHADOW_READ_ENABLED remains false" \
+  || check_fail "ROUTER_SHADOW_READ_ENABLED=false marker missing"
+
+grep -q "const ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT = false;" "$STUB" 2>/dev/null \
+  && pass "ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT remains false" \
+  || check_fail "ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT=false marker missing"
+
+echo
+echo "=== live-served frontend state checks ==="
+live_app_code="$(curl -sS --max-time 8 -o "$LIVE_APP" -w "%{http_code}" "$FRONTEND_BASE/app.js" 2>/tmp/stage9f-live-app.err || printf 'curl_failed')"
+live_stub_code="$(curl -sS --max-time 8 -o "$LIVE_STUB" -w "%{http_code}" "$FRONTEND_BASE/router_shadow_read_stub.js" 2>/tmp/stage9f-live-stub.err || printf 'curl_failed')"
+
+echo "live_app_code=$live_app_code"
+echo "live_stub_code=$live_stub_code"
+
+if [ "$live_app_code" = "200" ]; then
+  pass "live-served app.js fetched with HTTP 200"
+
+  grep -q "EdgeRouterShadowReadSurface" "$LIVE_APP" 2>/dev/null \
+    && pass "live-served app.js contains EdgeRouterShadowReadSurface" \
+    || check_fail "live-served app.js missing EdgeRouterShadowReadSurface"
+
+  grep -q "requestBrowserSurfaceRouterShadowRead" "$LIVE_APP" 2>/dev/null \
+    && pass "live-served app.js contains requestBrowserSurfaceRouterShadowRead" \
+    || check_fail "live-served app.js missing requestBrowserSurfaceRouterShadowRead"
+
+  if grep -q "/api/router/dry-run" "$LIVE_APP" 2>/dev/null; then
+    check_fail "live-served app.js contains /api/router/dry-run"
+    grep -n "/api/router/dry-run" "$LIVE_APP" | sed -n '1,80p'
+  else
+    pass "live-served app.js contains no /api/router/dry-run"
+  fi
+else
+  check_fail "could not fetch live-served app.js"
+fi
+
+if [ "$live_stub_code" = "200" ]; then
+  pass "live-served router_shadow_read_stub.js fetched with HTTP 200"
+  grep -q 'const ROUTER_DRY_RUN_ENDPOINT = "/api/router/dry-run";' "$LIVE_STUB" 2>/dev/null \
+    && pass "live-served stub contains backend dry-run endpoint boundary" \
+    || check_fail "live-served stub missing endpoint boundary"
+
+  grep -q "const ROUTER_SHADOW_READ_ENABLED = false;" "$LIVE_STUB" 2>/dev/null \
+    && pass "live-served ROUTER_SHADOW_READ_ENABLED remains false" \
+    || check_fail "live-served ROUTER_SHADOW_READ_ENABLED=false marker missing"
+
+  grep -q "const ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT = false;" "$LIVE_STUB" 2>/dev/null \
+    && pass "live-served ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT remains false" \
+    || check_fail "live-served ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT=false marker missing"
+else
+  check_fail "could not fetch live-served router shadow-read stub"
+fi
+
+echo
+echo "=== backend disabled state checks ==="
+health_code="$(curl -sS --max-time 5 -o /tmp/stage9f-health.out -w "%{http_code}" "$BASE/health" 2>/tmp/stage9f-health.err || printf 'curl_failed')"
+echo "health_code=$health_code"
+[ "$health_code" = "200" ] && pass "live controller /health returned HTTP 200" || check_fail "live controller /health did not return HTTP 200"
+
+post_code="$(curl -sS --max-time 5 -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"stage9f browser-surface activation plan checkpoint","source":"stage9f","surface":"backend-only"}' \
+  -o /tmp/stage9f-router-post.out \
+  -w "%{http_code}" \
+  "$BASE/api/router/dry-run" 2>/tmp/stage9f-router-post.err || printf 'curl_failed')"
+echo "post_code=$post_code"
+
+if [ "$post_code" = "404" ]; then
+  pass "POST /api/router/dry-run remains HTTP 404"
+else
+  check_fail "POST /api/router/dry-run did not remain HTTP 404"
+fi
+
+controller_env="$(systemctl show edge-queue-controller -p Environment --value 2>/dev/null || true)"
+printf '%s\n' "$controller_env" | tr ' ' '\n' | grep -E 'EDGE_UNIVERSAL_INTENT_ROUTER_DRY_RUN_ENABLED|ROUTER|INTENT|DRY_RUN|SHADOW' || true
+
+if printf '%s\n' "$controller_env" | tr ' ' '\n' | grep -qx 'EDGE_UNIVERSAL_INTENT_ROUTER_DRY_RUN_ENABLED=1'; then
+  check_fail "backend dry-run env is enabled"
+else
+  pass "backend dry-run env remains absent"
+fi
+
+echo
+echo "=== queue clean check ==="
+queue_code="$(curl -sS --max-time 5 -o /tmp/stage9f-system-status.json -w "%{http_code}" "$STATUS_URL" 2>/tmp/stage9f-system-status.err || printf 'curl_failed')"
+echo "queue_status_code=$queue_code"
+
+if [ "$queue_code" = "200" ]; then
+  python3 - /tmp/stage9f-system-status.json <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+matches = []
+
+def walk(value, label="$"):
+    if isinstance(value, dict):
+        if all(k in value for k in ("queued", "running", "failed")):
+            matches.append((label, value.get("queued"), value.get("running"), value.get("failed")))
+        for k, v in value.items():
+            walk(v, f"{label}.{k}")
+    elif isinstance(value, list):
+        for i, v in enumerate(value):
+            walk(v, f"{label}[{i}]")
+
+walk(data)
+
+if not matches:
+    print("MISSING_QUEUE_TRIPLE")
+    sys.exit(3)
+
+for label, queued, running, failed in matches:
+    print(f"{label}: queued={queued} running={running} failed={failed}")
+
+clean = any(str(q) == "0" and str(r) == "0" and str(f) == "0" for _, q, r, f in matches)
+sys.exit(0 if clean else 2)
+PY
+  queue_check=$?
+  if [ "$queue_check" = "0" ]; then
+    pass "queue clean state confirmed with queued=0 running=0 failed=0"
+  else
+    check_fail "queue clean state was not confirmed"
+  fi
+else
+  check_fail "could not read queue/system status"
+fi
+
+echo
+echo "=== timer and temporary port checks ==="
+power_timer="$(systemctl is-active edge-queue-power-auto-tick.timer 2>/dev/null || true)"
+remediation_timer="$(systemctl is-active edge-queue-remediation-tick.timer 2>/dev/null || true)"
+legacy_active="$(systemctl is-active edge-queue-scheduler-tick.timer 2>/dev/null || true)"
+legacy_enabled="$(systemctl is-enabled edge-queue-scheduler-tick.timer 2>/dev/null || true)"
+
+echo "edge-queue-power-auto-tick.timer active=$power_timer"
+echo "edge-queue-remediation-tick.timer active=$remediation_timer"
+echo "edge-queue-scheduler-tick.timer active=$legacy_active enabled=$legacy_enabled"
+
+[ "$power_timer" = "active" ] && pass "modern power auto timer is active" || check_fail "modern power auto timer is not active"
+[ "$remediation_timer" = "active" ] && pass "modern remediation timer is active" || check_fail "modern remediation timer is not active"
+
+if [ "$legacy_active" = "inactive" ] || [ "$legacy_active" = "unknown" ]; then
+  pass "legacy scheduler timer is not active"
+else
+  check_fail "legacy scheduler timer is unexpectedly active/state=$legacy_active"
+fi
+
+if [ "$legacy_enabled" = "disabled" ] || [ "$legacy_enabled" = "masked" ]; then
+  pass "legacy scheduler timer is disabled/masked"
+else
+  check_fail "legacy scheduler timer is not disabled/masked; enabled_state=$legacy_enabled"
+fi
+
+if ss -ltnp 2>/dev/null | grep -q ':7076'; then
+  check_fail "port 7076 appears to be listening"
+  ss -ltnp | grep ':7076' || true
+else
+  pass "port 7076 is not listening"
+fi
+
+echo
+echo "=== Stage 9F smoke result ==="
+if [ "$fail" = "0" ]; then
+  echo "PASS: Stage 9F controlled browser-surface activation rollback plan verified without enablement"
+else
+  echo "FAIL: Stage 9F controlled browser-surface activation rollback plan found issues"
+fi
+
+exit "$fail"
