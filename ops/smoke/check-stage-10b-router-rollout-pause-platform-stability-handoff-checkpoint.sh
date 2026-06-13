@@ -1,0 +1,303 @@
+#!/usr/bin/env bash
+set -u
+
+fail=0
+
+pass() { echo "PASS: $1"; }
+check_fail() { echo "CHECK: $1"; fail=1; }
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." 2>/dev/null && pwd)"
+cd "$ROOT" || {
+  echo "CHECK: could not cd into repo root"
+  exit 1
+}
+
+REPORT="docs/generated/stage-10b-router-rollout-pause-platform-stability-handoff-checkpoint.md"
+SMOKE="ops/smoke/check-stage-10b-router-rollout-pause-platform-stability-handoff-checkpoint.sh"
+
+STAGE10A_REPORT="docs/generated/stage-10a-persistent-rollout-mutation-readiness-decision-checkpoint.md"
+STAGE9Z_EVIDENCE="docs/generated/stage-9z-end-of-stage-9-router-shadow-read-rollout-posture-checkpoint-evidence.json"
+
+CONTROLLER="edge_controller.py"
+APP_JS="frontend/wrapper-ui/app.js"
+STUB="frontend/wrapper-ui/router_shadow_read_stub.js"
+
+BASE="http://127.0.0.1:7070"
+ROLLOUT_STATUS_URL="$BASE/api/router/persistent-rollout/status"
+FRONTEND_BASE="http://127.0.0.1:8787"
+STATUS_URL="http://127.0.0.1:8787/api/system/status"
+
+LIVE_STATUS="/tmp/stage10b-persistent-rollout-status.json"
+LIVE_APP="/tmp/stage10b-live-app.js"
+LIVE_STUB="/tmp/stage10b-live-router-shadow-read-stub.js"
+
+echo "=== Stage 10B smoke: router rollout pause and platform stability handoff checkpoint ==="
+
+echo
+echo "=== report/script checks ==="
+[ -f "$REPORT" ] && pass "Stage 10B report exists" || check_fail "Stage 10B report missing"
+[ -x "$SMOKE" ] && pass "Stage 10B smoke script is executable" || check_fail "Stage 10B smoke script missing or not executable"
+
+for needle in \
+  "Stage 10B records the decision to pause router rollout mutation work and hand off to platform stability work." \
+  "Stage 10B is plan-only." \
+  "Stage 10B does not modify frontend/wrapper-ui/app.js." \
+  "Stage 10B does not modify edge_controller.py." \
+  "Stage 10B does not restart live services." \
+  "Stage 10B does not add a mutation endpoint." \
+  "Stage 10B does not enable browser router traffic." \
+  "Stage 10B does not enable backend router dry-run." \
+  "Router shadow-read rollout is now safely parked." \
+  "Stage 10B chooses platform stability as the next work lane instead of immediate mutation support." \
+  "Recommended default: start with faster frontend load time and route boundary smoke coverage."
+do
+  grep -Fq "$needle" "$REPORT" && pass "report contains: $needle" || check_fail "report missing: $needle"
+done
+
+echo
+echo "=== Stage 10A/9Z artifact validation ==="
+[ -f "$STAGE10A_REPORT" ] && pass "Stage 10A report exists" || check_fail "Stage 10A report missing"
+[ -f "$STAGE9Z_EVIDENCE" ] && pass "Stage 9Z evidence exists" || check_fail "Stage 9Z evidence missing"
+
+grep -Fq "Recommended default: choose Option B unless mutation support is urgently needed." "$STAGE10A_REPORT" \
+  && pass "Stage 10A recommended Option B pause/handoff" \
+  || check_fail "Stage 10A Option B recommendation missing"
+
+python3 - "$STAGE9Z_EVIDENCE" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text(encoding="utf-8"))
+
+checks = {
+    "final_result": {"pass"},
+    "health_code": {"200"},
+    "status_code": {"200"},
+    "status_runtime": {"pass"},
+    "status_mutation_code": {"404", "405"},
+    "request_mutation_code": {"404", "405"},
+    "post_code": {"404"},
+    "env_absent": {"true", "True"},
+    "queue_clean": {"true", "True"},
+}
+
+bad = []
+for key, allowed in checks.items():
+    actual = str(data.get(key))
+    print(f"{key}={actual}")
+    if actual not in allowed:
+        bad.append((key, sorted(allowed), actual))
+
+if bad:
+    print("CHECK: Stage 9Z evidence mismatch")
+    for item in bad:
+        print(item)
+    sys.exit(2)
+
+print("PASS: Stage 9Z evidence confirms safe parked router posture")
+PY
+[ "$?" = "0" ] && pass "Stage 9Z evidence values confirmed" || check_fail "Stage 9Z evidence validation failed"
+
+echo
+echo "=== source safety checks, no restart ==="
+python3 -m py_compile "$CONTROLLER" \
+  && pass "edge_controller.py compiles" \
+  || check_fail "edge_controller.py failed py_compile"
+
+if grep -RInE '@app\.(post|put|patch|delete)\("/api/router/persistent-rollout/status"|@app\.(post|put|patch|delete)\(PERSISTENT_OPERATOR_GATED_ROLLOUT_STATUS_PATH|/api/router/persistent-rollout/request' "$CONTROLLER" 2>/dev/null; then
+  check_fail "persistent rollout mutation route unexpectedly exists"
+else
+  pass "persistent rollout mutation route does not exist"
+fi
+
+echo
+echo "=== live disabled status endpoint check ==="
+health_code="$(curl -sS --max-time 5 -o /tmp/stage10b-health.out -w "%{http_code}" "$BASE/health" 2>/tmp/stage10b-health.err || printf 'curl_failed')"
+echo "health_code=$health_code"
+[ "$health_code" = "200" ] && pass "live controller /health returned HTTP 200" || check_fail "live controller /health did not return HTTP 200"
+
+status_code="$(curl -sS --max-time 5 -o "$LIVE_STATUS" -w "%{http_code}" "$ROLLOUT_STATUS_URL" 2>/tmp/stage10b-rollout-status.err || printf 'curl_failed')"
+echo "status_code=$status_code"
+
+if [ "$status_code" = "200" ]; then
+  pass "GET /api/router/persistent-rollout/status returned HTTP 200"
+  python3 - "$LIVE_STATUS" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+checks = {
+    "enabled": False,
+    "status": "disabled",
+    "reason": "persistent_operator_gated_rollout_disabled",
+    "dry_run": True,
+    "dispatch_requested": False,
+    "dispatch_performed": False,
+    "mutation_supported": False,
+    "activation_supported": False,
+}
+bad = []
+for key, expected in checks.items():
+    actual = data.get(key)
+    print(f"{key}={actual!r}")
+    if actual != expected:
+        bad.append((key, expected, actual))
+if bad:
+    print("CHECK: live status response mismatch")
+    for item in bad:
+        print(item)
+    sys.exit(2)
+print("PASS: live status endpoint remains disabled and read-only")
+PY
+  [ "$?" = "0" ] && pass "live status response values confirmed" || check_fail "live status response validation failed"
+else
+  check_fail "GET /api/router/persistent-rollout/status did not return HTTP 200"
+fi
+
+echo
+echo "=== mutation paths remain unavailable ==="
+status_mutation_code="$(curl -sS --max-time 5 -X POST -H 'Content-Type: application/json' \
+  -d '{"enabled":true}' -o /tmp/stage10b-rollout-status-mutation.out -w "%{http_code}" \
+  "$ROLLOUT_STATUS_URL" 2>/tmp/stage10b-rollout-status-mutation.err || printf 'curl_failed')"
+echo "status_mutation_code=$status_mutation_code"
+case "$status_mutation_code" in
+  404|405) pass "persistent rollout status mutation remains unavailable" ;;
+  *) check_fail "persistent rollout status mutation unexpectedly returned $status_mutation_code" ;;
+esac
+
+request_mutation_code="$(curl -sS --max-time 5 -X POST -H 'Content-Type: application/json' \
+  -d '{"enabled":true}' -o /tmp/stage10b-rollout-request-mutation.out -w "%{http_code}" \
+  "$BASE/api/router/persistent-rollout/request" 2>/tmp/stage10b-rollout-request-mutation.err || printf 'curl_failed')"
+echo "request_mutation_code=$request_mutation_code"
+case "$request_mutation_code" in
+  404|405) pass "future persistent rollout request mutation route remains unavailable" ;;
+  *) check_fail "future persistent rollout request mutation route unexpectedly returned $request_mutation_code" ;;
+esac
+
+echo
+echo "=== backend dry-run remains disabled ==="
+post_code="$(curl -sS --max-time 5 -X POST -H 'Content-Type: application/json' \
+  -d '{"text":"stage10b router pause checkpoint","source":"stage10b","surface":"backend-only"}' \
+  -o /tmp/stage10b-router-post.out -w "%{http_code}" \
+  "$BASE/api/router/dry-run" 2>/tmp/stage10b-router-post.err || printf 'curl_failed')"
+echo "post_code=$post_code"
+[ "$post_code" = "404" ] && pass "POST /api/router/dry-run remains HTTP 404" || check_fail "POST /api/router/dry-run did not remain HTTP 404"
+
+controller_env="$(systemctl show edge-queue-controller -p Environment --value 2>/dev/null || true)"
+printf '%s\n' "$controller_env" | tr ' ' '\n' | grep -E 'EDGE_UNIVERSAL_INTENT_ROUTER_DRY_RUN_ENABLED|ROUTER|INTENT|DRY_RUN|SHADOW' || true
+
+if printf '%s\n' "$controller_env" | tr ' ' '\n' | grep -qx 'EDGE_UNIVERSAL_INTENT_ROUTER_DRY_RUN_ENABLED=1'; then
+  check_fail "backend dry-run env is enabled"
+else
+  pass "backend dry-run env remains absent"
+fi
+
+echo
+echo "=== frontend static/live safety checks ==="
+if grep -q "/api/router/dry-run" "$APP_JS" 2>/dev/null; then
+  check_fail "app.js directly contains /api/router/dry-run"
+else
+  pass "app.js contains no /api/router/dry-run"
+fi
+
+grep -q "const ROUTER_SHADOW_READ_ENABLED = false;" "$STUB" \
+  && pass "ROUTER_SHADOW_READ_ENABLED remains false" \
+  || check_fail "ROUTER_SHADOW_READ_ENABLED=false marker missing"
+
+grep -q "const ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT = false;" "$STUB" \
+  && pass "ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT remains false" \
+  || check_fail "ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT=false marker missing"
+
+live_app_code="$(curl -sS --max-time 8 -o "$LIVE_APP" -w "%{http_code}" "$FRONTEND_BASE/app.js" 2>/tmp/stage10b-live-app.err || printf 'curl_failed')"
+live_stub_code="$(curl -sS --max-time 8 -o "$LIVE_STUB" -w "%{http_code}" "$FRONTEND_BASE/router_shadow_read_stub.js" 2>/tmp/stage10b-live-stub.err || printf 'curl_failed')"
+
+echo "live_app_code=$live_app_code"
+echo "live_stub_code=$live_stub_code"
+
+[ "$live_app_code" = "200" ] && pass "live-served app.js fetched with HTTP 200" || check_fail "could not fetch live-served app.js"
+[ "$live_stub_code" = "200" ] && pass "live-served router_shadow_read_stub.js fetched with HTTP 200" || check_fail "could not fetch live-served router_shadow_read_stub.js"
+
+if [ "$live_app_code" = "200" ]; then
+  grep -q "/api/router/dry-run" "$LIVE_APP" \
+    && check_fail "live-served app.js contains /api/router/dry-run" \
+    || pass "live-served app.js contains no /api/router/dry-run"
+fi
+
+echo
+echo "=== queue clean check ==="
+queue_code="$(curl -sS --max-time 5 -o /tmp/stage10b-system-status.json -w "%{http_code}" "$STATUS_URL" 2>/tmp/stage10b-system-status.err || printf 'curl_failed')"
+echo "queue_status_code=$queue_code"
+
+if [ "$queue_code" = "200" ]; then
+  python3 - /tmp/stage10b-system-status.json <<'PY'
+import json
+import sys
+
+data = json.load(open(sys.argv[1], "r", encoding="utf-8"))
+matches = []
+
+def walk(value, label="$"):
+    if isinstance(value, dict):
+        if all(k in value for k in ("queued", "running", "failed")):
+            matches.append((label, value.get("queued"), value.get("running"), value.get("failed")))
+        for k, v in value.items():
+            walk(v, f"{label}.{k}")
+    elif isinstance(value, list):
+        for i, v in enumerate(value):
+            walk(v, f"{label}[{i}]")
+
+walk(data)
+for label, q, r, f in matches:
+    print(f"{label}: queued={q} running={r} failed={f}")
+
+sys.exit(0 if any(str(q) == "0" and str(r) == "0" and str(f) == "0" for _, q, r, f in matches) else 2)
+PY
+  [ "$?" = "0" ] && pass "queue clean state confirmed with queued=0 running=0 failed=0" || check_fail "queue clean state was not confirmed"
+else
+  check_fail "could not read queue/system status"
+fi
+
+echo
+echo "=== timer and temporary port checks ==="
+power_timer="$(systemctl is-active edge-queue-power-auto-tick.timer 2>/dev/null || true)"
+remediation_timer="$(systemctl is-active edge-queue-remediation-tick.timer 2>/dev/null || true)"
+legacy_active="$(systemctl is-active edge-queue-scheduler-tick.timer 2>/dev/null || true)"
+legacy_enabled="$(systemctl is-enabled edge-queue-scheduler-tick.timer 2>/dev/null || true)"
+
+echo "edge-queue-power-auto-tick.timer active=$power_timer"
+echo "edge-queue-remediation-tick.timer active=$remediation_timer"
+echo "edge-queue-scheduler-tick.timer active=$legacy_active enabled=$legacy_enabled"
+
+[ "$power_timer" = "active" ] && pass "modern power auto timer is active" || check_fail "modern power auto timer is not active"
+[ "$remediation_timer" = "active" ] && pass "modern remediation timer is active" || check_fail "modern remediation timer is not active"
+
+if [ "$legacy_active" = "inactive" ] || [ "$legacy_active" = "unknown" ]; then
+  pass "legacy scheduler timer is not active"
+else
+  check_fail "legacy scheduler timer is unexpectedly active/state=$legacy_active"
+fi
+
+if [ "$legacy_enabled" = "disabled" ] || [ "$legacy_enabled" = "masked" ]; then
+  pass "legacy scheduler timer is disabled/masked"
+else
+  check_fail "legacy scheduler timer is not disabled/masked; enabled_state=$legacy_enabled"
+fi
+
+if ss -ltnp 2>/dev/null | grep -q ':7076'; then
+  check_fail "port 7076 appears to be listening"
+else
+  pass "port 7076 is not listening"
+fi
+
+echo
+echo "=== Stage 10B smoke result ==="
+if [ "$fail" = "0" ]; then
+  echo "PASS: Stage 10B router rollout pause and platform stability handoff verified"
+else
+  echo "FAIL: Stage 10B router rollout pause and platform stability handoff found issues"
+fi
+
+exit "$fail"
