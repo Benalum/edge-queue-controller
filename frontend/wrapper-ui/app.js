@@ -2584,9 +2584,9 @@ function phase11eRenderSystemPageOriginal() {
 // Keep /system from flashing the older static API catalog before live status loads.
 // The original renderer is preserved above and used once adminStatus has the live payload.
 function renderSystemPage() {
-  const phase11eStatus = adminStatus || {};
+  const phase11eStatus = lastStatus || {}; // PHASE_11G_SYSTEM_READINESS_VARIABLE_REPAIR
   const phase11eHasLiveStatus = Boolean(
-    adminStatus &&
+    lastStatus &&
     (
       Array.isArray(phase11eStatus.services) ||
       Array.isArray(phase11eStatus.nodes) ||
@@ -2618,7 +2618,7 @@ function renderSystemPage() {
 function phase11fRefreshSystemPageIfReady() {
   try {
     if (location.pathname !== "/system") return;
-    if (!adminStatus) return;
+    if (!lastStatus) return;
 
     const loadingSection = document.getElementById("phase11fSystemStatusLoading");
     if (!loadingSection) return;
