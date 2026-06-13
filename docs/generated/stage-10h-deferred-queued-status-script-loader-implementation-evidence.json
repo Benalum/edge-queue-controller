@@ -1,0 +1,21 @@
+{
+  "app_js_bytes": 323331,
+  "env_absent": "true",
+  "final_result": "pass",
+  "generated_at": "2026-06-13T05:45:00.838185+00:00",
+  "health_code": "200",
+  "index_html_bytes": 4790,
+  "live_root_contains_deferred_marker": true,
+  "live_root_plain_status_script_count": 0,
+  "local_index_config_pos": 3980,
+  "local_index_contains_deferred_marker": true,
+  "local_index_deferred_marker_pos": 4097,
+  "local_index_plain_status_script_count": 0,
+  "post_code": "404",
+  "purpose": "deferred queued-status script loader implementation",
+  "queue_clean": "true",
+  "queued_config_bytes": 911,
+  "queued_status_bytes": 3840,
+  "rollout_status_code": "200",
+  "stage": "10H"
+}

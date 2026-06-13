@@ -116,6 +116,28 @@
   <script src="router_shadow_read_stub.js?v=2026061208k"></script>
   <script src="/app.js?v=2026061208l"></script>
   <script src="/queued_chat_config.js"></script>
-<script src="/queued_chat_status.js"></script>
+<script>
+(function loadQueuedChatStatusAfterInitialPageLoad() {
+  const scriptId = "stage10hDeferredQueuedChatStatusScript";
+  const scriptSrc = "/queued_chat_status.js";
+
+  function injectQueuedChatStatusScript() {
+    if (document.getElementById(scriptId)) return;
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = scriptSrc;
+    script.dataset.stage10hDeferredQueuedStatus = "true";
+    document.head.appendChild(script);
+  }
+
+  if (document.readyState === "complete") {
+    window.setTimeout(injectQueuedChatStatusScript, 0);
+  } else {
+    window.addEventListener("load", function onStage10hWindowLoad() {
+      window.setTimeout(injectQueuedChatStatusScript, 0);
+    }, { once: true });
+  }
+})();
+</script>
 </body>
 </html>
