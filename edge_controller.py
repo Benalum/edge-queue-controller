@@ -1,3 +1,4 @@
+import time as _stage10m_time
 import os
 import json
 import sqlite3
@@ -10396,8 +10397,48 @@ def system_local_health():
     }
 
 
+_SYSTEM_STATUS_CACHE_TTL_SECONDS_DEFAULT = 2.0
+_system_status_cache = {
+    "cached_at": 0.0,
+    "payload": None,
+}
+
+
+def _system_status_cache_ttl_seconds():
+    try:
+        raw_value = os.getenv("EDGE_SYSTEM_STATUS_CACHE_TTL_SECONDS", str(_SYSTEM_STATUS_CACHE_TTL_SECONDS_DEFAULT))
+        ttl = float(raw_value)
+    except (TypeError, ValueError):
+        ttl = _SYSTEM_STATUS_CACHE_TTL_SECONDS_DEFAULT
+    return max(0.0, min(ttl, 10.0))
+
+
+def _system_status_cache_clear():
+    _system_status_cache["cached_at"] = 0.0
+    _system_status_cache["payload"] = None
+
+
+def _system_status_cached_payload():
+    ttl = _system_status_cache_ttl_seconds()
+    now = _stage10m_time.monotonic()
+    cached_payload = _system_status_cache.get("payload")
+    cached_at = float(_system_status_cache.get("cached_at") or 0.0)
+
+    if ttl > 0 and cached_payload is not None and (now - cached_at) <= ttl:
+        return cached_payload
+
+    payload = _system_status_uncached()
+    _system_status_cache["cached_at"] = _stage10m_time.monotonic()
+    _system_status_cache["payload"] = payload
+    return payload
+
+
 @app.get("/system/status")
 def system_status():
+    return _system_status_cached_payload()
+
+
+def _system_status_uncached():
     """
     Public-safe status summary for the always-visible site wrapper.
 

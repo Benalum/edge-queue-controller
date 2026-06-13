@@ -1,0 +1,75 @@
+{
+  "api_system_status_latency_summary": {
+    "count": 5,
+    "max_seconds": 2.193959,
+    "mean_seconds": 0.4450838,
+    "median_seconds": 0.005589,
+    "min_seconds": 0.005429
+  },
+  "app_contains_router_dry_run": false,
+  "controller_contains_cache": true,
+  "controller_contains_ttl_env": true,
+  "controller_contains_uncached": true,
+  "env_absent": "true",
+  "final_result": "pass",
+  "generated_at": "2026-06-13T05:59:17.858745+00:00",
+  "health_code": "200",
+  "index_contains_stage10h_marker": true,
+  "index_plain_status_script_count": 0,
+  "post_code": "404",
+  "purpose": "short TTL system status cache implementation",
+  "queue_clean": "true",
+  "rollout_status_code": "200",
+  "samples": [
+    {
+      "code": "200",
+      "name": "health",
+      "size_download_bytes": "207",
+      "time_total_seconds": "0.030491",
+      "url": "http://127.0.0.1:7070/health"
+    },
+    {
+      "code": "200",
+      "name": "persistent_rollout_status",
+      "size_download_bytes": "327",
+      "time_total_seconds": "0.003808",
+      "url": "http://127.0.0.1:7070/api/router/persistent-rollout/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_1",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "2.193959",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_2",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "0.005429",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_3",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "0.005581",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_4",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "0.014861",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_5",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "0.005589",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    }
+  ],
+  "stage": "10M"
+}
