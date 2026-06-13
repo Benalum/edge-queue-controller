@@ -10624,12 +10624,18 @@ def _stage5p12o_persistent_lane_cutover_readiness(registered_capacity):
             "primary_worker_queue_lane": primary_queue_lane,
             "primary_worker_unfiltered": not bool(primary_queue_lane),
             "active_unsupported_jobs": [],
-            "historical_no_lane_jobs": [],
+            "recent_no_lane_jobs_after_lane_contract": [],
             "lane_worker_registry": [],
             "active_recent_lane_workers": [],
             "missing_active_recent_lane_workers": expected_lanes[:],
             "fallback_worker_present": False,
             "fallback_worker_candidates": [],
+        },
+        "evidence": {
+            "historical_no_lane_jobs_detected": False,
+            "historical_no_lane_jobs": [],
+            "lane_contract_first_seen_at": None,
+            "recent_no_lane_jobs_after_lane_contract": [],
         },
         "notes": [
             "Read-only status gate only.",
@@ -10724,9 +10730,56 @@ def _stage5p12o_persistent_lane_cutover_readiness(registered_capacity):
             """
         ).strip()
         historical_no_lane = _stage5p12o_json.loads(historical_raw or "[]")
-        plan["blockers"]["historical_no_lane_jobs"] = historical_no_lane
-        if historical_no_lane:
-            add_reason("historical_no_lane_jobs_detected")
+        plan["evidence"]["historical_no_lane_jobs"] = historical_no_lane
+        plan["evidence"]["historical_no_lane_jobs_detected"] = bool(historical_no_lane)
+
+        lane_contract_raw = _psql_at(
+            """
+            SELECT COALESCE((
+              SELECT MIN(created_at)::text
+              FROM app_jobs
+              WHERE job_type = 'ollama_chat'
+                AND payload_json->>'routing_contract_version' = 'stage_5p11r_v1'
+                AND COALESCE(payload_json->>'queue_lane', '') != ''
+            ), '');
+            """
+        ).strip()
+        plan["evidence"]["lane_contract_first_seen_at"] = lane_contract_raw or None
+
+        recent_after_raw = _psql_at(
+            """
+            WITH first_lane_contract AS (
+              SELECT MIN(created_at) AS first_seen_at
+              FROM app_jobs
+              WHERE job_type = 'ollama_chat'
+                AND payload_json->>'routing_contract_version' = 'stage_5p11r_v1'
+                AND COALESCE(payload_json->>'queue_lane', '') != ''
+            )
+            SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)::text
+            FROM (
+              SELECT
+                j.id,
+                j.status,
+                COALESCE(j.requested_model, '(none)') AS requested_model,
+                COALESCE(j.payload_json->>'route_source', '(none)') AS route_source,
+                COALESCE(j.payload_json->>'queue_lane', '(none)') AS queue_lane,
+                j.created_at
+              FROM app_jobs j
+              CROSS JOIN first_lane_contract flc
+              WHERE j.job_type = 'ollama_chat'
+                AND flc.first_seen_at IS NOT NULL
+                AND j.created_at >= flc.first_seen_at
+                AND COALESCE(j.payload_json->>'queue_lane', '') = ''
+              ORDER BY j.created_at DESC NULLS LAST, j.id DESC
+              LIMIT 50
+            ) t;
+            """
+        ).strip()
+        recent_no_lane_after_contract = _stage5p12o_json.loads(recent_after_raw or "[]")
+        plan["blockers"]["recent_no_lane_jobs_after_lane_contract"] = recent_no_lane_after_contract
+        plan["evidence"]["recent_no_lane_jobs_after_lane_contract"] = recent_no_lane_after_contract
+        if recent_no_lane_after_contract:
+            add_reason("recent_no_lane_jobs_after_lane_contract")
 
         registry_raw = _psql_at(
             """
