@@ -17053,6 +17053,41 @@ from edge_intent_router import (
 )
 
 
+# Stage 9U disabled controller-side persistent rollout status boundary.
+PERSISTENT_OPERATOR_GATED_ROLLOUT_STATUS_PATH = "/api/router/persistent-rollout/status"
+PERSISTENT_OPERATOR_GATED_ROLLOUT_ENABLED = False
+PERSISTENT_OPERATOR_GATED_ROLLOUT_STATUS = "disabled"
+PERSISTENT_OPERATOR_GATED_ROLLOUT_REASON = "persistent_operator_gated_rollout_disabled"
+PERSISTENT_OPERATOR_GATED_ROLLOUT_ALLOWED_SURFACES = ["manual-diagnostic"]
+
+
+def build_persistent_operator_gated_rollout_status():
+    """Return read-only disabled persistent rollout state.
+
+    Stage 9U intentionally exposes status only. It does not mutate activation
+    state, enable backend router dry-run, or dispatch user traffic.
+    """
+    return {
+        "ok": True,
+        "path": PERSISTENT_OPERATOR_GATED_ROLLOUT_STATUS_PATH,
+        "enabled": PERSISTENT_OPERATOR_GATED_ROLLOUT_ENABLED,
+        "status": PERSISTENT_OPERATOR_GATED_ROLLOUT_STATUS,
+        "reason": PERSISTENT_OPERATOR_GATED_ROLLOUT_REASON,
+        "allowed_surfaces": list(PERSISTENT_OPERATOR_GATED_ROLLOUT_ALLOWED_SURFACES),
+        "dry_run": True,
+        "dispatch_requested": False,
+        "dispatch_performed": False,
+        "mutation_supported": False,
+        "activation_supported": False,
+        "stage": "9U",
+    }
+
+
+@app.get(PERSISTENT_OPERATOR_GATED_ROLLOUT_STATUS_PATH)
+def persistent_operator_gated_rollout_status():
+    return build_persistent_operator_gated_rollout_status()
+# End Stage 9U disabled controller-side persistent rollout status boundary.
+
 @app.post("/api/router/dry-run")
 @app.post("/system/router/dry-run")
 async def stage6f_universal_intent_router_dry_run(request: Request):

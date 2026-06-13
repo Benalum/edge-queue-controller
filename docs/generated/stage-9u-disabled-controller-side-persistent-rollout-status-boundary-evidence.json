@@ -1,0 +1,12 @@
+{
+  "env_absent": "true",
+  "final_result": "pass",
+  "generated_at": "2026-06-13T05:14:47.994480+00:00",
+  "health_code": "200",
+  "post_code": "404",
+  "purpose": "disabled controller-side persistent rollout status boundary",
+  "py_compile": "pass",
+  "queue_clean": "true",
+  "source_status_runtime": "pass",
+  "stage": "9U"
+}
