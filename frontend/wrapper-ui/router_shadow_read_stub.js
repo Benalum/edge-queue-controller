@@ -14,6 +14,16 @@
 
 const ROUTER_SHADOW_READ_ENABLED = false;
 
+// STAGE_8O_FEATURE_FLAG_BOUNDARY_V1
+// Feature flag boundary for future shadow-read work.
+// This remains off by default and does not introduce a router endpoint URL.
+const ROUTER_SHADOW_READ_FEATURE_FLAG_NAME = "edge_router_shadow_read";
+const ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT = false;
+
+function isRouterShadowReadFeatureEnabled() {
+  return ROUTER_SHADOW_READ_ENABLED === true && ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT === true;
+}
+
 function buildRouterShadowReadPayload({
   text = "",
   source = "unknown",
@@ -76,7 +86,7 @@ function isRouterDecisionShadowSafe(decision) {
 
 async function routerShadowRead(_apiFn, _payload) {
   // Disabled by default. A future stage may wire this after a separate smoke.
-  if (!ROUTER_SHADOW_READ_ENABLED) {
+  if (!isRouterShadowReadFeatureEnabled()) {
     return {
       ok: false,
       skipped: true,
@@ -102,6 +112,9 @@ async function routerShadowRead(_apiFn, _payload) {
 if (typeof window !== "undefined") {
   window.EdgeRouterShadowRead = {
     ROUTER_SHADOW_READ_ENABLED,
+    ROUTER_SHADOW_READ_FEATURE_FLAG_NAME,
+    ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT,
+    isRouterShadowReadFeatureEnabled,
     buildRouterShadowReadPayload,
     extractRouterDecisionContract,
     isRouterDecisionShadowSafe,
@@ -112,6 +125,9 @@ if (typeof window !== "undefined") {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     ROUTER_SHADOW_READ_ENABLED,
+    ROUTER_SHADOW_READ_FEATURE_FLAG_NAME,
+    ROUTER_SHADOW_READ_FEATURE_FLAG_DEFAULT,
+    isRouterShadowReadFeatureEnabled,
     buildRouterShadowReadPayload,
     extractRouterDecisionContract,
     isRouterDecisionShadowSafe,

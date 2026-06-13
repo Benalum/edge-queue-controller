@@ -1,0 +1,15 @@
+{
+  "enabled_by_default": false,
+  "feature_flag_boundary": "frontend_router_shadow_read",
+  "feature_flag_default_disabled": true,
+  "feature_flag_function_present": true,
+  "next_recommended_stage": "8P_backend_or_frontend_flag_plan_without_enabling_traffic",
+  "router_endpoint_in_frontend": false,
+  "safety": {
+    "dispatch_enabled": false,
+    "model_calls_enabled": false,
+    "router_traffic_enabled": false
+  },
+  "stage": "8O",
+  "stub_disabled": true
+}
