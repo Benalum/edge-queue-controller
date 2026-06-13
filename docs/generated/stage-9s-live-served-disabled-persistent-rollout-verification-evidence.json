@@ -1,0 +1,13 @@
+{
+  "env_absent": "true",
+  "final_result": "pass",
+  "generated_at": "2026-06-13T05:10:19.592797+00:00",
+  "health_code": "200",
+  "live_app_code": "200",
+  "live_disabled_runtime": "pass",
+  "live_stub_code": "200",
+  "post_code": "404",
+  "purpose": "live-served disabled persistent rollout verification",
+  "queue_clean": "true",
+  "stage": "9S"
+}
