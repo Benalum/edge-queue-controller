@@ -10316,3 +10316,78 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   }
 })();
 // End Stage 9K disabled operator-gated browser shadow-read activation boundary.
+
+// Stage 9R disabled persistent operator-gated rollout boundary.
+// This boundary reserves the persistent rollout layer while keeping all
+// persistent activation state false by default. It does not store the backend
+// router dry-run endpoint in app.js.
+(function () {
+  "use strict";
+
+  const PERSISTENT_OPERATOR_GATED_ROLLOUT_ENABLED = false;
+  const PERSISTENT_OPERATOR_GATED_ROLLOUT_STATUS = "disabled";
+  const PERSISTENT_OPERATOR_GATED_ROLLOUT_REASON =
+    "persistent_operator_gated_rollout_disabled";
+  const PERSISTENT_OPERATOR_GATED_ROLLOUT_ALLOWED_SURFACES = [
+    "manual-diagnostic"
+  ];
+
+  function getPersistentRolloutNamespace() {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    return window.EdgeRouterShadowReadPersistentRollout || null;
+  }
+
+  function getOperatorGateNamespace() {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    return window.EdgeRouterShadowReadOperatorGate || null;
+  }
+
+  function persistentOperatorGatedRolloutEnabled(surface) {
+    const rollout = getPersistentRolloutNamespace();
+    const gate = getOperatorGateNamespace();
+    const surfaceName = String(surface || "");
+
+    return !!(
+      rollout &&
+      rollout.PERSISTENT_OPERATOR_GATED_ROLLOUT_ENABLED === true &&
+      rollout.PERSISTENT_OPERATOR_GATED_ROLLOUT_ALLOWED_SURFACES.indexOf(surfaceName) !== -1 &&
+      gate &&
+      gate.OPERATOR_BROWSER_SHADOW_READ_ACTIVATION_ENABLED === true
+    );
+  }
+
+  function buildPersistentRolloutSkip(surface) {
+    return {
+      ok: true,
+      skipped: true,
+      reason: PERSISTENT_OPERATOR_GATED_ROLLOUT_REASON,
+      status: PERSISTENT_OPERATOR_GATED_ROLLOUT_STATUS,
+      surface: String(surface || ""),
+      dry_run: true,
+      dispatch_requested: false,
+      dispatch_performed: false
+    };
+  }
+
+  if (typeof window !== "undefined") {
+    window.EdgeRouterShadowReadPersistentRollout = Object.assign(
+      {},
+      window.EdgeRouterShadowReadPersistentRollout || {},
+      {
+        PERSISTENT_OPERATOR_GATED_ROLLOUT_ENABLED,
+        PERSISTENT_OPERATOR_GATED_ROLLOUT_STATUS,
+        PERSISTENT_OPERATOR_GATED_ROLLOUT_REASON,
+        PERSISTENT_OPERATOR_GATED_ROLLOUT_ALLOWED_SURFACES,
+        persistentOperatorGatedRolloutEnabled,
+        buildPersistentRolloutSkip
+      }
+    );
+  }
+})();
+// End Stage 9R disabled persistent operator-gated rollout boundary.
