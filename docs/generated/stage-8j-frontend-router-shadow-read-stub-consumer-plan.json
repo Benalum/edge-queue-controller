@@ -1,0 +1,135 @@
+{
+  "stage": "8J",
+  "stub_enabled": false,
+  "source_fixture_stage": "8G",
+  "source_audit_stage": "8H",
+  "verified_selected_paths": [
+    "companion_chat",
+    "study_command",
+    "unsupported"
+  ],
+  "first_safe_wiring_plan": {
+    "enabled_by_default": false,
+    "dispatch_allowed": false,
+    "model_call_allowed": false,
+    "user_visible_output_allowed": false,
+    "preferred_initial_surface": "study",
+    "preferred_hook_type": "near_existing_study_command_api_call",
+    "notes": [
+      "Keep existing Study command behavior unchanged.",
+      "Router shadow-read may observe only after a separate wiring stage.",
+      "Do not dispatch based on router output.",
+      "Do not block the user action on router response."
+    ]
+  },
+  "candidate_hooks": {
+    "study": [
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace existing Study command dispatch",
+        "hook_type": "near_existing_study_command_api_call",
+        "line": 4008,
+        "surface": "study"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace existing Study command dispatch",
+        "hook_type": "near_existing_study_command_api_call",
+        "line": 4106,
+        "surface": "study"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace existing Study command dispatch",
+        "hook_type": "near_existing_study_command_api_call",
+        "line": 4218,
+        "surface": "study"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace existing Study command dispatch",
+        "hook_type": "near_existing_study_command_api_call",
+        "line": 9648,
+        "surface": "study"
+      }
+    ],
+    "companion": [
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+        "hook_type": "near_companion_surface_or_submit_flow",
+        "line": 15,
+        "surface": "companion"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+        "hook_type": "near_companion_surface_or_submit_flow",
+        "line": 56,
+        "surface": "companion"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+        "hook_type": "near_companion_surface_or_submit_flow",
+        "line": 62,
+        "surface": "companion"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+        "hook_type": "near_companion_surface_or_submit_flow",
+        "line": 63,
+        "surface": "companion"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+        "hook_type": "near_companion_surface_or_submit_flow",
+        "line": 129,
+        "surface": "companion"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+        "hook_type": "near_companion_surface_or_submit_flow",
+        "line": 155,
+        "surface": "companion"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+        "hook_type": "near_companion_surface_or_submit_flow",
+        "line": 158,
+        "surface": "companion"
+      },
+      {
+        "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+        "hook_type": "near_companion_surface_or_submit_flow",
+        "line": 159,
+        "surface": "companion"
+      }
+    ],
+    "shared": [
+      {
+        "future_behavior": "only consider passive observation; avoid changing API semantics",
+        "hook_type": "shared_api_helper_observation_point",
+        "line": 324,
+        "surface": "shared"
+      },
+      {
+        "future_behavior": "only consider passive observation; avoid changing API semantics",
+        "hook_type": "shared_api_helper_observation_point",
+        "line": 569,
+        "surface": "shared"
+      },
+      {
+        "future_behavior": "only consider passive observation; avoid changing API semantics",
+        "hook_type": "shared_api_helper_observation_point",
+        "line": 590,
+        "surface": "shared"
+      },
+      {
+        "future_behavior": "only consider passive observation; avoid changing API semantics",
+        "hook_type": "shared_api_helper_observation_point",
+        "line": 623,
+        "surface": "shared"
+      },
+      {
+        "future_behavior": "only consider passive observation; avoid changing API semantics",
+        "hook_type": "shared_api_helper_observation_point",
+        "line": 639,
+        "surface": "shared"
+      }
+    ]
+  }
+}
