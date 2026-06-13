@@ -1,0 +1,33 @@
+{
+  "decision": "do_not_enable_real_router_traffic_yet",
+  "frontend_state": {
+    "app_contains_router_dry_run_endpoint": false,
+    "app_has_stage8l_observer": true,
+    "stub_disabled": true,
+    "stub_loaded_in_index": true
+  },
+  "next_recommended_stage": "8O_feature_flag_boundary_off_by_default",
+  "safety": {
+    "companion_behavior_replaced": false,
+    "dispatch_enabled": false,
+    "model_calls_enabled": false,
+    "router_live_enabled": false,
+    "study_behavior_replaced": false
+  },
+  "stage": "8N",
+  "tags": {
+    "controller-stage-8a-universal-intent-router-reentry-audit-2026-06-12": true,
+    "controller-stage-8b-universal-intent-router-decision-maker-contract-2026-06-12": true,
+    "controller-stage-8c-router-response-schema-comparison-audit-2026-06-12": true,
+    "controller-stage-8d-router-decision-contract-adapter-helper-2026-06-12": true,
+    "controller-stage-8e-temporary-router-decision-contract-http-smoke-2026-06-12": true,
+    "controller-stage-8f-router-response-nested-decision-contract-2026-06-12": true,
+    "controller-stage-8g-router-decision-contract-consumer-readiness-2026-06-12": true,
+    "controller-stage-8h-frontend-router-shadow-read-hook-audit-2026-06-12": true,
+    "controller-stage-8i-disabled-frontend-router-shadow-read-stub-2026-06-12": true,
+    "controller-stage-8j-frontend-router-shadow-read-stub-consumer-plan-2026-06-12": true,
+    "controller-stage-8k-load-disabled-router-shadow-read-stub-2026-06-12": true,
+    "controller-stage-8l-disabled-study-router-shadow-read-observation-2026-06-12": true,
+    "controller-stage-8m-live-frontend-router-shadow-read-network-audit-2026-06-12": true
+  }
+}
