@@ -10290,6 +10290,158 @@ def _system_queue_depth_summary():
 # STAGE_5P11T_LANE_AWARE_QUEUE_VISIBILITY_END
 
 
+
+# STAGE_5P12D_REGISTERED_WORKER_CAPACITY_STATUS_BEGIN
+def _stage5p12d_sql_literal(value):
+    if value is None:
+        return "NULL"
+    return "'" + str(value).replace("'", "''") + "'"
+
+
+def _stage5p12d_capability_subset(capabilities):
+    if not isinstance(capabilities, dict):
+        capabilities = {}
+
+    safe_keys = (
+        "job_types",
+        "stage",
+        "mode",
+        "max_jobs_per_run",
+        "node_max_concurrent_jobs",
+        "queue_lane",
+        "supported_lanes",
+        "supported_model_tiers",
+        "allowed_models",
+        "lane_capacity",
+        "runtime_backend",
+        "ollama_num_parallel",
+    )
+
+    return {key: capabilities.get(key) for key in safe_keys if key in capabilities}
+
+
+def _stage5p12d_registered_laptop_queue_worker_capacity(worker_id, worker_node_id):
+    result = {
+        "source": "app_workers.capabilities_json/app_worker_nodes.capabilities",
+        "worker_id": worker_id or None,
+        "worker_node_id": worker_node_id or None,
+        "worker": None,
+        "node": None,
+        "capabilities": {},
+    }
+
+    if not worker_id and not worker_node_id:
+        result["detail"] = "No registered worker identifiers were available."
+        return result
+
+    try:
+        import json as _stage5p12d_json
+        from edge_modules.chat_queue_persistence import _psql_at
+
+        worker = None
+        node = None
+
+        if worker_id:
+            raw_worker = _psql_at(
+                f"""
+                SELECT COALESCE((
+                  SELECT row_to_json(t)::text
+                  FROM (
+                    SELECT
+                      id,
+                      name,
+                      status,
+                      current_job_id,
+                      worker_node_id,
+                      last_heartbeat_at,
+                      idle_shutdown_seconds,
+                      capabilities_json
+                    FROM app_workers
+                    WHERE id = {_stage5p12d_sql_literal(worker_id)}
+                    LIMIT 1
+                  ) t
+                ), '');
+                """
+            ).strip()
+            if raw_worker:
+                worker = _stage5p12d_json.loads(raw_worker)
+
+        lookup_node_id = worker_node_id
+        if not lookup_node_id and isinstance(worker, dict):
+            lookup_node_id = worker.get("worker_node_id")
+
+        if lookup_node_id:
+            raw_node = _psql_at(
+                f"""
+                SELECT COALESCE((
+                  SELECT row_to_json(t)::text
+                  FROM (
+                    SELECT
+                      id,
+                      name,
+                      node_type,
+                      host_machine,
+                      tailscale_ip,
+                      status,
+                      last_seen_at,
+                      capabilities
+                    FROM app_worker_nodes
+                    WHERE id = {_stage5p12d_sql_literal(lookup_node_id)}
+                    LIMIT 1
+                  ) t
+                ), '');
+                """
+            ).strip()
+            if raw_node:
+                node = _stage5p12d_json.loads(raw_node)
+
+        worker_caps = worker.get("capabilities_json") if isinstance(worker, dict) else None
+        node_caps = node.get("capabilities") if isinstance(node, dict) else None
+
+        if isinstance(worker_caps, dict):
+            capabilities = worker_caps
+        elif isinstance(node_caps, dict):
+            capabilities = node_caps
+        else:
+            capabilities = {}
+
+        result.update({
+            "worker_id": (worker or {}).get("id") or worker_id or None,
+            "worker_node_id": (worker or {}).get("worker_node_id") or lookup_node_id or None,
+            "worker": (
+                {
+                    "name": worker.get("name"),
+                    "status": worker.get("status"),
+                    "current_job_id": worker.get("current_job_id"),
+                    "last_heartbeat_at": worker.get("last_heartbeat_at"),
+                    "idle_shutdown_seconds": worker.get("idle_shutdown_seconds"),
+                }
+                if isinstance(worker, dict)
+                else None
+            ),
+            "node": (
+                {
+                    "id": node.get("id"),
+                    "name": node.get("name"),
+                    "node_type": node.get("node_type"),
+                    "host_machine": node.get("host_machine"),
+                    "tailscale_ip": node.get("tailscale_ip"),
+                    "status": node.get("status"),
+                    "last_seen_at": node.get("last_seen_at"),
+                }
+                if isinstance(node, dict)
+                else None
+            ),
+            "capabilities": _stage5p12d_capability_subset(capabilities),
+        })
+
+    except Exception as exc:
+        result["error"] = str(exc)
+
+    return result
+# STAGE_5P12D_REGISTERED_WORKER_CAPACITY_STATUS_END
+
+
 def _system_ct101_laptop_queue_worker_status(checked_at, *, pveso_state, ct101_state):
     queue_summary = _system_queue_depth_summary()
     base = {
@@ -10451,6 +10603,11 @@ printf 'last_log=%s\n' "$last_log"
         if str(facts.get("max_jobs") or "").isdigit():
             max_jobs_value = int(facts.get("max_jobs"))
 
+        registered_capacity = _stage5p12d_registered_laptop_queue_worker_capacity(
+            facts.get("worker_id") or None,
+            facts.get("worker_node_id") or None,
+        )
+
         base.update({
             "state": state,
             "detail": ", ".join(detail_parts),
@@ -10462,6 +10619,7 @@ printf 'last_log=%s\n' "$last_log"
             "worker_node_id": facts.get("worker_node_id") or None,
             "model": facts.get("model") or None,
             "max_jobs_per_run": max_jobs_value,
+            "registered_capacity": registered_capacity,
             "real_user_jobs_enabled": facts.get("real_user_jobs") == "1",
             "synthetic_only": facts.get("synthetic_only") == "1",
             "base_url_set": facts.get("base_url_set") == "yes",
