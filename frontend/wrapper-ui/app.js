@@ -10231,3 +10231,88 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   }
 })();
 // End Stage 9D disabled narrow browser-surface router shadow-read wiring.
+
+// Stage 9K disabled operator-gated browser shadow-read activation boundary.
+// This wraps the Stage 9D browser-surface bridge with an operator gate that
+// remains false by default. It does not store the backend endpoint in app.js.
+(function () {
+  "use strict";
+
+  const OPERATOR_BROWSER_SHADOW_READ_ACTIVATION_ENABLED = false;
+  const OPERATOR_BROWSER_SHADOW_READ_DEFAULT_REASON = "operator_browser_shadow_read_activation_disabled";
+
+  function getOperatorGateNamespace() {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    return window.EdgeRouterShadowReadOperatorGate || null;
+  }
+
+  function getBrowserSurfaceNamespace() {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    return window.EdgeRouterShadowReadSurface || null;
+  }
+
+  function operatorBrowserShadowReadActivationEnabled() {
+    const gate = getOperatorGateNamespace();
+
+    return !!(
+      gate &&
+      gate.OPERATOR_BROWSER_SHADOW_READ_ACTIVATION_ENABLED === true
+    );
+  }
+
+  function buildOperatorGateSkip(surface) {
+    return {
+      ok: true,
+      skipped: true,
+      reason: OPERATOR_BROWSER_SHADOW_READ_DEFAULT_REASON,
+      surface: String(surface || ""),
+      dry_run: true,
+      dispatch_requested: false,
+      dispatch_performed: false
+    };
+  }
+
+  if (typeof window !== "undefined") {
+    window.EdgeRouterShadowReadOperatorGate = Object.assign(
+      {},
+      window.EdgeRouterShadowReadOperatorGate || {},
+      {
+        OPERATOR_BROWSER_SHADOW_READ_ACTIVATION_ENABLED,
+        OPERATOR_BROWSER_SHADOW_READ_DEFAULT_REASON,
+        operatorBrowserShadowReadActivationEnabled
+      }
+    );
+
+    const surface = getBrowserSurfaceNamespace();
+
+    if (surface &&
+        typeof surface.requestBrowserSurfaceRouterShadowRead === "function" &&
+        surface.__stage9kOperatorGateWrapped !== true) {
+      const originalRequestBrowserSurfaceRouterShadowRead =
+        surface.requestBrowserSurfaceRouterShadowRead;
+
+      surface.requestBrowserSurfaceRouterShadowRead =
+        async function requestOperatorGatedBrowserSurfaceRouterShadowRead(surfaceName, input, options) {
+          if (!operatorBrowserShadowReadActivationEnabled()) {
+            return buildOperatorGateSkip(surfaceName);
+          }
+
+          return originalRequestBrowserSurfaceRouterShadowRead.call(
+            this,
+            surfaceName,
+            input,
+            options
+          );
+        };
+
+      surface.__stage9kOperatorGateWrapped = true;
+    }
+  }
+})();
+// End Stage 9K disabled operator-gated browser shadow-read activation boundary.
