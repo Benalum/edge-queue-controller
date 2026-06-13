@@ -1,0 +1,23 @@
+{
+  "decision": "no_go_for_live_backend_router_dry_run_enablement",
+  "frontend": {
+    "contains_router_endpoint": false,
+    "feature_flag_default_false": true,
+    "stub_enabled_flag_false": true
+  },
+  "live_controller": {
+    "router_env_enabled": false
+  },
+  "next_recommended_stage": "8S_live_backend_activation_and_rollback_plan_only",
+  "reason": "temporary_controller_validation_passed_but_live_enablement_requires_separate_manual_activation_stage",
+  "safety": {
+    "browser_router_traffic_enabled": false,
+    "dispatch_enabled": false,
+    "live_controller_restarted": false,
+    "model_calls_enabled": false,
+    "router_live_enabled": false,
+    "wrapper_restarted": false
+  },
+  "stage": "8R",
+  "stage_type": "live_backend_router_dry_run_go_no_go_decision"
+}
