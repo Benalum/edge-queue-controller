@@ -1,0 +1,866 @@
+{
+  "counts": {
+    "app_js": {
+      "api_system_status": 0,
+      "bytes": 323331,
+      "document_refs": 167,
+      "dom_content_loaded": 10,
+      "exists": true,
+      "fetch_calls": 26,
+      "lines": 10394,
+      "local_storage": 39,
+      "queue_status_api": 2,
+      "queued_chat_config_js": 0,
+      "queued_chat_status_js": 0,
+      "set_interval": 7,
+      "set_timeout": 33,
+      "window_globals": 155,
+      "window_load": 1
+    },
+    "index_html": {
+      "api_system_status": 0,
+      "bytes": 4078,
+      "document_refs": 0,
+      "dom_content_loaded": 0,
+      "exists": true,
+      "fetch_calls": 0,
+      "lines": 122,
+      "local_storage": 0,
+      "queue_status_api": 0,
+      "queued_chat_config_js": 1,
+      "queued_chat_status_js": 1,
+      "set_interval": 0,
+      "set_timeout": 0,
+      "window_globals": 0,
+      "window_load": 0
+    },
+    "queued_chat_config": {
+      "api_system_status": 0,
+      "bytes": 911,
+      "document_refs": 0,
+      "dom_content_loaded": 0,
+      "exists": true,
+      "fetch_calls": 0,
+      "lines": 37,
+      "local_storage": 0,
+      "queue_status_api": 0,
+      "queued_chat_config_js": 0,
+      "queued_chat_status_js": 0,
+      "set_interval": 0,
+      "set_timeout": 0,
+      "window_globals": 0,
+      "window_load": 0
+    },
+    "queued_chat_status": {
+      "api_system_status": 0,
+      "bytes": 3840,
+      "document_refs": 0,
+      "dom_content_loaded": 0,
+      "exists": true,
+      "fetch_calls": 0,
+      "lines": 148,
+      "local_storage": 0,
+      "queue_status_api": 0,
+      "queued_chat_config_js": 0,
+      "queued_chat_status_js": 0,
+      "set_interval": 0,
+      "set_timeout": 0,
+      "window_globals": 0,
+      "window_load": 0
+    },
+    "stub": {
+      "api_system_status": 0,
+      "bytes": 6830,
+      "document_refs": 0,
+      "dom_content_loaded": 0,
+      "exists": true,
+      "fetch_calls": 0,
+      "lines": 231,
+      "local_storage": 0,
+      "queue_status_api": 0,
+      "queued_chat_config_js": 0,
+      "queued_chat_status_js": 0,
+      "set_interval": 0,
+      "set_timeout": 0,
+      "window_globals": 3,
+      "window_load": 0
+    }
+  },
+  "env_absent": "true",
+  "final_result": "pass",
+  "generated_at": "2026-06-13T05:42:19.024200+00:00",
+  "health_code": "200",
+  "post_code": "404",
+  "purpose": "deferred queued-status script loader implementation preflight",
+  "queue_clean": "true",
+  "rollout_status_code": "200",
+  "samples": {
+    "app_js": {
+      "api_system_status": [],
+      "document_refs": [
+        {
+          "line": 25,
+          "text": "const $ = (id) => document.getElementById(id);"
+        },
+        {
+          "line": 117,
+          "text": "    document.cookie ="
+        },
+        {
+          "line": 120,
+          "text": "    document.cookie ="
+        },
+        {
+          "line": 347,
+          "text": "  document.querySelectorAll(\"[data-route]\").forEach((link) => {"
+        },
+        {
+          "line": 398,
+          "text": "  const adminLink = document.getElementById(\"adminNavLink\");"
+        },
+        {
+          "line": 399,
+          "text": "  const supportLink = document.querySelector('[data-route=\"/support\"]');"
+        },
+        {
+          "line": 1887,
+          "text": "      ? (document.getElementById(\"cleanSupportReplyStatus\")?.value || \"waiting_user\")"
+        },
+        {
+          "line": 1964,
+          "text": "    const existing = document.querySelector('script[data-google-publisher-tag=\"true\"]');"
+        },
+        {
+          "line": 1972,
+          "text": "    const script = document.createElement(\"script\");"
+        },
+        {
+          "line": 1978,
+          "text": "    document.head.appendChild(script);"
+        },
+        {
+          "line": 2587,
+          "text": "  const root = document.querySelector(\".study-wrapper-preview\");"
+        },
+        {
+          "line": 2623,
+          "text": "    const notice = document.createElement(\"div\");"
+        },
+        {
+          "line": 2636,
+          "text": "  const el = document.getElementById(id);"
+        },
+        {
+          "line": 2688,
+          "text": "  const deckSummary = document.getElementById(\"deckSummary\");"
+        },
+        {
+          "line": 2711,
+          "text": "  const titleInput = document.getElementById(\"deckTitleInput\");"
+        },
+        {
+          "line": 2712,
+          "text": "  const descriptionInput = document.getElementById(\"deckDescriptionInput\");"
+        },
+        {
+          "line": 2713,
+          "text": "  const statusText = document.getElementById(\"workerStatusText\");"
+        },
+        {
+          "line": 2762,
+          "text": "  const statusText = document.getElementById(\"workerStatusText\");"
+        },
+        {
+          "line": 2763,
+          "text": "  const deckSelect = document.getElementById(\"deckSelect\");"
+        },
+        {
+          "line": 2803,
+          "text": "  const el = document.getElementById(\"reviewCard\");"
+        },
+        {
+          "line": 2850,
+          "text": "  document.getElementById(\"studyPreviewShowAnswerBtn\")?.addEventListener(\"click\", () => {"
+        },
+        {
+          "line": 2855,
+          "text": "  document.getElementById(\"studyPreviewSkipCardBtn\")?.addEventListener(\"click\", () => {"
+        },
+        {
+          "line": 2861,
+          "text": "  document.getElementById(\"studyPreviewWrongBtn\")?.addEventListener(\"click\", () => {"
+        },
+        {
+          "line": 2865,
+          "text": "  document.getElementById(\"studyPreviewCorrectBtn\")?.addEventListener(\"click\", () => {"
+        },
+        {
+          "line": 2871,
+          "text": "  const deckSelect = document.getElementById(\"deckSelect\");"
+        },
+        {
+          "line": 2872,
+          "text": "  const reviewMode = document.getElementById(\"reviewMode\");"
+        },
+        {
+          "line": 2873,
+          "text": "  const statusText = document.getElementById(\"workerStatusText\");"
+        },
+        {
+          "line": 2918,
+          "text": "  const mode = document.getElementById(\"reviewMode\");"
+        },
+        {
+          "line": 2919,
+          "text": "  const button = document.getElementById(\"loadQueueBtn\");"
+        },
+        {
+          "line": 2939,
+          "text": "  const deckSelect = document.getElementById(\"deckSelect\");"
+        }
+      ],
+      "dom_content_loaded": [
+        {
+          "line": 7252,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", runWrapperStartupAuthRefreshNow, { once: true });"
+        },
+        {
+          "line": 7461,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", () => {"
+        },
+        {
+          "line": 8469,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", scheduleNormalizeHeaderActiveState);"
+        },
+        {
+          "line": 8527,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", scheduleCreditsPillRouteState);"
+        },
+        {
+          "line": 8617,
+          "text": "    document.addEventListener(\"DOMContentLoaded\", scheduleSync);"
+        },
+        {
+          "line": 8719,
+          "text": "    document.addEventListener(\"DOMContentLoaded\", syncNavActive);"
+        },
+        {
+          "line": 9066,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", stageSchedule);"
+        },
+        {
+          "line": 9381,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", function () {"
+        },
+        {
+          "line": 9762,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", install);"
+        },
+        {
+          "line": 10070,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", install);"
+        }
+      ],
+      "fetch_calls": [
+        {
+          "line": 325,
+          "text": "  const response = await fetch(`${API_BASE}${path}`, {"
+        },
+        {
+          "line": 2726,
+          "text": "    const res = await fetch(\"/api/study/decks\", {"
+        },
+        {
+          "line": 2769,
+          "text": "    const res = await fetch(`/api/study/cards/${encodeURIComponent(cardId)}/reviews`, {"
+        },
+        {
+          "line": 2886,
+          "text": "    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/review-queue?mode=${encodeURIComponent(mode)}&limit=10`, {"
+        },
+        {
+          "line": 2964,
+          "text": "    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/cards`, {"
+        },
+        {
+          "line": 3061,
+          "text": "    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/card-stats`, {"
+        },
+        {
+          "line": 3128,
+          "text": "      fetch(\"/api/study/progress\", { credentials: \"include\", cache: \"no-store\" }),"
+        },
+        {
+          "line": 3129,
+          "text": "      fetch(\"/api/study/decks\", { credentials: \"include\", cache: \"no-store\" })"
+        },
+        {
+          "line": 3206,
+          "text": "    const res = await fetch(\"/study/study-dashboard.partial.html\", {"
+        },
+        {
+          "line": 3500,
+          "text": "    const res = await fetch(url, {"
+        },
+        {
+          "line": 3550,
+          "text": "    const res = await fetch(`/api/chat/queued/${encodeURIComponent(jobId)}`, {"
+        },
+        {
+          "line": 3815,
+          "text": "  const response = await fetch(\"/api/study/decks\", {"
+        },
+        {
+          "line": 4016,
+          "text": "  const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 4114,
+          "text": "  const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 4209,
+          "text": "  const response = await fetch(\"/api/study/session/status\", {"
+        },
+        {
+          "line": 4226,
+          "text": "  const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 4406,
+          "text": "    const res = await fetch(\"/api/chat/queued\", {"
+        },
+        {
+          "line": 6913,
+          "text": "    fetch(`${API_BASE}/auth/logout`, {"
+        },
+        {
+          "line": 7056,
+          "text": "        const response = await fetch(url, {"
+        },
+        {
+          "line": 7543,
+          "text": "    const response = await fetch(\"/api/chat/queued\", {"
+        },
+        {
+          "line": 7620,
+          "text": "    const response = await fetch(`/api/chat/queued/${encodeURIComponent(cleanJobId)}`, {"
+        },
+        {
+          "line": 9279,
+          "text": "      const response = await fetch(\"/api/study/session/status\", {"
+        },
+        {
+          "line": 9543,
+          "text": "      const response = await fetch(\"/api/study/session/status\", {"
+        },
+        {
+          "line": 9623,
+          "text": "      const response = await fetch(\"/api/study/session/start\", {"
+        },
+        {
+          "line": 9656,
+          "text": "      const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 9990,
+          "text": "      const response = await fetch(\"/api/study/decks\", {"
+        }
+      ],
+      "local_storage": [
+        {
+          "line": 50,
+          "text": "  token: localStorage.getItem(\"edgeStudyToken\") || \"\","
+        },
+        {
+          "line": 3408,
+          "text": "      || window.localStorage.getItem(\"edgeStudyToken\")"
+        },
+        {
+          "line": 3664,
+          "text": "    return String(window.localStorage.getItem(\"stage5p9aSelectedStudyDeckId\") || \"\").trim();"
+        },
+        {
+          "line": 3692,
+          "text": "    const value = String(window.localStorage.getItem(stage5p11qReviewStyleKey()) || \"\").trim().toLowerCase();"
+        },
+        {
+          "line": 3703,
+          "text": "    window.localStorage.setItem(stage5p11qReviewStyleKey(), clean);"
+        },
+        {
+          "line": 3773,
+          "text": "    window.localStorage.setItem(\"stage5p9aSelectedStudyDeckId\", clean);"
+        },
+        {
+          "line": 5391,
+          "text": "    localStorage.setItem(\"edgeStudyToken\", token);"
+        },
+        {
+          "line": 5436,
+          "text": "  localStorage.removeItem(\"edgeStudyToken\");"
+        },
+        {
+          "line": 5456,
+          "text": "    localStorage.removeItem(\"edgeStudyToken\");"
+        },
+        {
+          "line": 6844,
+          "text": "    localStorage.setItem(\"edgeStudyToken\", token);"
+        },
+        {
+          "line": 6893,
+          "text": "  const oldToken = authState?.token || localStorage.getItem(\"edgeStudyToken\") || \"\";"
+        },
+        {
+          "line": 6898,
+          "text": "  localStorage.removeItem(\"edgeStudyToken\");"
+        },
+        {
+          "line": 6976,
+          "text": "  let id = localStorage.getItem(WEB_PRESENCE_VISITOR_KEY);"
+        },
+        {
+          "line": 6984,
+          "text": "    localStorage.setItem(WEB_PRESENCE_VISITOR_KEY, id);"
+        },
+        {
+          "line": 7236,
+          "text": "    localStorage.removeItem(\"edgeStudyToken\");"
+        },
+        {
+          "line": 7276,
+          "text": "  const token = localStorage.getItem(\"edgeStudyToken\") || authState?.token || \"\";"
+        },
+        {
+          "line": 8779,
+          "text": "      return JSON.parse(window.localStorage.getItem(snapshotKey) || \"{}\") || {};"
+        },
+        {
+          "line": 8791,
+          "text": "      window.localStorage.setItem(snapshotKey, JSON.stringify(merged));"
+        },
+        {
+          "line": 9158,
+          "text": "        const token = readTokenCandidate(window.localStorage.getItem(key));"
+        },
+        {
+          "line": 9162,
+          "text": "      for (let i = 0; i < window.localStorage.length; i += 1) {"
+        },
+        {
+          "line": 9163,
+          "text": "        const key = window.localStorage.key(i);"
+        },
+        {
+          "line": 9165,
+          "text": "        const token = readTokenCandidate(window.localStorage.getItem(key));"
+        },
+        {
+          "line": 9169,
+          "text": "      /* localStorage may be unavailable */"
+        },
+        {
+          "line": 9457,
+          "text": "        const token = readTokenCandidate(window.localStorage.getItem(key));"
+        },
+        {
+          "line": 9461,
+          "text": "      for (let i = 0; i < window.localStorage.length; i += 1) {"
+        },
+        {
+          "line": 9462,
+          "text": "        const key = window.localStorage.key(i);"
+        },
+        {
+          "line": 9464,
+          "text": "        const token = readTokenCandidate(window.localStorage.getItem(key));"
+        },
+        {
+          "line": 9468,
+          "text": "      /* localStorage may be unavailable */"
+        },
+        {
+          "line": 9604,
+          "text": "      return String(window.localStorage.getItem(selectedDeckKey) || \"\").trim();"
+        },
+        {
+          "line": 9820,
+          "text": "      const edgeStudyToken = readTokenCandidate(window.localStorage.getItem(\"edgeStudyToken\"));"
+        }
+      ],
+      "queue_status_api": [
+        {
+          "line": 3496,
+          "text": "    ? `/api/chat/queue/status?job_id=${encodeURIComponent(cleanJobId)}`"
+        },
+        {
+          "line": 3497,
+          "text": "    : \"/api/chat/queue/status\";"
+        }
+      ],
+      "queued_chat_config_js": [],
+      "queued_chat_status_js": [],
+      "set_interval": [
+        {
+          "line": 3531,
+          "text": "  stage5p10fQueuePollTimer = window.setInterval(async function () {"
+        },
+        {
+          "line": 5495,
+          "text": "setInterval(loadSystemStatus, 60000);"
+        },
+        {
+          "line": 6613,
+          "text": "setInterval(cleanHeartbeat, 60000);"
+        },
+        {
+          "line": 7104,
+          "text": "setInterval(() => {"
+        },
+        {
+          "line": 8479,
+          "text": "  window.setInterval(normalizeHeaderActiveState, 1500);"
+        },
+        {
+          "line": 8532,
+          "text": "  window.setInterval(updateCreditsPillRouteState, 1500);"
+        },
+        {
+          "line": 9755,
+          "text": "    window.setInterval(function () {"
+        }
+      ],
+      "set_timeout": [
+        {
+          "line": 598,
+          "text": "            setTimeout(() => {"
+        },
+        {
+          "line": 2154,
+          "text": "    setTimeout(() => {"
+        },
+        {
+          "line": 3578,
+          "text": "    await new Promise((resolve) => setTimeout(resolve, 3000));"
+        },
+        {
+          "line": 5289,
+          "text": "      setTimeout(() => {"
+        },
+        {
+          "line": 5307,
+          "text": "    setTimeout(() => {"
+        },
+        {
+          "line": 5318,
+          "text": "    setTimeout(() => {"
+        },
+        {
+          "line": 6615,
+          "text": "setTimeout(async () => {"
+        },
+        {
+          "line": 6698,
+          "text": "setTimeout(() => {"
+        },
+        {
+          "line": 7089,
+          "text": "setTimeout(() => {"
+        },
+        {
+          "line": 7093,
+          "text": "setTimeout(() => {"
+        },
+        {
+          "line": 7098,
+          "text": "setTimeout(() => {"
+        },
+        {
+          "line": 7246,
+          "text": "  setTimeout(() => {"
+        },
+        {
+          "line": 7437,
+          "text": "    setTimeout(() => {"
+        },
+        {
+          "line": 8449,
+          "text": "    window.setTimeout(normalizeHeaderActiveState, 50);"
+        },
+        {
+          "line": 8450,
+          "text": "    window.setTimeout(normalizeHeaderActiveState, 250);"
+        },
+        {
+          "line": 8521,
+          "text": "    window.setTimeout(updateCreditsPillRouteState, 50);"
+        },
+        {
+          "line": 8522,
+          "text": "    window.setTimeout(updateCreditsPillRouteState, 250);"
+        },
+        {
+          "line": 8591,
+          "text": "    window.setTimeout(syncHeaderNavActiveState, 0);"
+        },
+        {
+          "line": 8592,
+          "text": "    window.setTimeout(syncHeaderNavActiveState, 50);"
+        },
+        {
+          "line": 8622,
+          "text": "  window.setTimeout(scheduleSync, 250);"
+        },
+        {
+          "line": 8696,
+          "text": "    window.setTimeout(syncNavActive, 0);"
+        },
+        {
+          "line": 8697,
+          "text": "    window.setTimeout(syncNavActive, 50);"
+        },
+        {
+          "line": 8707,
+          "text": "    window.setTimeout(syncNavActive, 0);"
+        },
+        {
+          "line": 8714,
+          "text": "    window.setTimeout(syncNavActive, 0);"
+        },
+        {
+          "line": 8724,
+          "text": "  window.setTimeout(syncNavActive, 50);"
+        },
+        {
+          "line": 8725,
+          "text": "  window.setTimeout(syncNavActive, 250);"
+        },
+        {
+          "line": 9059,
+          "text": "    window.setTimeout(function () {"
+        },
+        {
+          "line": 9072,
+          "text": "      window.setTimeout(stageSchedule, 100);"
+        },
+        {
+          "line": 9357,
+          "text": "    refreshTimer = window.setTimeout(function () {"
+        },
+        {
+          "line": 9386,
+          "text": "  window.setTimeout(function () {"
+        }
+      ],
+      "window_globals": [
+        {
+          "line": 82,
+          "text": "  if (window.__globalHtmlErrorSanitizerInstalled) return;"
+        },
+        {
+          "line": 83,
+          "text": "  window.__globalHtmlErrorSanitizerInstalled = true;"
+        },
+        {
+          "line": 136,
+          "text": "    const cleanPath = String(window.location.pathname || \"/\").split(\"?\")[0].split(\"#\")[0] || \"/\";"
+        },
+        {
+          "line": 138,
+          "text": "      window.history.replaceState({}, \"\", cleanPath);"
+        },
+        {
+          "line": 288,
+          "text": "  const path = window.location.pathname || \"/\";"
+        },
+        {
+          "line": 642,
+          "text": "  if (typeof api === \"function\" && !window.__ahApiMutationCacheWrapped) {"
+        },
+        {
+          "line": 643,
+          "text": "    window.__ahApiMutationCacheWrapped = true;"
+        },
+        {
+          "line": 644,
+          "text": "    window.__ahOriginalApiForCache = api;"
+        },
+        {
+          "line": 648,
+          "text": "      const result = await window.__ahOriginalApiForCache(path, options);"
+        },
+        {
+          "line": 1954,
+          "text": "  if (window.googletag?.apiReady || window.googletag?.cmd) {"
+        },
+        {
+          "line": 1955,
+          "text": "    window.googletag = window.googletag || { cmd: [] };"
+        },
+        {
+          "line": 1956,
+          "text": "    window.googletag.cmd = window.googletag.cmd || [];"
+        },
+        {
+          "line": 1957,
+          "text": "    return Promise.resolve(window.googletag);"
+        },
+        {
+          "line": 1960,
+          "text": "  window.googletag = window.googletag || { cmd: [] };"
+        },
+        {
+          "line": 1961,
+          "text": "  window.googletag.cmd = window.googletag.cmd || [];"
+        },
+        {
+          "line": 1967,
+          "text": "      existing.addEventListener(\"load\", () => resolve(window.googletag), { once: true });"
+        },
+        {
+          "line": 1976,
+          "text": "    script.onload = () => resolve(window.googletag);"
+        },
+        {
+          "line": 1984,
+          "text": "  if (window.crypto?.randomUUID) {"
+        },
+        {
+          "line": 1985,
+          "text": "    return `google-gpt-${Date.now()}-${window.crypto.randomUUID()}`;"
+        },
+        {
+          "line": 3200,
+          "text": "  const isLiveStudyRoute = window.location.pathname === \"/study\";"
+        },
+        {
+          "line": 3408,
+          "text": "      || window.localStorage.getItem(\"edgeStudyToken\")"
+        },
+        {
+          "line": 3519,
+          "text": "    window.clearInterval(stage5p10fQueuePollTimer);"
+        },
+        {
+          "line": 3531,
+          "text": "  stage5p10fQueuePollTimer = window.setInterval(async function () {"
+        },
+        {
+          "line": 3541,
+          "text": "window.stage5p10fStartQueueStatusPolling = stage5p10fStartQueueStatusPolling;"
+        },
+        {
+          "line": 3542,
+          "text": "window.stage5p10fFetchQueueStatus = stage5p10fFetchQueueStatus;"
+        },
+        {
+          "line": 3543,
+          "text": "window.stage5p10fStopQueueStatusPolling = stage5p10fStopQueueStatusPolling;"
+        },
+        {
+          "line": 3664,
+          "text": "    return String(window.localStorage.getItem(\"stage5p9aSelectedStudyDeckId\") || \"\").trim();"
+        },
+        {
+          "line": 3692,
+          "text": "    const value = String(window.localStorage.getItem(stage5p11qReviewStyleKey()) || \"\").trim().toLowerCase();"
+        },
+        {
+          "line": 3703,
+          "text": "    window.localStorage.setItem(stage5p11qReviewStyleKey(), clean);"
+        },
+        {
+          "line": 3773,
+          "text": "    window.localStorage.setItem(\"stage5p9aSelectedStudyDeckId\", clean);"
+        }
+      ],
+      "window_load": [
+        {
+          "line": 1967,
+          "text": "      existing.addEventListener(\"load\", () => resolve(window.googletag), { once: true });"
+        }
+      ]
+    },
+    "index_html": {
+      "api_system_status": [],
+      "document_refs": [],
+      "dom_content_loaded": [],
+      "fetch_calls": [],
+      "local_storage": [],
+      "queue_status_api": [],
+      "queued_chat_config_js": [
+        {
+          "line": 118,
+          "text": "  <script src=\"/queued_chat_config.js\"></script>"
+        }
+      ],
+      "queued_chat_status_js": [
+        {
+          "line": 119,
+          "text": "<script src=\"/queued_chat_status.js\"></script>"
+        }
+      ],
+      "set_interval": [],
+      "set_timeout": [],
+      "window_globals": [],
+      "window_load": []
+    },
+    "queued_chat_config": {
+      "api_system_status": [],
+      "document_refs": [],
+      "dom_content_loaded": [],
+      "fetch_calls": [],
+      "local_storage": [],
+      "queue_status_api": [],
+      "queued_chat_config_js": [],
+      "queued_chat_status_js": [],
+      "set_interval": [],
+      "set_timeout": [],
+      "window_globals": [],
+      "window_load": []
+    },
+    "queued_chat_status": {
+      "api_system_status": [],
+      "document_refs": [],
+      "dom_content_loaded": [],
+      "fetch_calls": [],
+      "local_storage": [],
+      "queue_status_api": [],
+      "queued_chat_config_js": [],
+      "queued_chat_status_js": [],
+      "set_interval": [],
+      "set_timeout": [],
+      "window_globals": [],
+      "window_load": []
+    },
+    "stub": {
+      "api_system_status": [],
+      "document_refs": [],
+      "dom_content_loaded": [],
+      "fetch_calls": [],
+      "local_storage": [],
+      "queue_status_api": [],
+      "queued_chat_config_js": [],
+      "queued_chat_status_js": [],
+      "set_interval": [],
+      "set_timeout": [],
+      "window_globals": [
+        {
+          "line": 113,
+          "text": "  window.EdgeRouterShadowRead = {"
+        },
+        {
+          "line": 148,
+          "text": "    const shadow = window.EdgeRouterShadowRead || {};"
+        },
+        {
+          "line": 224,
+          "text": "  window.EdgeRouterShadowRead = Object.assign({}, window.EdgeRouterShadowRead || {}, {"
+        }
+      ],
+      "window_load": []
+    }
+  },
+  "stage": "10G"
+}
