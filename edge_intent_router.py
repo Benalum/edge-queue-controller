@@ -338,7 +338,7 @@ def _stage6f_router_response(body):
         }
     )
 
-    return {
+    result = {
         "ok": True,
         "dry_run": True,
         "dispatch_performed": False,
@@ -391,6 +391,17 @@ def _stage6f_router_response(body):
         ],
         "errors": [],
     }
+
+    # STAGE_8F_ROUTER_RESPONSE_DECISION_CONTRACT_V1
+    # Add a contract-shaped decision object while preserving the legacy response.
+    # This does not dispatch, does not call models, and remains gated by the disabled live endpoint.
+    decision_contract = _stage8d_router_decision_contract(result)
+    # The standalone adapter may include the original router_result for unit/debug use.
+    # When nested into the HTTP response, remove it to avoid a circular JSON object:
+    # result -> decision_contract -> router_result -> result.
+    decision_contract.pop("router_result", None)
+    result["decision_contract"] = decision_contract
+    return result
 
 
 def _stage6q_extract_study_text(payload):
