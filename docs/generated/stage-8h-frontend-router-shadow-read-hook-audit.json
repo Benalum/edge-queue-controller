@@ -1,0 +1,1459 @@
+{
+  "candidate_hooks": [
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace existing Study command dispatch",
+      "hook_type": "near_existing_study_command_api_call",
+      "line": 4008,
+      "surface": "study"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace existing Study command dispatch",
+      "hook_type": "near_existing_study_command_api_call",
+      "line": 4106,
+      "surface": "study"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace existing Study command dispatch",
+      "hook_type": "near_existing_study_command_api_call",
+      "line": 4218,
+      "surface": "study"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace existing Study command dispatch",
+      "hook_type": "near_existing_study_command_api_call",
+      "line": 9648,
+      "surface": "study"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 15,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 56,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 62,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 63,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 129,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 155,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 158,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 159,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 164,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 186,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 193,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 195,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 197,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 199,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 204,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 206,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 208,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 210,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 211,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "shadow-read decision_contract only; do not replace Companion chat behavior",
+      "hook_type": "near_companion_surface_or_submit_flow",
+      "line": 213,
+      "surface": "companion"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 324,
+      "surface": "shared"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 569,
+      "surface": "shared"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 590,
+      "surface": "shared"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 623,
+      "surface": "shared"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 639,
+      "surface": "shared"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 872,
+      "surface": "shared"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 1075,
+      "surface": "shared"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 1196,
+      "surface": "shared"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 1239,
+      "surface": "shared"
+    },
+    {
+      "future_behavior": "only consider passive observation; avoid changing API semantics",
+      "hook_type": "shared_api_helper_observation_point",
+      "line": 1279,
+      "surface": "shared"
+    }
+  ],
+  "recommendation": {
+    "do_not_do_yet": [
+      "Do not replace Study command calls.",
+      "Do not replace Companion submit flow.",
+      "Do not enable live router dispatch.",
+      "Do not make router output user-visible yet."
+    ],
+    "stage_8i": "Add a source-only disabled-by-default frontend shadow-read helper plan or no-op stub only if behavior-preserving."
+  },
+  "safety": {
+    "dispatch_enabled": false,
+    "live_router_enabled": false,
+    "models_called": false,
+    "runtime_code_modified": false
+  },
+  "sections": {
+    "companion_route_or_surface_markers": {
+      "pattern": "Companion|companion|/companion",
+      "sample_matches": [
+        {
+          "line": 15,
+          "text": "function cleanCompanionErrorMessage(value) {"
+        },
+        {
+          "line": 56,
+          "text": "// can decide whether /study, /chat, /companion, /calendar, and /profile should proxy"
+        },
+        {
+          "line": 62,
+          "text": "if (typeof cleanCompanionErrorMessage === \"function\") {"
+        },
+        {
+          "line": 63,
+          "text": "return cleanCompanionErrorMessage(text);"
+        },
+        {
+          "line": 129,
+          "text": "const PRIVATE_APP_ROUTE_SET = new Set([\"/study-wrapper-preview\", \"/study\", \"/chat\", \"/companion\", \"/calendar\", \"/profile\"]);"
+        },
+        {
+          "line": 155,
+          "text": "\"Practice smarter with study tools, guided review, and an AI companion designed to help you focus on what matters most.\","
+        },
+        {
+          "line": 158,
+          "text": "[\"Companion\", \"Use Companion for general conversation, study help, explanations, and supportive conversation.\", \"/companion\"],"
+        },
+        {
+          "line": 159,
+          "text": "[\"Profile\", \"Manage preferences, permissions, account settings, and future companion personalization.\", \"/profile\"],"
+        },
+        {
+          "line": 164,
+          "text": "[\"AI support\", \"The companion can eventually use study history, profile settings, and calendar context to support learning.\"],"
+        },
+        {
+          "line": 186,
+          "text": "[\"Future companion support\", \"The companion can help grade answers and explain difficult concepts.\"],"
+        },
+        {
+          "line": 193,
+          "text": "title: \"Companion\","
+        },
+        {
+          "line": 195,
+          "text": "\"Chat remains a compatibility alias while Companion becomes the main AI surface for conversation, study help, explanations, and supportive support.\","
+        },
+        {
+          "line": 197,
+          "text": "[\"Companion\", \"General local-first AI conversation through the existing queued worker path.\"],"
+        },
+        {
+          "line": 199,
+          "text": "[\"Compatibility\", \"/chat stays available for old links while /companion is the primary route.\"],"
+        },
+        {
+          "line": 204,
+          "text": "\"/companion\": {"
+        },
+        {
+          "line": 206,
+          "text": "title: \"Companion\","
+        },
+        {
+          "line": 208,
+          "text": "\"Companion is the main AI surface for conversation, studying, explanations, practice, and future personalized support.\","
+        },
+        {
+          "line": 210,
+          "text": "[\"General conversation\", \"Use Companion for normal local-first AI conversation.\"],"
+        },
+        {
+          "line": 211,
+          "text": "[\"Study helper\", \"Future stages will let Companion start study sessions, select decks, read questions, and grade answers.\"],"
+        },
+        {
+          "line": 213,
+          "text": "[\"Helpful boundaries\", \"Companion should stay supportive, ask when unsure, and use safety-aware boundaries.\"],"
+        },
+        {
+          "line": 239,
+          "text": "[\"Permissions\", \"Control what data the companion and tools are allowed to use.\"],"
+        },
+        {
+          "line": 249,
+          "text": "\"Credits control access to higher-cost features like AI jobs, companion usage, image generation, storage, and future premium tools.\","
+        },
+        {
+          "line": 313,
+          "text": "* - /api/companion/* = laptop controller-owned Companion API"
+        },
+        {
+          "line": 883,
+          "text": "id: \"companion-api\","
+        },
+        {
+          "line": 884,
+          "text": "name: \"Companion API\","
+        },
+        {
+          "line": 886,
+          "text": "detail: \"Companion chat, study grading, and context support are active.\","
+        },
+        {
+          "line": 904,
+          "text": "detail: \"Future ComfyUI-backed image generation for companion images and user-requested visuals.\","
+        },
+        {
+          "line": 1738,
+          "text": "<p>Study, Companion, Profile, Calendar, Images, and related APIs.</p>"
+        },
+        {
+          "line": 2256,
+          "text": "Credits are the platform currency for companion usage, AI jobs, storage, RAG indexing,"
+        },
+        {
+          "line": 2300,
+          "text": "<p>Used for uploaded files, future RAG data, generated assets, and companion memory.</p>"
+        },
+        {
+          "line": 2484,
+          "text": "<li>Basic companion usage</li>"
+        },
+        {
+          "line": 2492,
+          "text": "<p>For regular study and companion use.</p>"
+        },
+        {
+          "line": 2496,
+          "text": "<li>More companion messages</li>"
+        },
+        {
+          "line": 3297,
+          "text": "// Canonical Companion renderer. This directly renders the polished UI while preserving"
+        },
+        {
+          "line": 3301,
+          "text": "<section class=\"page-card stage5p8h-companion-page stage5p8h-companion-public\" data-stage5p8h-canonical-companion=\"true\">"
+        },
+        {
+          "line": 3302,
+          "text": "<p class=\"eyebrow\">Companion</p>"
+        },
+        {
+          "line": 3303,
+          "text": "<h1>A queued local AI companion for study and support.</h1>"
+        },
+        {
+          "line": 3305,
+          "text": "Sign in to use the local queued Companion surface. Logged-out users stay on the public summary path."
+        },
+        {
+          "line": 3312,
+          "text": "<section class=\"stage5p8h-companion-page\" data-stage5p8h-canonical-companion=\"true\" aria-label=\"Companion workspace\">"
+        },
+        {
+          "line": 3313,
+          "text": "<div class=\"stage5p8h-companion-hero\">"
+        },
+        {
+          "line": 3315,
+          "text": "<p class=\"stage5p8h-eyebrow\">Companion</p>"
+        },
+        {
+          "line": 3317,
+          "text": "<p>Talk with your local Companion while the queue handles work safely behind the scenes.</p>"
+        },
+        {
+          "line": 3322,
+          "text": "<div class=\"stage5p8h-companion-grid\">"
+        },
+        {
+          "line": 3323,
+          "text": "<section class=\"stage5p8h-conversation-card\" aria-label=\"Companion conversation\">"
+        },
+        {
+          "line": 3327,
+          "text": "<h2>Start a Companion conversation</h2>"
+        },
+        {
+          "line": 3339,
+          "text": "<textarea id=\"queuedChatInput\" rows=\"5\" placeholder=\"Message Companion...\"></textarea>"
+        },
+        {
+          "line": 3348,
+          "text": "<aside class=\"stage5p8h-status-rail\" aria-label=\"Companion status\">"
+        },
+        {
+          "line": 3350,
+          "text": "<p class=\"stage5p8h-eyebrow\">Companion status</p>"
+        },
+        {
+          "line": 3363,
+          "text": "<strong>Companion queue worker</strong>"
+        },
+        {
+          "line": 3381,
+          "text": "<p>Use natural phrases with Companion to control Study sessions.</p>"
+        },
+        {
+          "line": 3740,
+          "text": "function stage5p11qRouteCompanionReviewStyleCommand(message) {"
+        },
+        {
+          "line": 3953,
+          "text": "async function stage5p11pRouteCompanionDeckCommand(message) {"
+        },
+        {
+          "line": 4064,
+          "text": "async function stage5p11iRouteCompanionStudyCommand(message) {"
+        },
+        {
+          "line": 4066,
+          "text": "const styleRoute = stage5p11qRouteCompanionReviewStyleCommand(message);"
+        },
+        {
+          "line": 4077,
+          "text": "const deckRoute = await stage5p11pRouteCompanionDeckCommand(message);"
+        },
+        {
+          "line": 4252,
+          "text": "async function stage5p11jRouteCompanionStudyAnswer(message) {"
+        },
+        {
+          "line": 4318,
+          "text": "const routed = await stage5p11iRouteCompanionStudyCommand(message);"
+        },
+        {
+          "line": 4348,
+          "text": "const answerAttempt = await stage5p11jRouteCompanionStudyAnswer(message);"
+        },
+        {
+          "line": 4518,
+          "text": "path === \"/companion\" ||"
+        },
+        {
+          "line": 4548,
+          "text": "\"/companion\": {"
+        },
+        {
+          "line": 4549,
+          "text": "eyebrow: \"Companion\","
+        },
+        {
+          "line": 4550,
+          "text": "title: \"A queued local AI companion for study and support.\","
+        },
+        {
+          "line": 4554,
+          "text": "[\"Study context\", \"Future companion features can use allowed study context.\"],"
+        },
+        {
+          "line": 4564,
+          "text": "[\"Permissions\", \"Control what tools and companion features can access.\"],"
+        },
+        {
+          "line": 4716,
+          "text": "<p>Choose what Study, Companion, Calendar providers, and future tools may use as context.</p>"
+        },
+        {
+          "line": 4722,
+          "text": "<p>Set default learning style, companion behavior, notification preferences, and display options.</p>"
+        },
+        {
+          "line": 4745,
+          "text": "path === \"/companion\" ||"
+        },
+        {
+          "line": 4795,
+          "text": "if (path === \"/chat\" || path === \"/companion\") {"
+        },
+        {
+          "line": 4797,
+          "text": "renderPublicFeatureGate(path === \"/chat\" ? \"/chat\" : \"/companion\");"
+        },
+        {
+          "line": 5905,
+          "text": "<span>Study and companion</span>"
+        },
+        {
+          "line": 5907,
+          "text": "<p>Report issues with decks, reviews, companion replies, or learning workflows.</p>"
+        },
+        {
+          "line": 5963,
+          "text": "<p>Send a message if you need account, credit, billing, study, companion, or platform help.</p>"
+        },
+        {
+          "line": 8351,
+          "text": "\"/companion\","
+        },
+        {
+          "line": 8723,
+          "text": "const snapshotKey = \"stage5o35CompanionQueueSnapshot\";"
+        },
+        {
+          "line": 8731,
+          "text": "function stageRouteLooksCompanion() {"
+        },
+        {
+          "line": 8734,
+          "text": "return path === \"/companion\" || path.endsWith(\"/companion\") || hash.includes(\"companion\");"
+        },
+        {
+          "line": 8745,
+          "text": "function stageNodeMentionsCompanion(root) {"
+        },
+        {
+          "line": 8748,
+          "text": "if (/companion|queued chat|message|assistant|worker|model/i.test(text)) return true;"
+        },
+        {
+          "line": 8756,
+          "text": "return /companion|queued|chat/i.test(blob);"
+        },
+        {
+          "line": 8760,
+          "text": "function stageHasInteractiveCompanion(root) {"
+        }
+      ],
+      "total_matches": 115
+    },
+    "router_markers": {
+      "pattern": "router|decision_contract|dry-run|dry_run",
+      "sample_matches": [
+        {
+          "line": 6356,
+          "text": "<strong>${policy.dry_run ? \"Yes\" : \"No\"}</strong>"
+        },
+        {
+          "line": 7276,
+          "text": "// must use the SPA router so the header/nav state changes without refresh."
+        },
+        {
+          "line": 7794,
+          "text": "* Stage 5F-45: disabled queued-chat submit dry-run branch."
+        },
+        {
+          "line": 7796,
+          "text": "* This block defines a future dry-run helper for checking whether a submit"
+        },
+        {
+          "line": 7801,
+          "text": "* - dry-run is gated by the disabled-by-default queued-chat frontend flag"
+        },
+        {
+          "line": 7802,
+          "text": "* - dry-run remains unwired"
+        },
+        {
+          "line": 7836,
+          "text": "source: \"app_js_disabled_queued_submit_dry_run_branch\","
+        },
+        {
+          "line": 7840,
+          "text": "reason: enabled ? \"queued_submit_dry_run_unwired_stage_5f45\" : \"queued_submit_dry_run_flag_disabled_stage_5f45\","
+        },
+        {
+          "line": 7856,
+          "text": "source: \"app_js_disabled_queued_submit_dry_run_branch\","
+        }
+      ],
+      "total_matches": 9
+    },
+    "shared_api_helper_markers": {
+      "pattern": "\\bapi\\s*\\(|async function api|function api",
+      "sample_matches": [
+        {
+          "line": 324,
+          "text": "async function api(path, options = {}) {"
+        },
+        {
+          "line": 569,
+          "text": "const result = await api(path, options);"
+        },
+        {
+          "line": 590,
+          "text": "const refresh = api(path, options)"
+        },
+        {
+          "line": 623,
+          "text": "const promise = api(path, options)"
+        },
+        {
+          "line": 639,
+          "text": "// Make existing POST/PUT/DELETE api() calls invalidate cache automatically."
+        },
+        {
+          "line": 872,
+          "text": "function apiGroups() {"
+        },
+        {
+          "line": 1075,
+          "text": "gpuCatalog = await api(\"/gpu/catalog\", {"
+        },
+        {
+          "line": 1196,
+          "text": "const result = await api(\"/credits/refund-v2\", {"
+        },
+        {
+          "line": 1239,
+          "text": "gpuQuote = await api(\"/gpu/quote\", {"
+        },
+        {
+          "line": 1279,
+          "text": "gpuReserveResult = await api(\"/gpu/reserve-quote\", {"
+        },
+        {
+          "line": 1312,
+          "text": "gpuSessions = await api(\"/gpu/sessions\", {"
+        },
+        {
+          "line": 1379,
+          "text": "const result = await api(\"/gpu/start-reserved\", {"
+        },
+        {
+          "line": 1416,
+          "text": "const result = await api(\"/gpu/cleanup-mock-session\", {"
+        },
+        {
+          "line": 1454,
+          "text": "const result = await api(\"/gpu/stop-session\", {"
+        },
+        {
+          "line": 1576,
+          "text": "const result = await api(endpoint, {"
+        },
+        {
+          "line": 1626,
+          "text": "supportThread = await api(`/support/tickets/${ticketId}/messages`, {"
+        },
+        {
+          "line": 1857,
+          "text": "const result = await api(\"/support/tickets\", {"
+        },
+        {
+          "line": 1890,
+          "text": "await api(`/support/tickets/${ticketId}/messages`, {"
+        },
+        {
+          "line": 2018,
+          "text": "const result = await api(\"/ads/reward/claim\", {"
+        },
+        {
+          "line": 4955,
+          "text": "adRewardStatus = await api(\"/ads/reward/status\", {"
+        },
+        {
+          "line": 4976,
+          "text": "const result = await api(\"/ads/reward/claim\", {"
+        },
+        {
+          "line": 5018,
+          "text": "api(\"/account/credit-pools\", { method: \"GET\" }),"
+        },
+        {
+          "line": 5049,
+          "text": "const data = await api(\"/system/status\", {"
+        },
+        {
+          "line": 5210,
+          "text": "const data = await api(\"/auth/resend-verification\", {"
+        },
+        {
+          "line": 5267,
+          "text": "const data = await api(`/auth/verify-email?token=${encodeURIComponent(token)}`);"
+        },
+        {
+          "line": 5358,
+          "text": "const data = await api(authMode === \"register\" ? \"/auth/register\" : \"/auth/login\", {"
+        },
+        {
+          "line": 5395,
+          "text": "const me = await api(\"/me\", { method: \"GET\" });"
+        },
+        {
+          "line": 5417,
+          "text": "await api(\"/auth/logout\", {"
+        },
+        {
+          "line": 5441,
+          "text": "const data = await api(\"/me\", {"
+        },
+        {
+          "line": 5593,
+          "text": "cleanPowerPolicy = await api(\"/presence/power-policy\", {"
+        },
+        {
+          "line": 5616,
+          "text": "api(\"/admin/users\", { method: \"GET\" }),"
+        },
+        {
+          "line": 5617,
+          "text": "api(\"/admin/support/tickets\", { method: \"GET\" }),"
+        },
+        {
+          "line": 5622,
+          "text": "api(\"/system/public-status\", { method: \"GET\" }),"
+        },
+        {
+          "line": 5683,
+          "text": "cleanOpenThread = await api(`/support/tickets/${ticketId}/messages`, { method: \"GET\" });"
+        },
+        {
+          "line": 5768,
+          "text": "const result = await api(\"/support/tickets\", {"
+        },
+        {
+          "line": 5808,
+          "text": "await api(`/support/tickets/${ticketId}/status`, {"
+        },
+        {
+          "line": 5838,
+          "text": "await api(`/support/tickets/${ticketId}/messages`, {"
+        },
+        {
+          "line": 6222,
+          "text": "await api(endpoint, {"
+        },
+        {
+          "line": 6824,
+          "text": "const result = await api(`/auth/${mode}`, {"
+        },
+        {
+          "line": 6841,
+          "text": "const me = await api(\"/me\", { method: \"GET\" });"
+        },
+        {
+          "line": 7031,
+          "text": "return await api(\"/presence/web\", {"
+        },
+        {
+          "line": 7154,
+          "text": "webPresencePolicyApplyInFlight = api(\"/presence/apply-power-policy\", {"
+        },
+        {
+          "line": 7206,
+          "text": "const me = await api(\"/me\", { method: \"GET\" });"
+        },
+        {
+          "line": 7211,
+          "text": "accountCredits = await api(\"/account/credits\", { method: \"GET\" });"
+        },
+        {
+          "line": 7361,
+          "text": "const data = await api(\"/auth/forgot-password\", {"
+        },
+        {
+          "line": 7416,
+          "text": "const data = await api(\"/auth/reset-password\", {"
+        }
+      ],
+      "total_matches": 46
+    },
+    "study_command_api_calls": {
+      "pattern": "/api/study/session/command",
+      "sample_matches": [
+        {
+          "line": 4008,
+          "text": "const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 4106,
+          "text": "const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 4218,
+          "text": "const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 9648,
+          "text": "const response = await fetch(\"/api/study/session/command\", {"
+        }
+      ],
+      "total_matches": 4
+    },
+    "study_route_or_surface_markers": {
+      "pattern": "Study|study",
+      "sample_matches": [
+        {
+          "line": 50,
+          "text": "token: localStorage.getItem(\"edgeStudyToken\") || \"\","
+        },
+        {
+          "line": 56,
+          "text": "// can decide whether /study, /chat, /companion, /calendar, and /profile should proxy"
+        },
+        {
+          "line": 118,
+          "text": "`edgeStudyToken=${encodeURIComponent(authState.token)}; Path=/; Max-Age=2592000; SameSite=Lax${secure}`;"
+        },
+        {
+          "line": 121,
+          "text": "`edgeStudyToken=; Path=/; Max-Age=0; SameSite=Lax${secure}`;"
+        },
+        {
+          "line": 129,
+          "text": "const PRIVATE_APP_ROUTE_SET = new Set([\"/study-wrapper-preview\", \"/study\", \"/chat\", \"/companion\", \"/calendar\", \"/profile\"]);"
+        },
+        {
+          "line": 155,
+          "text": "\"Practice smarter with study tools, guided review, and an AI companion designed to help you focus on what matters most.\","
+        },
+        {
+          "line": 157,
+          "text": "[\"Study\", \"Create decks, review cards, track progress, and focus on cards that need more practice.\", \"/study\"],"
+        },
+        {
+          "line": 158,
+          "text": "[\"Companion\", \"Use Companion for general conversation, study help, explanations, and supportive conversation.\", \"/companion\"],"
+        },
+        {
+          "line": 164,
+          "text": "[\"AI support\", \"The companion can eventually use study history, profile settings, and calendar context to support learning.\"],"
+        },
+        {
+          "line": 170,
+          "text": "\"/study-wrapper-preview\": {"
+        },
+        {
+          "line": 172,
+          "text": "title: \"Study Wrapper Preview\","
+        },
+        {
+          "line": 173,
+          "text": "subtitle: \"Preview of the Study dashboard inside the shared wrapper layout. Study behavior is not wired here yet.\","
+        },
+        {
+          "line": 177,
+          "text": "\"/study\": {"
+        },
+        {
+          "line": 179,
+          "text": "title: \"Study\","
+        },
+        {
+          "line": 181,
+          "text": "\"Study helps users create decks, add cards, review material, track progress, and prioritize what needs more practice.\","
+        },
+        {
+          "line": 183,
+          "text": "[\"Decks and cards\", \"Create study decks and add questions, answers, and explanations.\"],"
+        },
+        {
+          "line": 195,
+          "text": "\"Chat remains a compatibility alias while Companion becomes the main AI surface for conversation, study help, explanations, and supportive support.\","
+        },
+        {
+          "line": 198,
+          "text": "[\"Study-aware direction\", \"Future stages will add study session controls, deck/card tools, and answer checking.\"],"
+        },
+        {
+          "line": 208,
+          "text": "\"Companion is the main AI surface for conversation, studying, explanations, practice, and future personalized support.\","
+        },
+        {
+          "line": 211,
+          "text": "[\"Study helper\", \"Future stages will let Companion start study sessions, select decks, read questions, and grade answers.\"],"
+        },
+        {
+          "line": 212,
+          "text": "[\"Context aware\", \"Future versions can use profile, calendar, study, and file context with permission.\"],"
+        },
+        {
+          "line": 312,
+          "text": "* - /api/study/* = laptop controller-owned Study API"
+        },
+        {
+          "line": 873,
+          "text": "const study = serviceById(\"study-api\");"
+        },
+        {
+          "line": 877,
+          "text": "id: \"study-api\","
+        },
+        {
+          "line": 878,
+          "text": "name: \"Study API\","
+        },
+        {
+          "line": 879,
+          "text": "state: normalizeApiState(study, \"online\"),"
+        },
+        {
+          "line": 880,
+          "text": "detail: normalizeApiDetail(study, \"Decks, cards, reviews, stats, and study progress are active.\"),"
+        },
+        {
+          "line": 886,
+          "text": "detail: \"Companion chat, study grading, and context support are active.\","
+        },
+        {
+          "line": 1738,
+          "text": "<p>Study, Companion, Profile, Calendar, Images, and related APIs.</p>"
+        },
+        {
+          "line": 2483,
+          "text": "<li>Study summaries</li>"
+        },
+        {
+          "line": 2492,
+          "text": "<p>For regular study and companion use.</p>"
+        },
+        {
+          "line": 2586,
+          "text": "function setStudyWrapperPreviewReadOnly() {"
+        },
+        {
+          "line": 2587,
+          "text": "const root = document.querySelector(\".study-wrapper-preview\");"
+        },
+        {
+          "line": 2618,
+          "text": "el.title = \"Preview only. Use the live Study page for editing and review actions.\";"
+        },
+        {
+          "line": 2622,
+          "text": "if (firstPanel && !root.querySelector(\"[data-study-preview-notice]\")) {"
+        },
+        {
+          "line": 2625,
+          "text": "notice.setAttribute(\"data-study-preview-notice\", \"true\");"
+        },
+        {
+          "line": 2628,
+          "text": "<p>This shared-layout preview is read-only. Use <a href=\"/study\">the live Study page</a> to create decks, add cards, or review cards.</p>"
+        },
+        {
+          "line": 2635,
+          "text": "function studyPreviewSetText(id, value) {"
+        },
+        {
+          "line": 2640,
+          "text": "function studyPreviewEscape(value) {"
+        },
+        {
+          "line": 2650,
+          "text": "function studyPreviewNormalizeDifficulty(card) {"
+        },
+        {
+          "line": 2674,
+          "text": "function studyPreviewPercent(value) {"
+        },
+        {
+          "line": 2678,
+          "text": "function studyPreviewCardArray(data) {"
+        },
+        {
+          "line": 2687,
+          "text": "function renderStudyWrapperPreviewDeckSummary(deck) {"
+        },
+        {
+          "line": 2701,
+          "text": "<strong>${studyPreviewEscape(deck.title)}</strong>"
+        },
+        {
+          "line": 2702,
+          "text": "<p>${studyPreviewEscape(deck.description || \"\")}</p>"
+        },
+        {
+          "line": 2708,
+          "text": "async function createStudyWrapperPreviewDeck(event) {"
+        },
+        {
+          "line": 2726,
+          "text": "const res = await fetch(\"/api/study/decks\", {"
+        },
+        {
+          "line": 2734,
+          "text": "if (!res.ok) throw new Error(`/api/study/decks HTTP ${res.status}: ${text.slice(0, 160)}`);"
+        },
+        {
+          "line": 2742,
+          "text": "await hydrateStudyWrapperPreview(newDeckId);"
+        },
+        {
+          "line": 2746,
+          "text": "console.error(\"[study-wrapper-preview] create deck failed\", error);"
+        },
+        {
+          "line": 2754,
+          "text": "const studyPreviewReviewState = {"
+        },
+        {
+          "line": 2761,
+          "text": "async function submitStudyWrapperPreviewReview(cardId, wasCorrect) {"
+        },
+        {
+          "line": 2769,
+          "text": "const res = await fetch(`/api/study/cards/${encodeURIComponent(cardId)}/reviews`, {"
+        },
+        {
+          "line": 2781,
+          "text": "throw new Error(`/api/study/cards/${cardId}/reviews HTTP ${res.status}: ${text.slice(0, 160)}`);"
+        },
+        {
+          "line": 2784,
+          "text": "studyPreviewReviewState.currentIndex += 1;"
+        },
+        {
+          "line": 2785,
+          "text": "studyPreviewReviewState.showingAnswer = false;"
+        },
+        {
+          "line": 2788,
+          "text": "await hydrateStudyWrapperPreview(deckId);"
+        },
+        {
+          "line": 2791,
+          "text": "renderStudyWrapperPreviewReviewCard();"
+        },
+        {
+          "line": 2795,
+          "text": "console.error(\"[study-wrapper-preview] review submit failed\", error);"
+        },
+        {
+          "line": 2802,
+          "text": "function renderStudyWrapperPreviewReviewCard() {"
+        },
+        {
+          "line": 2806,
+          "text": "const card = studyPreviewReviewState.queue[studyPreviewReviewState.currentIndex];"
+        },
+        {
+          "line": 2817,
+          "text": "const answerBlock = studyPreviewReviewState.showingAnswer"
+        },
+        {
+          "line": 2821,
+          "text": "<p>${studyPreviewEscape(card.answer || \"No answer saved.\")}</p>"
+        },
+        {
+          "line": 2822,
+          "text": "${card.explanation ? `<p class=\"muted\">${studyPreviewEscape(card.explanation)}</p>` : \"\"}"
+        },
+        {
+          "line": 2829,
+          "text": "<strong>${studyPreviewEscape(card.question || \"Untitled card\")}</strong>"
+        },
+        {
+          "line": 2831,
+          "text": "${studyPreviewEscape(card.performance_bucket || card.difficulty || \"new\")}"
+        },
+        {
+          "line": 2840,
+          "text": "${studyPreviewReviewState.showingAnswer ? `"
+        },
+        {
+          "line": 2841,
+          "text": "<button class=\"secondary\" type=\"button\" id=\"studyPreviewWrongBtn\">Wrong</button>"
+        },
+        {
+          "line": 2842,
+          "text": "<button class=\"primary-btn\" type=\"button\" id=\"studyPreviewCorrectBtn\">Correct</button>"
+        },
+        {
+          "line": 2844,
+          "text": "<button class=\"primary-btn\" type=\"button\" id=\"studyPreviewShowAnswerBtn\">Show Answer</button>"
+        },
+        {
+          "line": 2846,
+          "text": "<button class=\"secondary\" type=\"button\" id=\"studyPreviewSkipCardBtn\">Skip</button>"
+        },
+        {
+          "line": 2850,
+          "text": "document.getElementById(\"studyPreviewShowAnswerBtn\")?.addEventListener(\"click\", () => {"
+        },
+        {
+          "line": 2851,
+          "text": "studyPreviewReviewState.showingAnswer = true;"
+        },
+        {
+          "line": 2852,
+          "text": "renderStudyWrapperPreviewReviewCard();"
+        },
+        {
+          "line": 2855,
+          "text": "document.getElementById(\"studyPreviewSkipCardBtn\")?.addEventListener(\"click\", () => {"
+        },
+        {
+          "line": 2856,
+          "text": "studyPreviewReviewState.currentIndex += 1;"
+        },
+        {
+          "line": 2857,
+          "text": "studyPreviewReviewState.showingAnswer = false;"
+        },
+        {
+          "line": 2858,
+          "text": "renderStudyWrapperPreviewReviewCard();"
+        },
+        {
+          "line": 2861,
+          "text": "document.getElementById(\"studyPreviewWrongBtn\")?.addEventListener(\"click\", () => {"
+        },
+        {
+          "line": 2862,
+          "text": "submitStudyWrapperPreviewReview(card.id, false);"
+        }
+      ],
+      "total_matches": 343
+    },
+    "submit_or_send_markers": {
+      "pattern": "submit|send|message|command",
+      "sample_matches": [
+        {
+          "line": 265,
+          "text": "\"Send a message to support if something is not working, you need account help, or you have questions about credits and services.\","
+        },
+        {
+          "line": 1214,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1250,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1295,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1397,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1435,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1473,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1599,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1626,
+          "text": "supportThread = await api(`/support/tickets/${ticketId}/messages`, {"
+        },
+        {
+          "line": 1631,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1690,
+          "text": "${formatNumber(ticket.message_count || 0)} messages \u00b7"
+        },
+        {
+          "line": 1691,
+          "text": "${safeText(ticket.last_message_at || ticket.updated_at || \"\")}"
+        },
+        {
+          "line": 1785,
+          "text": "${formatNumber(ticket.message_count || 0)} messages \u00b7"
+        },
+        {
+          "line": 1786,
+          "text": "${safeText(ticket.last_message_at || ticket.updated_at || \"\")}"
+        },
+        {
+          "line": 1812,
+          "text": "<div class=\"message-thread\">"
+        },
+        {
+          "line": 1813,
+          "text": "${(supportThread.messages || []).map((message) => `"
+        },
+        {
+          "line": 1814,
+          "text": "<div class=\"message-bubble ${message.sender_role === \"admin\" ? \"admin-message\" : \"user-message\"}\">"
+        },
+        {
+          "line": 1815,
+          "text": "<div class=\"message-meta\">"
+        },
+        {
+          "line": 1816,
+          "text": "${safeText(message.sender_role)} \u00b7 ${safeText(message.sender_email || \"\")} \u00b7 ${safeText(message.created_at)}"
+        },
+        {
+          "line": 1818,
+          "text": "<div>${safeText(message.body)}</div>"
+        },
+        {
+          "line": 1868,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1872,
+          "text": "async function sendSupportReply(ticketId) {"
+        },
+        {
+          "line": 1890,
+          "text": "await api(`/support/tickets/${ticketId}/messages`, {"
+        },
+        {
+          "line": 1908,
+          "text": "alert(err.message);"
+        },
+        {
+          "line": 1948,
+          "text": "function setGoogleRewardedMessage(message) {"
+        },
+        {
+          "line": 1949,
+          "text": "googleRewardedMessage = message || \"\";"
+        },
+        {
+          "line": 2121,
+          "text": "setGoogleRewardedMessage(err.message || \"Reward earned, but credit claim failed.\");"
+        },
+        {
+          "line": 2147,
+          "text": "setGoogleRewardedMessage(err.message || \"Rewarded ad failed to load.\");"
+        },
+        {
+          "line": 2152,
+          "text": "setGoogleRewardedMessage(err.message || \"Rewarded ad failed to load.\");"
+        },
+        {
+          "line": 2496,
+          "text": "<li>More companion messages</li>"
+        },
+        {
+          "line": 2748,
+          "text": "alert(`Could not create deck: ${error.message || error}`);"
+        },
+        {
+          "line": 2761,
+          "text": "async function submitStudyWrapperPreviewReview(cardId, wasCorrect) {"
+        },
+        {
+          "line": 2793,
+          "text": "if (statusText) statusText.textContent = \"Review submitted\";"
+        },
+        {
+          "line": 2795,
+          "text": "console.error(\"[study-wrapper-preview] review submit failed\", error);"
+        },
+        {
+          "line": 2796,
+          "text": "if (statusText) statusText.textContent = \"Could not submit review\";"
+        },
+        {
+          "line": 2797,
+          "text": "alert(`Could not submit review: ${error.message || error}`);"
+        },
+        {
+          "line": 2862,
+          "text": "submitStudyWrapperPreviewReview(card.id, false);"
+        },
+        {
+          "line": 2866,
+          "text": "submitStudyWrapperPreviewReview(card.id, true);"
+        },
+        {
+          "line": 2913,
+          "text": "alert(`Could not load review queue: ${error.message || error}`);"
+        },
+        {
+          "line": 2987,
+          "text": "alert(`Could not add card: ${error.message || error}`);"
+        },
+        {
+          "line": 3003,
+          "text": "const submitButton = form.querySelector(\"button[type='submit'], button:not([type])\");"
+        },
+        {
+          "line": 3004,
+          "text": "if (submitButton) {"
+        },
+        {
+          "line": 3005,
+          "text": "submitButton.disabled = false;"
+        },
+        {
+          "line": 3006,
+          "text": "submitButton.removeAttribute(\"aria-disabled\");"
+        },
+        {
+          "line": 3007,
+          "text": "submitButton.title = \"Add card\";"
+        },
+        {
+          "line": 3010,
+          "text": "form.onsubmit = createStudyWrapperPreviewCard;"
+        },
+        {
+          "line": 3028,
+          "text": "const submitButton = form.querySelector(\"button[type='submit'], button:not([type])\");"
+        },
+        {
+          "line": 3029,
+          "text": "if (submitButton) {"
+        },
+        {
+          "line": 3030,
+          "text": "submitButton.disabled = false;"
+        },
+        {
+          "line": 3031,
+          "text": "submitButton.removeAttribute(\"aria-disabled\");"
+        },
+        {
+          "line": 3032,
+          "text": "submitButton.title = \"Create deck\";"
+        },
+        {
+          "line": 3035,
+          "text": "form.onsubmit = createStudyWrapperPreviewDeck;"
+        },
+        {
+          "line": 3245,
+          "text": "<pre>${String(error.message || error)}</pre>"
+        },
+        {
+          "line": 3254,
+          "text": "// This replaces the static /chat summary with a real send/poll/render loop."
+        },
+        {
+          "line": 3256,
+          "text": "messages: [],"
+        },
+        {
+          "line": 3279,
+          "text": "if (!queuedChatUiState.messages.length) {"
+        },
+        {
+          "line": 3280,
+          "text": "el.innerHTML = `<p class=\"muted\">Send a message to start a queued local AI chat.</p>`;"
+        },
+        {
+          "line": 3284,
+          "text": "el.innerHTML = queuedChatUiState.messages.map((msg) => `"
+        },
+        {
+          "line": 3328,
+          "text": "<p>Send a message below. New work still uses the existing queued chat endpoint and polling flow.</p>"
+        },
+        {
+          "line": 3332,
+          "text": "<section class=\"stage5p8h-message-stream\">"
+        },
+        {
+          "line": 3334,
+          "text": "<div id=\"queuedChatMessages\" class=\"stage5p8h-message-list\"></div>"
+        },
+        {
+          "line": 3337,
+          "text": "<form id=\"queuedChatForm\" class=\"stage5p8h-message-form\">"
+        },
+        {
+          "line": 3342,
+          "text": "<button class=\"stage5p8h-send-button\" type=\"submit\" id=\"queuedChatSendBtn\">Send message</button>"
+        },
+        {
+          "line": 3597,
+          "text": "function stage5p11iLooksLikeStudyCommand(message) {"
+        },
+        {
+          "line": 3598,
+          "text": "const text = stage5p11iNormalizeStudyPhrase(message);"
+        },
+        {
+          "line": 3710,
+          "text": "function stage5p11qReviewStyleFromMessage(message) {"
+        },
+        {
+          "line": 3711,
+          "text": "const text = stage5p11iNormalizeStudyPhrase(message);"
+        },
+        {
+          "line": 3732,
+          "text": "function stage5p11qLooksLikeReviewStyleCommand(message) {"
+        },
+        {
+          "line": 3733,
+          "text": "const text = stage5p11iNormalizeStudyPhrase(message);"
+        },
+        {
+          "line": 3740,
+          "text": "function stage5p11qRouteCompanionReviewStyleCommand(message) {"
+        },
+        {
+          "line": 3741,
+          "text": "if (!stage5p11qLooksLikeReviewStyleCommand(message)) return { handled: false };"
+        },
+        {
+          "line": 3743,
+          "text": "const mode = stage5p11qReviewStyleFromMessage(message);"
+        },
+        {
+          "line": 3825,
+          "text": "const detail = data.detail || data.message || \"Could not list Study decks.\";"
+        },
+        {
+          "line": 3856,
+          "text": "function stage5p11pDeckQueryFromMessage(message) {"
+        },
+        {
+          "line": 3857,
+          "text": "let text = stage5p11iNormalizeStudyPhrase(message);"
+        },
+        {
+          "line": 3887,
+          "text": "function stage5p11pFindDeckForMessage(message, decks) {"
+        },
+        {
+          "line": 3888,
+          "text": "const normalized = stage5p11iNormalizeStudyPhrase(message);"
+        },
+        {
+          "line": 3889,
+          "text": "const query = stage5p11pDeckQueryFromMessage(message);"
+        },
+        {
+          "line": 3940,
+          "text": "function stage5p11pIsListDecksMessage(message) {"
+        },
+        {
+          "line": 3941,
+          "text": "const text = stage5p11iNormalizeStudyPhrase(message);"
+        }
+      ],
+      "total_matches": 448
+    }
+  },
+  "source_file": "frontend/wrapper-ui/app.js",
+  "stage": "8H"
+}
