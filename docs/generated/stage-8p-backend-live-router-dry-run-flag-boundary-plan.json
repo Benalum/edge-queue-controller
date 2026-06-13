@@ -1,0 +1,23 @@
+{
+  "backend": {
+    "env_boundary_present_in_source": false,
+    "live_env_enabled": false
+  },
+  "decision": "do_not_enable_live_router_dry_run_traffic_yet",
+  "frontend": {
+    "contains_router_endpoint": false,
+    "feature_flag_default_false": true,
+    "stub_enabled_flag_false": true
+  },
+  "next_recommended_stage": "8Q_temporary_controller_validation_only",
+  "safety": {
+    "browser_router_traffic_enabled": false,
+    "dispatch_enabled": false,
+    "live_controller_restarted": false,
+    "model_calls_enabled": false,
+    "router_live_enabled": false,
+    "wrapper_restarted": false
+  },
+  "stage": "8P",
+  "stage_type": "backend_live_router_dry_run_flag_boundary_plan"
+}
