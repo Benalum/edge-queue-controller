@@ -10442,6 +10442,145 @@ def _stage5p12d_registered_laptop_queue_worker_capacity(worker_id, worker_node_i
 # STAGE_5P12D_REGISTERED_WORKER_CAPACITY_STATUS_END
 
 
+# STAGE_5P12F_LANE_DISPATCH_READINESS_PLAN_BEGIN
+def _stage5p12f_lane_dispatch_readiness(registered_capacity):
+    """Public-safe read-only lane dispatch readiness plan.
+
+    This reports whether the current registered worker metadata and queued job
+    lane metadata are ready for future lane-specific claims. It does not claim
+    jobs, start lanes, mutate worker env, or raise concurrency.
+    """
+    capabilities = {}
+    if isinstance(registered_capacity, dict):
+        capabilities = registered_capacity.get("capabilities") or {}
+    if not isinstance(capabilities, dict):
+        capabilities = {}
+
+    supported_lanes = capabilities.get("supported_lanes") or []
+    supported_model_tiers = capabilities.get("supported_model_tiers") or []
+    allowed_models = capabilities.get("allowed_models") or []
+    lane_capacity = capabilities.get("lane_capacity") or {}
+    active_queue_lane = capabilities.get("queue_lane")
+    max_jobs_per_run = capabilities.get("max_jobs_per_run")
+    node_max_concurrent_jobs = capabilities.get("node_max_concurrent_jobs")
+    ollama_num_parallel = capabilities.get("ollama_num_parallel")
+
+    plan = {
+        "source": "stage_5p12f_read_only_status_planner",
+        "dry_run_only": True,
+        "runtime_enabled": False,
+        "dispatch_enabled": False,
+        "claim_filter_enabled": bool(active_queue_lane),
+        "active_queue_lane": active_queue_lane,
+        "supported_lanes": supported_lanes if isinstance(supported_lanes, list) else [],
+        "supported_model_tiers": supported_model_tiers if isinstance(supported_model_tiers, list) else [],
+        "allowed_models": allowed_models if isinstance(allowed_models, list) else [],
+        "lane_capacity": lane_capacity if isinstance(lane_capacity, dict) else {},
+        "max_jobs_per_run": max_jobs_per_run,
+        "node_max_concurrent_jobs": node_max_concurrent_jobs,
+        "ollama_num_parallel": ollama_num_parallel,
+        "lanes": [],
+        "warnings": [],
+        "notes": [
+            "This is status-only planning. No queue-lane claim is enabled in Phase 12F.",
+        ],
+    }
+
+    if not plan["supported_lanes"]:
+        plan["warnings"].append("Worker has no supported_lanes metadata.")
+    if not plan["allowed_models"]:
+        plan["warnings"].append("Worker has no allowed_models metadata.")
+    if active_queue_lane:
+        plan["warnings"].append("Worker queue_lane is set; this would enable filtered claims if worker sends it.")
+    else:
+        plan["warnings"].append("Worker queue_lane is unset; current worker claims remain unfiltered.")
+
+    try:
+        import json as _stage5p12f_json
+        from edge_modules.chat_queue_persistence import _psql_at
+
+        raw = _psql_at(
+            """
+            SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)::text
+            FROM (
+              SELECT
+                COALESCE(payload_json->>'queue_lane', '(none)') AS queue_lane,
+                COALESCE(payload_json->>'model_tier', '(none)') AS model_tier,
+                COALESCE(payload_json->>'model_lane', '(none)') AS model_lane,
+                COALESCE(requested_model, '(none)') AS requested_model,
+                SUM(CASE WHEN status IN ('queued', 'pending') THEN 1 ELSE 0 END)::int AS queued,
+                SUM(CASE WHEN status IN ('running', 'claimed', 'processing', 'in_progress') THEN 1 ELSE 0 END)::int AS running,
+                SUM(CASE WHEN status = 'complete' THEN 1 ELSE 0 END)::int AS complete,
+                SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END)::int AS failed,
+                COUNT(*)::int AS total
+              FROM app_jobs
+              WHERE job_type = 'ollama_chat'
+              GROUP BY
+                COALESCE(payload_json->>'queue_lane', '(none)'),
+                COALESCE(payload_json->>'model_tier', '(none)'),
+                COALESCE(payload_json->>'model_lane', '(none)'),
+                COALESCE(requested_model, '(none)')
+              ORDER BY
+                COALESCE(payload_json->>'queue_lane', '(none)'),
+                COALESCE(payload_json->>'model_tier', '(none)'),
+                COALESCE(requested_model, '(none)')
+            ) t;
+            """
+        ).strip()
+
+        rows = _stage5p12f_json.loads(raw or "[]")
+        plan["observed_job_lanes"] = rows
+
+        supported = set(plan["supported_lanes"])
+        allowed = set(plan["allowed_models"])
+
+        lane_rows = []
+        for lane in plan["supported_lanes"]:
+            cap_raw = (plan["lane_capacity"].get(lane) or {}).get("max") if isinstance(plan["lane_capacity"], dict) else None
+            try:
+                cap_max = int(cap_raw)
+            except Exception:
+                cap_max = 0
+
+            observed = [row for row in rows if row.get("queue_lane") == lane]
+            queued = sum(int(row.get("queued") or 0) for row in observed)
+            running = sum(int(row.get("running") or 0) for row in observed)
+
+            lane_rows.append({
+                "queue_lane": lane,
+                "capacity_max": cap_max,
+                "queued": queued,
+                "running": running,
+                "available_slots": max(0, cap_max - running),
+                "dispatch_ready": bool(cap_max >= 1 and lane in supported),
+                "claim_active": active_queue_lane == lane,
+            })
+
+        plan["lanes"] = lane_rows
+
+        unsupported_lanes = sorted({
+            row.get("queue_lane")
+            for row in rows
+            if row.get("queue_lane") not in supported and row.get("queue_lane") != "(none)"
+        })
+        if unsupported_lanes:
+            plan["warnings"].append("Observed job lanes not advertised by worker: " + ", ".join(unsupported_lanes))
+
+        unsupported_models = sorted({
+            row.get("requested_model")
+            for row in rows
+            if row.get("requested_model") not in allowed and row.get("requested_model") != "(none)"
+        })
+        if unsupported_models:
+            plan["warnings"].append("Observed requested models not advertised by worker: " + ", ".join(unsupported_models))
+
+    except Exception as exc:
+        plan["error"] = str(exc)
+
+    return plan
+# STAGE_5P12F_LANE_DISPATCH_READINESS_PLAN_END
+
+
 def _system_ct101_laptop_queue_worker_status(checked_at, *, pveso_state, ct101_state):
     queue_summary = _system_queue_depth_summary()
     base = {
@@ -10620,6 +10759,7 @@ printf 'last_log=%s\n' "$last_log"
             "model": facts.get("model") or None,
             "max_jobs_per_run": max_jobs_value,
             "registered_capacity": registered_capacity,
+            "lane_dispatch_readiness": _stage5p12f_lane_dispatch_readiness(registered_capacity),
             "real_user_jobs_enabled": facts.get("real_user_jobs") == "1",
             "synthetic_only": facts.get("synthetic_only") == "1",
             "base_url_set": facts.get("base_url_set") == "yes",
