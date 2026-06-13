@@ -10581,6 +10581,259 @@ def _stage5p12f_lane_dispatch_readiness(registered_capacity):
 # STAGE_5P12F_LANE_DISPATCH_READINESS_PLAN_END
 
 
+# STAGE_5P12O_PERSISTENT_LANE_CUTOVER_READINESS_GATE_BEGIN
+def _stage5p12o_persistent_lane_cutover_readiness(registered_capacity):
+    """Public-safe read-only persistent lane cutover gate.
+
+    This is intentionally status-only. It does not start services, stop services,
+    mutate queues, claim jobs, change routing, or enable persistent lane workers.
+    """
+    expected_lanes = ["model-tiny", "model-small"]
+    expected_models_by_lane = {
+        "model-tiny": ["qwen3:0.6b"],
+        "model-small": ["qwen3:1.7b", "llama3.2:3b"],
+    }
+
+    capabilities = {}
+    if isinstance(registered_capacity, dict):
+        capabilities = registered_capacity.get("capabilities") or {}
+    if not isinstance(capabilities, dict):
+        capabilities = {}
+
+    primary_queue_lane = capabilities.get("queue_lane")
+    supported_lanes = capabilities.get("supported_lanes") or []
+    if not isinstance(supported_lanes, list):
+        supported_lanes = []
+
+    allowed_models = capabilities.get("allowed_models") or []
+    if not isinstance(allowed_models, list):
+        allowed_models = []
+
+    plan = {
+        "source": "stage_5p12o_read_only_persistent_lane_cutover_gate",
+        "dry_run_only": True,
+        "ready": False,
+        "reasons": [],
+        "expected_lanes": expected_lanes,
+        "expected_models_by_lane": expected_models_by_lane,
+        "recommendation": (
+            "Do not enable persistent lane cutover until production job creation "
+            "is fully lane-tagged or a no-lane fallback worker exists."
+        ),
+        "blockers": {
+            "primary_worker_queue_lane": primary_queue_lane,
+            "primary_worker_unfiltered": not bool(primary_queue_lane),
+            "active_unsupported_jobs": [],
+            "historical_no_lane_jobs": [],
+            "lane_worker_registry": [],
+            "active_recent_lane_workers": [],
+            "missing_active_recent_lane_workers": expected_lanes[:],
+            "fallback_worker_present": False,
+            "fallback_worker_candidates": [],
+        },
+        "notes": [
+            "Read-only status gate only.",
+            "No service changes are performed by this helper.",
+            "No queue rows are changed by this helper.",
+            "No route behavior is changed by this helper.",
+        ],
+    }
+
+    def add_reason(reason):
+        if reason not in plan["reasons"]:
+            plan["reasons"].append(reason)
+
+    if not primary_queue_lane:
+        add_reason("primary_worker_unfiltered")
+
+    missing_supported_lanes = [
+        lane for lane in expected_lanes
+        if lane not in supported_lanes
+    ]
+    if missing_supported_lanes:
+        plan["blockers"]["missing_supported_lanes"] = missing_supported_lanes
+        add_reason("expected_lanes_not_advertised_by_primary")
+
+    missing_allowed_models = []
+    for lane, models in expected_models_by_lane.items():
+        for model in models:
+            if model not in allowed_models:
+                missing_allowed_models.append({
+                    "queue_lane": lane,
+                    "model": model,
+                })
+    if missing_allowed_models:
+        plan["blockers"]["missing_allowed_models"] = missing_allowed_models
+        add_reason("expected_models_not_advertised_by_primary")
+
+    try:
+        import datetime as _stage5p12o_dt
+        import json as _stage5p12o_json
+        from edge_modules.chat_queue_persistence import _psql_at
+
+        active_raw = _psql_at(
+            """
+            SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)::text
+            FROM (
+              SELECT
+                id,
+                status,
+                COALESCE(payload_json->>'queue_lane', '(none)') AS queue_lane,
+                COALESCE(payload_json->>'model_tier', '(none)') AS model_tier,
+                COALESCE(payload_json->>'model_lane', '(none)') AS model_lane,
+                COALESCE(requested_model, '(none)') AS requested_model,
+                assigned_worker_id,
+                created_at
+              FROM app_jobs
+              WHERE job_type = 'ollama_chat'
+                AND status IN ('queued', 'pending', 'running', 'claimed', 'processing', 'in_progress')
+                AND (
+                  COALESCE(payload_json->>'queue_lane', '') = ''
+                  OR COALESCE(payload_json->>'queue_lane', '') NOT IN ('model-tiny', 'model-small')
+                )
+              ORDER BY created_at ASC NULLS LAST, id ASC
+              LIMIT 50
+            ) t;
+            """
+        ).strip()
+        active_unsupported = _stage5p12o_json.loads(active_raw or "[]")
+        plan["blockers"]["active_unsupported_jobs"] = active_unsupported
+        if active_unsupported:
+            add_reason("active_jobs_missing_or_unsupported_queue_lane")
+
+        historical_raw = _psql_at(
+            """
+            SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)::text
+            FROM (
+              SELECT
+                status,
+                COALESCE(requested_model, '(none)') AS requested_model,
+                COALESCE(payload_json->>'route_source', '(none)') AS route_source,
+                COUNT(*)::int AS count,
+                MAX(created_at) AS newest_created_at
+              FROM app_jobs
+              WHERE job_type = 'ollama_chat'
+                AND COALESCE(payload_json->>'queue_lane', '') = ''
+              GROUP BY
+                status,
+                COALESCE(requested_model, '(none)'),
+                COALESCE(payload_json->>'route_source', '(none)')
+              ORDER BY newest_created_at DESC NULLS LAST, count DESC
+              LIMIT 20
+            ) t;
+            """
+        ).strip()
+        historical_no_lane = _stage5p12o_json.loads(historical_raw or "[]")
+        plan["blockers"]["historical_no_lane_jobs"] = historical_no_lane
+        if historical_no_lane:
+            add_reason("historical_no_lane_jobs_detected")
+
+        registry_raw = _psql_at(
+            """
+            SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)::text
+            FROM (
+              SELECT
+                id,
+                status,
+                worker_node_id,
+                current_job_id,
+                last_heartbeat_at,
+                capabilities_json
+              FROM app_workers
+              WHERE id LIKE 'ct101-stage5g21-managed-browser%'
+              ORDER BY last_heartbeat_at DESC NULLS LAST, id
+              LIMIT 20
+            ) t;
+            """
+        ).strip()
+        registry_rows = _stage5p12o_json.loads(registry_raw or "[]")
+
+        def parse_caps(caps):
+            if isinstance(caps, dict):
+                return caps
+            if isinstance(caps, str):
+                try:
+                    parsed = _stage5p12o_json.loads(caps)
+                    return parsed if isinstance(parsed, dict) else {}
+                except Exception:
+                    return {}
+            return {}
+
+        def heartbeat_recent(value, *, seconds=120):
+            if not value:
+                return False
+            try:
+                parsed = _stage5p12o_dt.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(tzinfo=_stage5p12o_dt.timezone.utc)
+                age = (
+                    _stage5p12o_dt.datetime.now(_stage5p12o_dt.timezone.utc)
+                    - parsed.astimezone(_stage5p12o_dt.timezone.utc)
+                ).total_seconds()
+                return age <= seconds
+            except Exception:
+                return False
+
+        lane_registry = []
+        active_recent_lanes = set()
+        fallback_candidates = []
+
+        for row in registry_rows:
+            caps = parse_caps(row.get("capabilities_json"))
+            queue_lane = caps.get("queue_lane")
+            recent = heartbeat_recent(row.get("last_heartbeat_at"))
+
+            safe_row = {
+                "id": row.get("id"),
+                "status": row.get("status"),
+                "worker_node_id": row.get("worker_node_id"),
+                "current_job_id": row.get("current_job_id"),
+                "last_heartbeat_at": row.get("last_heartbeat_at"),
+                "queue_lane": queue_lane,
+                "supported_lanes": caps.get("supported_lanes"),
+                "allowed_models": caps.get("allowed_models"),
+                "heartbeat_recent": recent,
+            }
+            lane_registry.append(safe_row)
+
+            if queue_lane in expected_lanes and recent:
+                active_recent_lanes.add(queue_lane)
+
+            supports_no_lane = caps.get("supports_no_lane_fallback") is True
+            no_lane_name = str(queue_lane or "").strip().lower() in {
+                "no-lane",
+                "no_lane",
+                "unlaned",
+                "__no_lane__",
+                "fallback-no-lane",
+            }
+            if supports_no_lane or no_lane_name:
+                fallback_candidates.append(safe_row)
+
+        plan["blockers"]["lane_worker_registry"] = lane_registry
+        plan["blockers"]["active_recent_lane_workers"] = sorted(active_recent_lanes)
+        plan["blockers"]["missing_active_recent_lane_workers"] = [
+            lane for lane in expected_lanes
+            if lane not in active_recent_lanes
+        ]
+        plan["blockers"]["fallback_worker_present"] = bool(fallback_candidates)
+        plan["blockers"]["fallback_worker_candidates"] = fallback_candidates
+
+        if plan["blockers"]["missing_active_recent_lane_workers"]:
+            add_reason("persistent_lane_workers_not_active")
+
+        if not fallback_candidates:
+            add_reason("no_no_lane_fallback_worker")
+
+    except Exception as exc:
+        plan["error"] = str(exc)
+        add_reason("readiness_gate_error")
+
+    plan["ready"] = not plan["reasons"]
+    return plan
+# STAGE_5P12O_PERSISTENT_LANE_CUTOVER_READINESS_GATE_END
+
+
 def _system_ct101_laptop_queue_worker_status(checked_at, *, pveso_state, ct101_state):
     queue_summary = _system_queue_depth_summary()
     base = {
@@ -10760,6 +11013,7 @@ printf 'last_log=%s\n' "$last_log"
             "max_jobs_per_run": max_jobs_value,
             "registered_capacity": registered_capacity,
             "lane_dispatch_readiness": _stage5p12f_lane_dispatch_readiness(registered_capacity),
+            "persistent_lane_cutover_readiness": _stage5p12o_persistent_lane_cutover_readiness(registered_capacity),
             "real_user_jobs_enabled": facts.get("real_user_jobs") == "1",
             "synthetic_only": facts.get("synthetic_only") == "1",
             "base_url_set": facts.get("base_url_set") == "yes",
