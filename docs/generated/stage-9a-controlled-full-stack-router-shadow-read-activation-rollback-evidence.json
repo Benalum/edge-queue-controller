@@ -1,0 +1,20 @@
+{
+  "dispatch_performed": "False",
+  "final_result": "pass",
+  "frontend_ok": "True",
+  "frontend_requests": "1",
+  "frontend_status": "200",
+  "generated_at": "2026-06-13T04:26:00.135069+00:00",
+  "health_after": "200",
+  "health_before": "200",
+  "health_enabled": "200",
+  "post_after": "404",
+  "post_before": "404",
+  "post_enabled": "200",
+  "purpose": "controlled full-stack router shadow-read activation and rollback",
+  "queue_after_clean": "true",
+  "queue_before_clean": "true",
+  "queue_enabled_clean": "true",
+  "rollback_env_absent": "true",
+  "stage": "9A"
+}
