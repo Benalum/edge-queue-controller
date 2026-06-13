@@ -10183,6 +10183,80 @@ def _system_status_normalized_block(nodes, services):
 
 
 # STAGE_5G24_CT101_MANAGED_WORKER_STATUS_V1
+# STAGE_5P11T_LANE_AWARE_QUEUE_VISIBILITY_BEGIN
+def _stage5p11t_app_jobs_lane_summary():
+    summary = {
+        "by_status_tier_lane": [],
+        "active_by_queue_lane": [],
+        "source": "app_jobs.payload_json",
+        "contract_version": "stage_5p11r_v1",
+    }
+
+    try:
+        import json as _stage5p11t_json
+        from edge_modules.chat_queue_persistence import _psql_at
+
+        raw_rows = _psql_at(
+            """
+            SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)::text
+            FROM (
+              SELECT
+                status,
+                COALESCE(payload_json->>'model_tier', '(none)') AS model_tier,
+                COALESCE(payload_json->>'model_lane', '(none)') AS model_lane,
+                COALESCE(payload_json->>'queue_lane', '(none)') AS queue_lane,
+                COALESCE(requested_model, '(none)') AS requested_model,
+                COUNT(*)::int AS count
+              FROM app_jobs
+              WHERE job_type = 'ollama_chat'
+              GROUP BY
+                status,
+                COALESCE(payload_json->>'model_tier', '(none)'),
+                COALESCE(payload_json->>'model_lane', '(none)'),
+                COALESCE(payload_json->>'queue_lane', '(none)'),
+                COALESCE(requested_model, '(none)')
+              ORDER BY
+                status,
+                COALESCE(payload_json->>'model_tier', '(none)'),
+                COALESCE(payload_json->>'model_lane', '(none)'),
+                COALESCE(payload_json->>'queue_lane', '(none)'),
+                COALESCE(requested_model, '(none)')
+            ) t;
+            """
+        ).strip()
+
+        raw_active = _psql_at(
+            """
+            SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)::text
+            FROM (
+              SELECT
+                COALESCE(payload_json->>'queue_lane', '(none)') AS queue_lane,
+                COALESCE(payload_json->>'model_tier', '(none)') AS model_tier,
+                SUM(CASE WHEN status IN ('queued', 'pending') THEN 1 ELSE 0 END)::int AS queued,
+                SUM(CASE WHEN status IN ('running', 'claimed', 'processing', 'in_progress') THEN 1 ELSE 0 END)::int AS running,
+                SUM(CASE WHEN status = 'complete' THEN 1 ELSE 0 END)::int AS complete,
+                SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END)::int AS failed,
+                COUNT(*)::int AS total
+              FROM app_jobs
+              WHERE job_type = 'ollama_chat'
+              GROUP BY
+                COALESCE(payload_json->>'queue_lane', '(none)'),
+                COALESCE(payload_json->>'model_tier', '(none)')
+              ORDER BY
+                COALESCE(payload_json->>'queue_lane', '(none)'),
+                COALESCE(payload_json->>'model_tier', '(none)')
+            ) t;
+            """
+        ).strip()
+
+        summary["by_status_tier_lane"] = _stage5p11t_json.loads(raw_rows or "[]")
+        summary["active_by_queue_lane"] = _stage5p11t_json.loads(raw_active or "[]")
+    except Exception as exc:
+        summary["error"] = str(exc)
+
+    return summary
+
+
 def _system_queue_depth_summary():
     summary = {
         "queued": 0,
@@ -10190,6 +10264,7 @@ def _system_queue_depth_summary():
         "complete": 0,
         "failed": 0,
         "other": 0,
+        "lane_summary": _stage5p11t_app_jobs_lane_summary(),
     }
 
     try:
@@ -10212,6 +10287,7 @@ def _system_queue_depth_summary():
         summary["error"] = str(exc)
 
     return summary
+# STAGE_5P11T_LANE_AWARE_QUEUE_VISIBILITY_END
 
 
 def _system_ct101_laptop_queue_worker_status(checked_at, *, pveso_state, ct101_state):
@@ -16597,6 +16673,7 @@ async def public_chat_queue_status(request: Request):
             "waiting_count": int(waiting_count),
             "running_count": int(running_count),
             "total_active": int(total_active),
+            "lane_summary": _stage5p11t_app_jobs_lane_summary(),
         },
         "job": job_payload,
         "user": {
