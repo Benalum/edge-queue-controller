@@ -1,0 +1,73 @@
+{
+  "api_system_status_latency_summary": {
+    "count": 5,
+    "max_seconds": 2.003484,
+    "mean_seconds": 1.9110192,
+    "median_seconds": 1.925841,
+    "min_seconds": 1.807347
+  },
+  "app_contains_router_dry_run": false,
+  "env_absent": "true",
+  "final_result": "pass",
+  "generated_at": "2026-06-13T05:51:13.381701+00:00",
+  "health_code": "200",
+  "index_contains_stage10h_marker": true,
+  "index_plain_status_script_count": 0,
+  "post_code": "404",
+  "purpose": "api system status latency inspection checkpoint",
+  "queue_clean": "true",
+  "rollout_status_code": "200",
+  "samples": [
+    {
+      "code": "200",
+      "name": "health",
+      "size_download_bytes": "207",
+      "time_total_seconds": "0.034469",
+      "url": "http://127.0.0.1:7070/health"
+    },
+    {
+      "code": "200",
+      "name": "persistent_rollout_status",
+      "size_download_bytes": "327",
+      "time_total_seconds": "0.001931",
+      "url": "http://127.0.0.1:7070/api/router/persistent-rollout/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_1",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "2.003484",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_2",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "1.807347",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_3",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "1.925841",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_4",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "1.943769",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status_5",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "1.874655",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    }
+  ],
+  "source_reference_line_count": 83,
+  "stage": "10J"
+}
