@@ -4005,6 +4005,14 @@ async function stage5p11pRouteCompanionDeckCommand(message) {
     };
   }
 
+  // STAGE_8L_DISABLED_STUDY_SHADOW_READ_OBSERVATION_CALL_V1
+  stage8lObserveRouterShadowReadDisabled({
+    text: "study_command_shadow_observation",
+    source: "study",
+    surface: "study_session",
+    activePage: "study",
+    profileLanguage: "en",
+  });
   const response = await fetch("/api/study/session/command", {
     method: "POST",
     credentials: "include",
@@ -10063,3 +10071,53 @@ async function handleResetPasswordRoute() {
   window.setTimeout(install, 700);
 })();
  // STAGE_5P9A_STUDY_DECK_SELECTOR_END
+
+// STAGE_8L_DISABLED_ROUTER_SHADOW_READ_OBSERVER_V1
+// Passive, disabled-by-default observer. This must never call the router while
+// EdgeRouterShadowRead.ROUTER_SHADOW_READ_ENABLED is false.
+function stage8lObserveRouterShadowReadDisabled(payload) {
+  try {
+    const shadow = window && window.EdgeRouterShadowRead ? window.EdgeRouterShadowRead : null;
+
+    if (!shadow || shadow.ROUTER_SHADOW_READ_ENABLED !== true) {
+      return {
+        ok: false,
+        skipped: true,
+        reason: "router_shadow_read_disabled",
+        dispatch_performed: false,
+        allowed_to_dispatch: false,
+        would_dispatch: false,
+      };
+    }
+
+    const routerPayload = shadow.buildRouterShadowReadPayload(payload);
+
+    return shadow.routerShadowRead(
+      function stage8lDisabledRouterApiGuard() {
+        throw new Error("Stage 8L router API guard: router calls are not allowed while disabled");
+      },
+      routerPayload
+    ).catch(function stage8lRouterShadowReadCatch(error) {
+      return {
+        ok: false,
+        skipped: true,
+        reason: "router_shadow_read_error",
+        error: error && error.message ? error.message : "unknown",
+        dispatch_performed: false,
+        allowed_to_dispatch: false,
+        would_dispatch: false,
+      };
+    });
+  } catch (error) {
+    return {
+      ok: false,
+      skipped: true,
+      reason: "router_shadow_read_unavailable",
+      error: error && error.message ? error.message : "unknown",
+      dispatch_performed: false,
+      allowed_to_dispatch: false,
+      would_dispatch: false,
+    };
+  }
+}
+
