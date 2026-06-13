@@ -1,0 +1,826 @@
+{
+  "counts": {
+    "app_js": {
+      "api_system_status": 0,
+      "bytes": 323331,
+      "dom_content_loaded": 10,
+      "fetch_calls": 26,
+      "lines": 10394,
+      "queue_terms": 343,
+      "queued_chat_config_js": 0,
+      "queued_chat_status_js": 0,
+      "set_interval": 7,
+      "set_timeout": 33,
+      "startup_terms": 161,
+      "status_terms": 342,
+      "window_load": 1
+    },
+    "index_html": {
+      "api_system_status": 0,
+      "bytes": 4078,
+      "dom_content_loaded": 0,
+      "fetch_calls": 0,
+      "lines": 122,
+      "queue_terms": 2,
+      "queued_chat_config_js": 1,
+      "queued_chat_status_js": 1,
+      "set_interval": 0,
+      "set_timeout": 0,
+      "startup_terms": 1,
+      "status_terms": 6,
+      "window_load": 0
+    },
+    "stub": {
+      "api_system_status": 0,
+      "bytes": 6830,
+      "dom_content_loaded": 0,
+      "fetch_calls": 0,
+      "lines": 231,
+      "queue_terms": 0,
+      "queued_chat_config_js": 0,
+      "queued_chat_status_js": 0,
+      "set_interval": 0,
+      "set_timeout": 0,
+      "startup_terms": 0,
+      "status_terms": 1,
+      "window_load": 0
+    }
+  },
+  "env_absent": "true",
+  "final_result": "pass",
+  "generated_at": "2026-06-13T05:36:23.553956+00:00",
+  "health_code": "200",
+  "post_code": "404",
+  "purpose": "frontend startup fetch behavior inspection",
+  "queue_clean": "true",
+  "rollout_status_code": "200",
+  "samples": {
+    "app_js": {
+      "api_system_status": [],
+      "dom_content_loaded": [
+        {
+          "line": 7252,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", runWrapperStartupAuthRefreshNow, { once: true });"
+        },
+        {
+          "line": 7461,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", () => {"
+        },
+        {
+          "line": 8469,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", scheduleNormalizeHeaderActiveState);"
+        },
+        {
+          "line": 8527,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", scheduleCreditsPillRouteState);"
+        },
+        {
+          "line": 8617,
+          "text": "    document.addEventListener(\"DOMContentLoaded\", scheduleSync);"
+        },
+        {
+          "line": 8719,
+          "text": "    document.addEventListener(\"DOMContentLoaded\", syncNavActive);"
+        },
+        {
+          "line": 9066,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", stageSchedule);"
+        },
+        {
+          "line": 9381,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", function () {"
+        },
+        {
+          "line": 9762,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", install);"
+        },
+        {
+          "line": 10070,
+          "text": "  document.addEventListener(\"DOMContentLoaded\", install);"
+        }
+      ],
+      "fetch_calls": [
+        {
+          "line": 325,
+          "text": "  const response = await fetch(`${API_BASE}${path}`, {"
+        },
+        {
+          "line": 2726,
+          "text": "    const res = await fetch(\"/api/study/decks\", {"
+        },
+        {
+          "line": 2769,
+          "text": "    const res = await fetch(`/api/study/cards/${encodeURIComponent(cardId)}/reviews`, {"
+        },
+        {
+          "line": 2886,
+          "text": "    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/review-queue?mode=${encodeURIComponent(mode)}&limit=10`, {"
+        },
+        {
+          "line": 2964,
+          "text": "    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/cards`, {"
+        },
+        {
+          "line": 3061,
+          "text": "    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/card-stats`, {"
+        },
+        {
+          "line": 3128,
+          "text": "      fetch(\"/api/study/progress\", { credentials: \"include\", cache: \"no-store\" }),"
+        },
+        {
+          "line": 3129,
+          "text": "      fetch(\"/api/study/decks\", { credentials: \"include\", cache: \"no-store\" })"
+        },
+        {
+          "line": 3206,
+          "text": "    const res = await fetch(\"/study/study-dashboard.partial.html\", {"
+        },
+        {
+          "line": 3500,
+          "text": "    const res = await fetch(url, {"
+        },
+        {
+          "line": 3550,
+          "text": "    const res = await fetch(`/api/chat/queued/${encodeURIComponent(jobId)}`, {"
+        },
+        {
+          "line": 3815,
+          "text": "  const response = await fetch(\"/api/study/decks\", {"
+        },
+        {
+          "line": 4016,
+          "text": "  const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 4114,
+          "text": "  const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 4209,
+          "text": "  const response = await fetch(\"/api/study/session/status\", {"
+        },
+        {
+          "line": 4226,
+          "text": "  const response = await fetch(\"/api/study/session/command\", {"
+        },
+        {
+          "line": 4406,
+          "text": "    const res = await fetch(\"/api/chat/queued\", {"
+        },
+        {
+          "line": 6913,
+          "text": "    fetch(`${API_BASE}/auth/logout`, {"
+        },
+        {
+          "line": 7056,
+          "text": "        const response = await fetch(url, {"
+        },
+        {
+          "line": 7543,
+          "text": "    const response = await fetch(\"/api/chat/queued\", {"
+        },
+        {
+          "line": 7620,
+          "text": "    const response = await fetch(`/api/chat/queued/${encodeURIComponent(cleanJobId)}`, {"
+        },
+        {
+          "line": 9279,
+          "text": "      const response = await fetch(\"/api/study/session/status\", {"
+        },
+        {
+          "line": 9543,
+          "text": "      const response = await fetch(\"/api/study/session/status\", {"
+        },
+        {
+          "line": 9623,
+          "text": "      const response = await fetch(\"/api/study/session/start\", {"
+        },
+        {
+          "line": 9656,
+          "text": "      const response = await fetch(\"/api/study/session/command\", {"
+        }
+      ],
+      "queue_terms": [
+        {
+          "line": 184,
+          "text": "      [\"Review queue\", \"Practice new, hard, medium, and easy cards in a balanced review flow.\"],"
+        },
+        {
+          "line": 197,
+          "text": "      [\"Companion\", \"General local-first AI conversation through the existing queued worker path.\"],"
+        },
+        {
+          "line": 200,
+          "text": "      [\"Safe migration\", \"No backend queue or controller behavior changes in this visible route stage.\"],"
+        },
+        {
+          "line": 685,
+          "text": "  \"queue\","
+        },
+        {
+          "line": 687,
+          "text": "  \"ct101-laptop-queue-worker\","
+        },
+        {
+          "line": 702,
+          "text": "  queue: \"Job queue and scheduling surface.\","
+        },
+        {
+          "line": 704,
+          "text": "  \"ct101-laptop-queue-worker\": \"Managed CT101 worker processing queued chat jobs with guarded one-at-a-time execution.\","
+        },
+        {
+          "line": 2497,
+          "text": "            <li>Standard queue priority</li>"
+        },
+        {
+          "line": 2509,
+          "text": "            <li>Priority queue</li>"
+        },
+        {
+          "line": 2605,
+          "text": "    const isReviewQueueControl ="
+        },
+        {
+          "line": 2607,
+          "text": "      el.id === \"loadQueueBtn\";"
+        },
+        {
+          "line": 2609,
+          "text": "    if (isSafePreviewSelect || isCreateDeckControl || isCreateCardControl || isReviewQueueControl) {"
+        },
+        {
+          "line": 2755,
+          "text": "  queue: [],"
+        },
+        {
+          "line": 2806,
+          "text": "  const card = studyPreviewReviewState.queue[studyPreviewReviewState.currentIndex];"
+        },
+        {
+          "line": 2809,
+          "text": "    el.innerHTML = `<p class=\"muted\">No cards in the current preview queue.</p>`;"
+        },
+        {
+          "line": 2870,
+          "text": "async function loadStudyWrapperPreviewReviewQueue() {"
+        },
+        {
+          "line": 2884,
+          "text": "    if (statusText) statusText.textContent = \"Loading review queue...\";"
+        },
+        {
+          "line": 2886,
+          "text": "    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/review-queue?mode=${encodeURIComponent(mode)}&limit=10`, {"
+        },
+        {
+          "line": 2893,
+          "text": "      throw new Error(`/api/study/decks/${deckId}/review-queue HTTP ${res.status}: ${text.slice(0, 160)}`);"
+        },
+        {
+          "line": 2897,
+          "text": "    studyPreviewReviewState.queue = Array.isArray(data.cards) ? data.cards : [];"
+        },
+        {
+          "line": 2909,
+          "text": "    if (statusText) statusText.textContent = \"Review queue loaded\";"
+        },
+        {
+          "line": 2911,
+          "text": "    console.error(\"[study-wrapper-preview] review queue failed\", error);"
+        },
+        {
+          "line": 2912,
+          "text": "    if (statusText) statusText.textContent = \"Could not load review queue\";"
+        },
+        {
+          "line": 2913,
+          "text": "    alert(`Could not load review queue: ${error.message || error}`);"
+        },
+        {
+          "line": 2917,
+          "text": "function bindStudyWrapperPreviewReviewQueue() {"
+        }
+      ],
+      "queued_chat_config_js": [],
+      "queued_chat_status_js": [],
+      "set_interval": [
+        {
+          "line": 3531,
+          "text": "  stage5p10fQueuePollTimer = window.setInterval(async function () {"
+        },
+        {
+          "line": 5495,
+          "text": "setInterval(loadSystemStatus, 60000);"
+        },
+        {
+          "line": 6613,
+          "text": "setInterval(cleanHeartbeat, 60000);"
+        },
+        {
+          "line": 7104,
+          "text": "setInterval(() => {"
+        },
+        {
+          "line": 8479,
+          "text": "  window.setInterval(normalizeHeaderActiveState, 1500);"
+        },
+        {
+          "line": 8532,
+          "text": "  window.setInterval(updateCreditsPillRouteState, 1500);"
+        },
+        {
+          "line": 9755,
+          "text": "    window.setInterval(function () {"
+        }
+      ],
+      "set_timeout": [
+        {
+          "line": 598,
+          "text": "            setTimeout(() => {"
+        },
+        {
+          "line": 2154,
+          "text": "    setTimeout(() => {"
+        },
+        {
+          "line": 3578,
+          "text": "    await new Promise((resolve) => setTimeout(resolve, 3000));"
+        },
+        {
+          "line": 5289,
+          "text": "      setTimeout(() => {"
+        },
+        {
+          "line": 5307,
+          "text": "    setTimeout(() => {"
+        },
+        {
+          "line": 5318,
+          "text": "    setTimeout(() => {"
+        },
+        {
+          "line": 6615,
+          "text": "setTimeout(async () => {"
+        },
+        {
+          "line": 6698,
+          "text": "setTimeout(() => {"
+        },
+        {
+          "line": 7089,
+          "text": "setTimeout(() => {"
+        },
+        {
+          "line": 7093,
+          "text": "setTimeout(() => {"
+        },
+        {
+          "line": 7098,
+          "text": "setTimeout(() => {"
+        },
+        {
+          "line": 7246,
+          "text": "  setTimeout(() => {"
+        },
+        {
+          "line": 7437,
+          "text": "    setTimeout(() => {"
+        },
+        {
+          "line": 8449,
+          "text": "    window.setTimeout(normalizeHeaderActiveState, 50);"
+        },
+        {
+          "line": 8450,
+          "text": "    window.setTimeout(normalizeHeaderActiveState, 250);"
+        },
+        {
+          "line": 8521,
+          "text": "    window.setTimeout(updateCreditsPillRouteState, 50);"
+        },
+        {
+          "line": 8522,
+          "text": "    window.setTimeout(updateCreditsPillRouteState, 250);"
+        },
+        {
+          "line": 8591,
+          "text": "    window.setTimeout(syncHeaderNavActiveState, 0);"
+        },
+        {
+          "line": 8592,
+          "text": "    window.setTimeout(syncHeaderNavActiveState, 50);"
+        },
+        {
+          "line": 8622,
+          "text": "  window.setTimeout(scheduleSync, 250);"
+        },
+        {
+          "line": 8696,
+          "text": "    window.setTimeout(syncNavActive, 0);"
+        },
+        {
+          "line": 8697,
+          "text": "    window.setTimeout(syncNavActive, 50);"
+        },
+        {
+          "line": 8707,
+          "text": "    window.setTimeout(syncNavActive, 0);"
+        },
+        {
+          "line": 8714,
+          "text": "    window.setTimeout(syncNavActive, 0);"
+        },
+        {
+          "line": 8724,
+          "text": "  window.setTimeout(syncNavActive, 50);"
+        }
+      ],
+      "startup_terms": [
+        {
+          "line": 139,
+          "text": "      if (typeof renderRoute === \"function\") {"
+        },
+        {
+          "line": 140,
+          "text": "        renderRoute(cleanPath);"
+        },
+        {
+          "line": 405,
+          "text": "  renderCreditsPill?.();"
+        },
+        {
+          "line": 410,
+          "text": "  if (!Number.isFinite(n)) return \"0\";"
+        },
+        {
+          "line": 414,
+          "text": "function renderCreditsPill() {"
+        },
+        {
+          "line": 457,
+          "text": "function renderAuthButtons() {"
+        },
+        {
+          "line": 462,
+          "text": "  renderCreditsPill();"
+        },
+        {
+          "line": 600,
+          "text": "                renderPage();"
+        },
+        {
+          "line": 602,
+          "text": "                // ignore render failures"
+        },
+        {
+          "line": 661,
+          "text": "renderPage();"
+        },
+        {
+          "line": 909,
+          "text": "function renderCards(cards) {"
+        },
+        {
+          "line": 922,
+          "text": "function renderBoxes(boxes) {"
+        },
+        {
+          "line": 935,
+          "text": "function renderInfraCards(items) {"
+        },
+        {
+          "line": 968,
+          "text": "function renderLedgerRows(items) {"
+        },
+        {
+          "line": 992,
+          "text": "function renderReservationRows(items) {"
+        },
+        {
+          "line": 1037,
+          "text": "function renderApiCards(items) {"
+        },
+        {
+          "line": 1091,
+          "text": "function renderGpuOptions() {"
+        },
+        {
+          "line": 1105,
+          "text": "function renderGpuQuoteBox() {"
+        },
+        {
+          "line": 1154,
+          "text": "function renderGpuReserveResult() {"
+        },
+        {
+          "line": 1212,
+          "text": "    renderPage();"
+        },
+        {
+          "line": 1248,
+          "text": "    renderPage();"
+        },
+        {
+          "line": 1293,
+          "text": "    renderPage();"
+        },
+        {
+          "line": 1320,
+          "text": "function renderGpuSessionsList() {"
+        },
+        {
+          "line": 1395,
+          "text": "    renderPage();"
+        },
+        {
+          "line": 1433,
+          "text": "    renderPage();"
+        }
+      ],
+      "status_terms": [
+        {
+          "line": 27,
+          "text": "let lastStatus = null;"
+        },
+        {
+          "line": 28,
+          "text": "let adminStatus = null;"
+        },
+        {
+          "line": 36,
+          "text": "let adminSystemStatus = null;"
+        },
+        {
+          "line": 39,
+          "text": "let adRewardStatus = null;"
+        },
+        {
+          "line": 257,
+          "text": "      \"Manage users, credits, support tickets, and infrastructure status from one admin-only dashboard.\","
+        },
+        {
+          "line": 270,
+          "text": "    eyebrow: \"Platform status\","
+        },
+        {
+          "line": 311,
+          "text": " * - /system/* = controller-owned status, power, and account endpoints"
+        },
+        {
+          "line": 340,
+          "text": "    throw new Error(data.detail || data.error || `HTTP ${response.status}`);"
+        },
+        {
+          "line": 353,
+          "text": "  const state = lastStatus?.overall_state || \"unknown\";"
+        },
+        {
+          "line": 393,
+          "text": "    billing_status: credits.billing_status || user.billing_status || \"none\","
+        },
+        {
+          "line": 522,
+          "text": "  // Presence is a lightweight heartbeat. It should keep online status fresh,"
+        },
+        {
+          "line": 542,
+          "text": "      \"/ads/reward/status\","
+        },
+        {
+          "line": 558,
+          "text": "      \"/system/public-status\","
+        },
+        {
+          "line": 559,
+          "text": "      \"/system/status\","
+        },
+        {
+          "line": 665,
+          "text": "  return (adminStatus?.nodes || []).find((node) => node.id === id);"
+        },
+        {
+          "line": 670,
+          "text": "    (lastStatus?.apis || lastStatus?.services || []).find((service) => service.id === id)"
+        },
+        {
+          "line": 705,
+          "text": "  \"power-automation\": \"Power automation status.\","
+        },
+        {
+          "line": 708,
+          "text": "function getNormalizedStatus(source = lastStatus) {"
+        },
+        {
+          "line": 715,
+          "text": "  const normalized = getNormalizedStatus(source);"
+        },
+        {
+          "line": 735,
+          "text": "function normalizedInfrastructureGroups(source = lastStatus) {"
+        },
+        {
+          "line": 747,
+          "text": "      counts: statusCounts(members.map(() => state)),"
+        },
+        {
+          "line": 754,
+          "text": "function normalizedPlatformGroups(source = lastStatus) {"
+        },
+        {
+          "line": 766,
+          "text": "function statusCounts(states) {"
+        },
+        {
+          "line": 799,
+          "text": "  const counts = statusCounts(states);"
+        },
+        {
+          "line": 1002,
+          "text": "        const isReserved = item.status === \"reserved\";"
+        }
+      ],
+      "window_load": [
+        {
+          "line": 1967,
+          "text": "      existing.addEventListener(\"load\", () => resolve(window.googletag), { once: true });"
+        }
+      ]
+    },
+    "index_html": {
+      "api_system_status": [],
+      "dom_content_loaded": [],
+      "fetch_calls": [],
+      "queue_terms": [
+        {
+          "line": 118,
+          "text": "  <script src=\"/queued_chat_config.js\"></script>"
+        },
+        {
+          "line": 119,
+          "text": "<script src=\"/queued_chat_status.js\"></script>"
+        }
+      ],
+      "queued_chat_config_js": [
+        {
+          "line": 118,
+          "text": "  <script src=\"/queued_chat_config.js\"></script>"
+        }
+      ],
+      "queued_chat_status_js": [
+        {
+          "line": 119,
+          "text": "<script src=\"/queued_chat_status.js\"></script>"
+        }
+      ],
+      "set_interval": [],
+      "set_timeout": [],
+      "startup_terms": [
+        {
+          "line": 5,
+          "text": "  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />"
+        }
+      ],
+      "status_terms": [
+        {
+          "line": 53,
+          "text": "  <aside id=\"systemDrawer\" class=\"system-drawer hidden\" aria-label=\"System status drawer\">"
+        },
+        {
+          "line": 56,
+          "text": "        <h2>System Status</h2>"
+        },
+        {
+          "line": 65,
+          "text": "    <div class=\"status-grid\">"
+        },
+        {
+          "line": 68,
+          "text": "        <div id=\"drawerNodes\" class=\"status-list\"></div>"
+        },
+        {
+          "line": 73,
+          "text": "        <div id=\"drawerServices\" class=\"status-list\"></div>"
+        },
+        {
+          "line": 119,
+          "text": "<script src=\"/queued_chat_status.js\"></script>"
+        }
+      ],
+      "window_load": []
+    },
+    "stub": {
+      "api_system_status": [],
+      "dom_content_loaded": [],
+      "fetch_calls": [],
+      "queue_terms": [],
+      "queued_chat_config_js": [],
+      "queued_chat_status_js": [],
+      "set_interval": [],
+      "set_timeout": [],
+      "startup_terms": [],
+      "status_terms": [
+        {
+          "line": 216,
+          "text": "      status: response.status,"
+        }
+      ],
+      "window_load": []
+    }
+  },
+  "stage": "10E",
+  "stage10c_route_metrics": [
+    {
+      "code": "200",
+      "name": "root",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.009592",
+      "url": "http://127.0.0.1:8787/"
+    },
+    {
+      "code": "200",
+      "name": "chat",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.002270",
+      "url": "http://127.0.0.1:8787/chat"
+    },
+    {
+      "code": "200",
+      "name": "study",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.002271",
+      "url": "http://127.0.0.1:8787/study"
+    },
+    {
+      "code": "200",
+      "name": "companion",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.001588",
+      "url": "http://127.0.0.1:8787/companion"
+    },
+    {
+      "code": "200",
+      "name": "profile",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.002474",
+      "url": "http://127.0.0.1:8787/profile"
+    },
+    {
+      "code": "200",
+      "name": "admin",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.001572",
+      "url": "http://127.0.0.1:8787/admin"
+    },
+    {
+      "code": "200",
+      "name": "system",
+      "size_download_bytes": "4078",
+      "time_total_seconds": "0.002396",
+      "url": "http://127.0.0.1:8787/system"
+    },
+    {
+      "code": "200",
+      "name": "styles_css",
+      "size_download_bytes": "57138",
+      "time_total_seconds": "0.003077",
+      "url": "http://127.0.0.1:8787/styles.css"
+    },
+    {
+      "code": "200",
+      "name": "app_js",
+      "size_download_bytes": "323331",
+      "time_total_seconds": "0.001896",
+      "url": "http://127.0.0.1:8787/app.js"
+    },
+    {
+      "code": "200",
+      "name": "queued_chat_config",
+      "size_download_bytes": "911",
+      "time_total_seconds": "0.001824",
+      "url": "http://127.0.0.1:8787/queued_chat_config.js"
+    },
+    {
+      "code": "200",
+      "name": "queued_chat_status",
+      "size_download_bytes": "3840",
+      "time_total_seconds": "0.002310",
+      "url": "http://127.0.0.1:8787/queued_chat_status.js"
+    },
+    {
+      "code": "200",
+      "name": "router_shadow_read_stub",
+      "size_download_bytes": "6830",
+      "time_total_seconds": "0.001420",
+      "url": "http://127.0.0.1:8787/router_shadow_read_stub.js"
+    },
+    {
+      "code": "200",
+      "name": "api_system_status",
+      "size_download_bytes": "4010",
+      "time_total_seconds": "2.058351",
+      "url": "http://127.0.0.1:8787/api/system/status"
+    }
+  ]
+}
