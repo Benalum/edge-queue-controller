@@ -7952,8 +7952,9 @@ def _study_parse_deterministic_intent(message: str, session_status: str = "none"
 
     has_study = "study" in tokens
     has_session = "session" in tokens
+    session_status_text = str(session_status or "none")
     active_statuses = {"active", "reviewing_answer", "waiting_for_mark", "paused"}
-    has_active_session = str(session_status or "none") in active_statuses
+    has_active_session = session_status_text in active_statuses
 
     if not text:
         return {
@@ -8015,6 +8016,16 @@ def _study_parse_deterministic_intent(message: str, session_status: str = "none"
             "reason": "Message contains study + session + status/state/progress.",
         }
 
+    if session_status_text == "paused" and _study_text_has_any(text, ("resume", "continue")):
+        return {
+            "intent": "study_session_resume",
+            "command": "resume",
+            "session_required": True,
+            "model_tier": "small",
+            "queue_lane": "study-small",
+            "reason": "Paused study session and user requested resume/continue.",
+        }
+
     if has_active_session:
         if "answer" in tokens and _study_text_has_any(text, ("read", "show", "tell", "what")):
             return {
@@ -8056,14 +8067,20 @@ def _study_parse_deterministic_intent(message: str, session_status: str = "none"
                 "reason": "Active study session and user requested skip/pass.",
             }
 
-        if _study_text_has_any(text, ("next",)):
+        if (
+            _study_text_has_any(text, ("next", "continue"))
+            or "next card" in text
+            or "next question" in text
+            or "go on" in text
+            or "move on" in text
+        ):
             return {
                 "intent": "study_next_card",
                 "command": "next_card",
                 "session_required": True,
                 "model_tier": "small",
                 "queue_lane": "study-small",
-                "reason": "Active study session and user requested next card.",
+                "reason": "Active study session and user requested next/continue.",
             }
 
         return {
