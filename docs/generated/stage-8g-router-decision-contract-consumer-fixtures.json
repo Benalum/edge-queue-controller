@@ -1,0 +1,85 @@
+{
+  "fixtures": [
+    {
+      "consumer_view": {
+        "allowed_to_dispatch": false,
+        "confidence": 0.98,
+        "dispatch_performed": false,
+        "eligible_for_dispatch": false,
+        "intent_key": "study.card.next",
+        "legacy_intent_name": "study.next",
+        "model_call_required": false,
+        "needs_confirmation": false,
+        "selected_path": "study_command",
+        "would_dispatch": false
+      },
+      "expected_selected_path": "study_command",
+      "name": "study_next"
+    },
+    {
+      "consumer_view": {
+        "allowed_to_dispatch": false,
+        "confidence": 0.96,
+        "dispatch_performed": false,
+        "eligible_for_dispatch": false,
+        "intent_key": "study.card.skip",
+        "legacy_intent_name": "study.skip",
+        "model_call_required": false,
+        "needs_confirmation": false,
+        "selected_path": "study_command",
+        "would_dispatch": false
+      },
+      "expected_selected_path": "study_command",
+      "name": "study_skip"
+    },
+    {
+      "consumer_view": {
+        "allowed_to_dispatch": false,
+        "confidence": 0.7,
+        "dispatch_performed": false,
+        "eligible_for_dispatch": false,
+        "intent_key": "study.card.answer",
+        "legacy_intent_name": "study.answer",
+        "model_call_required": false,
+        "needs_confirmation": false,
+        "selected_path": "study_command",
+        "would_dispatch": false
+      },
+      "expected_selected_path": "study_command",
+      "name": "study_answer"
+    },
+    {
+      "consumer_view": {
+        "allowed_to_dispatch": false,
+        "confidence": 0.75,
+        "dispatch_performed": false,
+        "eligible_for_dispatch": false,
+        "intent_key": null,
+        "legacy_intent_name": "companion.chat",
+        "model_call_required": false,
+        "needs_confirmation": false,
+        "selected_path": "companion_chat",
+        "would_dispatch": false
+      },
+      "expected_selected_path": "companion_chat",
+      "name": "companion_chat"
+    },
+    {
+      "consumer_view": {
+        "allowed_to_dispatch": false,
+        "confidence": 0.0,
+        "dispatch_performed": false,
+        "eligible_for_dispatch": false,
+        "intent_key": null,
+        "legacy_intent_name": "unknown.unsupported",
+        "model_call_required": false,
+        "needs_confirmation": false,
+        "selected_path": "unsupported",
+        "would_dispatch": false
+      },
+      "expected_selected_path": "unsupported",
+      "name": "admin_blocked"
+    }
+  ],
+  "stage": "8G"
+}
