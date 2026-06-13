@@ -10443,6 +10443,121 @@ def _stage5p12d_registered_laptop_queue_worker_capacity(worker_id, worker_node_i
 
 
 # STAGE_5P12F_LANE_DISPATCH_READINESS_PLAN_BEGIN
+
+
+def _stage5p12r_model_memory_status_read_only() -> dict:
+    """Read-only model memory status evidence for Phase 12R-F.
+
+    This helper must not warm, unload, stop, or start models. It only reads:
+    - CT101 Ollama version/tags/ps through the discovered Tailscale-bound URL
+    - local controller memory snapshot as lightweight status evidence
+    """
+    import json as _stage5p12r_json
+    import os as _stage5p12r_os
+    import urllib.request as _stage5p12r_urllib_request
+
+    base_url = (
+        _stage5p12r_os.getenv("EDGE_MODEL_MEMORY_OLLAMA_BASE_URL")
+        or _stage5p12r_os.getenv("EDGE_OLLAMA_BASE_URL")
+        or "http://100.88.245.33:11434"
+    ).rstrip("/")
+
+    status = {
+        "source": "phase_12r_f_read_only_model_memory_status",
+        "mode": "read_only",
+        "ollama_base_url": base_url,
+        "ollama_reachable": False,
+        "ollama_version": None,
+        "installed_models": [],
+        "loaded_models": [],
+        "memory": {
+            "mem_total_mb": None,
+            "mem_available_mb": None,
+            "swap_total_mb": None,
+            "swap_free_mb": None,
+        },
+        "safe_eviction_candidates": [],
+        "active_models": [],
+        "warming_models": [],
+        "last_warmup_decision": None,
+        "last_eviction_decision": None,
+        "warnings": [],
+        "errors": [],
+    }
+
+    def _read_json(path: str, timeout: int = 4):
+        url = f"{base_url}{path}"
+        try:
+            req = _stage5p12r_urllib_request.Request(url, headers={"Accept": "application/json"})
+            with _stage5p12r_urllib_request.urlopen(req, timeout=timeout) as resp:
+                raw = resp.read(1024 * 1024).decode("utf-8", errors="replace")
+                return int(getattr(resp, "status", 0) or 0), _stage5p12r_json.loads(raw)
+        except Exception as exc:
+            status["errors"].append({
+                "path": path,
+                "error": type(exc).__name__,
+                "message": str(exc)[:240],
+            })
+            return 0, None
+
+    def _model_names(payload):
+        if not isinstance(payload, dict):
+            return []
+        models = payload.get("models") or []
+        names = []
+        if isinstance(models, list):
+            for item in models:
+                if isinstance(item, dict):
+                    name = item.get("name") or item.get("model")
+                    if name:
+                        names.append(str(name))
+        return names
+
+    code, payload = _read_json("/api/version", timeout=4)
+    if code == 200 and isinstance(payload, dict):
+        status["ollama_reachable"] = True
+        status["ollama_version"] = payload.get("version")
+
+    code, payload = _read_json("/api/tags", timeout=5)
+    if code == 200:
+        status["ollama_reachable"] = True
+        status["installed_models"] = _model_names(payload)
+
+    code, payload = _read_json("/api/ps", timeout=5)
+    if code == 200:
+        status["ollama_reachable"] = True
+        status["loaded_models"] = _model_names(payload)
+
+    try:
+        meminfo = {}
+        with open("/proc/meminfo", "r", encoding="utf-8") as fh:
+            for line in fh:
+                parts = line.split()
+                if len(parts) >= 2:
+                    key = parts[0].rstrip(":")
+                    try:
+                        meminfo[key] = int(parts[1])
+                    except ValueError:
+                        pass
+        status["memory"] = {
+            "mem_total_mb": round(meminfo.get("MemTotal", 0) / 1024) if meminfo.get("MemTotal") else None,
+            "mem_available_mb": round(meminfo.get("MemAvailable", 0) / 1024) if meminfo.get("MemAvailable") else None,
+            "swap_total_mb": round(meminfo.get("SwapTotal", 0) / 1024) if meminfo.get("SwapTotal") else None,
+            "swap_free_mb": round(meminfo.get("SwapFree", 0) / 1024) if meminfo.get("SwapFree") else None,
+        }
+    except Exception as exc:
+        status["warnings"].append({
+            "warning": "memory_snapshot_unavailable",
+            "error": type(exc).__name__,
+            "message": str(exc)[:240],
+        })
+
+    if not status["ollama_reachable"]:
+        status["warnings"].append({"warning": "ollama_not_reachable_read_only_status"})
+
+    return status
+
+
 def _stage5p12f_lane_dispatch_readiness(registered_capacity):
     """Public-safe read-only lane dispatch readiness plan.
 
@@ -11089,6 +11204,7 @@ printf 'last_log=%s\n' "$last_log"
             "registered_capacity": registered_capacity,
             "lane_dispatch_readiness": _stage5p12f_lane_dispatch_readiness(registered_capacity),
             "persistent_lane_cutover_readiness": _stage5p12o_persistent_lane_cutover_readiness(registered_capacity),
+        "model_memory_status": _stage5p12r_model_memory_status_read_only(),
             "real_user_jobs_enabled": facts.get("real_user_jobs") == "1",
             "synthetic_only": facts.get("synthetic_only") == "1",
             "base_url_set": facts.get("base_url_set") == "yes",
