@@ -97,6 +97,18 @@ async function routerShadowRead(_apiFn, _payload) {
   };
 }
 
+// STAGE_8K_BROWSER_NAMESPACE_EXPORT_V1
+// Browser-safe namespace for future frontend wiring. Loading this file does not call the router.
+if (typeof window !== "undefined") {
+  window.EdgeRouterShadowRead = {
+    ROUTER_SHADOW_READ_ENABLED,
+    buildRouterShadowReadPayload,
+    extractRouterDecisionContract,
+    isRouterDecisionShadowSafe,
+    routerShadowRead,
+  };
+}
+
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     ROUTER_SHADOW_READ_ENABLED,
