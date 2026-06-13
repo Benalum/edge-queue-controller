@@ -236,10 +236,16 @@ class LaptopQueueClient:
             """
         )
 
-    def claim_next_job(self, *, worker_id: str, job_type: str | None = None) -> dict[str, Any] | None:
+    def claim_next_job(self, *, worker_id: str, job_type: str | None = None, queue_lane: str | None = None) -> dict[str, Any] | None:
         job_type_filter = ""
         if job_type:
             job_type_filter = f"AND job_type = {_sql_literal(job_type)}"
+
+        # STAGE_5P11W_OPTIONAL_QUEUE_LANE_CLAIM_BEGIN
+        queue_lane_filter = ""
+        if queue_lane:
+            queue_lane_filter = f"AND payload_json->>'queue_lane' = {_sql_literal(queue_lane)}"
+        # STAGE_5P11W_OPTIONAL_QUEUE_LANE_CLAIM_END
 
         raw = self.psql_at(
             f"""
@@ -248,6 +254,7 @@ class LaptopQueueClient:
                 FROM app_jobs
                 WHERE status = 'queued'
                   {job_type_filter}
+                  {queue_lane_filter}
                 ORDER BY created_at, id
                 LIMIT 1
                 FOR UPDATE SKIP LOCKED

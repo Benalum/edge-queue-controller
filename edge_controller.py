@@ -15503,6 +15503,9 @@ class _S5E4SyntheticSetupRequest(_S5E4_BaseModel):
 class _S5E4ClaimRequest(_S5E4_BaseModel):
     worker_id: str
     job_type: str | None = None
+    # STAGE_5P11W_OPTIONAL_QUEUE_LANE_CLAIM_BEGIN
+    queue_lane: str | None = None
+    # STAGE_5P11W_OPTIONAL_QUEUE_LANE_CLAIM_END
 
 
 class _S5E4CompleteRequest(_S5E4_BaseModel):
@@ -15642,7 +15645,11 @@ async def s5e4_laptop_queue_claim_job(
     client = _s5e4_queue_client()
 
     try:
-        job = client.claim_next_job(worker_id=request.worker_id, job_type=request.job_type)
+        job = client.claim_next_job(
+            worker_id=request.worker_id,
+            job_type=request.job_type,
+            queue_lane=request.queue_lane,
+        )
     except Exception as exc:
         raise _S5E4_HTTPException(status_code=500, detail=str(exc)) from exc
 
