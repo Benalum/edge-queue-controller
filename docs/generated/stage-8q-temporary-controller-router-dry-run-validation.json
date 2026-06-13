@@ -1,0 +1,77 @@
+{
+  "all_cases_passed": true,
+  "cases": [
+    {
+      "allowed_to_dispatch": false,
+      "dispatch_performed": false,
+      "dry_run": true,
+      "eligible_for_dispatch": false,
+      "http_code": "200",
+      "intent_key": "study.card.next",
+      "legacy_intent_name": "study.next",
+      "model_call_required": false,
+      "name": "study_next",
+      "passed": true,
+      "selected_path": "study_command"
+    },
+    {
+      "allowed_to_dispatch": false,
+      "dispatch_performed": false,
+      "dry_run": true,
+      "eligible_for_dispatch": false,
+      "http_code": "200",
+      "intent_key": "study.card.skip",
+      "legacy_intent_name": "study.skip",
+      "model_call_required": false,
+      "name": "study_skip",
+      "passed": true,
+      "selected_path": "study_command"
+    },
+    {
+      "allowed_to_dispatch": false,
+      "dispatch_performed": false,
+      "dry_run": true,
+      "eligible_for_dispatch": false,
+      "http_code": "200",
+      "intent_key": "study.card.answer",
+      "legacy_intent_name": "study.answer",
+      "model_call_required": false,
+      "name": "study_answer",
+      "passed": true,
+      "selected_path": "study_command"
+    },
+    {
+      "allowed_to_dispatch": false,
+      "dispatch_performed": false,
+      "dry_run": true,
+      "eligible_for_dispatch": false,
+      "http_code": "200",
+      "intent_key": null,
+      "legacy_intent_name": "companion.chat",
+      "model_call_required": false,
+      "name": "companion_chat",
+      "passed": true,
+      "selected_path": "companion_chat"
+    },
+    {
+      "allowed_to_dispatch": false,
+      "dispatch_performed": false,
+      "dry_run": true,
+      "eligible_for_dispatch": false,
+      "http_code": "200",
+      "intent_key": null,
+      "legacy_intent_name": "unknown.unsupported",
+      "model_call_required": false,
+      "name": "admin_blocked",
+      "passed": true,
+      "selected_path": "unsupported"
+    }
+  ],
+  "dispatch_enabled": false,
+  "frontend_router_traffic_enabled": false,
+  "live_router_enabled": false,
+  "model_calls_enabled": false,
+  "stage": "8Q",
+  "temporary_controller_port": 7076,
+  "temporary_router_enabled": true
+}
