@@ -1,0 +1,19 @@
+{
+  "final_result": "pass",
+  "generated_at": "2026-06-13T03:52:33.348219+00:00",
+  "health_after": "200",
+  "health_before": "200",
+  "health_enabled": "200",
+  "legacy_timer_active_after": "inactive",
+  "legacy_timer_enabled_after": "disabled",
+  "post_after": "404",
+  "post_before": "404",
+  "post_enabled": "200",
+  "power_timer_after": "active",
+  "purpose": "controlled live backend router dry-run activation and rollback",
+  "queue_after_clean": "true",
+  "queue_before_clean": "true",
+  "queue_enabled_clean": "true",
+  "remediation_timer_after": "active",
+  "stage": "8T"
+}
