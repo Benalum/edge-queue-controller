@@ -1,0 +1,207 @@
+{
+  "app_contains_router_dry_run": false,
+  "env_absent": "true",
+  "final_result": "pass",
+  "functions": {
+    "_system_ct101_laptop_queue_worker_status": {
+      "called_names": [
+        "_system_queue_depth_summary",
+        "append",
+        "get",
+        "int",
+        "isdigit",
+        "join",
+        "run",
+        "split",
+        "splitlines",
+        "str",
+        "strip",
+        "update"
+      ],
+      "end_line": 10388,
+      "line_count": 190,
+      "pattern_counts": {
+        "curl": 0,
+        "file_io": 0,
+        "pct": 1,
+        "power_auto": 0,
+        "queue_worker": 52,
+        "requests": 0,
+        "sleep_timeout": 1,
+        "sqlite": 0,
+        "ssh": 6,
+        "subprocess": 1,
+        "systemctl": 2,
+        "urlopen": 0
+      },
+      "start_line": 10199
+    },
+    "_system_frontend_wrapper_status": {
+      "called_names": [
+        "_system_systemd_unit_facts",
+        "get"
+      ],
+      "end_line": 9975,
+      "line_count": 23,
+      "pattern_counts": {
+        "curl": 0,
+        "file_io": 0,
+        "pct": 0,
+        "power_auto": 0,
+        "queue_worker": 0,
+        "requests": 0,
+        "sleep_timeout": 0,
+        "sqlite": 0,
+        "ssh": 0,
+        "subprocess": 0,
+        "systemctl": 0,
+        "urlopen": 0
+      },
+      "start_line": 9953
+    },
+    "_system_pct_status": {
+      "called_names": [
+        "_system_run",
+        "lower"
+      ],
+      "end_line": 9891,
+      "line_count": 37,
+      "pattern_counts": {
+        "curl": 0,
+        "file_io": 0,
+        "pct": 2,
+        "power_auto": 0,
+        "queue_worker": 0,
+        "requests": 0,
+        "sleep_timeout": 2,
+        "sqlite": 0,
+        "ssh": 2,
+        "subprocess": 0,
+        "systemctl": 0,
+        "urlopen": 0
+      },
+      "start_line": 9855
+    },
+    "_system_power_automation_status": {
+      "called_names": [
+        "_parse_bool_env",
+        "_system_systemd_unit_facts",
+        "get"
+      ],
+      "end_line": 10049,
+      "line_count": 44,
+      "pattern_counts": {
+        "curl": 0,
+        "file_io": 0,
+        "pct": 0,
+        "power_auto": 14,
+        "queue_worker": 6,
+        "requests": 0,
+        "sleep_timeout": 0,
+        "sqlite": 0,
+        "ssh": 0,
+        "subprocess": 0,
+        "systemctl": 0,
+        "urlopen": 0
+      },
+      "start_line": 10006
+    },
+    "_system_queue_status_from_worker": {
+      "called_names": [
+        "get",
+        "isinstance"
+      ],
+      "end_line": 10003,
+      "line_count": 26,
+      "pattern_counts": {
+        "curl": 0,
+        "file_io": 0,
+        "pct": 0,
+        "power_auto": 0,
+        "queue_worker": 22,
+        "requests": 0,
+        "sleep_timeout": 0,
+        "sqlite": 0,
+        "ssh": 0,
+        "subprocess": 0,
+        "systemctl": 0,
+        "urlopen": 0
+      },
+      "start_line": 9978
+    },
+    "_system_status_normalized_block": {
+      "called_names": [
+        "get",
+        "isinstance",
+        "master_api_state",
+        "next",
+        "node_state",
+        "service_state"
+      ],
+      "end_line": 10164,
+      "line_count": 113,
+      "pattern_counts": {
+        "curl": 0,
+        "file_io": 0,
+        "pct": 0,
+        "power_auto": 1,
+        "queue_worker": 17,
+        "requests": 0,
+        "sleep_timeout": 0,
+        "sqlite": 0,
+        "ssh": 2,
+        "subprocess": 0,
+        "systemctl": 0,
+        "urlopen": 0
+      },
+      "start_line": 10052
+    },
+    "system_status": {
+      "called_names": [
+        "_system_ct101_laptop_queue_worker_status",
+        "_system_frontend_wrapper_status",
+        "_system_http_check",
+        "_system_laptop_specs",
+        "_system_now_iso",
+        "_system_pct_status",
+        "_system_power_automation_status",
+        "_system_queue_status_from_worker",
+        "_system_read_booting_marker",
+        "_system_ssh_check",
+        "_system_status_normalized_block",
+        "_system_tcp_check",
+        "any",
+        "append",
+        "get"
+      ],
+      "end_line": 10564,
+      "line_count": 165,
+      "pattern_counts": {
+        "curl": 0,
+        "file_io": 0,
+        "pct": 0,
+        "power_auto": 1,
+        "queue_worker": 11,
+        "requests": 0,
+        "sleep_timeout": 2,
+        "sqlite": 0,
+        "ssh": 37,
+        "subprocess": 0,
+        "systemctl": 0,
+        "urlopen": 0
+      },
+      "start_line": 10400
+    }
+  },
+  "generated_at": "2026-06-13T05:56:15.345480+00:00",
+  "health_code": "200",
+  "helper_scan_line_count": 7,
+  "index_contains_stage10h_marker": true,
+  "index_plain_status_script_count": 0,
+  "post_code": "404",
+  "purpose": "system status backend dependency inspection",
+  "queue_clean": "true",
+  "rollout_status_code": "200",
+  "source_map_line_count": 7,
+  "stage": "10L"
+}
