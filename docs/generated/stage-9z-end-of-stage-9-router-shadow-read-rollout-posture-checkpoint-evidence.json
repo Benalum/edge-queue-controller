@@ -1,0 +1,14 @@
+{
+  "env_absent": "true",
+  "final_result": "pass",
+  "generated_at": "2026-06-13T05:25:06.653815+00:00",
+  "health_code": "200",
+  "post_code": "404",
+  "purpose": "end-of-Stage-9 router shadow-read rollout posture checkpoint",
+  "queue_clean": "true",
+  "request_mutation_code": "404",
+  "stage": "9Z",
+  "status_code": "200",
+  "status_mutation_code": "405",
+  "status_runtime": "pass"
+}
