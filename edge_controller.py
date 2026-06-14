@@ -18950,3 +18950,235 @@ async def admin_intent_router_preview(request: Request, payload: dict | None = N
             "no_tool_call": True,
         },
     }
+
+# --- Phase 13D disabled study answer-evaluation foundation ----------------
+
+def _stage5p13d_disabled_study_answer_evaluation_foundation(
+    expected_answer: str,
+    user_answer: str,
+    question: str | None = None,
+    profile: dict | None = None,
+) -> dict:
+    """
+    Disabled, pure study answer-evaluation foundation.
+
+    This helper intentionally avoids hardcoded semantic grading. It only handles
+    safe deterministic matches and marks non-exact answers as requiring a future
+    small Study Judge model. It is not wired to live Study review flow, does not
+    call a model, does not enqueue jobs, does not write to a database, and does
+    not change card state.
+    """
+    profile = profile or {}
+
+    raw_expected = "" if expected_answer is None else str(expected_answer)
+    raw_user = "" if user_answer is None else str(user_answer)
+    raw_question = "" if question is None else str(question)
+
+    number_words = {
+        "zero": "0",
+        "one": "1",
+        "two": "2",
+        "three": "3",
+        "four": "4",
+        "five": "5",
+        "six": "6",
+        "seven": "7",
+        "eight": "8",
+        "nine": "9",
+        "ten": "10",
+        "eleven": "11",
+        "twelve": "12",
+        "thirteen": "13",
+        "fourteen": "14",
+        "fifteen": "15",
+        "sixteen": "16",
+        "seventeen": "17",
+        "eighteen": "18",
+        "nineteen": "19",
+        "twenty": "20",
+    }
+
+    answer_prefixes = [
+        "the answer is ",
+        "answer is ",
+        "my answer is ",
+        "it is ",
+        "it's ",
+        "i think it is ",
+        "i think ",
+    ]
+
+    def normalize_text(value: str) -> str:
+        lowered = str(value).strip().lower()
+        cleaned_chars = []
+        for char in lowered:
+            if char.isalnum() or char.isspace():
+                cleaned_chars.append(char)
+            else:
+                cleaned_chars.append(" ")
+        return " ".join("".join(cleaned_chars).split())
+
+    def strip_answer_prefix(value: str) -> str:
+        stripped = value
+        changed = True
+        while changed:
+            changed = False
+            for prefix in answer_prefixes:
+                if stripped.startswith(prefix):
+                    stripped = stripped[len(prefix):].strip()
+                    changed = True
+        return stripped
+
+    def canonical_tokens(value: str) -> list[str]:
+        normalized = strip_answer_prefix(normalize_text(value))
+        return [number_words.get(token, token) for token in normalized.split()]
+
+    expected_tokens = canonical_tokens(raw_expected)
+    user_tokens = canonical_tokens(raw_user)
+
+    expected_normalized = " ".join(expected_tokens)
+    user_normalized = " ".join(user_tokens)
+
+    expected_number_matches = [
+        {"token": token, "value": number_words[token]}
+        for token in normalize_text(raw_expected).split()
+        if token in number_words
+    ]
+    user_number_matches = [
+        {"token": token, "value": number_words[token]}
+        for token in normalize_text(raw_user).split()
+        if token in number_words
+    ]
+
+    verdict = "unsure"
+    match_type = "requires_semantic_judge"
+    relationship = "unknown_until_model_judge"
+    confidence = 0.0
+    explanation = "The answers are not an exact deterministic match; a future small Study Judge model should compare meaning."
+    needs_model_judge = True
+    recommended_model_tier = "tier_2_study_light"
+    deterministic_match = False
+
+    if not expected_normalized:
+        verdict = "unsure"
+        match_type = "missing_expected_answer"
+        relationship = "missing_expected_answer"
+        confidence = 0.0
+        explanation = "The stored expected answer is empty."
+        needs_model_judge = False
+        recommended_model_tier = "none"
+
+    elif not user_normalized:
+        verdict = "incorrect"
+        match_type = "empty_user_answer"
+        relationship = "missing_user_answer"
+        confidence = 0.95
+        explanation = "The user answer is empty."
+        needs_model_judge = False
+        recommended_model_tier = "none"
+
+    elif expected_normalized == user_normalized:
+        verdict = "correct"
+        match_type = "normalized_exact"
+        relationship = "same_normalized_answer"
+        confidence = 0.99
+        explanation = "The normalized answers match exactly."
+        needs_model_judge = False
+        recommended_model_tier = "none"
+        deterministic_match = True
+
+    if match_type == "normalized_exact" and (expected_number_matches or user_number_matches):
+        match_type = "number_word_normalized"
+        explanation = "The answers match after number-word normalization."
+
+    judge_prompt_contract = {
+        "purpose": "Decide whether the user's answer means the same thing as the expected card answer.",
+        "mode": "card_match_not_truth_check",
+        "inputs": {
+            "question": raw_question,
+            "expected_answer": raw_expected,
+            "user_answer": raw_user,
+        },
+        "required_output_schema": {
+            "verdict": "correct | partially_correct | incorrect | unsure",
+            "relationship": "same_meaning | narrower | broader | related | unrelated | contradiction | unclear",
+            "confidence": "number from 0.0 to 1.0",
+            "reason": "brief explanation",
+        },
+        "judge_rules": [
+            "Grade against the stored card answer first.",
+            "Do not require exact wording.",
+            "Accept paraphrases with the same meaning.",
+            "Treat narrower or broader answers according to the question.",
+            "Return unsure when the answer needs human review.",
+            "Do not rewrite or mutate the stored card.",
+        ],
+    }
+
+    return {
+        "source": "phase_13d_disabled_study_answer_evaluation_foundation",
+        "mode": "disabled_study_answer_evaluation_foundation_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "live_study_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "database_write_allowed": False,
+        "card_state_change_allowed": False,
+        "card_match_only": True,
+        "factual_truth_check_available": False,
+        "model_judge_allowed": False,
+        "needs_model_judge": needs_model_judge,
+        "recommended_model_tier": recommended_model_tier,
+        "deterministic_match": deterministic_match,
+        "verdict": verdict,
+        "match_type": match_type,
+        "relationship": relationship,
+        "confidence": round(float(confidence), 3),
+        "explanation": explanation,
+        "input": {
+            "expected_length": len(raw_expected),
+            "user_length": len(raw_user),
+            "question_length": len(raw_question),
+        },
+        "normalized": {
+            "expected": expected_normalized,
+            "user": user_normalized,
+            "expected_tokens": expected_tokens,
+            "user_tokens": user_tokens,
+            "expected_number_matches": expected_number_matches,
+            "user_number_matches": user_number_matches,
+        },
+        "judge_prompt_contract": judge_prompt_contract,
+        "profile_context": {
+            "preferred_language": profile.get("preferred_language"),
+            "study_language": profile.get("study_language"),
+        },
+        "allowed_future_verdicts": [
+            "correct",
+            "partially_correct",
+            "incorrect",
+            "unsure",
+        ],
+        "allowed_future_relationships": [
+            "same_meaning",
+            "narrower",
+            "broader",
+            "related",
+            "unrelated",
+            "contradiction",
+            "unclear",
+        ],
+        "safety": {
+            "not_connected_to_live_study_routes": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_database_write": True,
+            "no_card_state_change": True,
+            "no_tool_call": True,
+        },
+    }
