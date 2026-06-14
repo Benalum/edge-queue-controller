@@ -37,3 +37,11 @@ The smoke verifies:
 - The refusal detail reports `reason: warmup_action_disabled`.
 
 The POST check is a refusal-contract check only.
+
+## Superseded by Phase 12R-U
+
+After Phase 12R-S/T, unauthenticated callers are expected to stop at the admin-auth boundary before receiving the disabled warmup refusal contract.
+
+The reusable live smoke is now:
+
+- `ops/smoke/check-phase-12r-u-live-admin-auth-bound-warmup-smoke.sh`
