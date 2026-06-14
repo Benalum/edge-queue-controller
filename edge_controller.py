@@ -19630,6 +19630,114 @@ def _stage5p13l_disabled_study_card_flagging_contract(card_id: str | None = None
         },
     }
 
+# --- Phase 13M disabled Study card image metadata contract helper --------
+
+def _stage5p13m_disabled_study_card_image_metadata_contract(card_id: str | None = None, deck_id: str | None = None, user_id: str | None = None, image_url: str | None = None, image_alt_text: str | None = None, image_mime_type: str | None = None, image_source: str | None = None, profile: dict | None = None) -> dict:
+    """Disabled, pure contract for future Study card image metadata support."""
+    profile = profile or {}
+    raw_card_id = "" if card_id is None else str(card_id)
+    raw_deck_id = "" if deck_id is None else str(deck_id)
+    raw_user_id = "" if user_id is None else str(user_id)
+    raw_image_url = "" if image_url is None else str(image_url).strip()[:2000]
+    raw_alt = "" if image_alt_text is None else str(image_alt_text).strip()[:500]
+    raw_mime = "" if image_mime_type is None else str(image_mime_type).strip().lower()[:120]
+    raw_source = "manual_card_edit" if image_source is None else str(image_source).strip().lower()[:120]
+    allowed_mime_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    metadata_valid_when_enabled = bool(raw_image_url) and (not raw_mime or raw_mime in allowed_mime_types)
+    return {
+        "source": "phase_13m_disabled_study_card_image_metadata_contract_helper",
+        "mode": "disabled_study_card_image_metadata_contract_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "database_wired": False,
+        "storage_wired": False,
+        "upload_wired": False,
+        "live_study_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "database_write_allowed": False,
+        "schema_migration_allowed": False,
+        "storage_write_allowed": False,
+        "file_upload_allowed": False,
+        "card_state_change_allowed": False,
+        "tool_call_allowed": False,
+        "image_metadata_contract": {
+            "future_table": "study_card_images",
+            "future_card_column_option": "image_metadata_json",
+            "future_add_or_replace_route": "/api/study/cards/{card_id}/image",
+            "future_remove_route": "/api/study/cards/{card_id}/image/remove",
+            "future_list_route": "/api/study/cards/{card_id}/images",
+            "card_owner_required": True,
+            "deck_owner_required": True,
+            "metadata_only_first": True,
+            "raw_file_upload_later": True,
+            "external_url_policy_later": True,
+            "current_table_create_enabled": False,
+            "current_column_add_enabled": False,
+            "current_route_create_enabled": False,
+            "current_database_write_enabled": False,
+            "current_storage_write_enabled": False,
+        },
+        "payload_contract": {
+            "required_fields_when_enabled": ["card_id", "image_url"],
+            "optional_fields_when_enabled": ["image_alt_text", "image_mime_type", "image_source", "deck_id", "session_id"],
+            "allowed_mime_types": allowed_mime_types,
+            "metadata_valid_when_enabled": metadata_valid_when_enabled,
+            "sample_payload": {
+                "card_id": raw_card_id,
+                "deck_id": raw_deck_id,
+                "user_id": raw_user_id,
+                "image_url": raw_image_url,
+                "image_alt_text": raw_alt,
+                "image_mime_type": raw_mime,
+                "image_source": raw_source,
+                "profile_context": {"preferred_language": profile.get("preferred_language"), "study_language": profile.get("study_language")},
+            },
+        },
+        "public_card_payload_contract": {
+            "include_image_metadata_on_card": True,
+            "include_image_metadata_on_current_session_card": True,
+            "include_image_metadata_on_review_queue_card": True,
+            "do_not_expose_private_storage_paths": True,
+            "hide_raw_upload_storage_details": True,
+        },
+        "study_ui_contract": {
+            "show_image_on_review_card": True,
+            "show_image_on_answer_reveal": True,
+            "allow_add_image_from_card_editor": True,
+            "allow_remove_image_from_card_editor": True,
+            "image_is_display_only_for_first_release": True,
+            "multimodal_grading_later": True,
+        },
+        "activation_gates": {
+            "requires_schema_migration_or_table_create": True,
+            "requires_card_owner_validation": True,
+            "requires_storage_policy_decision": True,
+            "requires_image_url_validation": True,
+            "requires_public_payload_update_smoke": True,
+            "requires_current_session_payload_update_smoke": True,
+            "requires_ui_render_smoke": True,
+            "requires_live_smoke_before_enable": True,
+        },
+        "safety": {
+            "not_connected_to_live_study_routes": True,
+            "not_connected_to_companion_live_flow": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_database_write": True,
+            "no_schema_migration": True,
+            "no_storage_write": True,
+            "no_file_upload": True,
+            "no_card_state_change": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
