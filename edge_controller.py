@@ -10811,6 +10811,90 @@ def _stage5p12k_manual_warmup_dry_run(status: dict, model: str) -> dict:
         ],
     }
 
+
+def _stage5p12l_disabled_manual_warmup_action_blueprint(status: dict) -> dict:
+    """Disabled manual warmup action blueprint for Phase 12R-L.
+
+    This returns the future action contract while keeping execution disabled.
+    It must not call Ollama, warm models, unload models, or mutate workers.
+    """
+    import os as _stage5p12l_os
+
+    if not isinstance(status, dict):
+        status = {}
+
+    env_name = "EDGE_MODEL_WARMUP_ACTION_ENABLED"
+    env_value = _stage5p12l_os.getenv(env_name, "")
+    enabled = env_value == "1"
+
+    # Phase 12R-L is intentionally non-executable even if someone sets env.
+    # A later phase must add an explicit endpoint/action path and separate smoke.
+    runtime_action_available = False
+
+    dry_runs = status.get("manual_warmup_dry_runs") or {}
+    if not isinstance(dry_runs, dict):
+        dry_runs = {}
+
+    eligible_models = []
+    blocked_models = []
+
+    for model, report in dry_runs.items():
+        if not isinstance(report, dict):
+            continue
+        item = {
+            "model": model,
+            "dry_run_passed": bool(report.get("dry_run_passed")),
+            "installed": bool(report.get("installed")),
+            "currently_loaded": bool(report.get("currently_loaded")),
+            "within_budget": bool(report.get("within_budget")),
+            "allowed_by_lane_policy": bool(report.get("allowed_by_lane_policy")),
+            "blockers": report.get("blockers") or [],
+        }
+        if item["dry_run_passed"]:
+            eligible_models.append(item)
+        else:
+            blocked_models.append(item)
+
+    return {
+        "source": "phase_12r_l_disabled_manual_warmup_action_blueprint",
+        "mode": "disabled_action_blueprint",
+        "enabled": False,
+        "runtime_action_available": runtime_action_available,
+        "action_enabled_env": env_name,
+        "action_enabled_env_value_present": bool(env_value),
+        "action_enabled_env_allows_future_action": enabled,
+        "admin_endpoint_available": False,
+        "would_call": "none",
+        "future_command_plan": {
+            "ollama_endpoint": "/api/generate",
+            "method": "POST",
+            "prompt_policy": "empty_or_safe_warmup_prompt_only",
+            "stream": False,
+            "keep_alive": "configured_future_value",
+            "execute_now": False,
+        },
+        "preflight_required": [
+            "dry_run_passed",
+            "model_installed",
+            "model_not_currently_loaded",
+            "ct101_memory_available",
+            "within_80_percent_ram_budget",
+            "allowed_by_lane_policy",
+            "no_active_model_conflict",
+            "no_warming_model_conflict",
+            "admin_explicit_action_request",
+            "runtime_action_enabled",
+        ],
+        "eligible_models": eligible_models,
+        "blocked_models": blocked_models,
+        "notes": [
+            "Phase 12R-L only documents the disabled action contract.",
+            "No endpoint exists yet to execute warmup.",
+            "No Ollama call is made by this status helper.",
+            "A later phase must add a separate guarded admin-only execution path.",
+        ],
+    }
+
 def _stage5p12r_model_memory_status_read_only() -> dict:
     """Read-only model memory status evidence for Phase 12R-F.
 
@@ -10989,6 +11073,7 @@ def _stage5p12r_model_memory_status_read_only() -> dict:
         "qwen3:1.7b": _stage5p12k_manual_warmup_dry_run(status, "qwen3:1.7b"),
         "llama3.2:3b": _stage5p12k_manual_warmup_dry_run(status, "llama3.2:3b"),
     }
+    status["manual_warmup_action"] = _stage5p12l_disabled_manual_warmup_action_blueprint(status)
 
     if not status["ollama_reachable"]:
         status["warnings"].append({"warning": "ollama_not_reachable_read_only_status"})
