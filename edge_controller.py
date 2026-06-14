@@ -19738,6 +19738,131 @@ def _stage5p13m_disabled_study_card_image_metadata_contract(card_id: str | None 
         },
     }
 
+# --- Phase 13N disabled Study review UI support contract helper ----------
+
+def _stage5p13n_disabled_study_review_ui_support_contract(active_surface: str | None = None, card_id: str | None = None, deck_id: str | None = None, profile: dict | None = None) -> dict:
+    """Disabled, pure contract for future Study review UI support."""
+    profile = profile or {}
+    raw_surface = "study_review_card" if active_surface is None else str(active_surface).strip().lower()[:120]
+    raw_card_id = "" if card_id is None else str(card_id)
+    raw_deck_id = "" if deck_id is None else str(deck_id)
+    target_frontend_files = [
+        "frontend/study-ui/app.js",
+        "frontend/study-ui/index.html",
+        "frontend/study-ui/styles.css",
+        "frontend/wrapper-ui/app.js",
+        "frontend/wrapper-ui/styles.css",
+    ]
+    ui_components = [
+        "review_card",
+        "answer_reveal_panel",
+        "correct_button",
+        "wrong_button",
+        "skip_button",
+        "flag_button",
+        "flag_reason_picker",
+        "card_image_block",
+        "card_progress_meta",
+        "study_companion_feedback_area",
+    ]
+    return {
+        "source": "phase_13n_disabled_study_review_ui_support_contract_helper",
+        "mode": "disabled_study_review_ui_support_contract_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "frontend_wired": False,
+        "route_wired": False,
+        "database_wired": False,
+        "live_study_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "database_write_allowed": False,
+        "schema_migration_allowed": False,
+        "storage_write_allowed": False,
+        "file_upload_allowed": False,
+        "card_state_change_allowed": False,
+        "frontend_mutation_allowed": False,
+        "tool_call_allowed": False,
+        "ui_surface_contract": {
+            "active_surface": raw_surface,
+            "current_live_study_ui_file": "frontend/study-ui/app.js",
+            "current_live_study_html_file": "frontend/study-ui/index.html",
+            "current_live_study_style_file": "frontend/study-ui/styles.css",
+            "wrapper_preview_file": "frontend/wrapper-ui/app.js",
+            "target_frontend_files_when_enabled": target_frontend_files,
+            "current_render_function": "renderReviewCard",
+            "current_companion_render_function": "companionAskCurrentCard",
+            "current_actions": ["show_answer", "wrong", "correct", "skip"],
+            "future_actions": ["flag_card", "unflag_card", "show_image", "show_companion_feedback", "request_explanation"],
+            "current_frontend_change_enabled": False,
+            "current_static_asset_change_enabled": False,
+        },
+        "review_card_contract": {
+            "components_when_enabled": ui_components,
+            "show_question": True,
+            "show_answer_after_reveal": True,
+            "show_explanation_after_reveal": True,
+            "show_difficulty_bucket": True,
+            "show_review_count": True,
+            "show_accuracy": True,
+            "show_flag_button_on_card": True,
+            "show_flag_reason_picker": True,
+            "show_image_on_review_card": True,
+            "show_image_on_answer_reveal": True,
+            "image_display_only_first_release": True,
+            "do_not_require_multimodal_model": True,
+            "do_not_interrupt_study_session": True,
+        },
+        "api_dependency_contract": {
+            "existing_queue_endpoint": "/api/study/decks/{deck_id}/review-queue",
+            "existing_review_endpoint": "/api/study/cards/{card_id}/reviews",
+            "future_flag_endpoint": "/api/study/cards/{card_id}/flag",
+            "future_unflag_endpoint": "/api/study/cards/{card_id}/unflag",
+            "future_image_endpoint": "/api/study/cards/{card_id}/image",
+            "future_current_session_status_endpoint": "/api/study/session/status",
+            "requires_backend_payload_fields": ["id", "question", "answer", "explanation", "difficulty", "tags", "image_metadata", "flag_state"],
+            "current_backend_route_change_enabled": False,
+        },
+        "sample_ui_state": {
+            "card_id": raw_card_id,
+            "deck_id": raw_deck_id,
+            "showing_answer": False,
+            "flag_menu_open": False,
+            "image_visible": True,
+            "companion_feedback_visible": False,
+            "profile_context": {"preferred_language": profile.get("preferred_language"), "study_language": profile.get("study_language")},
+        },
+        "activation_gates": {
+            "requires_live_study_ui_file_patch": True,
+            "requires_flag_endpoint_before_flag_button_live": True,
+            "requires_image_payload_before_image_render_live": True,
+            "requires_css_render_smoke": True,
+            "requires_review_queue_render_smoke": True,
+            "requires_answer_reveal_render_smoke": True,
+            "requires_skip_correct_wrong_regression_smoke": True,
+            "requires_no_login_redirect_regression": True,
+            "requires_live_smoke_before_enable": True,
+        },
+        "safety": {
+            "not_connected_to_live_study_ui": True,
+            "not_connected_to_live_study_routes": True,
+            "not_connected_to_companion_live_flow": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_database_write": True,
+            "no_schema_migration": True,
+            "no_storage_write": True,
+            "no_file_upload": True,
+            "no_card_state_change": True,
+            "no_frontend_mutation": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
