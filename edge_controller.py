@@ -10926,6 +10926,63 @@ def _stage5p12m_disabled_admin_model_warmup_response(model: str, dry_run: bool =
     }
 
 
+def _stage5p12y_disabled_future_warmup_execution_skeleton(model: str, status: dict | None = None) -> dict:
+    """Phase 12R-Y: disabled future warmup execution helper skeleton.
+
+    This helper defines the future action response shape but intentionally
+    remains non-executable. It must not call Ollama, warm models, unload
+    models, start lane workers, enable router rollout, or mark cutover ready.
+    """
+
+    if status is None or not isinstance(status, dict):
+        status = {}
+
+    dry_run = _stage5p12k_manual_warmup_dry_run(status, model)
+
+    action_enabled = os.environ.get("EDGE_MODEL_WARMUP_ACTION_ENABLED") == "1"
+    runtime_action_available = False
+
+    blockers = ["runtime_action_unavailable"]
+    if not action_enabled:
+        blockers.append("warmup_action_disabled")
+    if not dry_run.get("dry_run_passed"):
+        blockers.extend(dry_run.get("blockers") or [])
+
+    # Keep blocker order stable and duplicate-free for predictable smokes.
+    deduped_blockers = []
+    for blocker in blockers:
+        if blocker and blocker not in deduped_blockers:
+            deduped_blockers.append(blocker)
+
+    return {
+        "source": "phase_12r_y_disabled_future_warmup_execution_skeleton",
+        "mode": "disabled_future_execution_skeleton",
+        "model": model,
+        "action_enabled": action_enabled,
+        "runtime_action_available": runtime_action_available,
+        "dry_run_passed": bool(dry_run.get("dry_run_passed")),
+        "would_call": "none",
+        "future_ollama_request": {
+            "endpoint": "/api/generate",
+            "method": "POST",
+            "stream": False,
+            "prompt_policy": "empty_or_safe_warmup_prompt_only",
+            "keep_alive": "configured_future_value",
+            "execute_now": False,
+        },
+        "reason": "runtime_action_unavailable",
+        "blockers": deduped_blockers,
+        "dry_run": dry_run,
+        "notes": [
+            "This helper is intentionally non-executable.",
+            "It defines the future response shape only.",
+            "No Ollama call is made.",
+            "No model warmup is performed.",
+            "A later phase must add the real runtime action and live smoke separately.",
+        ],
+    }
+
+
 def _stage5p12r_model_memory_status_read_only() -> dict:
     """Read-only model memory status evidence for Phase 12R-F.
 
