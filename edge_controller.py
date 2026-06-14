@@ -11781,11 +11781,15 @@ printf 'last_log=%s\n' "$last_log"
 
 
 @app.post("/admin/model-warmup")
-async def admin_model_warmup(payload: dict | None = None):
-    """Phase 12R-M disabled endpoint skeleton.
+async def admin_model_warmup(request: Request, payload: dict | None = None):
+    """Phase 12R-S admin-auth bounded disabled endpoint skeleton.
 
-    The endpoint exists for admin API shape validation only and always refuses.
+    Admin auth is required before returning the disabled warmup refusal.
+    The endpoint still does not call Ollama, warm models, unload models,
+    start lane workers, enable router rollout, or mark cutover ready.
     """
+
+    _admin_support_require_admin(request)
 
     payload = payload or {}
     model = str(payload.get("model") or "qwen3:0.6b")
