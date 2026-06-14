@@ -11162,6 +11162,11 @@ def _stage5p12r_model_memory_status_read_only() -> dict:
         "llama3.2:3b": _stage5p12k_manual_warmup_dry_run(status, "llama3.2:3b"),
     }
     status["manual_warmup_action"] = _stage5p12l_disabled_manual_warmup_action_blueprint(status)
+    status["disabled_future_warmup_execution_skeletons"] = {
+        "qwen3:0.6b": _stage5p12y_disabled_future_warmup_execution_skeleton("qwen3:0.6b", status),
+        "qwen3:1.7b": _stage5p12y_disabled_future_warmup_execution_skeleton("qwen3:1.7b", status),
+        "llama3.2:3b": _stage5p12y_disabled_future_warmup_execution_skeleton("llama3.2:3b", status),
+    }
     status["admin_model_warmup_endpoint"] = _stage5p12m_disabled_admin_model_warmup_response("qwen3:0.6b", dry_run=True)
 
     if not status["ollama_reachable"]:
