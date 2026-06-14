@@ -19537,6 +19537,99 @@ def _stage5p13k_disabled_study_answer_reasoning_escalation_contract(expected_ans
         },
     }
 
+# --- Phase 13L disabled Study card flagging contract helper --------------
+
+def _stage5p13l_disabled_study_card_flagging_contract(card_id: str | None = None, deck_id: str | None = None, user_id: str | None = None, reason: str | None = None, note: str | None = None, source: str | None = None, profile: dict | None = None) -> dict:
+    """Disabled, pure contract for future Study card flag/unflag support."""
+    profile = profile or {}
+    raw_card_id = "" if card_id is None else str(card_id)
+    raw_deck_id = "" if deck_id is None else str(deck_id)
+    raw_user_id = "" if user_id is None else str(user_id)
+    raw_reason = "" if reason is None else str(reason).strip().lower()
+    raw_note = "" if note is None else str(note).strip()[:2000]
+    raw_source = "study_review" if source is None else str(source).strip().lower()
+    allowed_reasons = ["wrong_answer", "confusing_wording", "bad_image", "duplicate", "needs_explanation", "typo", "too_easy", "too_hard", "other"]
+    normalized_reason = raw_reason if raw_reason in allowed_reasons else "other"
+    return {
+        "source": "phase_13l_disabled_study_card_flagging_contract_helper",
+        "mode": "disabled_study_card_flagging_contract_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "database_wired": False,
+        "live_study_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "database_write_allowed": False,
+        "card_state_change_allowed": False,
+        "tool_call_allowed": False,
+        "flag_contract": {
+            "future_table": "study_card_flags",
+            "future_flag_route": "/api/study/cards/{card_id}/flag",
+            "future_unflag_route": "/api/study/cards/{card_id}/unflag",
+            "future_list_route": "/api/study/card-flags",
+            "card_owner_required": True,
+            "deck_owner_required": True,
+            "soft_delete_for_unflag": True,
+            "one_active_flag_per_user_card_reason": True,
+            "current_table_create_enabled": False,
+            "current_route_create_enabled": False,
+            "current_database_write_enabled": False,
+        },
+        "payload_contract": {
+            "required_fields_when_enabled": ["card_id"],
+            "optional_fields_when_enabled": ["reason", "note", "source", "deck_id", "session_id"],
+            "allowed_reasons": allowed_reasons,
+            "normalized_reason": normalized_reason,
+            "sample_payload": {
+                "card_id": raw_card_id,
+                "deck_id": raw_deck_id,
+                "user_id": raw_user_id,
+                "reason": normalized_reason,
+                "note": raw_note,
+                "source": raw_source,
+                "profile_context": {"preferred_language": profile.get("preferred_language"), "study_language": profile.get("study_language")},
+            },
+        },
+        "result_contract": {
+            "flag_response_fields": ["ok", "card_id", "flagged", "reason", "flagged_at"],
+            "unflag_response_fields": ["ok", "card_id", "flagged", "unflagged_at"],
+            "list_response_fields": ["ok", "count", "flags"],
+            "include_card_preview": True,
+            "include_deck_title": True,
+            "admin_review_queue_later": True,
+        },
+        "study_ui_contract": {
+            "show_flag_button_on_card": True,
+            "show_flag_reason_picker": True,
+            "allow_optional_note": True,
+            "show_flagged_state_on_review_card": True,
+            "do_not_interrupt_study_session": True,
+        },
+        "activation_gates": {
+            "requires_schema_migration_or_table_create": True,
+            "requires_card_owner_validation": True,
+            "requires_flag_route_smoke": True,
+            "requires_unflag_route_smoke": True,
+            "requires_flag_list_route_smoke": True,
+            "requires_ui_button_smoke": True,
+            "requires_live_smoke_before_enable": True,
+        },
+        "safety": {
+            "not_connected_to_live_study_routes": True,
+            "not_connected_to_companion_live_flow": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_database_write": True,
+            "no_card_state_change": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
