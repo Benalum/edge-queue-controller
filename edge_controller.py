@@ -18749,3 +18749,156 @@ async def stage6f_universal_intent_router_dry_run(request: Request):
         body = {}
 
     return _stage6f_router_response(body)
+
+# --- Phase 13A disabled intent-router foundation -------------------------
+
+def _stage5p13a_disabled_intent_router_foundation(
+    message: str,
+    profile: dict | None = None,
+) -> dict:
+    """
+    Disabled, pure intent-router foundation for future Study/Companion routing.
+
+    This helper is intentionally not wired to live request flow. It performs no
+    network calls, does not call a model, does not enqueue jobs, and does not
+    change runtime behavior. It only returns deterministic routing metadata that
+    later phases can use as a contract.
+    """
+    profile = profile or {}
+    raw_message = "" if message is None else str(message)
+    normalized = " ".join(raw_message.strip().lower().split())
+
+    number_words = {
+        "zero": 0,
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+        "six": 6,
+        "seven": 7,
+        "eight": 8,
+        "nine": 9,
+        "ten": 10,
+    }
+
+    tokens = [token.strip(".,!?;:()[]{}\"'") for token in normalized.split()]
+    number_word_matches = [
+        {"token": token, "value": number_words[token]}
+        for token in tokens
+        if token in number_words
+    ]
+
+    scores = {
+        "study_review": 0,
+        "study_material": 0,
+        "companion_chat": 0,
+        "calendar": 0,
+        "profile": 0,
+        "admin_system": 0,
+    }
+
+    deterministic_actions = []
+
+    if normalized in {"next", "skip", "pass"}:
+        scores["study_review"] += 5
+        deterministic_actions.append("study_card_advance")
+    if normalized in {"correct", "right", "got it"}:
+        scores["study_review"] += 5
+        deterministic_actions.append("study_mark_correct")
+    if normalized in {"incorrect", "wrong", "missed it"}:
+        scores["study_review"] += 5
+        deterministic_actions.append("study_mark_incorrect")
+
+    for token in tokens:
+        if token in {"card", "deck", "flashcard", "quiz", "answer", "study", "review"}:
+            scores["study_review"] += 2
+        if token in {"create", "make", "generate", "import", "notes", "material"}:
+            scores["study_material"] += 1
+        if token in {"calendar", "schedule", "appointment", "event", "today", "tomorrow"}:
+            scores["calendar"] += 2
+        if token in {"profile", "preference", "language", "settings", "permission"}:
+            scores["profile"] += 2
+        if token in {"admin", "system", "status", "worker", "queue", "power", "server"}:
+            scores["admin_system"] += 2
+        if token in {"chat", "talk", "companion", "help", "feel", "conversation"}:
+            scores["companion_chat"] += 2
+
+    if not normalized:
+        primary_intent = "unknown"
+        confidence = 0.0
+    else:
+        ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+        top_intent, top_score = ranked[0]
+        second_score = ranked[1][1] if len(ranked) > 1 else 0
+        if top_score <= 0:
+            primary_intent = "companion_chat"
+            confidence = 0.35
+        else:
+            primary_intent = top_intent
+            confidence = min(0.95, 0.45 + (top_score * 0.10) + max(0, top_score - second_score) * 0.05)
+
+    recommended_model_tier = {
+        "study_review": "tier_2_study_light",
+        "study_material": "tier_3_companion_medium",
+        "companion_chat": "tier_3_companion_medium",
+        "calendar": "tier_1_router_then_tool",
+        "profile": "tier_1_router_then_backend",
+        "admin_system": "tier_1_router_then_backend",
+        "unknown": "tier_1_router_then_companion_fallback",
+    }.get(primary_intent, "tier_1_router_then_companion_fallback")
+
+    escalation_reasons = []
+    if confidence < 0.60:
+        escalation_reasons.append("low_confidence")
+    if primary_intent == "study_review" and number_word_matches:
+        escalation_reasons.append("answer_normalization_available")
+    if primary_intent == "unknown":
+        escalation_reasons.append("unknown_intent")
+
+    return {
+        "source": "phase_13a_disabled_intent_router_foundation",
+        "mode": "disabled_router_foundation_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "input": {
+            "length": len(raw_message),
+            "empty": normalized == "",
+            "normalized_preview": normalized[:120],
+        },
+        "profile_context": {
+            "preferred_language": profile.get("preferred_language"),
+            "study_language": profile.get("study_language"),
+        },
+        "primary_intent": primary_intent,
+        "confidence": round(confidence, 3),
+        "scores": scores,
+        "deterministic_actions": deterministic_actions,
+        "normalized_features": {
+            "number_word_matches": number_word_matches,
+            "tokens_preview": tokens[:12],
+        },
+        "recommended_model_tier": recommended_model_tier,
+        "escalation_reasons": escalation_reasons,
+        "allowed_future_intents": [
+            "study_review",
+            "study_material",
+            "companion_chat",
+            "calendar",
+            "profile",
+            "admin_system",
+            "unknown",
+        ],
+        "safety": {
+            "not_connected_to_live_routes": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_tool_call": True,
+        },
+    }
