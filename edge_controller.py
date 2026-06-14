@@ -19863,6 +19863,149 @@ def _stage5p13n_disabled_study_review_ui_support_contract(active_surface: str | 
         },
     }
 
+# --- Phase 13O disabled immersive Study mode UI contract helper ----------
+
+def _stage5p13o_disabled_immersive_study_mode_ui_contract(active_surface: str | None = None, session_id: str | None = None, card_id: str | None = None, deck_id: str | None = None, profile: dict | None = None) -> dict:
+    """Disabled, pure contract for future immersive Study mode UI support."""
+    profile = profile or {}
+    raw_surface = "immersive_study_review" if active_surface is None else str(active_surface).strip().lower()[:120]
+    raw_session_id = "" if session_id is None else str(session_id)
+    raw_card_id = "" if card_id is None else str(card_id)
+    raw_deck_id = "" if deck_id is None else str(deck_id)
+    target_frontend_files = [
+        "frontend/study-ui/app.js",
+        "frontend/study-ui/index.html",
+        "frontend/study-ui/styles.css",
+        "frontend/wrapper-ui/app.js",
+        "frontend/wrapper-ui/styles.css",
+    ]
+    minimal_controls = [
+        "answer_input",
+        "submit_answer",
+        "show_answer",
+        "correct",
+        "wrong",
+        "skip",
+        "exit_immersive",
+    ]
+    return {
+        "source": "phase_13o_disabled_immersive_study_mode_ui_contract_helper",
+        "mode": "disabled_immersive_study_mode_ui_contract_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "frontend_wired": False,
+        "route_wired": False,
+        "database_wired": False,
+        "live_study_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "database_write_allowed": False,
+        "schema_migration_allowed": False,
+        "storage_write_allowed": False,
+        "file_upload_allowed": False,
+        "card_state_change_allowed": False,
+        "frontend_mutation_allowed": False,
+        "tool_call_allowed": False,
+        "immersive_mode_contract": {
+            "active_surface": raw_surface,
+            "current_live_study_ui_file": "frontend/study-ui/app.js",
+            "current_live_study_html_file": "frontend/study-ui/index.html",
+            "current_live_study_style_file": "frontend/study-ui/styles.css",
+            "wrapper_preview_file": "frontend/wrapper-ui/app.js",
+            "target_frontend_files_when_enabled": target_frontend_files,
+            "current_review_renderer": "renderReviewCard",
+            "current_companion_card_renderer": "companionAskCurrentCard",
+            "future_immersive_renderer": "renderImmersiveStudyMode",
+            "future_toggle_control": "immersive_study_mode_toggle",
+            "current_frontend_change_enabled": False,
+            "current_static_asset_change_enabled": False,
+        },
+        "layout_contract": {
+            "hide_deck_dashboard_in_immersive_mode": True,
+            "hide_card_stats_in_immersive_mode": True,
+            "hide_extra_navigation_in_immersive_mode": True,
+            "show_latest_companion_message_only": True,
+            "show_current_card_question": True,
+            "show_current_card_image_if_present": True,
+            "show_answer_input": True,
+            "show_minimal_controls": True,
+            "show_progress_counter": True,
+            "show_exit_immersive_button": True,
+            "preserve_existing_review_flow": True,
+            "do_not_interrupt_study_session": True,
+        },
+        "control_contract": {
+            "minimal_controls_when_enabled": minimal_controls,
+            "submit_answer_uses_existing_companion_grade_path_later": True,
+            "show_answer_uses_existing_reveal_state": True,
+            "correct_wrong_use_existing_review_endpoint": True,
+            "skip_uses_existing_queue_advance_behavior": True,
+            "exit_immersive_keeps_session_active": True,
+            "keyboard_shortcuts_later": ["enter_submit", "space_show_answer", "arrow_right_skip", "escape_exit"],
+        },
+        "api_dependency_contract": {
+            "existing_session_status_endpoint": "/api/study/session/status",
+            "existing_review_queue_endpoint": "/api/study/decks/{deck_id}/review-queue",
+            "existing_review_endpoint": "/api/study/cards/{card_id}/reviews",
+            "future_study_answer_judge_job": "study_answer_judge",
+            "future_reasoning_escalation_job": "study_answer_reasoning_escalation",
+            "future_flag_endpoint": "/api/study/cards/{card_id}/flag",
+            "future_image_endpoint": "/api/study/cards/{card_id}/image",
+            "current_backend_route_change_enabled": False,
+        },
+        "voice_boundary_contract": {
+            "voice_settings_phase_later": "phase_13p",
+            "listen_button_later": True,
+            "speak_current_card_later": True,
+            "auto_tts_default_off": True,
+            "auto_stt_default_off": True,
+            "current_voice_change_enabled": False,
+        },
+        "sample_ui_state": {
+            "session_id": raw_session_id,
+            "card_id": raw_card_id,
+            "deck_id": raw_deck_id,
+            "immersive_mode_enabled": False,
+            "showing_answer": False,
+            "answer_input_focused": True,
+            "latest_companion_message_only": True,
+            "image_visible_if_present": True,
+            "minimal_controls_visible": True,
+            "profile_context": {"preferred_language": profile.get("preferred_language"), "study_language": profile.get("study_language")},
+        },
+        "activation_gates": {
+            "requires_live_study_ui_file_patch": True,
+            "requires_css_focus_layout_smoke": True,
+            "requires_review_queue_render_smoke": True,
+            "requires_answer_input_focus_smoke": True,
+            "requires_show_answer_regression_smoke": True,
+            "requires_skip_correct_wrong_regression_smoke": True,
+            "requires_exit_immersive_keeps_session_active_smoke": True,
+            "requires_mobile_layout_smoke": True,
+            "requires_no_login_redirect_regression": True,
+            "requires_live_smoke_before_enable": True,
+        },
+        "safety": {
+            "not_connected_to_live_study_ui": True,
+            "not_connected_to_live_study_routes": True,
+            "not_connected_to_companion_live_flow": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_database_write": True,
+            "no_schema_migration": True,
+            "no_storage_write": True,
+            "no_file_upload": True,
+            "no_card_state_change": True,
+            "no_frontend_mutation": True,
+            "no_voice_runtime_change": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
