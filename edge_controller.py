@@ -19437,6 +19437,106 @@ def _stage5p13j_disabled_study_answer_judge_queue_contract(card_id: str | None =
         },
     }
 
+# --- Phase 13K disabled Study answer reasoning escalation contract helper -
+
+def _stage5p13k_disabled_study_answer_reasoning_escalation_contract(expected_answer: str | None = None, user_answer: str | None = None, question: str | None = None, small_judge_result: dict | None = None, profile: dict | None = None) -> dict:
+    """Disabled, pure contract for future Study answer reasoning escalation."""
+    profile = profile or {}
+    raw_expected = "" if expected_answer is None else str(expected_answer)
+    raw_user_answer = "" if user_answer is None else str(user_answer)
+    raw_question = "" if question is None else str(question)
+    small = small_judge_result if isinstance(small_judge_result, dict) else {}
+    small_verdict = str(small.get("verdict") or "unsure")
+    small_relationship = str(small.get("relationship") or "unclear")
+    try:
+        small_confidence = float(small.get("confidence") or 0.0)
+    except (TypeError, ValueError):
+        small_confidence = 0.0
+    escalation_needed = small_verdict == "unsure" or small_confidence < 0.70 or small_relationship == "unclear"
+    return {
+        "source": "phase_13k_disabled_study_answer_reasoning_escalation_contract_helper",
+        "mode": "disabled_study_answer_reasoning_escalation_contract_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "queue_wired": False,
+        "live_study_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "queue_write_allowed": False,
+        "database_write_allowed": False,
+        "card_state_change_allowed": False,
+        "worker_dispatch_allowed": False,
+        "tool_call_allowed": False,
+        "escalation_decision_contract": {
+            "escalation_needed_if_enabled": escalation_needed,
+            "small_judge_verdict": small_verdict,
+            "small_judge_relationship": small_relationship,
+            "small_judge_confidence": round(small_confidence, 3),
+            "trigger_conditions": ["small_judge_verdict_is_unsure", "small_judge_confidence_below_0_70", "small_judge_relationship_is_unclear", "small_judge_output_invalid", "user_requests_explanation_after_unclear_grade"],
+            "backend_is_final_authority": True,
+        },
+        "job_contract": {
+            "job_type": "study_answer_reasoning_escalation",
+            "model_tier": "tier_4_deep_reasoning",
+            "priority": "interactive_study_escalation",
+            "timeout_seconds": 45,
+            "durable_queue_required": True,
+            "current_queue_write_enabled": False,
+            "current_scheduler_dispatch_enabled": False,
+            "retry_policy": {"max_attempts": 1, "retry_on_timeout": False, "retry_on_invalid_model_output": False},
+        },
+        "payload_contract": {
+            "required_fields_when_enabled": ["question", "expected_answer", "user_answer", "small_judge_result"],
+            "optional_fields_when_enabled": ["card_id", "session_id", "user_id", "profile_context", "prior_deterministic_evaluation"],
+            "sample_payload": {
+                "question": raw_question,
+                "expected_answer": raw_expected,
+                "user_answer": raw_user_answer,
+                "small_judge_result": small,
+                "profile_context": {"preferred_language": profile.get("preferred_language"), "study_language": profile.get("study_language")},
+            },
+        },
+        "result_contract": {
+            "required_fields": ["final_verdict", "relationship", "confidence", "reason", "student_feedback"],
+            "allowed_final_verdicts": ["correct", "partially_correct", "incorrect", "unsure"],
+            "allowed_relationships": ["same_meaning", "narrower", "broader", "related", "unrelated", "contradiction", "unclear"],
+            "backend_acceptance_required": True,
+            "card_state_mutation_by_worker_allowed": False,
+            "prefer_unsure_over_overconfident_grade": True,
+        },
+        "scheduler_contract": {
+            "current_unknown_job_type_behavior": "required_capability_equals_job_type",
+            "activation_requires_capability_mapping": True,
+            "future_required_capability_options": ["study_answer_reasoning_escalation", "ollama_chat_with_reasoning_policy"],
+            "direct_route_to_ollama_allowed": False,
+            "direct_browser_to_model_allowed": False,
+        },
+        "activation_gates": {
+            "requires_small_judge_result_validation": True,
+            "requires_worker_capability_update": True,
+            "requires_queue_enqueue_endpoint": True,
+            "requires_reasoning_result_schema_validation": True,
+            "requires_backend_acceptance_policy": True,
+            "requires_card_state_write_guard": True,
+            "requires_live_smoke_before_enable": True,
+        },
+        "safety": {
+            "not_connected_to_live_study_routes": True,
+            "not_connected_to_companion_live_flow": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_worker_dispatch": True,
+            "no_database_write": True,
+            "no_card_state_change": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
