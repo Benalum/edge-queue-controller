@@ -10896,17 +10896,22 @@ def _stage5p12l_disabled_manual_warmup_action_blueprint(status: dict) -> dict:
     }
 
 
-def _stage5p12m_disabled_admin_model_warmup_response(model: str, dry_run: bool = True) -> dict:
+def _stage5p12m_disabled_admin_model_warmup_response(model: str, dry_run: bool = True, status: dict | None = None) -> dict:
     """Phase 12R-M: disabled admin warmup endpoint skeleton only.
 
     This helper intentionally does not call Ollama, unload models, warm models,
     start lane workers, enable router rollout, or mark cutover ready.
     """
 
+    if status is None or not isinstance(status, dict):
+        status = {}
+
     action_enabled = os.environ.get("EDGE_MODEL_WARMUP_ACTION_ENABLED") == "1"
     blockers = []
     if not action_enabled:
         blockers.append("warmup_action_disabled")
+
+    future_preview = _stage5p12y_disabled_future_warmup_execution_skeleton(model, status)
 
     return {
         "source": "phase_12r_m_disabled_admin_model_warmup_endpoint_skeleton",
@@ -10923,6 +10928,7 @@ def _stage5p12m_disabled_admin_model_warmup_response(model: str, dry_run: bool =
         "required_env": "EDGE_MODEL_WARMUP_ACTION_ENABLED=1",
         "reason": "warmup_action_disabled",
         "blockers": blockers,
+        "future_warmup_execution_preview": future_preview,
     }
 
 
@@ -11856,7 +11862,8 @@ async def admin_model_warmup(request: Request, payload: dict | None = None):
     payload = payload or {}
     model = str(payload.get("model") or "qwen3:0.6b")
     dry_run = bool(payload.get("dry_run", True))
-    response = _stage5p12m_disabled_admin_model_warmup_response(model, dry_run=dry_run)
+    status = _stage5p12r_model_memory_status_read_only()
+    response = _stage5p12m_disabled_admin_model_warmup_response(model, dry_run=dry_run, status=status)
     raise HTTPException(status_code=403, detail=response)
 
 
