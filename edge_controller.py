@@ -11912,6 +11912,33 @@ def _system_status_cached_payload():
     return payload
 
 
+def _stage5p12aj_public_model_memory_status_snapshot() -> dict:
+    """
+    Public-safe, non-executing, no-network snapshot for /system/status.
+
+    This intentionally avoids the full read-only model memory scan so the public
+    system status endpoint stays responsive when pveso or CT101 is offline.
+    """
+    models = ["qwen3:0.6b", "qwen3:1.7b", "llama3.2:3b"]
+    return {
+        "source": "phase_12r_aj_public_system_status_model_memory_snapshot",
+        "mode": "public_safe_disabled_snapshot",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "would_call": "none",
+        "admin_model_warmup_endpoint": _stage5p12m_disabled_admin_model_warmup_response(
+            "qwen3:0.6b",
+            dry_run=True,
+            status={},
+        ),
+        "disabled_future_warmup_execution_skeletons": {
+            model: _stage5p12y_disabled_future_warmup_execution_skeleton(model, status={})
+            for model in models
+        },
+    }
+
+
 @app.get("/system/status")
 def system_status():
     return _system_status_cached_payload()
@@ -12080,6 +12107,7 @@ def _system_status_uncached():
         "overall_state": overall_state,
         "nodes": nodes,
         "services": services,
+        "model_memory_status": _stage5p12aj_public_model_memory_status_snapshot(),
         "normalized": _system_status_normalized_block(nodes, services),
     }
 
