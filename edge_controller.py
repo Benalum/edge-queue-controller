@@ -10445,6 +10445,86 @@ def _stage5p12d_registered_laptop_queue_worker_capacity(worker_id, worker_node_i
 # STAGE_5P12F_LANE_DISPATCH_READINESS_PLAN_BEGIN
 
 
+
+def _stage5p12h_read_only_eviction_plan(status: dict) -> dict:
+    """Read-only eviction candidate planner for Phase 12R-H.
+
+    This planner never unloads models. It only explains which loaded models
+    would be eligible for future eviction after active/reserved/warming checks.
+    """
+    if not isinstance(status, dict):
+        status = {}
+
+    loaded_models = status.get("loaded_models") or []
+    active_models = status.get("active_models") or []
+    warming_models = status.get("warming_models") or []
+    installed_models = status.get("installed_models") or []
+    ct101_memory = status.get("ct101_memory") or {}
+
+    if not isinstance(loaded_models, list):
+        loaded_models = []
+    if not isinstance(active_models, list):
+        active_models = []
+    if not isinstance(warming_models, list):
+        warming_models = []
+    if not isinstance(installed_models, list):
+        installed_models = []
+
+    active_set = {str(x) for x in active_models}
+    warming_set = {str(x) for x in warming_models}
+
+    candidates = []
+    blocked = []
+
+    for model in loaded_models:
+        name = str(model)
+        reasons = []
+        if name in active_set:
+            reasons.append("active_model")
+        if name in warming_set:
+            reasons.append("warming_model")
+
+        if reasons:
+            blocked.append({
+                "model": name,
+                "eligible": False,
+                "blocked_reasons": reasons,
+            })
+        else:
+            candidates.append({
+                "model": name,
+                "eligible": True,
+                "reason": "loaded_idle_model_read_only_candidate",
+                "action": "would_consider_future_unload_only_after_job_safety_checks",
+            })
+
+    reason = None
+    if not loaded_models:
+        reason = "no_loaded_models"
+    elif not candidates:
+        reason = "loaded_models_blocked_by_active_or_warming_state"
+    else:
+        reason = "loaded_idle_models_present"
+
+    return {
+        "source": "phase_12r_h_read_only_eviction_candidate_planner",
+        "mode": "read_only",
+        "action_enabled": False,
+        "reason": reason,
+        "candidate_count": len(candidates),
+        "blocked_count": len(blocked),
+        "loaded_model_count": len(loaded_models),
+        "installed_model_count": len(installed_models),
+        "ct101_memory_available": bool(ct101_memory.get("available")),
+        "ct101_mem_available_mb": ct101_memory.get("mem_available_mb"),
+        "candidates": candidates,
+        "blocked": blocked,
+        "notes": [
+            "No model unload is performed by this planner.",
+            "Future eviction must still verify no active, claimed, reserved, or warming job uses the model.",
+        ],
+    }
+
 def _stage5p12r_model_memory_status_read_only() -> dict:
     """Read-only model memory status evidence for Phase 12R-F.
 
@@ -10612,6 +10692,9 @@ def _stage5p12r_model_memory_status_read_only() -> dict:
     except Exception as exc:
         status["ct101_memory"]["error"] = f"{type(exc).__name__}: {str(exc)[:200]}"
         status["warnings"].append({"warning": "ct101_memory_snapshot_unavailable"})
+
+    status["eviction_plan"] = _stage5p12h_read_only_eviction_plan(status)
+    status["safe_eviction_candidates"] = status["eviction_plan"].get("candidates", [])
 
     if not status["ollama_reachable"]:
         status["warnings"].append({"warning": "ollama_not_reachable_read_only_status"})
