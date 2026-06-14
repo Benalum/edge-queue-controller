@@ -10725,6 +10725,92 @@ def _stage5p12j_read_only_warmup_memory_budget(status: dict) -> dict:
         "upstream_warmup_plan_reason": warmup_plan.get("reason"),
     }
 
+
+def _stage5p12k_manual_warmup_dry_run(status: dict, model: str) -> dict:
+    """Guarded manual warmup dry-run planner for Phase 12R-K.
+
+    This never warms a model. It only evaluates whether a model would pass
+    installed/loaded/memory-budget checks for a future guarded action.
+    """
+    if not isinstance(status, dict):
+        status = {}
+
+    model = str(model or "").strip()
+
+    installed_models = status.get("installed_models") or []
+    loaded_models = status.get("loaded_models") or []
+    ct101_memory = status.get("ct101_memory") or {}
+    warmup_budget = status.get("warmup_memory_budget") or {}
+
+    if not isinstance(installed_models, list):
+        installed_models = []
+    if not isinstance(loaded_models, list):
+        loaded_models = []
+
+    installed_set = {str(x) for x in installed_models}
+    loaded_set = {str(x) for x in loaded_models}
+
+    default_target_models = ["qwen3:0.6b", "qwen3:1.7b", "llama3.2:3b"]
+    allowed_by_lane_policy = model in default_target_models
+
+    budget_candidates = warmup_budget.get("candidates") or []
+    budget_match = None
+    if isinstance(budget_candidates, list):
+        for item in budget_candidates:
+            if isinstance(item, dict) and item.get("model") == model:
+                budget_match = item
+                break
+
+    installed = model in installed_set
+    currently_loaded = model in loaded_set
+    ct101_memory_available = bool(ct101_memory.get("available"))
+    within_budget = bool((budget_match or {}).get("within_budget")) if budget_match else False
+
+    blockers = []
+    if not model:
+        blockers.append("missing_model")
+    if model and not allowed_by_lane_policy:
+        blockers.append("model_not_allowed_by_lane_policy")
+    if model and not installed:
+        blockers.append("model_not_installed")
+    if currently_loaded:
+        blockers.append("model_already_loaded")
+    if not ct101_memory_available:
+        blockers.append("ct101_memory_unavailable")
+    if model and installed and not currently_loaded and not within_budget:
+        blockers.append("warmup_would_exceed_memory_budget_or_budget_unknown")
+
+    dry_run_passed = not blockers
+
+    return {
+        "source": "phase_12r_k_guarded_manual_warmup_dry_run",
+        "mode": "read_only",
+        "model": model,
+        "action_enabled": False,
+        "dry_run_passed": dry_run_passed,
+        "installed": installed,
+        "currently_loaded": currently_loaded,
+        "ct101_memory_available": ct101_memory_available,
+        "budget_percent": warmup_budget.get("budget_percent"),
+        "budget_mb": warmup_budget.get("budget_mb"),
+        "ct101_mem_total_mb": warmup_budget.get("ct101_mem_total_mb"),
+        "ct101_mem_available_mb": warmup_budget.get("ct101_mem_available_mb"),
+        "estimated_model_mb": (budget_match or {}).get("estimated_model_mb"),
+        "projected_loaded_plus_warming_mb": (budget_match or {}).get("projected_loaded_plus_warming_mb"),
+        "projected_ram_fraction": (budget_match or {}).get("projected_ram_fraction"),
+        "within_budget": within_budget,
+        "eviction_required": False,
+        "allowed_by_lane_policy": allowed_by_lane_policy,
+        "would_call": "none",
+        "reason": "dry_run_only_passed" if dry_run_passed else "dry_run_only_blocked",
+        "blockers": blockers,
+        "notes": [
+            "This is a dry-run report only.",
+            "No Ollama generate/chat, warmup, unload, or stop call is performed.",
+            "A future action path must re-check these conditions immediately before warming.",
+        ],
+    }
+
 def _stage5p12r_model_memory_status_read_only() -> dict:
     """Read-only model memory status evidence for Phase 12R-F.
 
@@ -10898,6 +10984,11 @@ def _stage5p12r_model_memory_status_read_only() -> dict:
     status["warmup_plan"] = _stage5p12i_read_only_warmup_plan(status)
     status["warmup_candidates"] = status["warmup_plan"].get("candidates", [])
     status["warmup_memory_budget"] = _stage5p12j_read_only_warmup_memory_budget(status)
+    status["manual_warmup_dry_runs"] = {
+        "qwen3:0.6b": _stage5p12k_manual_warmup_dry_run(status, "qwen3:0.6b"),
+        "qwen3:1.7b": _stage5p12k_manual_warmup_dry_run(status, "qwen3:1.7b"),
+        "llama3.2:3b": _stage5p12k_manual_warmup_dry_run(status, "llama3.2:3b"),
+    }
 
     if not status["ollama_reachable"]:
         status["warnings"].append({"warning": "ollama_not_reachable_read_only_status"})
