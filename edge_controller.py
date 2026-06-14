@@ -10896,6 +10896,74 @@ def _stage5p12l_disabled_manual_warmup_action_blueprint(status: dict) -> dict:
     }
 
 
+def _stage5p12al_disabled_warmup_activation_guard_report(
+    payload: dict | None = None,
+    status: dict | None = None,
+    authenticated_admin: bool | None = None,
+) -> dict:
+    """
+    Disabled guard report for a future model warmup executor.
+
+    This is intentionally non-executing. It performs no network calls and does
+    not call Ollama. It only reports which future activation guards would need
+    to pass before a warmup executor could be considered.
+    """
+    payload = payload or {}
+    status = status or {}
+
+    model = str(payload.get("model") or "qwen3:0.6b")
+    confirm = str(payload.get("confirm") or "")
+    dry_run = bool(payload.get("dry_run", True))
+
+    allowed_models = ["qwen3:0.6b", "qwen3:1.7b", "llama3.2:3b"]
+    env_enabled = (
+        __import__("os").environ.get("EDGE_MODEL_WARMUP_ACTION_ENABLED") == "1"
+    )
+
+    guards = {
+        "authenticated_admin": authenticated_admin is True,
+        "warmup_action_env_enabled": env_enabled,
+        "confirm_matches": confirm == "WARMUP_MODEL_NOW",
+        "model_allowlisted": model in allowed_models,
+        "dry_run_false_requested": dry_run is False,
+        "runtime_executor_implemented": False,
+        "ollama_generation_call_allowed": False,
+    }
+
+    blocked_reasons = []
+    if guards["authenticated_admin"] is not True:
+        blocked_reasons.append("authenticated_admin_required")
+    if guards["warmup_action_env_enabled"] is not True:
+        blocked_reasons.append("warmup_action_env_disabled")
+    if guards["confirm_matches"] is not True:
+        blocked_reasons.append("confirm_required")
+    if guards["model_allowlisted"] is not True:
+        blocked_reasons.append("model_not_allowlisted")
+    if guards["dry_run_false_requested"] is not True:
+        blocked_reasons.append("dry_run_only_request")
+    blocked_reasons.append("runtime_executor_not_implemented")
+    blocked_reasons.append("ollama_generation_call_not_allowed")
+
+    return {
+        "source": "phase_12r_al_disabled_warmup_activation_guard_report",
+        "mode": "disabled_guard_report_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "would_call": "none",
+        "execute_now": False,
+        "model": model,
+        "allowed_models": allowed_models,
+        "dry_run_requested": dry_run,
+        "confirm_required": "WARMUP_MODEL_NOW",
+        "confirm_received": confirm,
+        "all_required_guards_passed": False,
+        "guards": guards,
+        "blocked_reasons": blocked_reasons,
+        "status_source": status.get("source") if isinstance(status, dict) else None,
+    }
+
+
 def _stage5p12m_disabled_admin_model_warmup_response(model: str, dry_run: bool = True, status: dict | None = None) -> dict:
     """Phase 12R-M: disabled admin warmup endpoint skeleton only.
 
