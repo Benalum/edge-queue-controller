@@ -10895,6 +10895,37 @@ def _stage5p12l_disabled_manual_warmup_action_blueprint(status: dict) -> dict:
         ],
     }
 
+
+def _stage5p12m_disabled_admin_model_warmup_response(model: str, dry_run: bool = True) -> dict:
+    """Phase 12R-M: disabled admin warmup endpoint skeleton only.
+
+    This helper intentionally does not call Ollama, unload models, warm models,
+    start lane workers, enable router rollout, or mark cutover ready.
+    """
+
+    action_enabled = os.environ.get("EDGE_MODEL_WARMUP_ACTION_ENABLED") == "1"
+    blockers = []
+    if not action_enabled:
+        blockers.append("warmup_action_disabled")
+
+    return {
+        "source": "phase_12r_m_disabled_admin_model_warmup_endpoint_skeleton",
+        "mode": "disabled_endpoint_skeleton",
+        "endpoint": "/admin/model-warmup",
+        "method": "POST",
+        "model": model,
+        "dry_run": bool(dry_run),
+        "dry_run_only": True,
+        "action_enabled": action_enabled,
+        "runtime_action_available": False,
+        "admin_endpoint_available": True,
+        "would_call": "none",
+        "required_env": "EDGE_MODEL_WARMUP_ACTION_ENABLED=1",
+        "reason": "warmup_action_disabled",
+        "blockers": blockers,
+    }
+
+
 def _stage5p12r_model_memory_status_read_only() -> dict:
     """Read-only model memory status evidence for Phase 12R-F.
 
@@ -11074,6 +11105,7 @@ def _stage5p12r_model_memory_status_read_only() -> dict:
         "llama3.2:3b": _stage5p12k_manual_warmup_dry_run(status, "llama3.2:3b"),
     }
     status["manual_warmup_action"] = _stage5p12l_disabled_manual_warmup_action_blueprint(status)
+    status["admin_model_warmup_endpoint"] = _stage5p12m_disabled_admin_model_warmup_response("qwen3:0.6b", dry_run=True)
 
     if not status["ollama_reachable"]:
         status["warnings"].append({"warning": "ollama_not_reachable_read_only_status"})
@@ -11746,6 +11778,21 @@ printf 'last_log=%s\n' "$last_log"
             "error": str(exc),
         })
         return base
+
+
+@app.post("/admin/model-warmup")
+async def admin_model_warmup(payload: dict | None = None):
+    """Phase 12R-M disabled endpoint skeleton.
+
+    The endpoint exists for admin API shape validation only and always refuses.
+    """
+
+    payload = payload or {}
+    model = str(payload.get("model") or "qwen3:0.6b")
+    dry_run = bool(payload.get("dry_run", True))
+    response = _stage5p12m_disabled_admin_model_warmup_response(model, dry_run=dry_run)
+    raise HTTPException(status_code=403, detail=response)
+
 
 @app.get("/system/local-health")
 def system_local_health():
