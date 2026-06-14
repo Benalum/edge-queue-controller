@@ -59,6 +59,17 @@ This phase must not:
 - Call /api/generate.
 - Call /api/chat.
 
+## Phase 13C compatibility note
+
+Phase 13B originally protected the helper as uncalled.
+
+After Phase 13C, the only allowed caller is the disabled admin/local preview route:
+
+- POST /admin/intent-router-preview
+- function admin_intent_router_preview
+
+No Study, Companion, Calendar, Profile, worker, queue, or public route may call the helper directly.
+
 ## Future phases
 
 Recommended next phases:

@@ -18902,3 +18902,51 @@ def _stage5p13a_disabled_intent_router_foundation(
             "no_tool_call": True,
         },
     }
+
+# --- Phase 13C disabled admin/local intent-router preview endpoint --------
+
+@app.post("/admin/intent-router-preview")
+async def admin_intent_router_preview(request: Request, payload: dict | None = None):
+    """
+    Disabled admin/local preview endpoint for the future intent router.
+
+    This endpoint is admin-gated and non-executing. It does not enqueue jobs,
+    does not call a model, and does not change live Study/Companion behavior.
+    It only returns the Phase 13A deterministic router preview metadata.
+    """
+    _admin_support_require_admin(request)
+
+    payload = payload or {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    message = str(payload.get("message") or "")
+    profile = payload.get("profile")
+    if not isinstance(profile, dict):
+        profile = {}
+
+    preview = _stage5p13a_disabled_intent_router_foundation(message, profile)
+
+    return {
+        "source": "phase_13c_disabled_admin_intent_router_preview_endpoint",
+        "mode": "disabled_admin_preview_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "route_preview_only": True,
+        "live_route_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "requires_admin": True,
+        "router_preview": preview,
+        "safety": {
+            "admin_gated": True,
+            "not_connected_to_study_live_flow": True,
+            "not_connected_to_companion_live_flow": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_tool_call": True,
+        },
+    }

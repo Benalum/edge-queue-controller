@@ -64,15 +64,28 @@ for node in tree.body:
 if helper is None:
     raise SystemExit("FAIL: Phase 13A helper missing")
 
+def enclosing_function_name(node):
+    current = getattr(node, "parent", None)
+    while current is not None:
+        if isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            return current.name
+        current = getattr(current, "parent", None)
+    return None
+
 for node in ast.walk(tree):
     if isinstance(node, ast.Call):
         fn = node.func
         if isinstance(fn, ast.Name) and fn.id == helper_name:
             parent = getattr(node, "parent", None)
-            calls.append((type(parent).__name__, getattr(parent, "lineno", None)))
+            calls.append((type(parent).__name__, getattr(parent, "lineno", None), enclosing_function_name(node)))
 
-if calls:
-    raise SystemExit(f"FAIL: helper is called from code path(s): {calls}")
+allowed_callers = {"admin_intent_router_preview"}
+unexpected_calls = [
+    call for call in calls
+    if call[2] not in allowed_callers
+]
+if unexpected_calls:
+    raise SystemExit(f"FAIL: helper is called from unexpected code path(s): {unexpected_calls}")
 
 for path, name in routes:
     if name == helper_name:
@@ -128,7 +141,7 @@ for forbidden in [
     if forbidden in helper_lower:
         raise SystemExit(f"FAIL: helper contains forbidden marker: {forbidden}")
 
-print("PASS: helper remains uncalled, unexposed, disabled, and non-executing")
+print("PASS: helper remains unexposed, disabled, non-executing, and only called by the allowed preview route if present")
 PY
 
 echo
