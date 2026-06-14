@@ -10964,7 +10964,13 @@ def _stage5p12al_disabled_warmup_activation_guard_report(
     }
 
 
-def _stage5p12m_disabled_admin_model_warmup_response(model: str, dry_run: bool = True, status: dict | None = None) -> dict:
+def _stage5p12m_disabled_admin_model_warmup_response(
+    model: str,
+    dry_run: bool = True,
+    status: dict | None = None,
+    payload: dict | None = None,
+    authenticated_admin: bool | None = None,
+) -> dict:
     """Phase 12R-M: disabled admin warmup endpoint skeleton only.
 
     This helper intentionally does not call Ollama, unload models, warm models,
@@ -10974,12 +10980,24 @@ def _stage5p12m_disabled_admin_model_warmup_response(model: str, dry_run: bool =
     if status is None or not isinstance(status, dict):
         status = {}
 
+    if payload is None or not isinstance(payload, dict):
+        payload = {"model": model, "dry_run": dry_run}
+    else:
+        payload = dict(payload)
+        payload.setdefault("model", model)
+        payload.setdefault("dry_run", dry_run)
+
     action_enabled = os.environ.get("EDGE_MODEL_WARMUP_ACTION_ENABLED") == "1"
     blockers = []
     if not action_enabled:
         blockers.append("warmup_action_disabled")
 
     future_preview = _stage5p12y_disabled_future_warmup_execution_skeleton(model, status)
+    activation_guard_report = _stage5p12al_disabled_warmup_activation_guard_report(
+        payload,
+        status=status,
+        authenticated_admin=authenticated_admin,
+    )
 
     return {
         "source": "phase_12r_m_disabled_admin_model_warmup_endpoint_skeleton",
@@ -10997,6 +11015,7 @@ def _stage5p12m_disabled_admin_model_warmup_response(model: str, dry_run: bool =
         "reason": "warmup_action_disabled",
         "blockers": blockers,
         "future_warmup_execution_preview": future_preview,
+        "activation_guard_report": activation_guard_report,
     }
 
 
@@ -11931,7 +11950,13 @@ async def admin_model_warmup(request: Request, payload: dict | None = None):
     model = str(payload.get("model") or "qwen3:0.6b")
     dry_run = bool(payload.get("dry_run", True))
     status = _stage5p12r_model_memory_status_read_only()
-    response = _stage5p12m_disabled_admin_model_warmup_response(model, dry_run=dry_run, status=status)
+    response = _stage5p12m_disabled_admin_model_warmup_response(
+        model,
+        dry_run=dry_run,
+        status=status,
+        payload=payload,
+        authenticated_admin=True,
+    )
     raise HTTPException(status_code=403, detail=response)
 
 
