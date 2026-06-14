@@ -10525,6 +10525,90 @@ def _stage5p12h_read_only_eviction_plan(status: dict) -> dict:
         ],
     }
 
+
+def _stage5p12i_read_only_warmup_plan(status: dict) -> dict:
+    """Read-only model warmup planner for Phase 12R-I.
+
+    This planner never warms models. It only reports which known lane models
+    are installed, loaded, missing, or potential future warmup candidates.
+    """
+    if not isinstance(status, dict):
+        status = {}
+
+    installed_models = status.get("installed_models") or []
+    loaded_models = status.get("loaded_models") or []
+    ct101_memory = status.get("ct101_memory") or {}
+    eviction_plan = status.get("eviction_plan") or {}
+
+    if not isinstance(installed_models, list):
+        installed_models = []
+    if not isinstance(loaded_models, list):
+        loaded_models = []
+
+    installed_set = {str(x) for x in installed_models}
+    loaded_set = {str(x) for x in loaded_models}
+
+    default_target_models = [
+        "qwen3:0.6b",
+        "qwen3:1.7b",
+        "llama3.2:3b",
+    ]
+
+    candidates = []
+    blocked = []
+
+    for model in default_target_models:
+        item = {
+            "model": model,
+            "installed": model in installed_set,
+            "loaded": model in loaded_set,
+            "eligible": False,
+            "reason": None,
+        }
+
+        if model not in installed_set:
+            item["reason"] = "model_not_installed"
+            blocked.append(item)
+        elif model in loaded_set:
+            item["eligible"] = False
+            item["reason"] = "already_loaded"
+            blocked.append(item)
+        else:
+            item["eligible"] = True
+            item["reason"] = "installed_not_loaded_read_only_warmup_candidate"
+            candidates.append(item)
+
+    if candidates:
+        reason = "installed_not_loaded_models_available"
+    elif not installed_models:
+        reason = "no_installed_models_visible"
+    elif all(model in loaded_set for model in default_target_models if model in installed_set):
+        reason = "target_models_already_loaded_or_missing"
+    else:
+        reason = "no_warmup_candidates"
+
+    return {
+        "source": "phase_12r_i_read_only_model_warmup_planner",
+        "mode": "read_only",
+        "action_enabled": False,
+        "reason": reason,
+        "default_target_models": default_target_models,
+        "candidate_count": len(candidates),
+        "blocked_count": len(blocked),
+        "installed_model_count": len(installed_models),
+        "loaded_model_count": len(loaded_models),
+        "ct101_memory_available": bool(ct101_memory.get("available")),
+        "ct101_mem_available_mb": ct101_memory.get("mem_available_mb"),
+        "eviction_required_before_warmup": False,
+        "eviction_plan_reason": eviction_plan.get("reason"),
+        "candidates": candidates,
+        "blocked": blocked,
+        "notes": [
+            "No model warmup is performed by this planner.",
+            "Future warmup must use a separate guarded action path and must not run user prompts.",
+        ],
+    }
+
 def _stage5p12r_model_memory_status_read_only() -> dict:
     """Read-only model memory status evidence for Phase 12R-F.
 
@@ -10695,6 +10779,8 @@ def _stage5p12r_model_memory_status_read_only() -> dict:
 
     status["eviction_plan"] = _stage5p12h_read_only_eviction_plan(status)
     status["safe_eviction_candidates"] = status["eviction_plan"].get("candidates", [])
+    status["warmup_plan"] = _stage5p12i_read_only_warmup_plan(status)
+    status["warmup_candidates"] = status["warmup_plan"].get("candidates", [])
 
     if not status["ollama_reachable"]:
         status["warnings"].append({"warning": "ollama_not_reachable_read_only_status"})
