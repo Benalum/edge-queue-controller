@@ -76,6 +76,17 @@ This phase must not:
 - Call /api/generate.
 - Call /api/chat.
 
+## Phase 13F compatibility note
+
+Phase 13D originally protected the helper as uncalled.
+
+After Phase 13F, the only allowed caller is the disabled admin Study-answer preview route:
+
+- POST /admin/study-answer-preview
+- function admin_study_answer_preview
+
+No live Study, Companion, Calendar, Profile, worker, queue, or public route may call the helper directly.
+
 ## Future phases
 
 Recommended next phases:

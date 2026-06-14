@@ -82,8 +82,13 @@ for node in ast.walk(tree):
         if isinstance(fn, ast.Name) and fn.id == helper_name:
             calls.append((type(getattr(node, "parent", None)).__name__, getattr(node, "lineno", None), enclosing_function_name(node)))
 
-if calls:
-    raise SystemExit(f"FAIL: Phase 13D helper is called from code path(s): {calls}")
+allowed_callers = {"admin_study_answer_preview"}
+unexpected_calls = [
+    call for call in calls
+    if call[2] not in allowed_callers
+]
+if unexpected_calls:
+    raise SystemExit(f"FAIL: Phase 13D helper is called from unexpected code path(s): {unexpected_calls}")
 
 helper_src = ast.get_source_segment(src, helper) or ""
 helper_lower = helper_src.lower()
@@ -158,7 +163,7 @@ for forbidden in [
     if forbidden in helper_lower:
         raise SystemExit(f"FAIL: helper contains forbidden marker: {forbidden}")
 
-print("PASS: Phase 13D helper contract remains disabled, pure, uncalled, unexposed, and non-executing")
+print("PASS: Phase 13D helper contract remains disabled, pure, unexposed, non-executing, and only called by the allowed preview route if present")
 PY
 
 echo

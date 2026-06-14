@@ -51,6 +51,17 @@ It does not check whether the stored card answer is factually true.
 
 A future truth-check phase can separately flag bad card content.
 
+## Phase 13F compatibility note
+
+Phase 13E originally protected the Phase 13D helper as uncalled.
+
+After Phase 13F, the only allowed caller is the disabled admin Study-answer preview route:
+
+- POST /admin/study-answer-preview
+- function admin_study_answer_preview
+
+No live Study, Companion, Calendar, Profile, worker, queue, or public route may call the helper directly.
+
 ## Future phases
 
 Recommended next phases:

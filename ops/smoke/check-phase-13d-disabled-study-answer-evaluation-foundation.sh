@@ -68,15 +68,28 @@ for path, name in routes:
     if name == helper_name:
         raise SystemExit(f"FAIL: helper exposed as route: {path}")
 
+def enclosing_function_name(node):
+    current = getattr(node, "parent", None)
+    while current is not None:
+        if isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            return current.name
+        current = getattr(current, "parent", None)
+    return None
+
 for node in ast.walk(tree):
     if isinstance(node, ast.Call):
         fn = node.func
         if isinstance(fn, ast.Name) and fn.id == helper_name:
             parent = getattr(node, "parent", None)
-            calls.append((type(parent).__name__, getattr(parent, "lineno", None)))
+            calls.append((type(parent).__name__, getattr(parent, "lineno", None), enclosing_function_name(node)))
 
-if calls:
-    raise SystemExit(f"FAIL: Phase 13D helper is called from code path(s): {calls}")
+allowed_callers = {"admin_study_answer_preview"}
+unexpected_calls = [
+    call for call in calls
+    if len(call) < 3 or call[2] not in allowed_callers
+]
+if unexpected_calls:
+    raise SystemExit(f"FAIL: Phase 13D helper is called from unexpected code path(s): {unexpected_calls}")
 
 helper_src = ast.get_source_segment(src, helper) or ""
 helper_lower = helper_src.lower()
@@ -139,7 +152,7 @@ for forbidden in [
     if forbidden in helper_lower:
         raise SystemExit(f"FAIL: helper contains forbidden marker: {forbidden}")
 
-print("PASS: Phase 13D helper is disabled, pure, uncalled, and unexposed")
+print("PASS: Phase 13D helper is disabled, pure, unexposed, and only called by the allowed preview route if present")
 PY
 
 echo

@@ -19182,3 +19182,63 @@ def _stage5p13d_disabled_study_answer_evaluation_foundation(
             "no_tool_call": True,
         },
     }
+
+# --- Phase 13F disabled admin Study-answer preview endpoint ----------------
+
+@app.post("/admin/study-answer-preview")
+async def admin_study_answer_preview(request: Request, payload: dict | None = None):
+    """
+    Disabled admin preview endpoint for the future Study answer evaluator.
+
+    This endpoint is admin-gated and non-executing. It does not enqueue jobs,
+    does not call a model, does not write to the database, and does not change
+    Study card state. It only returns Phase 13D answer-evaluation metadata.
+    """
+    _admin_support_require_admin(request)
+
+    payload = payload or {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    expected_answer = str(payload.get("expected_answer") or "")
+    user_answer = str(payload.get("user_answer") or "")
+    question = str(payload.get("question") or "")
+
+    profile = payload.get("profile")
+    if not isinstance(profile, dict):
+        profile = {}
+
+    evaluation = _stage5p13d_disabled_study_answer_evaluation_foundation(
+        expected_answer,
+        user_answer,
+        question,
+        profile,
+    )
+
+    return {
+        "source": "phase_13f_disabled_admin_study_answer_preview_endpoint",
+        "mode": "disabled_admin_study_answer_preview_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "route_preview_only": True,
+        "live_study_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "database_write_allowed": False,
+        "card_state_change_allowed": False,
+        "requires_admin": True,
+        "study_answer_evaluation": evaluation,
+        "safety": {
+            "admin_gated": True,
+            "not_connected_to_live_study_routes": True,
+            "not_connected_to_companion_live_flow": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_database_write": True,
+            "no_card_state_change": True,
+            "no_tool_call": True,
+        },
+    }
