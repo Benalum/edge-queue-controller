@@ -10609,6 +10609,122 @@ def _stage5p12i_read_only_warmup_plan(status: dict) -> dict:
         ],
     }
 
+
+def _stage5p12j_read_only_warmup_memory_budget(status: dict) -> dict:
+    """Read-only warmup memory budget planner for Phase 12R-J.
+
+    This does not load or unload models. It estimates whether future warmup
+    candidates would keep loaded + warming model memory under a configurable
+    fraction of CT101 RAM.
+    """
+    if not isinstance(status, dict):
+        status = {}
+
+    ct101_memory = status.get("ct101_memory") or {}
+    loaded_models = status.get("loaded_models") or []
+    warming_models = status.get("warming_models") or []
+    warmup_plan = status.get("warmup_plan") or {}
+    warmup_candidates = status.get("warmup_candidates") or []
+
+    if not isinstance(loaded_models, list):
+        loaded_models = []
+    if not isinstance(warming_models, list):
+        warming_models = []
+    if not isinstance(warmup_candidates, list):
+        warmup_candidates = []
+
+    # Conservative first-pass estimates, in MB.
+    # These are planning estimates only. Later phases can replace this with
+    # measured resident memory from Ollama /api/ps where available.
+    model_estimates_mb = {
+        "qwen3:0.6b": 900,
+        "qwen3:1.7b": 2200,
+        "llama3.2:3b": 4200,
+        "gemma3:4b": 5200,
+        "gemma4:e4b": 5200,
+    }
+
+    budget_fraction = 0.80
+    mem_total_mb = ct101_memory.get("mem_total_mb")
+    if not isinstance(mem_total_mb, int):
+        mem_total_mb = None
+
+    budget_mb = int(mem_total_mb * budget_fraction) if mem_total_mb else None
+
+    def _estimate(model_name):
+        return int(model_estimates_mb.get(str(model_name), 4096))
+
+    loaded_estimated_mb = sum(_estimate(m) for m in loaded_models)
+    warming_estimated_mb = sum(_estimate(m) for m in warming_models)
+    current_planned_mb = loaded_estimated_mb + warming_estimated_mb
+
+    candidate_results = []
+    for item in warmup_candidates:
+        if isinstance(item, dict):
+            model = item.get("model")
+        else:
+            model = item
+        if not model:
+            continue
+
+        estimate_mb = _estimate(model)
+        projected_mb = current_planned_mb + estimate_mb
+        projected_fraction = (projected_mb / mem_total_mb) if mem_total_mb else None
+        within_budget = bool(budget_mb is not None and projected_mb <= budget_mb)
+
+        candidate_results.append({
+            "model": str(model),
+            "estimated_model_mb": estimate_mb,
+            "projected_loaded_plus_warming_mb": projected_mb,
+            "projected_ram_fraction": round(projected_fraction, 4) if projected_fraction is not None else None,
+            "within_budget": within_budget,
+            "eligible": bool(within_budget),
+            "reason": "within_80_percent_ram_budget" if within_budget else "would_exceed_80_percent_ram_budget_or_memory_unknown",
+        })
+
+    blocked = [item for item in candidate_results if not item.get("eligible")]
+    allowed = [item for item in candidate_results if item.get("eligible")]
+
+    if budget_mb is None:
+        reason = "ct101_memory_total_unavailable"
+    elif not candidate_results:
+        reason = "no_warmup_candidates"
+    elif blocked and allowed:
+        reason = "some_candidates_within_budget"
+    elif allowed:
+        reason = "all_candidates_within_budget"
+    else:
+        reason = "all_candidates_blocked_by_budget"
+
+    return {
+        "source": "phase_12r_j_read_only_warmup_memory_budget_planner",
+        "mode": "read_only",
+        "action_enabled": False,
+        "budget_fraction": budget_fraction,
+        "budget_percent": 80,
+        "ct101_mem_total_mb": mem_total_mb,
+        "ct101_mem_available_mb": ct101_memory.get("mem_available_mb"),
+        "budget_mb": budget_mb,
+        "loaded_model_count": len(loaded_models),
+        "warming_model_count": len(warming_models),
+        "loaded_estimated_mb": loaded_estimated_mb,
+        "warming_estimated_mb": warming_estimated_mb,
+        "loaded_plus_warming_estimated_mb": current_planned_mb,
+        "warmup_candidate_count": len(candidate_results),
+        "allowed_candidate_count": len(allowed),
+        "blocked_candidate_count": len(blocked),
+        "reason": reason,
+        "model_estimates_mb": model_estimates_mb,
+        "candidates": candidate_results,
+        "blocked": blocked,
+        "notes": [
+            "This is a read-only planner. It does not load, warm, unload, or stop models.",
+            "Future warmup actions must keep loaded + warming estimated memory under this budget unless explicitly overridden.",
+            "Model memory estimates are conservative placeholders until measured per-model memory is available.",
+        ],
+        "upstream_warmup_plan_reason": warmup_plan.get("reason"),
+    }
+
 def _stage5p12r_model_memory_status_read_only() -> dict:
     """Read-only model memory status evidence for Phase 12R-F.
 
@@ -10781,6 +10897,7 @@ def _stage5p12r_model_memory_status_read_only() -> dict:
     status["safe_eviction_candidates"] = status["eviction_plan"].get("candidates", [])
     status["warmup_plan"] = _stage5p12i_read_only_warmup_plan(status)
     status["warmup_candidates"] = status["warmup_plan"].get("candidates", [])
+    status["warmup_memory_budget"] = _stage5p12j_read_only_warmup_memory_budget(status)
 
     if not status["ollama_reachable"]:
         status["warnings"].append({"warning": "ollama_not_reachable_read_only_status"})
