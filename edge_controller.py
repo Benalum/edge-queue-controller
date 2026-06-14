@@ -19347,6 +19347,96 @@ def _stage5p13i_disabled_study_judge_execution_contract(expected_answer: str, us
         },
     }
 
+# --- Phase 13J disabled Study answer judge queue contract helper ----------
+
+def _stage5p13j_disabled_study_answer_judge_queue_contract(card_id: str | None = None, session_id: str | None = None, user_id: str | None = None, expected_answer: str | None = None, user_answer: str | None = None, question: str | None = None, profile: dict | None = None) -> dict:
+    """Disabled, pure contract for future study_answer_judge queue jobs."""
+    profile = profile or {}
+    raw_card_id = "" if card_id is None else str(card_id)
+    raw_session_id = "" if session_id is None else str(session_id)
+    raw_user_id = "" if user_id is None else str(user_id)
+    raw_expected = "" if expected_answer is None else str(expected_answer)
+    raw_user_answer = "" if user_answer is None else str(user_answer)
+    raw_question = "" if question is None else str(question)
+    return {
+        "source": "phase_13j_disabled_study_answer_judge_queue_contract_helper",
+        "mode": "disabled_study_answer_judge_queue_contract_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "queue_wired": False,
+        "live_study_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "queue_write_allowed": False,
+        "database_write_allowed": False,
+        "card_state_change_allowed": False,
+        "worker_dispatch_allowed": False,
+        "tool_call_allowed": False,
+        "job_contract": {
+            "job_type": "study_answer_judge",
+            "model_tier": "tier_2_study_light",
+            "priority": "interactive_study_answer_judge",
+            "timeout_seconds": 20,
+            "durable_queue_required": True,
+            "current_queue_write_enabled": False,
+            "current_scheduler_dispatch_enabled": False,
+            "retry_policy": {"max_attempts": 1, "retry_on_timeout": False, "retry_on_invalid_model_output": False},
+        },
+        "payload_contract": {
+            "required_fields_when_enabled": ["card_id", "session_id", "user_id", "expected_answer", "user_answer"],
+            "optional_fields_when_enabled": ["question", "profile_context", "prior_deterministic_evaluation"],
+            "sample_payload": {
+                "card_id": raw_card_id,
+                "session_id": raw_session_id,
+                "user_id": raw_user_id,
+                "question": raw_question,
+                "expected_answer": raw_expected,
+                "user_answer": raw_user_answer,
+                "profile_context": {"preferred_language": profile.get("preferred_language"), "study_language": profile.get("study_language")},
+            },
+        },
+        "result_contract": {
+            "required_fields": ["verdict", "relationship", "confidence", "reason"],
+            "allowed_verdicts": ["correct", "partially_correct", "incorrect", "unsure"],
+            "allowed_relationships": ["same_meaning", "narrower", "broader", "related", "unrelated", "contradiction", "unclear"],
+            "backend_acceptance_required": True,
+            "card_state_mutation_by_worker_allowed": False,
+        },
+        "scheduler_contract": {
+            "current_generic_queue_table": "jobs",
+            "current_job_type_column": "job_type",
+            "current_worker_capability_router_known_types": ["ollama_chat", "companion_chat", "tts", "stt", "comfy_image", "comfy_video"],
+            "current_unknown_job_type_behavior": "required_capability_equals_job_type",
+            "activation_requires_capability_mapping": True,
+            "future_required_capability_options": ["study_answer_judge", "ollama_chat_with_study_judge_policy"],
+            "direct_route_to_ollama_allowed": False,
+            "direct_browser_to_model_allowed": False,
+        },
+        "activation_gates": {
+            "requires_worker_capability_update": True,
+            "requires_queue_enqueue_endpoint": True,
+            "requires_worker_result_schema_validation": True,
+            "requires_backend_acceptance_policy": True,
+            "requires_card_state_write_guard": True,
+            "requires_live_smoke_before_enable": True,
+        },
+        "safety": {
+            "not_connected_to_live_study_routes": True,
+            "not_connected_to_companion_live_flow": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_worker_dispatch": True,
+            "no_database_write": True,
+            "no_card_state_change": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
