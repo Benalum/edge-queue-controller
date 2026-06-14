@@ -19183,6 +19183,170 @@ def _stage5p13d_disabled_study_answer_evaluation_foundation(
         },
     }
 
+# --- Phase 13I disabled Study Judge execution contract helper -------------
+
+def _stage5p13i_disabled_study_judge_execution_contract(expected_answer: str, user_answer: str, question: str | None = None, profile: dict | None = None, prior_evaluation: dict | None = None) -> dict:
+    """Disabled, pure contract for future Study Judge execution."""
+    profile = profile or {}
+    raw_expected = "" if expected_answer is None else str(expected_answer)
+    raw_user = "" if user_answer is None else str(user_answer)
+    raw_question = "" if question is None else str(question)
+    if not isinstance(prior_evaluation, dict):
+        def p13i_normalize(value: str) -> str:
+            number_words = {
+                "zero": "0",
+                "one": "1",
+                "two": "2",
+                "three": "3",
+                "four": "4",
+                "five": "5",
+                "six": "6",
+                "seven": "7",
+                "eight": "8",
+                "nine": "9",
+                "ten": "10",
+                "eleven": "11",
+                "twelve": "12",
+                "thirteen": "13",
+                "fourteen": "14",
+                "fifteen": "15",
+                "sixteen": "16",
+                "seventeen": "17",
+                "eighteen": "18",
+                "nineteen": "19",
+                "twenty": "20",
+            }
+            lowered = str(value).strip().lower()
+            cleaned = "".join(char if (char.isalnum() or char.isspace()) else " " for char in lowered)
+            tokens = " ".join(cleaned.split()).split()
+            return " ".join(number_words.get(token, token) for token in tokens)
+
+        expected_normalized = p13i_normalize(raw_expected)
+        user_normalized = p13i_normalize(raw_user)
+        if not expected_normalized:
+            prior_evaluation = {
+                "verdict": "unsure",
+                "match_type": "missing_expected_answer",
+                "confidence": 0.0,
+                "needs_model_judge": False,
+                "deterministic_match": False,
+                "judge_prompt_contract": None,
+            }
+        elif not user_normalized:
+            prior_evaluation = {
+                "verdict": "incorrect",
+                "match_type": "empty_user_answer",
+                "confidence": 0.95,
+                "needs_model_judge": False,
+                "deterministic_match": False,
+                "judge_prompt_contract": None,
+            }
+        elif expected_normalized == user_normalized:
+            prior_evaluation = {
+                "verdict": "correct",
+                "match_type": "phase13i_local_normalized_exact",
+                "confidence": 0.99,
+                "needs_model_judge": False,
+                "deterministic_match": True,
+                "judge_prompt_contract": None,
+            }
+        else:
+            prior_evaluation = {
+                "verdict": "unsure",
+                "match_type": "requires_semantic_judge",
+                "confidence": 0.0,
+                "needs_model_judge": True,
+                "deterministic_match": False,
+                "judge_prompt_contract": {
+                    "purpose": "Decide whether the user answer means the same thing as the expected card answer.",
+                    "mode": "card_match_not_truth_check",
+                    "inputs": {
+                        "question": raw_question,
+                        "expected_answer": raw_expected,
+                        "user_answer": raw_user,
+                    },
+                },
+            }
+    needs_model_judge = bool(prior_evaluation.get("needs_model_judge"))
+    return {
+        "source": "phase_13i_disabled_study_judge_execution_contract_helper",
+        "mode": "disabled_study_judge_execution_contract_only",
+        "read_only": True,
+        "network_calls": False,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "queue_wired": False,
+        "live_study_integration": False,
+        "execute_now": False,
+        "would_call": "none",
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "database_write_allowed": False,
+        "card_state_change_allowed": False,
+        "tool_call_allowed": False,
+        "deterministic_gate": {
+            "verdict": prior_evaluation.get("verdict"),
+            "match_type": prior_evaluation.get("match_type"),
+            "confidence": prior_evaluation.get("confidence"),
+            "needs_model_judge": needs_model_judge,
+            "deterministic_match": bool(prior_evaluation.get("deterministic_match")),
+        },
+        "small_judge": {
+            "needed": needs_model_judge,
+            "job_type": "study_answer_judge",
+            "model_tier": "tier_2_study_light",
+            "priority": "interactive_study",
+            "timeout_seconds": 20,
+            "model_call_allowed": False,
+            "job_enqueue_allowed": False,
+            "execution_enabled": False,
+            "prompt_contract": prior_evaluation.get("judge_prompt_contract"),
+        },
+        "reasoning_escalation": {
+            "available_later": True,
+            "job_type": "study_answer_reasoning_escalation",
+            "model_tier": "tier_4_deep_reasoning",
+            "priority": "interactive_study_escalation",
+            "timeout_seconds": 45,
+            "trigger_conditions": ["small_judge_unsure", "small_judge_confidence_below_0_70", "small_judge_output_invalid"],
+            "model_call_allowed": False,
+            "job_enqueue_allowed": False,
+            "execution_enabled": False,
+        },
+        "companion_feedback_handoff": {
+            "available_later": True,
+            "job_type": "companion_chat",
+            "model_tier": "tier_3_companion_medium",
+            "purpose": "Explain the accepted backend result to the learner when needed.",
+            "model_call_allowed": False,
+            "job_enqueue_allowed": False,
+            "execution_enabled": False,
+        },
+        "backend_decision_policy": {
+            "backend_is_final_authority": True,
+            "deterministic_result_wins_when_confident": True,
+            "small_judge_is_recommendation_only": True,
+            "reasoning_judge_is_recommendation_only": True,
+            "card_state_change_requires_backend_acceptance": True,
+        },
+        "queue_contract": {
+            "durable_job_required_when_enabled": True,
+            "direct_browser_to_model_allowed": False,
+            "direct_route_to_ollama_allowed": False,
+            "preferred_job_priority_order": ["interactive_study_answer_judge", "interactive_study_voice", "companion_feedback", "study_material_generation", "deep_reasoning_escalation"],
+        },
+        "safety": {
+            "not_connected_to_live_study_routes": True,
+            "not_connected_to_companion_live_flow": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_database_write": True,
+            "no_card_state_change": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
