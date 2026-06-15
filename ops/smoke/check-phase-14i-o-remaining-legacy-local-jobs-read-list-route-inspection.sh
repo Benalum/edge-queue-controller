@@ -86,7 +86,7 @@ from pathlib import Path
 text = Path("edge_controller.py").read_text()
 
 expected_counts = {
-    "_phase14ik_legacy_local_jobs_routes_enabled(": 2,
+    "_phase14ik_legacy_local_jobs_routes_enabled(": 4,
     "_phase14ik_legacy_companion_local_job_create_enabled(": 2,
     "_phase14ik_legacy_local_queue_status_enabled(": 2,
     "_phase14ik_legacy_local_jobs_admin_archive_enabled(": 1,
@@ -102,7 +102,7 @@ for marker, expected in expected_counts.items():
 if bad:
     raise SystemExit(f"FAIL: unexpected helper/create counts: {bad}")
 
-print("PASS: helper and local create counts match Phase 14I-O inspection baseline")
+print("PASS: helper and local create counts match Phase 14I-O/P inspection baseline")
 PY2
 
 echo

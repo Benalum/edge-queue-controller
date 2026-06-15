@@ -5665,6 +5665,20 @@ async def public_create_job(request: Request):
 
 @app.get("/public/jobs/{job_id}")
 async def public_get_job(job_id: int, request: Request):
+    # PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_READ_GATE_BEGIN
+    if not _phase14ik_legacy_local_jobs_routes_enabled():
+        return {
+            "ok": False,
+            "status": "legacy_public_local_jobs_read_disabled",
+            "source": "legacy_local_jobs_disabled_phase_14i_p",
+            "legacy_local_jobs_routes_enabled": False,
+            "message": (
+                "Legacy public local Edge jobs read access is disabled. "
+                "Use /api/chat/queued/{job_id} for app_jobs-backed queued chat status."
+            ),
+        }
+    # PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_READ_GATE_END
+
     await _require_public_api_key(request)
     user_row = _auth_current_user_from_request(request)
     user_id = int(user_row["id"])
@@ -5734,6 +5748,22 @@ def _public_list_jobs_for_user(user_id: int, limit: int = 50):
 
 @app.get("/public/jobs")
 async def public_list_jobs(request: Request, limit: int = 50):
+    # PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_LIST_GATE_BEGIN
+    if not _phase14ik_legacy_local_jobs_routes_enabled():
+        return {
+            "ok": False,
+            "status": "legacy_public_local_jobs_list_disabled",
+            "source": "legacy_local_jobs_disabled_phase_14i_p",
+            "legacy_local_jobs_routes_enabled": False,
+            "count": 0,
+            "jobs": [],
+            "message": (
+                "Legacy public local Edge jobs listing is disabled. "
+                "Use app_jobs-backed queued chat status routes for active chat work."
+            ),
+        }
+    # PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_LIST_GATE_END
+
     await _require_public_api_key(request)
     user_row = _auth_current_user_from_request(request)
     user_id = int(user_row["id"])

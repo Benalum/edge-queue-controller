@@ -106,8 +106,11 @@ if public_count == 1:
 elif public_count == 2:
     if "PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE_BEGIN" not in text:
         bad[public_marker] = {"expected": "1 or Phase 14I-N marked 2", "actual": public_count}
+elif public_count == 4:
+    if "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_READ_GATE_BEGIN" not in text or "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_LIST_GATE_BEGIN" not in text:
+        bad[public_marker] = {"expected": "Phase 14I-P marked 4", "actual": public_count}
 else:
-    bad[public_marker] = {"expected": "1 or 2", "actual": public_count}
+    bad[public_marker] = {"expected": "1, 2, or 4", "actual": public_count}
 
 if bad:
     raise SystemExit(f"FAIL: unexpected helper occurrence counts: {bad}")

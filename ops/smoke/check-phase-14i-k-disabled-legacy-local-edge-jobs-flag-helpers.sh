@@ -126,6 +126,12 @@ elif public_jobs_count == 2:
     if "PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE_BEGIN" not in text:
         raise SystemExit("FAIL: public local jobs routes helper is wired without Phase 14I-N gate marker")
     print("PASS: Phase 14I-N public local jobs create helper wiring present")
+elif public_jobs_count == 4:
+    if "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_READ_GATE_BEGIN" not in text:
+        raise SystemExit("FAIL: public local jobs routes helper has Phase 14I-P count without read gate marker")
+    if "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_LIST_GATE_BEGIN" not in text:
+        raise SystemExit("FAIL: public local jobs routes helper has Phase 14I-P count without list gate marker")
+    print("PASS: Phase 14I-P public local jobs read/list helper wiring present")
 else:
     raise SystemExit(f"FAIL: unexpected public local jobs routes helper occurrence count: {public_jobs_count}")
 

@@ -4,14 +4,16 @@ set -euo pipefail
 ROOT="${EDGE_QUEUE_CONTROLLER_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 cd "$ROOT"
 
-PHASE="phase-14i-n-gate-legacy-public-local-jobs-creation"
+PHASE="phase-14i-p-gate-public-legacy-local-jobs-read-list-routes"
 DOC="docs/${PHASE}.md"
 SELF="ops/smoke/check-${PHASE}.sh"
 SMOKE_K="ops/smoke/check-phase-14i-k-disabled-legacy-local-edge-jobs-flag-helpers.sh"
 SMOKE_L="ops/smoke/check-phase-14i-l-gate-legacy-local-queue-status.sh"
 SMOKE_M="ops/smoke/check-phase-14i-m-gate-legacy-companion-local-job-creation.sh"
+SMOKE_N="ops/smoke/check-phase-14i-n-gate-legacy-public-local-jobs-creation.sh"
+SMOKE_O="ops/smoke/check-phase-14i-o-remaining-legacy-local-jobs-read-list-route-inspection.sh"
 
-echo "=== Phase 14I-N gate legacy public local jobs creation ==="
+echo "=== Phase 14I-P gate public legacy local jobs read/list routes ==="
 
 echo
 echo "=== required files ==="
@@ -24,6 +26,10 @@ test -f "$SMOKE_L"
 test -x "$SMOKE_L"
 test -f "$SMOKE_M"
 test -x "$SMOKE_M"
+test -f "$SMOKE_N"
+test -x "$SMOKE_N"
+test -f "$SMOKE_O"
+test -x "$SMOKE_O"
 echo "PASS: required docs/smoke files exist"
 
 echo
@@ -38,48 +44,62 @@ python3 -m py_compile edge_controller.py
 echo "PASS: edge_controller.py compiles"
 
 echo
-echo "=== static public local jobs gate verification ==="
+echo "=== static public read/list gate verification ==="
 python3 - <<'PY2'
 from pathlib import Path
 
 text = Path("edge_controller.py").read_text()
 
 required = [
-    "PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE_BEGIN",
-    "PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE_END",
-    "_phase14ik_legacy_local_jobs_routes_enabled()",
-    "legacy_public_local_jobs_create_disabled",
-    "legacy_local_jobs_disabled_phase_14i_n",
+    "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_READ_GATE_BEGIN",
+    "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_READ_GATE_END",
+    "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_LIST_GATE_BEGIN",
+    "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_LIST_GATE_END",
+    "legacy_public_local_jobs_read_disabled",
+    "legacy_public_local_jobs_list_disabled",
+    "legacy_local_jobs_disabled_phase_14i_p",
 ]
 missing = [item for item in required if item not in text]
 if missing:
-    raise SystemExit(f"FAIL: missing public local jobs gate markers: {missing}")
+    raise SystemExit(f"FAIL: missing public read/list gate markers: {missing}")
 
-route_marker = '@app.post("/public/jobs")'
-if route_marker not in text:
-    raise SystemExit("FAIL: missing /public/jobs route decorator")
+read_route = '@app.get("/public/jobs/{job_id}")'
+list_route = '@app.get("/public/jobs")'
 
-route_start = text.index(route_marker)
-next_route = text.find("\n@app.", route_start + 1)
-route_block = text[route_start: next_route if next_route != -1 else len(text)]
+if read_route not in text or list_route not in text:
+    raise SystemExit("FAIL: missing public jobs read/list route decorators")
 
-if "PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE_BEGIN" not in route_block:
-    raise SystemExit("FAIL: public local jobs gate not inside /public/jobs route block")
-if "_phase14ik_legacy_local_jobs_routes_enabled()" not in route_block:
-    raise SystemExit("FAIL: public local jobs helper not used inside /public/jobs route block")
-if "_public_create_ollama_job(" not in route_block:
-    raise SystemExit("FAIL: /public/jobs route no longer shows local job create helper; update phase plan")
+read_start = text.index(read_route)
+read_next = text.find("\n@app.", read_start + 1)
+read_block = text[read_start: read_next if read_next != -1 else len(text)]
+
+list_start = text.index(list_route)
+list_next = text.find("\n@app.", list_start + 1)
+list_block = text[list_start: list_next if list_next != -1 else len(text)]
+
+if "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_READ_GATE_BEGIN" not in read_block:
+    raise SystemExit("FAIL: read gate not inside /public/jobs/{job_id} route")
+if "_phase14ik_legacy_local_jobs_routes_enabled()" not in read_block:
+    raise SystemExit("FAIL: read route does not use public local jobs helper")
+
+if "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_LIST_GATE_BEGIN" not in list_block:
+    raise SystemExit("FAIL: list gate not inside /public/jobs route")
+if "_phase14ik_legacy_local_jobs_routes_enabled()" not in list_block:
+    raise SystemExit("FAIL: list route does not use public local jobs helper")
 
 api_start = text.index('@app.post("/api/chat/queued")')
 api_end = text.index('@app.get("/api/chat/queued/{job_id}")', api_start)
 api_block = text[api_start:api_end]
 
-if "PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE" in api_block:
-    raise SystemExit("FAIL: /api/chat/queued was modified by public local jobs create gate")
-if "_phase14ik_legacy_local_jobs_routes_enabled" in api_block:
-    raise SystemExit("FAIL: /api/chat/queued references public local jobs helper")
+for forbidden in [
+    "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_READ_GATE",
+    "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_LIST_GATE",
+    "_phase14ik_legacy_local_jobs_routes_enabled",
+]:
+    if forbidden in api_block:
+        raise SystemExit(f"FAIL: /api/chat/queued contains Phase 14I-P marker/helper: {forbidden}")
 
-print("PASS: public local jobs gate is scoped to /public/jobs and not /api/chat/queued")
+print("PASS: public read/list gates are scoped correctly and not /api/chat/queued")
 PY2
 
 echo
@@ -94,6 +114,7 @@ expected_counts = {
     "_phase14ik_legacy_local_jobs_admin_archive_enabled(": 1,
     "_phase14ik_legacy_local_queue_status_enabled(": 2,
     "_phase14ik_legacy_companion_local_job_create_enabled(": 2,
+    "_public_create_ollama_job(": 3,
 }
 
 bad = {}
@@ -103,9 +124,9 @@ for marker, expected in expected_counts.items():
         bad[marker] = {"expected": expected, "actual": actual}
 
 if bad:
-    raise SystemExit(f"FAIL: unexpected helper occurrence counts: {bad}")
+    raise SystemExit(f"FAIL: unexpected helper/create counts: {bad}")
 
-print("PASS: helper occurrence counts match Phase 14I-N scope")
+print("PASS: helper and local create counts match Phase 14I-P scope")
 PY2
 
 echo
@@ -113,15 +134,19 @@ echo "=== documentation markers ==="
 python3 - <<'PY2'
 from pathlib import Path
 
-doc = Path("docs/phase-14i-n-gate-legacy-public-local-jobs-creation.md").read_text()
+doc = Path("docs/phase-14i-p-gate-public-legacy-local-jobs-read-list-routes.md").read_text()
 
 required = [
-    "Phase 14I-N wires the old public local Edge job creation route",
+    "Phase 14I-P gates the public legacy local Edge `jobs` read/list route family",
+    "`GET /public/jobs/{job_id}`",
+    "`GET /public/jobs`",
     "`EDGE_LEGACY_LOCAL_JOBS_ROUTES_ENABLED`",
     "Default remains enabled.",
-    "`/api/chat/queued` is not changed by Phase 14I-N.",
+    "`/api/chat/queued` is not changed by Phase 14I-P.",
     "Job 23 is not mutated.",
     "Job 23 is not forwarded to CT101.",
+    "`POST /jobs`",
+    "`GET /jobs`",
 ]
 missing = [item for item in required if item not in doc]
 if missing:
@@ -149,4 +174,4 @@ fi
 echo "PASS: read-only/privacy guard passed"
 
 echo
-echo "=== done: Phase 14I-N public local jobs gate smoke complete ==="
+echo "=== done: Phase 14I-P public read/list gate smoke complete ==="
