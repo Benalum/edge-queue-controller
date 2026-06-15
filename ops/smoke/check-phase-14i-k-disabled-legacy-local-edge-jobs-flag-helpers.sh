@@ -102,32 +102,43 @@ print("PASS: helper defaults and env override behavior verified in isolated exec
 PY2
 
 echo
-echo "=== verify helpers are not wired into routes yet ==="
+echo "=== helper wiring evolution check ==="
 python3 - <<'PY2'
 from pathlib import Path
 
 text = Path("edge_controller.py").read_text()
 
-helpers = [
+defs_expected_once = [
     "_phase14ik_legacy_local_jobs_routes_enabled",
     "_phase14ik_legacy_companion_local_job_create_enabled",
-    "_phase14ik_legacy_local_queue_status_enabled",
     "_phase14ik_legacy_local_jobs_admin_archive_enabled",
 ]
 
-for helper in helpers:
+for helper in defs_expected_once:
     count = text.count(helper + "(")
     if count != 1:
-        raise SystemExit(f"FAIL: helper {helper} should only appear in its definition during Phase 14I-K, found {count}")
+        raise SystemExit(f"FAIL: helper {helper} should only appear in its definition at this point, found {count}")
+
+queue_helper = "_phase14ik_legacy_local_queue_status_enabled"
+queue_count = text.count(queue_helper + "(")
+
+if queue_count == 1:
+    print("PASS: helpers exist but are not wired into route behavior yet")
+elif queue_count == 2:
+    if "PHASE_14I_L_LEGACY_LOCAL_QUEUE_STATUS_GATE_BEGIN" not in text:
+        raise SystemExit("FAIL: queue status helper is wired without Phase 14I-L gate marker")
+    print("PASS: Phase 14I-L queue-status helper wiring present; Phase 14I-K smoke evolved as intended")
+else:
+    raise SystemExit(f"FAIL: unexpected queue status helper occurrence count: {queue_count}")
 
 api_start = text.index('@app.post("/api/chat/queued")')
 api_end = text.index('@app.get("/api/chat/queued/{job_id}")', api_start)
 api_block = text[api_start:api_end]
 
-if any(helper in api_block for helper in helpers):
+if any(helper in api_block for helper in defs_expected_once + [queue_helper]):
     raise SystemExit("FAIL: /api/chat/queued should not be modified by legacy local jobs helpers")
 
-print("PASS: helpers exist but are not wired into route behavior yet")
+print("PASS: /api/chat/queued remains untouched by legacy local jobs helper wiring")
 PY2
 
 echo

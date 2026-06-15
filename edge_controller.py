@@ -18491,6 +18491,20 @@ def _stage5p10b_safe_count(conn, sql, params=()):
 @app.get("/api/chat/queue/status")
 @app.get("/public/chat/queue/status")
 async def public_chat_queue_status(request: Request):
+    # PHASE_14I_L_LEGACY_LOCAL_QUEUE_STATUS_GATE_BEGIN
+    if not _phase14ik_legacy_local_queue_status_enabled():
+        return {
+            "ok": False,
+            "status": "legacy_local_queue_status_disabled",
+            "source": "legacy_local_jobs_disabled_phase_14i_l",
+            "legacy_local_queue_status_enabled": False,
+            "message": (
+                "Legacy local Edge jobs queue status is disabled. "
+                "Use /api/chat/queued/{job_id} for app_jobs-backed queued chat status."
+            ),
+        }
+    # PHASE_14I_L_LEGACY_LOCAL_QUEUE_STATUS_GATE_END
+
     user_row = _auth_current_user_from_request(request)
     requested_job_id = str(request.query_params.get("job_id") or "").strip()
 
