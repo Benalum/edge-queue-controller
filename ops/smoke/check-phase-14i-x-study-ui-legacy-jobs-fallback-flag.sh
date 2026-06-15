@@ -4,12 +4,12 @@ set -euo pipefail
 ROOT="${EDGE_QUEUE_CONTROLLER_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 cd "$ROOT"
 
-PHASE="phase-14i-w-study-ui-direct-jobs-fallback-flag-plan"
+PHASE="phase-14i-x-study-ui-legacy-jobs-fallback-flag"
 DOC="docs/${PHASE}.md"
 SELF="ops/smoke/check-${PHASE}.sh"
 STUDY_APP="frontend/study-ui/app.js"
 
-echo "=== Phase 14I-W Study UI direct jobs fallback flag plan ==="
+echo "=== Phase 14I-X Study UI legacy jobs fallback flag ==="
 
 echo
 echo "=== required files ==="
@@ -36,36 +36,71 @@ fi
 echo "PASS: compile/frontend syntax check complete"
 
 echo
-echo "=== Study UI current fallback state verification ==="
+echo "=== frontend helper verification ==="
 python3 - <<'PY2'
 from pathlib import Path
 
 text = Path("frontend/study-ui/app.js").read_text()
 
 required = [
-    "PHASE_14I_U_STUDY_UI_QUEUED_CHAT_ADAPTER",
+    "PHASE_14I_X_STUDY_UI_LEGACY_JOBS_FALLBACK_FLAG",
+    "function studyUiLegacyJobsFallbackEnabled()",
+    "window.STUDY_UI_LEGACY_JOBS_FALLBACK_ENABLED",
+    "Object.prototype.hasOwnProperty.call(window, \"STUDY_UI_LEGACY_JOBS_FALLBACK_ENABLED\")",
+    "if (value === false || value === 0) return false;",
+    "/^(false|0|off|no)$/i.test(value.trim())",
+    "return true;",
+]
+missing = [item for item in required if item not in text]
+if missing:
+    raise SystemExit(f"FAIL: missing frontend helper markers: {missing}")
+
+if text.count("function studyUiLegacyJobsFallbackEnabled()") != 1:
+    raise SystemExit("FAIL: expected exactly one studyUiLegacyJobsFallbackEnabled helper")
+
+print("PASS: frontend default-enabled fallback helper verified")
+PY2
+
+echo
+echo "=== guarded legacy jobs fallback verification ==="
+python3 - <<'PY2'
+from pathlib import Path
+
+text = Path("frontend/study-ui/app.js").read_text()
+
+required = [
     "url: `${base}/chat/queued`,",
     "body: { message: prompt, requested_model: \"gemma4:e4b\" }",
     "url: `${base}/jobs`,",
     "body: { job_type: \"ollama_chat\", prompt, requested_model: \"gemma4:e4b\" }",
     "`${base}/chat/queued/${encodeURIComponent(jobId)}`",
-    "`${base}/jobs/${jobId}`",
-    "`${base}/job/${jobId}`",
+    "paths.push(`${base}/jobs/${jobId}`);",
+    "paths.push(`${base}/job/${jobId}`);",
+    "if (studyUiLegacyJobsFallbackEnabled())",
 ]
 missing = [item for item in required if item not in text]
 if missing:
-    raise SystemExit(f"FAIL: missing Study UI adapter/fallback markers: {missing}")
+    raise SystemExit(f"FAIL: missing guarded fallback markers: {missing}")
 
-if text.index("url: `${base}/chat/queued`,") > text.index("url: `${base}/jobs`,"):
-    raise SystemExit("FAIL: queued-chat submit must remain before legacy /jobs submit fallback")
-if text.index("`${base}/chat/queued/${encodeURIComponent(jobId)}`") > text.index("`${base}/jobs/${jobId}`"):
-    raise SystemExit("FAIL: queued-chat poll must remain before legacy /jobs poll fallback")
+if text.count("if (studyUiLegacyJobsFallbackEnabled())") != 2:
+    raise SystemExit(f"FAIL: expected exactly two helper guards, got {text.count('if (studyUiLegacyJobsFallbackEnabled())')}")
+
+submit_primary = text.index("url: `${base}/chat/queued`,")
+submit_legacy = text.index("url: `${base}/jobs`,")
+poll_primary = text.index("`${base}/chat/queued/${encodeURIComponent(jobId)}`")
+poll_legacy = text.index("paths.push(`${base}/jobs/${jobId}`);")
+
+if submit_primary > submit_legacy:
+    raise SystemExit("FAIL: queued-chat submit must remain before legacy jobs submit fallback")
+if poll_primary > poll_legacy:
+    raise SystemExit("FAIL: queued-chat poll must remain before legacy jobs poll fallback")
 
 expected_counts = {
     "/chat/queued": 2,
     "/jobs": 2,
     "/public/jobs": 0,
     "PHASE_14I_U_STUDY_UI_QUEUED_CHAT_ADAPTER": 1,
+    "PHASE_14I_X_STUDY_UI_LEGACY_JOBS_FALLBACK_FLAG": 1,
 }
 bad = {}
 for marker, expected in expected_counts.items():
@@ -75,63 +110,17 @@ for marker, expected in expected_counts.items():
 if bad:
     raise SystemExit(f"FAIL: unexpected Study UI marker counts: {bad}")
 
-print("PASS: Study UI queued-chat preferred with direct /jobs fallback baseline verified")
+print("PASS: queued-chat preferred and legacy jobs fallback guarded/default-preserved")
 PY2
 
 echo
-echo "=== frontend flag patch-point verification ==="
-python3 - <<'PY2'
-from pathlib import Path
-
-text = Path("frontend/study-ui/app.js").read_text()
-
-required = [
-    "function getApiBase()",
-    "typeof API_BASE",
-    "localStorage",
-    "async function pollJob(jobId, pollUrl = \"\")",
-    "async function sendCompanionToApi(message)",
-    "const paths = [",
-    "const attempts = [",
-]
-missing = [item for item in required if item not in text]
-if missing:
-    raise SystemExit(f"FAIL: missing frontend flag patch-point markers: {missing}")
-
-has_phase14ix_helper = "PHASE_14I_X_STUDY_UI_LEGACY_JOBS_FALLBACK_FLAG" in text
-
-if "studyUiLegacyJobsFallbackEnabled" in text and not has_phase14ix_helper:
-    raise SystemExit("FAIL: frontend helper present without Phase 14I-X marker")
-
-if "STUDY_UI_LEGACY_JOBS_FALLBACK_ENABLED" in text and not has_phase14ix_helper:
-    raise SystemExit("FAIL: frontend global override present without Phase 14I-X marker")
-
-if has_phase14ix_helper:
-    required_x = [
-        "function studyUiLegacyJobsFallbackEnabled()",
-        "window.STUDY_UI_LEGACY_JOBS_FALLBACK_ENABLED",
-        "if (studyUiLegacyJobsFallbackEnabled())",
-        "paths.push(`${base}/jobs/${jobId}`);",
-        "url: `${base}/jobs`,",
-        "body: { job_type: \"ollama_chat\", prompt, requested_model: \"gemma4:e4b\" }",
-    ]
-    missing_x = [item for item in required_x if item not in text]
-    if missing_x:
-        raise SystemExit(f"FAIL: Phase 14I-X helper marker present but required helper/fallback markers missing: {missing_x}")
-    print("PASS: frontend fallback flag is implemented with default-enabled legacy jobs fallback")
-else:
-    print("PASS: frontend patch points are ready and fallback flag is not implemented yet")
-PY2
-
-echo
-echo "=== backend direct jobs gate readiness verification ==="
+echo "=== backend route preservation verification ==="
 python3 - <<'PY2'
 from pathlib import Path
 
 edge = Path("edge_controller.py").read_text()
-front = Path("frontend/study-ui/app.js").read_text()
 
-required_edge = [
+required = [
     '@app.post("/jobs")',
     '@app.get("/jobs")',
     '@app.post("/api/chat/queued")',
@@ -139,12 +128,9 @@ required_edge = [
     "PHASE_14I_P_PUBLIC_LEGACY_LOCAL_JOBS_READ_GATE",
     "_phase14ik_legacy_local_jobs_routes_enabled(",
 ]
-missing_edge = [item for item in required_edge if item not in edge]
-if missing_edge:
-    raise SystemExit(f"FAIL: missing backend route/gate markers: {missing_edge}")
-
-if 'url: `${base}/jobs`,' not in front or '`${base}/jobs/${jobId}`' not in front:
-    raise SystemExit("FAIL: expected Study UI direct /jobs fallback references missing")
+missing = [item for item in required if item not in edge]
+if missing:
+    raise SystemExit(f"FAIL: missing backend route/gate markers: {missing}")
 
 expected_counts = {
     '@app.post("/jobs")': 1,
@@ -162,7 +148,7 @@ for marker, expected in expected_counts.items():
 if bad:
     raise SystemExit(f"FAIL: unexpected backend route/helper counts: {bad}")
 
-print("PASS: backend direct /jobs routes remain enabled and are not ready to gate")
+print("PASS: backend direct /jobs routes preserved and not gated")
 PY2
 
 echo
@@ -170,19 +156,20 @@ echo "=== documentation markers ==="
 python3 - <<'PY2'
 from pathlib import Path
 
-doc = Path("docs/phase-14i-w-study-ui-direct-jobs-fallback-flag-plan.md").read_text()
+doc = Path("docs/phase-14i-x-study-ui-legacy-jobs-fallback-flag.md").read_text()
 
 required = [
-    "Phase 14I-W records the safe plan",
+    "Phase 14I-X implements the Phase 14I-W plan",
     "`studyUiLegacyJobsFallbackEnabled()`",
     "`window.STUDY_UI_LEGACY_JOBS_FALLBACK_ENABLED`",
-    "enabled by default",
-    "preserve direct `/jobs` submit fallback",
-    "preserve direct `/jobs` poll fallback",
-    "backend direct `POST /jobs` and `GET /jobs` are still not ready to gate",
-    "the next implementation should only flag the frontend fallback",
+    "`PHASE_14I_X_STUDY_UI_LEGACY_JOBS_FALLBACK_FLAG`",
+    "the helper returns enabled by default",
+    "legacy local jobs submit fallback remains available by default",
+    "legacy local jobs poll fallback remains available by default",
+    "Direct backend routes remain enabled",
+    "This phase does not change backend route gates.",
     "Job 23 is not mutated.",
-    "Phase 14I-X may implement the default-enabled frontend helper.",
+    "Phase 14I-Y may perform a static validation plan",
 ]
 missing = [item for item in required if item not in doc]
 if missing:
@@ -210,4 +197,4 @@ fi
 echo "PASS: read-only/privacy guard passed"
 
 echo
-echo "=== done: Phase 14I-W fallback flag plan smoke complete ==="
+echo "=== done: Phase 14I-X fallback flag smoke complete ==="

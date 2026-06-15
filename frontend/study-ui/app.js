@@ -838,6 +838,18 @@ if (companionConfirmWrongBtn) {
     return "/api";
   }
 
+  function studyUiLegacyJobsFallbackEnabled() {
+    // PHASE_14I_X_STUDY_UI_LEGACY_JOBS_FALLBACK_FLAG: default-enabled legacy jobs fallback.
+    try {
+      if (typeof window !== "undefined" && Object.prototype.hasOwnProperty.call(window, "STUDY_UI_LEGACY_JOBS_FALLBACK_ENABLED")) {
+        const value = window.STUDY_UI_LEGACY_JOBS_FALLBACK_ENABLED;
+        if (value === false || value === 0) return false;
+        if (typeof value === "string" && /^(false|0|off|no)$/i.test(value.trim())) return false;
+      }
+    } catch (_) {}
+    return true;
+  }
+
   function getAuthToken() {
     const keys = ["authToken", "token", "accessToken", "aiStudyToken"];
     for (const key of keys) {
@@ -1008,9 +1020,12 @@ if (companionConfirmWrongBtn) {
     const paths = [
       normalizePollUrl(pollUrl),
       `${base}/chat/queued/${encodeURIComponent(jobId)}`,
-      `${base}/jobs/${jobId}`,
-      `${base}/job/${jobId}`,
     ].filter(Boolean);
+
+    if (studyUiLegacyJobsFallbackEnabled()) {
+      paths.push(`${base}/jobs/${jobId}`);
+      paths.push(`${base}/job/${jobId}`);
+    }
 
     for (let attempt = 0; attempt < 48; attempt++) {
       for (const url of paths) {
@@ -1088,11 +1103,17 @@ if (companionConfirmWrongBtn) {
         url: `${base}/chat/queued`,
         body: { message: prompt, requested_model: "gemma4:e4b" },
       },
+    ];
+
+    if (studyUiLegacyJobsFallbackEnabled()) {
       // COMPANION_JOB_FIRST_V1: keep legacy local jobs fallback during migration.
-      {
+      attempts.push({
         url: `${base}/jobs`,
         body: { job_type: "ollama_chat", prompt, requested_model: "gemma4:e4b" },
-      },
+      });
+    }
+
+    attempts.push(
       {
         url: `${base}/chat`,
         body: { message, prompt, model: "gemma4:e4b" },
@@ -1101,9 +1122,7 @@ if (companionConfirmWrongBtn) {
         url: `${base}/companion/chat`,
         body: { message, prompt, model: "gemma4:e4b" },
       },
-    ];
-
-    const errors = [];
+    );
 
     for (const attempt of attempts) {
       try {
