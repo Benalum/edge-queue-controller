@@ -19496,6 +19496,96 @@ def _stage5p13a_disabled_intent_router_foundation(
         },
     }
 
+
+# --- Phase 14I-AG disabled queued-chat router shadow helper ----------------
+
+def _phase14iag_queued_chat_router_shadow_enabled() -> bool:
+    """
+    Disabled-by-default backend flag for future queued-chat router shadow decisions.
+
+    This helper only reads environment configuration. It does not call a model,
+    enqueue jobs, mutate state, or change live model selection.
+    """
+    return _phase14ik_env_bool("EDGE_QUEUED_CHAT_ROUTER_SHADOW_ENABLED", False)
+
+
+def _phase14iag_queued_chat_router_shadow_decision(guard_payload: dict | None) -> dict:
+    """
+    Pure queued-chat router shadow wrapper for future Study UI companion routing.
+
+    Default behavior is disabled. When disabled, this wrapper does not compute a
+    router decision. When explicitly enabled later, it calls the deterministic
+    Phase 13A router foundation helper and returns a narrow safe shadow shape.
+
+    This helper is intentionally not wired to /api/chat/queued yet.
+    It must not control live model selection.
+    """
+    if not _phase14iag_queued_chat_router_shadow_enabled():
+        return {
+            "source": "phase_14i_ag_disabled_queued_chat_router_shadow_helper",
+            "enabled": False,
+            "reason": "queued_chat_router_shadow_disabled",
+            "live_model_selection_changed": False,
+            "model_call_allowed": False,
+            "job_enqueue_allowed": False,
+            "browser_exposure_allowed": False,
+        }
+
+    payload = guard_payload if isinstance(guard_payload, dict) else {}
+    message = "" if payload.get("message") is None else str(payload.get("message"))
+
+    profile: dict = {}
+    mode = payload.get("mode")
+    if mode is not None:
+        profile["mode"] = str(mode)
+
+    try:
+        preview = _stage5p13a_disabled_intent_router_foundation(message, profile)
+    except Exception as exc:
+        return {
+            "source": "phase_14i_ag_disabled_queued_chat_router_shadow_helper",
+            "enabled": True,
+            "error": "queued_chat_router_shadow_preview_failed",
+            "error_type": exc.__class__.__name__,
+            "live_model_selection_changed": False,
+            "model_call_allowed": False,
+            "job_enqueue_allowed": False,
+            "browser_exposure_allowed": False,
+        }
+
+    if not isinstance(preview, dict):
+        preview = {}
+
+    safety = preview.get("safety")
+    if not isinstance(safety, dict):
+        safety = {}
+
+    return {
+        "source": "phase_14i_ag_disabled_queued_chat_router_shadow_helper",
+        "enabled": True,
+        "live_model_selection_changed": False,
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "browser_exposure_allowed": False,
+        "shadow": {
+            "primary_intent": preview.get("primary_intent"),
+            "confidence": preview.get("confidence"),
+            "recommended_model_tier": preview.get("recommended_model_tier"),
+            "deterministic_actions": preview.get("deterministic_actions")
+            if isinstance(preview.get("deterministic_actions"), list)
+            else [],
+            "escalation_reasons": preview.get("escalation_reasons")
+            if isinstance(preview.get("escalation_reasons"), list)
+            else [],
+            "safety": {
+                "no_model_invocation": safety.get("no_model_invocation"),
+                "no_queue_write": safety.get("no_queue_write"),
+                "no_tool_call": safety.get("no_tool_call"),
+            },
+        },
+    }
+
+
 # --- Phase 13C disabled admin/local intent-router preview endpoint --------
 
 @app.post("/admin/intent-router-preview")
