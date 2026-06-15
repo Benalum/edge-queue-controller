@@ -20721,6 +20721,249 @@ def _stage5p13s_disabled_profile_preferences_read_endpoint_contract(user_id: str
     }
 
 
+
+# --- Phase 13T disabled profile preferences write endpoint contract helper --------
+
+def _stage5p13t_disabled_profile_preferences_write_endpoint_contract(user_id: str | None = None, proposed_patch: dict | None = None, existing_profile: dict | None = None) -> dict:
+    """Disabled, pure write-endpoint contract for future profile preferences."""
+    proposed_patch = proposed_patch or {}
+    existing_profile = existing_profile or {}
+    raw_user_id = "" if user_id is None else str(user_id)
+
+    allowed_fields = [
+        "preferred_language",
+        "study_language",
+        "learning_style",
+        "study_explanation_depth",
+        "study_answer_strictness",
+        "study_session_default_mode",
+        "companion_behavior",
+        "companion_tone",
+        "companion_memory_scope",
+        "voice_enabled",
+        "listen_enabled",
+        "speak_enabled",
+        "auto_listen_enabled",
+        "auto_speak_enabled",
+        "timezone",
+        "locale",
+        "calendar_provider_preference",
+        "notification_preference",
+        "accessibility_large_text",
+        "accessibility_reduce_motion",
+    ]
+
+    enum_allowlists = {
+        "learning_style": ["balanced", "visual", "step_by_step", "concise", "detailed"],
+        "study_explanation_depth": ["brief", "normal", "deep"],
+        "study_answer_strictness": ["lenient", "balanced", "strict"],
+        "study_session_default_mode": ["standard_review", "immersive_review"],
+        "companion_behavior": ["supportive_tutor", "direct_helper", "study_coach"],
+        "companion_tone": ["calm_clear", "encouraging", "concise"],
+        "companion_memory_scope": ["session_only", "session_and_profile_approved"],
+        "calendar_provider_preference": ["none", "google_calendar", "apple_calendar"],
+        "notification_preference": ["none", "email", "in_app"],
+    }
+
+    boolean_fields = [
+        "voice_enabled",
+        "listen_enabled",
+        "speak_enabled",
+        "auto_listen_enabled",
+        "auto_speak_enabled",
+        "accessibility_large_text",
+        "accessibility_reduce_motion",
+    ]
+
+    forbidden_fields = [
+        "id",
+        "user_id",
+        "email",
+        "password",
+        "password_hash",
+        "role",
+        "plan",
+        "credits",
+        "free_local_balance",
+        "paid_balance",
+        "session_token",
+        "csrf_token",
+        "provider_token",
+        "oauth_token",
+        "calendar_event",
+        "calendar_events",
+        "audio_blob",
+        "transcript",
+        "model",
+        "worker_id",
+        "admin",
+    ]
+
+    accepted_preview = {}
+    rejected_preview = {}
+
+    for key, value in proposed_patch.items():
+        if key in forbidden_fields or key not in allowed_fields:
+            rejected_preview[key] = "field_not_allowed"
+            continue
+        if key in enum_allowlists and value not in enum_allowlists[key]:
+            rejected_preview[key] = "enum_value_not_allowed"
+            continue
+        if key in boolean_fields and not isinstance(value, bool):
+            rejected_preview[key] = "boolean_required"
+            continue
+        if key in ["preferred_language", "study_language", "timezone", "locale"] and value is not None and not isinstance(value, str):
+            rejected_preview[key] = "text_required"
+            continue
+        accepted_preview[key] = value
+
+    return {
+        "source": "phase_13t_disabled_profile_preferences_write_endpoint_contract_helper",
+        "mode": "disabled_profile_preferences_write_endpoint_contract_only",
+        "read_only": True,
+        "write_endpoint_contract_only": True,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "frontend_wired": False,
+        "database_wired": False,
+        "database_read_allowed_now": False,
+        "database_write_allowed_now": False,
+        "schema_migration_allowed": False,
+        "database_write_allowed": False,
+        "profile_write_allowed": False,
+        "frontend_mutation_allowed": False,
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "worker_dispatch_allowed": False,
+        "storage_write_allowed": False,
+        "file_upload_allowed": False,
+        "calendar_write_allowed": False,
+        "tool_call_allowed": False,
+        "execute_now": False,
+        "would_call": "none",
+        "future_write_endpoint_contract": {
+            "user_id": raw_user_id,
+            "endpoint": "/api/profile/preferences",
+            "method": "PATCH",
+            "current_route_enabled": False,
+            "future_route_requires_authenticated_user": True,
+            "future_route_uses_backend_api_authority": True,
+            "future_route_writes_profile_source_of_truth": True,
+            "future_route_uses_field_allowlist": True,
+            "future_route_rejects_unknown_fields": True,
+            "future_route_rejects_forbidden_fields": True,
+            "future_route_validates_enum_values": True,
+            "future_route_validates_boolean_values": True,
+            "future_route_must_not_return_secrets": True,
+            "future_route_must_not_infer_sensitive_attributes": True,
+            "future_route_must_not_change_auth_fields": True,
+            "future_route_must_not_change_credit_fields": True,
+            "future_route_must_not_trigger_model_call": True,
+            "future_route_must_not_enqueue_job": True,
+            "future_route_must_not_dispatch_worker": True,
+        },
+        "future_write_preview_contract": {
+            "status": "disabled_contract_only",
+            "accepted_preview": accepted_preview,
+            "rejected_preview": rejected_preview,
+            "available_fields": allowed_fields,
+            "forbidden_fields": forbidden_fields,
+            "source_tables_future": ["app_users", "app_user_preferences"],
+            "profile_is_source_of_truth": True,
+            "backend_api_is_authority": True,
+            "frontend_writes_through_backend_only": True,
+            "write_is_not_executed_in_this_phase": True,
+            "existing_profile_seen_as_context_only": bool(existing_profile),
+        },
+        "validation_contract": {
+            "allowed_fields": allowed_fields,
+            "enum_allowlists": enum_allowlists,
+            "boolean_fields": boolean_fields,
+            "forbidden_fields": forbidden_fields,
+            "unknown_fields_rejected": True,
+            "partial_patch_allowed": True,
+            "empty_patch_rejected_in_future_route": True,
+            "typed_input_must_remain_available": True,
+            "number_word_equivalence_must_remain_available": True,
+        },
+        "calendar_boundary_contract": {
+            "allowed_future_calendar_providers": ["none", "google_calendar", "apple_calendar"],
+            "custom_local_calendar_database_allowed": False,
+            "calendar_event_storage_allowed_in_controller": False,
+            "calendar_provider_preference_write_allowed": True,
+            "calendar_provider_connection_required_before_calendar_reads": True,
+            "calendar_writes_require_explicit_user_request": True,
+            "calendar_events_must_not_be_stored_by_controller": True,
+        },
+        "voice_boundary_contract": {
+            "voice_settings_write_allowed_later": True,
+            "voice_defaults_remain_disabled": True,
+            "auto_listen_default_must_remain_false": True,
+            "auto_speak_default_must_remain_false": True,
+            "browser_microphone_requires_explicit_user_action": True,
+            "typed_input_must_remain_available": True,
+        },
+        "privacy_permission_contract": {
+            "no_profile_write_in_this_phase": True,
+            "no_background_personalization_changes": True,
+            "no_sensitive_attribute_inference": True,
+            "preferences_must_not_expose_secrets": True,
+            "write_endpoint_must_not_accept_auth_fields": True,
+            "write_endpoint_must_not_accept_credit_fields": True,
+            "write_endpoint_must_not_trigger_model_call": True,
+            "write_endpoint_must_not_enqueue_job": True,
+            "write_endpoint_must_not_dispatch_worker": True,
+            "write_endpoint_must_not_store_calendar_events": True,
+            "write_endpoint_must_not_store_audio_blobs": True,
+        },
+        "activation_gates": {
+            "requires_profile_preference_schema_migration": True,
+            "requires_profile_preference_write_route": True,
+            "requires_authenticated_user_boundary_smoke": True,
+            "requires_field_allowlist_smoke": True,
+            "requires_unknown_field_rejection_smoke": True,
+            "requires_forbidden_field_rejection_smoke": True,
+            "requires_enum_validation_smoke": True,
+            "requires_boolean_validation_smoke": True,
+            "requires_no_secret_exposure_smoke": True,
+            "requires_no_auth_field_change_smoke": True,
+            "requires_no_credit_field_change_smoke": True,
+            "requires_no_calendar_local_storage_smoke": True,
+            "requires_voice_defaults_regression_smoke": True,
+            "requires_typed_input_regression_smoke": True,
+            "requires_profile_settings_ui_patch": True,
+            "requires_study_ui_preference_write_smoke": True,
+            "requires_companion_ui_preference_write_smoke": True,
+            "requires_no_login_redirect_regression": True,
+            "requires_live_smoke_before_enable": True,
+        },
+        "safety": {
+            "not_connected_to_live_profile_routes": True,
+            "not_connected_to_live_study_ui": True,
+            "not_connected_to_live_companion_ui": True,
+            "no_route_registration": True,
+            "no_database_read": True,
+            "no_database_write_now": True,
+            "no_table_creation": True,
+            "no_schema_migration": True,
+            "no_profile_write": True,
+            "no_database_write": True,
+            "no_frontend_mutation": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_worker_dispatch": True,
+            "no_storage_write": True,
+            "no_file_upload": True,
+            "no_calendar_write": True,
+            "no_custom_calendar_database": True,
+            "no_browser_microphone_access": True,
+            "no_browser_speech_output": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
