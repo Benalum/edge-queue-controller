@@ -108,13 +108,12 @@ from pathlib import Path
 
 text = Path("edge_controller.py").read_text()
 
-defs_expected_once = [
+helpers_definition_only = [
     "_phase14ik_legacy_local_jobs_routes_enabled",
-    "_phase14ik_legacy_companion_local_job_create_enabled",
     "_phase14ik_legacy_local_jobs_admin_archive_enabled",
 ]
 
-for helper in defs_expected_once:
+for helper in helpers_definition_only:
     count = text.count(helper + "(")
     if count != 1:
         raise SystemExit(f"FAIL: helper {helper} should only appear in its definition at this point, found {count}")
@@ -123,19 +122,31 @@ queue_helper = "_phase14ik_legacy_local_queue_status_enabled"
 queue_count = text.count(queue_helper + "(")
 
 if queue_count == 1:
-    print("PASS: helpers exist but are not wired into route behavior yet")
+    print("PASS: queue status helper not wired yet")
 elif queue_count == 2:
     if "PHASE_14I_L_LEGACY_LOCAL_QUEUE_STATUS_GATE_BEGIN" not in text:
         raise SystemExit("FAIL: queue status helper is wired without Phase 14I-L gate marker")
-    print("PASS: Phase 14I-L queue-status helper wiring present; Phase 14I-K smoke evolved as intended")
+    print("PASS: Phase 14I-L queue-status helper wiring present")
 else:
     raise SystemExit(f"FAIL: unexpected queue status helper occurrence count: {queue_count}")
+
+companion_helper = "_phase14ik_legacy_companion_local_job_create_enabled"
+companion_count = text.count(companion_helper + "(")
+
+if companion_count == 1:
+    print("PASS: Companion local job create helper not wired yet")
+elif companion_count == 2:
+    if "PHASE_14I_M_LEGACY_COMPANION_LOCAL_JOB_CREATE_GATE_BEGIN" not in text:
+        raise SystemExit("FAIL: Companion helper is wired without Phase 14I-M gate marker")
+    print("PASS: Phase 14I-M Companion local job create helper wiring present")
+else:
+    raise SystemExit(f"FAIL: unexpected Companion helper occurrence count: {companion_count}")
 
 api_start = text.index('@app.post("/api/chat/queued")')
 api_end = text.index('@app.get("/api/chat/queued/{job_id}")', api_start)
 api_block = text[api_start:api_end]
 
-if any(helper in api_block for helper in defs_expected_once + [queue_helper]):
+if any(helper in api_block for helper in helpers_definition_only + [queue_helper, companion_helper]):
     raise SystemExit("FAIL: /api/chat/queued should not be modified by legacy local jobs helpers")
 
 print("PASS: /api/chat/queued remains untouched by legacy local jobs helper wiring")

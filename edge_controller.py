@@ -9795,6 +9795,20 @@ async def public_companion_chat(request: Request):
     context = _companion_build_context(user_id)
     prompt = _companion_prompt_from_context(message, context)
 
+    # PHASE_14I_M_LEGACY_COMPANION_LOCAL_JOB_CREATE_GATE_BEGIN
+    if not _phase14ik_legacy_companion_local_job_create_enabled():
+        return {
+            "ok": False,
+            "status": "legacy_companion_local_job_create_disabled",
+            "source": "legacy_local_jobs_disabled_phase_14i_m",
+            "legacy_companion_local_job_create_enabled": False,
+            "message": (
+                "Legacy Companion local Edge job creation is disabled. "
+                "Use /api/chat/queued for app_jobs-backed queued chat creation."
+            ),
+        }
+    # PHASE_14I_M_LEGACY_COMPANION_LOCAL_JOB_CREATE_GATE_END
+
     job = _public_create_ollama_job(
         prompt=prompt,
         requested_model=requested_model or _public_default_model(),
