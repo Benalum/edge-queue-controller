@@ -12557,6 +12557,79 @@ def _account_add_column_if_missing(conn, table: str, column: str, ddl: str):
         conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
 
 
+def _account_init_profile_preferences_table(conn):
+    """
+    Phase 13X live schema migration for profile preferences.
+
+    Creates app_user_preferences only. It does not create preference rows,
+    does not register routes, does not read/write profile preferences, and
+    does not modify frontend behavior.
+    """
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS app_user_preferences (
+            user_id INTEGER PRIMARY KEY,
+            preferred_language TEXT,
+            study_language TEXT,
+            learning_style TEXT CHECK (
+                learning_style IS NULL
+                OR learning_style IN ('balanced', 'visual', 'step_by_step', 'concise', 'detailed')
+            ),
+            study_explanation_depth TEXT CHECK (
+                study_explanation_depth IS NULL
+                OR study_explanation_depth IN ('brief', 'normal', 'deep')
+            ),
+            study_answer_strictness TEXT CHECK (
+                study_answer_strictness IS NULL
+                OR study_answer_strictness IN ('lenient', 'balanced', 'strict')
+            ),
+            study_session_default_mode TEXT CHECK (
+                study_session_default_mode IS NULL
+                OR study_session_default_mode IN ('standard_review', 'immersive_review')
+            ),
+            companion_behavior TEXT CHECK (
+                companion_behavior IS NULL
+                OR companion_behavior IN ('supportive_tutor', 'direct_helper', 'study_coach')
+            ),
+            companion_tone TEXT CHECK (
+                companion_tone IS NULL
+                OR companion_tone IN ('calm_clear', 'encouraging', 'concise')
+            ),
+            companion_memory_scope TEXT CHECK (
+                companion_memory_scope IS NULL
+                OR companion_memory_scope IN ('session_only', 'session_and_profile_approved')
+            ),
+            voice_enabled INTEGER NOT NULL DEFAULT 0 CHECK (voice_enabled IN (0, 1)),
+            listen_enabled INTEGER NOT NULL DEFAULT 0 CHECK (listen_enabled IN (0, 1)),
+            speak_enabled INTEGER NOT NULL DEFAULT 0 CHECK (speak_enabled IN (0, 1)),
+            auto_listen_enabled INTEGER NOT NULL DEFAULT 0 CHECK (auto_listen_enabled IN (0, 1)),
+            auto_speak_enabled INTEGER NOT NULL DEFAULT 0 CHECK (auto_speak_enabled IN (0, 1)),
+            timezone TEXT,
+            locale TEXT,
+            calendar_provider_preference TEXT CHECK (
+                calendar_provider_preference IS NULL
+                OR calendar_provider_preference IN ('none', 'google_calendar', 'apple_calendar')
+            ),
+            notification_preference TEXT CHECK (
+                notification_preference IS NULL
+                OR notification_preference IN ('none', 'email', 'in_app')
+            ),
+            accessibility_large_text INTEGER NOT NULL DEFAULT 0 CHECK (accessibility_large_text IN (0, 1)),
+            accessibility_reduce_motion INTEGER NOT NULL DEFAULT 0 CHECK (accessibility_reduce_motion IN (0, 1)),
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES app_users(id) ON DELETE CASCADE
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_app_user_preferences_updated_at
+        ON app_user_preferences(updated_at)
+        """
+    )
+
+
 def _account_init_tables():
     _auth_init_tables()
 
@@ -12568,6 +12641,8 @@ def _account_init_tables():
         _account_add_column_if_missing(conn, "app_users", "monthly_credit_allowance", "monthly_credit_allowance INTEGER NOT NULL DEFAULT 100")
         _account_add_column_if_missing(conn, "app_users", "storage_quota_mb", "storage_quota_mb INTEGER NOT NULL DEFAULT 100")
         _account_add_column_if_missing(conn, "app_users", "monthly_pass_expires_at", "monthly_pass_expires_at TEXT")
+
+        _account_init_profile_preferences_table(conn)
 
         conn.execute(
             """

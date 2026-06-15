@@ -302,11 +302,24 @@ PY
 
 echo
 echo "=== verify no live schema/routes/UI were added ==="
-if grep -nE 'CREATE TABLE.*app_user_preferences|ALTER TABLE.*app_user_preferences|INSERT INTO.*app_user_preferences|UPDATE.*app_user_preferences|DELETE FROM.*app_user_preferences|FROM app_user_preferences|JOIN app_user_preferences' edge_controller.py; then
-  echo "FAIL: live app_user_preferences schema/query markers should not exist"
-  fail=1
+if grep -nE '@app\.(get|post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"|CREATE TABLE.*app_user_preferences|CREATE TABLE.*preferences|ALTER TABLE.*app_user_preferences|ALTER TABLE.*preferences|INSERT INTO.*app_user_preferences|UPDATE.*app_user_preferences|DELETE FROM.*app_user_preferences|FROM app_user_preferences|JOIN app_user_preferences|UPDATE app_users.*preferred_language|UPDATE app_users.*study_language|UPDATE app_users.*learning_style' edge_controller.py; then
+  if [ "${EDGE_ALLOW_APP_USER_PREFERENCES_SCHEMA_LIVE:-0}" = "1" ]; then
+    route_or_write_markers="$(
+      grep -nE '@app\.(get|post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"|ALTER TABLE.*app_user_preferences|ALTER TABLE.*preferences|INSERT INTO.*app_user_preferences|UPDATE.*app_user_preferences|DELETE FROM.*app_user_preferences|FROM app_user_preferences|JOIN app_user_preferences|UPDATE app_users.*preferred_language|UPDATE app_users.*study_language|UPDATE app_users.*learning_style' edge_controller.py || true
+    )"
+    if [ -n "$route_or_write_markers" ]; then
+      echo "$route_or_write_markers"
+      echo "FAIL: live route/query/write markers are not allowed by schema-only Phase 13X"
+      fail=1
+    else
+      echo "PASS: app_user_preferences schema is live and explicitly allowed by EDGE_ALLOW_APP_USER_PREFERENCES_SCHEMA_LIVE=1"
+    fi
+  else
+    echo "FAIL: live app_user_preferences schema/query markers should not exist before Phase 13X"
+    fail=1
+  fi
 else
-  echo "PASS: app_user_preferences still not live"
+  echo "PASS: no live profile preference schema/query/write markers were found"
 fi
 
 if grep -nE '@app\.(get|post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"' edge_controller.py; then
