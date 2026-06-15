@@ -78,7 +78,11 @@ assert "app_user_preferences" in tables_after
 users_after = conn.execute("SELECT COUNT(*) AS c FROM app_users").fetchone()["c"]
 prefs_after = conn.execute("SELECT COUNT(*) AS c FROM app_user_preferences").fetchone()["c"]
 assert users_after == users_before, (users_before, users_after)
-assert prefs_after == 0, prefs_after
+import os
+if os.getenv("EDGE_ALLOW_PROFILE_PREFERENCES_WRITE_ROUTE_LIVE") == "1":
+    assert prefs_after >= 1, prefs_after
+else:
+    assert prefs_after == 0, prefs_after
 
 columns = {
     str(r["name"]): dict(r)
@@ -164,7 +168,18 @@ PY
 echo
 echo "=== no live preference routes/UI wired ==="
 if grep -nE '@app\.(get|post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"' edge_controller.py; then
-  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_READ_ROUTE_LIVE:-0}" = "1" ]; then
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_WRITE_ROUTE_LIVE:-0}" = "1" ]; then
+    disallowed_routes="$(
+      grep -nE '@app\.(post|put)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"|@app\.patch\("/api/profile/(study-preferences|companion-preferences|voice-settings)"|@app\.get\("/api/profile/(study-preferences|companion-preferences|voice-settings)"' edge_controller.py || true
+    )"
+    if [ -n "$disallowed_routes" ]; then
+      echo "$disallowed_routes"
+      echo "FAIL: Phase 13Z allows only GET/PATCH /api/profile/preferences, not write/sub-routes"
+      fail=1
+    else
+      echo "PASS: GET/PATCH /api/profile/preferences are live and explicitly allowed by route env flags"
+    fi
+  elif [ "${EDGE_ALLOW_PROFILE_PREFERENCES_READ_ROUTE_LIVE:-0}" = "1" ]; then
     disallowed_routes="$(
       grep -nE '@app\.(post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"|@app\.get\("/api/profile/(study-preferences|companion-preferences|voice-settings)"' edge_controller.py || true
     )"

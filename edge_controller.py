@@ -12875,6 +12875,255 @@ async def api_profile_preferences_read(request: Request):
     return _profile_preferences_read_response(int(user_row["id"]))
 
 
+_PROFILE_PREFERENCE_ENUM_FIELDS = {
+    "learning_style": {"balanced", "visual", "step_by_step", "concise", "detailed"},
+    "study_explanation_depth": {"brief", "normal", "deep"},
+    "study_answer_strictness": {"lenient", "balanced", "strict"},
+    "study_session_default_mode": {"standard_review", "immersive_review"},
+    "companion_behavior": {"supportive_tutor", "direct_helper", "study_coach"},
+    "companion_tone": {"calm_clear", "encouraging", "concise"},
+    "companion_memory_scope": {"session_only", "session_and_profile_approved"},
+    "calendar_provider_preference": {"none", "google_calendar", "apple_calendar"},
+    "notification_preference": {"none", "email", "in_app"},
+}
+
+_PROFILE_PREFERENCE_FORBIDDEN_WRITE_FIELDS = {
+    "id",
+    "user_id",
+    "email",
+    "password",
+    "password_hash",
+    "role",
+    "plan",
+    "credits",
+    "credit_balance",
+    "free_credit_balance",
+    "paid_credit_balance",
+    "free_local_balance",
+    "paid_balance",
+    "session_token",
+    "csrf_token",
+    "provider_token",
+    "oauth_token",
+    "calendar_event",
+    "calendar_events",
+    "audio_blob",
+    "transcript",
+    "model",
+    "worker_id",
+    "admin",
+    "created_at",
+    "updated_at",
+}
+
+
+def _profile_preferences_validate_patch(payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    accepted = {}
+    unknown = []
+    forbidden = []
+
+    allowed = set(_PROFILE_PREFERENCE_FIELDS)
+
+    for key, value in payload.items():
+        if key in _PROFILE_PREFERENCE_FORBIDDEN_WRITE_FIELDS:
+            forbidden.append(key)
+            continue
+
+        if key not in allowed:
+            unknown.append(key)
+            continue
+
+        if key in _PROFILE_PREFERENCE_BOOLEAN_FIELDS:
+            if isinstance(value, bool):
+                accepted[key] = 1 if value else 0
+                continue
+            if isinstance(value, int) and value in (0, 1):
+                accepted[key] = int(value)
+                continue
+            raise HTTPException(status_code=422, detail=f"{key} must be boolean.")
+
+        if key in _PROFILE_PREFERENCE_ENUM_FIELDS:
+            if value is None:
+                accepted[key] = None
+                continue
+            if not isinstance(value, str):
+                raise HTTPException(status_code=422, detail=f"{key} must be a string.")
+            normalized = value.strip()
+            if normalized not in _PROFILE_PREFERENCE_ENUM_FIELDS[key]:
+                raise HTTPException(status_code=422, detail=f"{key} has unsupported value.")
+            accepted[key] = normalized
+            continue
+
+        if value is None:
+            accepted[key] = None
+            continue
+
+        if not isinstance(value, str):
+            raise HTTPException(status_code=422, detail=f"{key} must be a string.")
+
+        accepted[key] = value.strip()
+
+    if forbidden:
+        raise HTTPException(status_code=403, detail={"forbidden_fields": sorted(forbidden)})
+
+    if unknown:
+        raise HTTPException(status_code=400, detail={"unknown_fields": sorted(unknown)})
+
+    if not accepted:
+        raise HTTPException(status_code=400, detail="At least one preference field is required.")
+
+    return accepted
+
+
+def _profile_preferences_write_response(user_id: int, payload: dict) -> dict:
+    """
+    Phase 13Z live write helper for PATCH /api/profile/preferences.
+
+    Writes only allowlisted profile preference fields. It does not modify
+    auth, credit, provider token, calendar event, audio, model, queue, or
+    worker state.
+    """
+    patch = _profile_preferences_validate_patch(payload)
+    now = _auth_now_iso()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        user_row = conn.execute(
+            """
+            SELECT id
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        if user_row is None:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        before_count = conn.execute(
+            """
+            SELECT COUNT(*) AS c
+            FROM app_user_preferences
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()["c"]
+
+        existing_row = conn.execute(
+            """
+            SELECT *
+            FROM app_user_preferences
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        default_values = _profile_preferences_safe_defaults()
+        current_values = {}
+        for field in _PROFILE_PREFERENCE_FIELDS:
+            if existing_row is not None and field in existing_row.keys() and existing_row[field] is not None:
+                current_values[field] = existing_row[field]
+            elif field in _PROFILE_PREFERENCE_BOOLEAN_FIELDS:
+                current_values[field] = 1 if default_values.get(field) else 0
+            else:
+                current_values[field] = default_values.get(field)
+
+        current_values.update(patch)
+
+        columns = ["user_id", *_PROFILE_PREFERENCE_FIELDS, "created_at", "updated_at"]
+
+        insert_values = []
+        for column in columns:
+            if column == "user_id":
+                insert_values.append(int(user_id))
+            elif column == "created_at":
+                insert_values.append(existing_row["created_at"] if existing_row is not None else now)
+            elif column == "updated_at":
+                insert_values.append(now)
+            else:
+                insert_values.append(current_values.get(column))
+
+        placeholders = ", ".join(["?"] * len(columns))
+        update_assignments = ", ".join(
+            f"{column} = excluded.{column}"
+            for column in [*_PROFILE_PREFERENCE_FIELDS, "updated_at"]
+        )
+
+        conn.execute(
+            f"""
+            INSERT INTO app_user_preferences ({", ".join(columns)})
+            VALUES ({placeholders})
+            ON CONFLICT(user_id) DO UPDATE SET {update_assignments}
+            """,
+            insert_values,
+        )
+        conn.commit()
+
+        after_count = conn.execute(
+            """
+            SELECT COUNT(*) AS c
+            FROM app_user_preferences
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()["c"]
+
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_user_preferences
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+    return {
+        "ok": True,
+        "source": "phase_13z_live_profile_preferences_write_endpoint",
+        "mode": "live_profile_preferences_write_endpoint",
+        "user_id": int(user_id),
+        "created": before_count == 0 and after_count == 1,
+        "updated": before_count == 1 and after_count == 1,
+        "changed_fields": sorted(patch.keys()),
+        "preferences": _profile_preferences_merge_row(row),
+        "available_fields": list(_PROFILE_PREFERENCE_FIELDS),
+        "meta": {
+            "wrote_database": True,
+            "wrote_auth_fields": False,
+            "wrote_credit_fields": False,
+            "stored_provider_tokens": False,
+            "stored_calendar_events": False,
+            "stored_audio_blobs": False,
+            "triggered_model_call": False,
+            "enqueued_job": False,
+            "dispatched_worker": False,
+            "source_tables": ["app_users", "app_user_preferences"],
+            "profile_is_source_of_truth": True,
+            "backend_api_is_authority": True,
+            "frontend_writes_through_backend_only": True,
+            "calendar_provider_preference_only": True,
+            "custom_local_calendar_database_allowed": False,
+            "controller_calendar_event_storage_allowed": False,
+        },
+    }
+
+
+@app.patch("/api/profile/preferences")
+async def api_profile_preferences_write(request: Request):
+    user_row = _auth_current_user_from_request(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    return _profile_preferences_write_response(int(user_row["id"]), payload)
+
+
 @app.post("/system/account/bootstrap-admin")
 async def system_account_bootstrap_admin(request: Request):
     """
