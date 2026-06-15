@@ -109,7 +109,6 @@ from pathlib import Path
 text = Path("edge_controller.py").read_text()
 
 helpers_definition_only = [
-    "_phase14ik_legacy_local_jobs_routes_enabled",
     "_phase14ik_legacy_local_jobs_admin_archive_enabled",
 ]
 
@@ -117,6 +116,18 @@ for helper in helpers_definition_only:
     count = text.count(helper + "(")
     if count != 1:
         raise SystemExit(f"FAIL: helper {helper} should only appear in its definition at this point, found {count}")
+
+public_jobs_helper = "_phase14ik_legacy_local_jobs_routes_enabled"
+public_jobs_count = text.count(public_jobs_helper + "(")
+
+if public_jobs_count == 1:
+    print("PASS: public local jobs routes helper not wired yet")
+elif public_jobs_count == 2:
+    if "PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE_BEGIN" not in text:
+        raise SystemExit("FAIL: public local jobs routes helper is wired without Phase 14I-N gate marker")
+    print("PASS: Phase 14I-N public local jobs create helper wiring present")
+else:
+    raise SystemExit(f"FAIL: unexpected public local jobs routes helper occurrence count: {public_jobs_count}")
 
 queue_helper = "_phase14ik_legacy_local_queue_status_enabled"
 queue_count = text.count(queue_helper + "(")

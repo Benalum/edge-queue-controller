@@ -90,7 +90,6 @@ from pathlib import Path
 text = Path("edge_controller.py").read_text()
 
 expected_counts = {
-    "_phase14ik_legacy_local_jobs_routes_enabled(": 1,
     "_phase14ik_legacy_local_jobs_admin_archive_enabled(": 1,
     "_phase14ik_legacy_local_queue_status_enabled(": 2,
     "_phase14ik_legacy_companion_local_job_create_enabled(": 2,
@@ -102,10 +101,20 @@ for marker, expected in expected_counts.items():
     if actual != expected:
         bad[marker] = {"expected": expected, "actual": actual}
 
+public_marker = "_phase14ik_legacy_local_jobs_routes_enabled("
+public_count = text.count(public_marker)
+if public_count == 1:
+    pass
+elif public_count == 2:
+    if "PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE_BEGIN" not in text:
+        bad[public_marker] = {"expected": "1 or Phase 14I-N marked 2", "actual": public_count}
+else:
+    bad[public_marker] = {"expected": "1 or 2", "actual": public_count}
+
 if bad:
     raise SystemExit(f"FAIL: unexpected helper occurrence counts: {bad}")
 
-print("PASS: helper occurrence counts match Phase 14I-M scope")
+print("PASS: helper occurrence counts match Phase 14I-M scope or expected Phase 14I-N evolution")
 PY2
 
 echo

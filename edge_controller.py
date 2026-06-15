@@ -5632,6 +5632,20 @@ async def public_create_job(request: Request):
 
     requested_model = (requested_model or _public_default_model()).strip()
 
+    # PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE_BEGIN
+    if not _phase14ik_legacy_local_jobs_routes_enabled():
+        return {
+            "ok": False,
+            "status": "legacy_public_local_jobs_create_disabled",
+            "source": "legacy_local_jobs_disabled_phase_14i_n",
+            "legacy_local_jobs_routes_enabled": False,
+            "message": (
+                "Legacy public local Edge jobs creation is disabled. "
+                "Use app_jobs-backed queued routes for new chat work."
+            ),
+        }
+    # PHASE_14I_N_LEGACY_PUBLIC_LOCAL_JOBS_CREATE_GATE_END
+
     job = _public_create_ollama_job(
         prompt=prompt,
         requested_model=requested_model,
