@@ -91,23 +91,29 @@ print("PASS: required documentation markers found")
 PY
 
 echo
-echo "=== no new runtime flag helpers or route behavior expected yet ==="
-python3 - <<'PY'
+echo "=== runtime flag helper evolution check ==="
+python3 - <<'PY2'
 from pathlib import Path
 
 text = Path("edge_controller.py").read_text()
-unexpected = [
+markers = [
     "EDGE_LEGACY_LOCAL_JOBS_ROUTES_ENABLED",
     "EDGE_LEGACY_COMPANION_LOCAL_JOB_CREATE_ENABLED",
     "EDGE_LEGACY_LOCAL_QUEUE_STATUS_ENABLED",
     "EDGE_LEGACY_LOCAL_JOBS_ADMIN_ARCHIVE_ENABLED",
 ]
-present = [item for item in unexpected if item in text]
-if present:
-    raise SystemExit(f"FAIL: Phase 14I-J should be docs-only; unexpected runtime markers in edge_controller.py: {present}")
 
-print("PASS: no runtime flag implementation added in docs-only Phase 14I-J")
-PY
+present = [item for item in markers if item in text]
+
+if not present:
+    print("PASS: no runtime flag implementation added yet")
+elif len(present) == len(markers):
+    if "PHASE_14I_K_LEGACY_LOCAL_JOBS_RETIREMENT_FLAG_HELPERS_BEGIN" not in text:
+        raise SystemExit("FAIL: legacy flag markers exist without Phase 14I-K helper block marker")
+    print("PASS: Phase 14I-K helper implementation present; Phase 14I-J plan has evolved as intended")
+else:
+    raise SystemExit(f"FAIL: partial legacy flag implementation found: {present}")
+PY2
 
 echo
 echo "=== read-only/privacy guard for this smoke script ==="

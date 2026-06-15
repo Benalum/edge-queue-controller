@@ -5517,6 +5517,43 @@ def _public_get_job_with_result(job_id: int, user_id: int | None = None):
         "result": result_data,
     }
 
+# PHASE_14I_K_LEGACY_LOCAL_JOBS_RETIREMENT_FLAG_HELPERS_BEGIN
+import os as _phase14ik_os
+
+
+def _phase14ik_env_bool(name: str, default: bool) -> bool:
+    raw = _phase14ik_os.environ.get(name)
+    if raw is None:
+        return bool(default)
+
+    value = str(raw).strip().lower()
+    if value in {"1", "true", "yes", "on", "enabled"}:
+        return True
+    if value in {"0", "false", "no", "off", "disabled"}:
+        return False
+
+    return bool(default)
+
+
+def _phase14ik_legacy_local_jobs_routes_enabled() -> bool:
+    return _phase14ik_env_bool("EDGE_LEGACY_LOCAL_JOBS_ROUTES_ENABLED", True)
+
+
+def _phase14ik_legacy_companion_local_job_create_enabled() -> bool:
+    return _phase14ik_env_bool("EDGE_LEGACY_COMPANION_LOCAL_JOB_CREATE_ENABLED", True)
+
+
+def _phase14ik_legacy_local_queue_status_enabled() -> bool:
+    return _phase14ik_env_bool("EDGE_LEGACY_LOCAL_QUEUE_STATUS_ENABLED", True)
+
+
+def _phase14ik_legacy_local_jobs_admin_archive_enabled() -> bool:
+    return _phase14ik_env_bool("EDGE_LEGACY_LOCAL_JOBS_ADMIN_ARCHIVE_ENABLED", False)
+
+
+# PHASE_14I_K_LEGACY_LOCAL_JOBS_RETIREMENT_FLAG_HELPERS_END
+
+
 def _public_create_ollama_job(prompt: str, requested_model: str | None = None, user_id: int | None = None):
     _auth_init_tables()
 
