@@ -2820,3 +2820,47 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   }
 }
 /* PHASE_11C_ADMIN_SYSTEM_CSS_POLISH_END */
+
+/* PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1 */
+.profile-preferences-card {
+  grid-column: span 2;
+}
+
+.profile-preference-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.profile-preference-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+
+.profile-preference-row span {
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.profile-preference-row strong {
+  text-align: right;
+  font-size: .92rem;
+}
+
+@media (max-width: 720px) {
+  .profile-preferences-card {
+    grid-column: span 1;
+  }
+
+  .profile-preference-row {
+    display: grid;
+    gap: 4px;
+  }
+
+  .profile-preference-row strong {
+    text-align: left;
+  }
+}

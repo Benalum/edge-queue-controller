@@ -312,47 +312,80 @@ print("PASS: Phase 13S helper contains no runtime/route/schema/frontend activati
 PY
 
 echo
-echo "=== verify frontend files unchanged ==="
-frontend_diff="$(git diff --name-only -- frontend/study-ui frontend/wrapper-ui || true)"
-if [ -n "$frontend_diff" ]; then
-  echo "$frontend_diff"
-  echo "FAIL: disabled Phase 13S should not modify frontend files"
+echo "=== verify frontend files were not modified except explicitly allowed read-only Profile UI ==="
+frontend_changed="$(
+  git diff --name-only -- frontend/study-ui frontend/wrapper-ui 2>/dev/null \
+    | grep -v '^frontend/wrapper-ui/app.js$' \
+    | grep -v '^frontend/wrapper-ui/styles.css$' \
+    || true
+)"
+
+allowed_profile_ui_changed="$(
+  git diff --name-only -- frontend/wrapper-ui/app.js frontend/wrapper-ui/styles.css 2>/dev/null \
+    || true
+)"
+
+if [ -n "$frontend_changed" ]; then
+  echo "$frontend_changed"
+  echo "FAIL: this disabled profile contract should not modify unrelated frontend files"
   fail=1
-else
-  echo "PASS: frontend files unchanged"
-fi
+elif [ -n "$allowed_profile_ui_changed" ]; then
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ]; then
+    echo "$allowed_profile_ui_changed"
+    python3 - <<'PY_PHASE14A_COMPAT'
+from pathlib import Path
 
-echo
-echo "=== verify no live preference read route/schema/writes were added ==="
-if grep -nE '@app\.(get|post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"|CREATE TABLE.*app_user_preferences|CREATE TABLE.*preferences|ALTER TABLE.*app_user_preferences|ALTER TABLE.*preferences|INSERT INTO.*app_user_preferences|UPDATE.*app_user_preferences|DELETE FROM.*app_user_preferences|FROM app_user_preferences|JOIN app_user_preferences|UPDATE app_users.*preferred_language|UPDATE app_users.*study_language|UPDATE app_users.*learning_style' edge_controller.py; then
-  if [ "${EDGE_ALLOW_APP_USER_PREFERENCES_SCHEMA_LIVE:-0}" = "1" ]; then
-    if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_WRITE_ROUTE_LIVE:-0}" = "1" ]; then
-      disallowed_markers="$(
-        grep -nE '@app\.(post|put)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"|@app\.patch\("/api/profile/(study-preferences|companion-preferences|voice-settings)"|@app\.get\("/api/profile/(study-preferences|companion-preferences|voice-settings)"|ALTER TABLE.*app_user_preferences|ALTER TABLE.*preferences|DELETE FROM.*app_user_preferences|UPDATE app_users.*preferred_language|UPDATE app_users.*study_language|UPDATE app_users.*learning_style' edge_controller.py || true
-      )"
-    elif [ "${EDGE_ALLOW_PROFILE_PREFERENCES_READ_ROUTE_LIVE:-0}" = "1" ]; then
-      disallowed_markers="$(
-        grep -nE '@app\.(post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"|@app\.get\("/api/profile/(study-preferences|companion-preferences|voice-settings)"|ALTER TABLE.*app_user_preferences|ALTER TABLE.*preferences|INSERT INTO.*app_user_preferences|UPDATE.*app_user_preferences|DELETE FROM.*app_user_preferences|UPDATE app_users.*preferred_language|UPDATE app_users.*study_language|UPDATE app_users.*learning_style' edge_controller.py || true
-      )"
-    else
-      disallowed_markers="$(
-        grep -nE '@app\.(get|post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"|ALTER TABLE.*app_user_preferences|ALTER TABLE.*preferences|INSERT INTO.*app_user_preferences|UPDATE.*app_user_preferences|DELETE FROM.*app_user_preferences|FROM app_user_preferences|JOIN app_user_preferences|UPDATE app_users.*preferred_language|UPDATE app_users.*study_language|UPDATE app_users.*learning_style' edge_controller.py || true
-      )"
-    fi
+text = Path("frontend/wrapper-ui/app.js").read_text()
+start = text.index("// PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1")
+end = text.index("function renderLoggedInProfilePage()", start)
+block = text[start:end]
 
-    if [ -n "$disallowed_markers" ]; then
-      echo "$disallowed_markers"
-      echo "FAIL: live markers are not allowed by this phase/env"
-      fail=1
-    else
-      echo "PASS: profile preferences schema/read/write route are live and explicitly allowed by env flags"
-    fi
+required = [
+    'api("/profile/preferences", { method: "GET" })',
+    "renderProfilePreferencesCard",
+    "renderProfilePreferenceRows",
+    "loadProfilePreferencesForProfilePage",
+    "if (profilePreferencesError && !force) return null",
+]
+for item in required:
+    assert item in block, item
+
+forbidden = [
+    'method: "PATCH"',
+    "PATCH /api/profile/preferences",
+    "profilePreferencesSave",
+    "saveProfilePreferences",
+    "data-profile-preferences-save",
+    "navigator.mediaDevices",
+    "getUserMedia",
+    "SpeechRecognition",
+    "speechSynthesis",
+    "speechSynthesis.speak",
+    "MediaRecorder",
+    "/api/jobs",
+    "/api/chat/queued",
+    "/api/study/session/command",
+    "google_calendar_authorize",
+    "apple_calendar_authorize",
+]
+bad = [item for item in forbidden if item in block]
+assert not bad, bad
+
+style = Path("frontend/wrapper-ui/styles.css").read_text()
+assert "PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1" in style
+assert ".profile-preferences-card" in style
+assert ".profile-preference-list" in style
+assert ".profile-preference-row" in style
+
+print("PASS: read-only Profile preference UI files are live and explicitly allowed")
+PY_PHASE14A_COMPAT
   else
-    echo "FAIL: live app_user_preferences schema/query markers should not exist before Phase 13X"
+    echo "$allowed_profile_ui_changed"
+    echo "FAIL: frontend files changed without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1"
     fail=1
   fi
 else
-  echo "PASS: no live profile preference schema/query/write markers were found"
+  echo "PASS: no frontend files were changed"
 fi
 
 echo

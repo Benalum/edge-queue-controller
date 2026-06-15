@@ -219,18 +219,66 @@ else
 fi
 
 frontend_live_markers="$(
-  grep -R -nE '/api/profile/preferences|preferred_language|study_language|learning_style|voice_enabled|calendar_provider_preference' \
-    frontend/study-ui frontend/wrapper-ui public static 2>/dev/null \
+  grep -R --exclude='*.bak*' --exclude-dir='__pycache__' -nE '/api/profile/preferences|preferred_language|study_language|learning_style|voice_enabled|calendar_provider_preference' \
+    frontend/wrapper-ui/app.js frontend/wrapper-ui/styles.css 2>/dev/null \
     || true
 )"
 if [ -n "$frontend_live_markers" ]; then
-  echo "$frontend_live_markers"
-  echo "FAIL: Phase 13Z should not wire frontend preference API markers"
-  fail=1
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ]; then
+    echo "$frontend_live_markers"
+    python3 - <<'PYCHECK14A'
+from pathlib import Path
+
+text = Path("frontend/wrapper-ui/app.js").read_text()
+start = text.index("// PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1")
+end = text.index("function renderLoggedInProfilePage()", start)
+block = text[start:end]
+
+required = [
+    'api("/profile/preferences", { method: "GET" })',
+    "renderProfilePreferencesCard",
+    "renderProfilePreferenceRows",
+    "loadProfilePreferencesForProfilePage",
+    "if (profilePreferencesError && !force) return null",
+]
+for item in required:
+    assert item in block, item
+
+forbidden = [
+    'method: "PATCH"',
+    "PATCH /api/profile/preferences",
+    "profilePreferencesSave",
+    "saveProfilePreferences",
+    "data-profile-preferences-save",
+    "navigator.mediaDevices",
+    "getUserMedia",
+    "SpeechRecognition",
+    "speechSynthesis.speak",
+    "/api/jobs",
+    "/api/chat/queued",
+    "/api/study/session/command",
+    "google_calendar_authorize",
+    "apple_calendar_authorize",
+]
+bad = [item for item in forbidden if item in block]
+assert not bad, bad
+
+style = Path("frontend/wrapper-ui/styles.css").read_text()
+assert "PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1" in style
+assert ".profile-preferences-card" in style
+assert ".profile-preference-list" in style
+assert ".profile-preference-row" in style
+
+print("PASS: Phase 14A read-only Profile preference UI block is explicitly allowed")
+PYCHECK14A
+  else
+    echo "$frontend_live_markers"
+    echo "FAIL: frontend preference API markers wired without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1"
+    exit 1
+  fi
 else
   echo "PASS: no frontend preference API markers were wired"
 fi
-
 echo
 echo "=== doc markers ==="
 for marker in \

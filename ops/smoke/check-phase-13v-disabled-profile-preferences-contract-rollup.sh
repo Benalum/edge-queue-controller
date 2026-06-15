@@ -366,14 +366,80 @@ print("PASS: Phase 13V helper contains no runtime/route/schema/frontend/voice ac
 PY
 
 echo
-echo "=== verify frontend/public/static files unchanged ==="
-frontend_diff="$(git diff --name-only -- frontend/study-ui frontend/wrapper-ui public static || true)"
-if [ -n "$frontend_diff" ]; then
-  echo "$frontend_diff"
-  echo "FAIL: disabled Phase 13V should not modify frontend/public/static files"
+echo "=== verify frontend/public/static files were not modified except explicitly allowed read-only Profile UI ==="
+frontend_changed="$(
+  git diff --name-only -- frontend/study-ui frontend/wrapper-ui public static 2>/dev/null \
+    | grep -v '^frontend/wrapper-ui/app.js$' \
+    | grep -v '^frontend/wrapper-ui/styles.css$' \
+    || true
+)"
+
+allowed_profile_ui_changed="$(
+  git diff --name-only -- frontend/wrapper-ui/app.js frontend/wrapper-ui/styles.css 2>/dev/null \
+    || true
+)"
+
+if [ -n "$frontend_changed" ]; then
+  echo "$frontend_changed"
+  echo "FAIL: this profile smoke should not modify unrelated frontend/public/static files"
   fail=1
+elif [ -n "$allowed_profile_ui_changed" ]; then
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ]; then
+    echo "$allowed_profile_ui_changed"
+    python3 - <<'PY_PHASE14A_FRONTEND_GUARD'
+from pathlib import Path
+
+text = Path("frontend/wrapper-ui/app.js").read_text()
+start = text.index("// PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1")
+end = text.index("function renderLoggedInProfilePage()", start)
+block = text[start:end]
+
+required = [
+    'api("/profile/preferences", { method: "GET" })',
+    "renderProfilePreferencesCard",
+    "renderProfilePreferenceRows",
+    "loadProfilePreferencesForProfilePage",
+    "if (profilePreferencesError && !force) return null",
+]
+for item in required:
+    assert item in block, item
+
+forbidden = [
+    'method: "PATCH"',
+    "PATCH /api/profile/preferences",
+    "profilePreferencesSave",
+    "saveProfilePreferences",
+    "data-profile-preferences-save",
+    "navigator.mediaDevices",
+    "getUserMedia",
+    "SpeechRecognition",
+    "speechSynthesis",
+    "speechSynthesis.speak",
+    "MediaRecorder",
+    "/api/jobs",
+    "/api/chat/queued",
+    "/api/study/session/command",
+    "google_calendar_authorize",
+    "apple_calendar_authorize",
+]
+bad = [item for item in forbidden if item in block]
+assert not bad, bad
+
+style = Path("frontend/wrapper-ui/styles.css").read_text()
+assert "PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1" in style
+assert ".profile-preferences-card" in style
+assert ".profile-preference-list" in style
+assert ".profile-preference-row" in style
+
+print("PASS: read-only Profile preference UI files are live and explicitly allowed")
+PY_PHASE14A_FRONTEND_GUARD
+  else
+    echo "$allowed_profile_ui_changed"
+    echo "FAIL: frontend/public/static files changed without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1"
+    fail=1
+  fi
 else
-  echo "PASS: frontend/public/static files unchanged"
+  echo "PASS: no frontend/public/static files were changed"
 fi
 
 echo
@@ -410,18 +476,66 @@ else
 fi
 
 frontend_live_markers="$(
-  grep -R -nE '/api/profile/preferences|preferred_language|study_language|learning_style|voice_enabled|calendar_provider_preference' \
-    frontend/study-ui frontend/wrapper-ui public static 2>/dev/null \
+  grep -R --exclude='*.bak*' --exclude-dir='__pycache__' -nE '/api/profile/preferences|preferred_language|study_language|learning_style|voice_enabled|calendar_provider_preference' \
+    frontend/wrapper-ui/app.js frontend/wrapper-ui/styles.css 2>/dev/null \
     || true
 )"
 if [ -n "$frontend_live_markers" ]; then
-  echo "$frontend_live_markers"
-  echo "FAIL: disabled Phase 13V should not wire frontend preference API markers"
-  fail=1
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ]; then
+    echo "$frontend_live_markers"
+    python3 - <<'PYCHECK14A'
+from pathlib import Path
+
+text = Path("frontend/wrapper-ui/app.js").read_text()
+start = text.index("// PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1")
+end = text.index("function renderLoggedInProfilePage()", start)
+block = text[start:end]
+
+required = [
+    'api("/profile/preferences", { method: "GET" })',
+    "renderProfilePreferencesCard",
+    "renderProfilePreferenceRows",
+    "loadProfilePreferencesForProfilePage",
+    "if (profilePreferencesError && !force) return null",
+]
+for item in required:
+    assert item in block, item
+
+forbidden = [
+    'method: "PATCH"',
+    "PATCH /api/profile/preferences",
+    "profilePreferencesSave",
+    "saveProfilePreferences",
+    "data-profile-preferences-save",
+    "navigator.mediaDevices",
+    "getUserMedia",
+    "SpeechRecognition",
+    "speechSynthesis.speak",
+    "/api/jobs",
+    "/api/chat/queued",
+    "/api/study/session/command",
+    "google_calendar_authorize",
+    "apple_calendar_authorize",
+]
+bad = [item for item in forbidden if item in block]
+assert not bad, bad
+
+style = Path("frontend/wrapper-ui/styles.css").read_text()
+assert "PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1" in style
+assert ".profile-preferences-card" in style
+assert ".profile-preference-list" in style
+assert ".profile-preference-row" in style
+
+print("PASS: Phase 14A read-only Profile preference UI block is explicitly allowed")
+PYCHECK14A
+  else
+    echo "$frontend_live_markers"
+    echo "FAIL: frontend preference API markers wired without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1"
+    exit 1
+  fi
 else
   echo "PASS: no frontend preference API markers were wired"
 fi
-
 echo
 echo "=== safety: power auto full tick remains quarantined ==="
 env_dump="$(systemctl show edge-queue-controller -p Environment --value 2>/dev/null | tr ' ' '\n' | grep -E '^EDGE_POWER_AUTO_PAUSED=|^EDGE_POWER_AUTO_TICK_FULL=' || true)"

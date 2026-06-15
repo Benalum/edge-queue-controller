@@ -36,6 +36,9 @@ let adminTickets = null;
 let adminSystemStatus = null;
 let supportTickets = null;
 let supportThread = null;
+let profilePreferences = null;
+let profilePreferencesLoading = false;
+let profilePreferencesError = "";
 let adRewardStatus = null;
 let googleRewardedSlot = null;
 let googleRewardedReadyEvent = null;
@@ -4896,6 +4899,137 @@ function renderPublicFeatureGate(route) {
 // Real logged-in Profile surface instead of generic feature summary.
 // ============================================================
 
+// PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1
+// Read-only display of backend-owned profile preferences.
+// This phase does not save preferences and does not activate browser voice,
+// calendar provider auth, tools, model calls, jobs, or workers.
+function normalizeProfilePreferenceValue(value) {
+  if (value === true) return "Enabled";
+  if (value === false) return "Disabled";
+  if (value === null || value === undefined || value === "") return "—";
+  return String(value)
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (match) => match.toUpperCase());
+}
+
+function renderProfilePreferenceRows(preferences) {
+  const safe = (value) => String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+  const prefs = preferences || {};
+  const rows = [
+    ["Preferred language", prefs.preferred_language],
+    ["Study language", prefs.study_language],
+    ["Learning style", prefs.learning_style],
+    ["Explanation depth", prefs.study_explanation_depth],
+    ["Answer strictness", prefs.study_answer_strictness],
+    ["Companion behavior", prefs.companion_behavior],
+    ["Companion tone", prefs.companion_tone],
+    ["Voice", prefs.voice_enabled],
+    ["Listen", prefs.listen_enabled],
+    ["Speak", prefs.speak_enabled],
+    ["Calendar provider", prefs.calendar_provider_preference],
+    ["Notifications", prefs.notification_preference],
+  ];
+
+  return `
+    <div class="profile-preference-list" data-phase14a-profile-preferences-list="true">
+      ${rows.map(([label, value]) => `
+        <div class="profile-preference-row">
+          <span>${safe(label)}</span>
+          <strong>${safe(normalizeProfilePreferenceValue(value))}</strong>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderProfilePreferencesCard() {
+  const safe = (value) => String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+  if (profilePreferencesLoading) {
+    return `
+      <div class="summary-card profile-preferences-card" data-phase14a-profile-preferences-card="loading">
+        <span>Preferences</span>
+        <strong>Loading preferences</strong>
+        <p>Reading your backend-owned profile preferences.</p>
+      </div>
+    `;
+  }
+
+  if (profilePreferencesError) {
+    return `
+      <div class="summary-card profile-preferences-card" data-phase14a-profile-preferences-card="error">
+        <span>Preferences</span>
+        <strong>Unavailable</strong>
+        <p>${safe(profilePreferencesError)}</p>
+        <p>Typed input remains available. No voice, calendar, model, job, or worker action was triggered.</p>
+      </div>
+    `;
+  }
+
+  const prefs = profilePreferences?.preferences || null;
+
+  if (!prefs) {
+    return `
+      <div class="summary-card profile-preferences-card" data-phase14a-profile-preferences-card="empty">
+        <span>Preferences</span>
+        <strong>Not loaded yet</strong>
+        <p>Profile preferences will appear here after the backend route is available.</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="summary-card profile-preferences-card" data-phase14a-profile-preferences-card="ready">
+      <span>Preferences</span>
+      <strong>Read-only display</strong>
+      <p>These values are read from /api/profile/preferences. Saving comes in a later phase.</p>
+      ${renderProfilePreferenceRows(prefs)}
+    </div>
+  `;
+}
+
+async function loadProfilePreferencesForProfilePage({ force = false } = {}) {
+  if (!authState.token) {
+    profilePreferences = null;
+    profilePreferencesError = "";
+    profilePreferencesLoading = false;
+    return null;
+  }
+
+  if (profilePreferences && !force) return profilePreferences;
+  if (profilePreferencesError && !force) return null;
+  if (profilePreferencesLoading) return profilePreferences;
+
+  profilePreferencesLoading = true;
+  profilePreferencesError = "";
+
+  try {
+    const result = await api("/profile/preferences", { method: "GET" });
+    profilePreferences = result;
+    profilePreferencesError = "";
+    return result;
+  } catch (err) {
+    profilePreferencesError = sanitizeVisibleErrorText(err?.message || "Profile preferences are not available yet.");
+    return null;
+  } finally {
+    profilePreferencesLoading = false;
+    if (normalizeWrapperAuthRoute(window.location.pathname || "/") === "/profile") {
+      renderPage();
+    }
+  }
+}
+
 function renderLoggedInProfilePage() {
   const safe = (value) => String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -4962,11 +5096,7 @@ function renderLoggedInProfilePage() {
           <p>Choose what Study, Companion, Calendar providers, and future tools may use as context.</p>
         </div>
 
-        <div class="summary-card">
-          <span>Preferences</span>
-          <strong>Coming next</strong>
-          <p>Set default learning style, companion behavior, notification preferences, and display options.</p>
-        </div>
+        ${renderProfilePreferencesCard()}
 
         <div class="summary-card">
           <span>Connected providers</span>
@@ -5059,6 +5189,7 @@ function renderPage() {
     }
 
     $("app").innerHTML = renderLoggedInProfilePage();
+    loadProfilePreferencesForProfilePage();
     return;
   }
 

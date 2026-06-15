@@ -220,14 +220,80 @@ print("PASS: Phase 13Q helper contains no runtime/profile/frontend activation ma
 PY
 
 echo
-echo "=== verify frontend files unchanged ==="
-frontend_diff="$(git diff --name-only -- frontend/study-ui frontend/wrapper-ui || true)"
-if [ -n "$frontend_diff" ]; then
-  echo "$frontend_diff"
-  echo "FAIL: disabled Phase 13Q should not modify frontend files"
+echo "=== verify frontend files were not modified except explicitly allowed read-only Profile UI ==="
+frontend_changed="$(
+  git diff --name-only -- frontend/study-ui frontend/wrapper-ui 2>/dev/null \
+    | grep -v '^frontend/wrapper-ui/app.js$' \
+    | grep -v '^frontend/wrapper-ui/styles.css$' \
+    || true
+)"
+
+allowed_profile_ui_changed="$(
+  git diff --name-only -- frontend/wrapper-ui/app.js frontend/wrapper-ui/styles.css 2>/dev/null \
+    || true
+)"
+
+if [ -n "$frontend_changed" ]; then
+  echo "$frontend_changed"
+  echo "FAIL: this disabled profile contract should not modify unrelated frontend files"
   fail=1
+elif [ -n "$allowed_profile_ui_changed" ]; then
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ]; then
+    echo "$allowed_profile_ui_changed"
+    python3 - <<'PY_PHASE14A_COMPAT'
+from pathlib import Path
+
+text = Path("frontend/wrapper-ui/app.js").read_text()
+start = text.index("// PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1")
+end = text.index("function renderLoggedInProfilePage()", start)
+block = text[start:end]
+
+required = [
+    'api("/profile/preferences", { method: "GET" })',
+    "renderProfilePreferencesCard",
+    "renderProfilePreferenceRows",
+    "loadProfilePreferencesForProfilePage",
+    "if (profilePreferencesError && !force) return null",
+]
+for item in required:
+    assert item in block, item
+
+forbidden = [
+    'method: "PATCH"',
+    "PATCH /api/profile/preferences",
+    "profilePreferencesSave",
+    "saveProfilePreferences",
+    "data-profile-preferences-save",
+    "navigator.mediaDevices",
+    "getUserMedia",
+    "SpeechRecognition",
+    "speechSynthesis",
+    "speechSynthesis.speak",
+    "MediaRecorder",
+    "/api/jobs",
+    "/api/chat/queued",
+    "/api/study/session/command",
+    "google_calendar_authorize",
+    "apple_calendar_authorize",
+]
+bad = [item for item in forbidden if item in block]
+assert not bad, bad
+
+style = Path("frontend/wrapper-ui/styles.css").read_text()
+assert "PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1" in style
+assert ".profile-preferences-card" in style
+assert ".profile-preference-list" in style
+assert ".profile-preference-row" in style
+
+print("PASS: read-only Profile preference UI files are live and explicitly allowed")
+PY_PHASE14A_COMPAT
+  else
+    echo "$allowed_profile_ui_changed"
+    echo "FAIL: frontend files changed without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1"
+    fail=1
+  fi
 else
-  echo "PASS: frontend files unchanged"
+  echo "PASS: no frontend files were changed"
 fi
 
 echo
