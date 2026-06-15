@@ -317,11 +317,12 @@ frontend_changed="$(
   git diff --name-only -- frontend/study-ui frontend/wrapper-ui 2>/dev/null \
     | grep -v '^frontend/wrapper-ui/app.js$' \
     | grep -v '^frontend/wrapper-ui/styles.css$' \
+    | grep -v '^frontend/wrapper-ui/index.html$' \
     || true
 )"
 
 allowed_profile_ui_changed="$(
-  git diff --name-only -- frontend/wrapper-ui/app.js frontend/wrapper-ui/styles.css 2>/dev/null \
+  git diff --name-only -- frontend/wrapper-ui/app.js frontend/wrapper-ui/styles.css frontend/wrapper-ui/index.html 2>/dev/null \
     || true
 )"
 
@@ -330,7 +331,7 @@ if [ -n "$frontend_changed" ]; then
   echo "FAIL: this disabled profile contract should not modify unrelated frontend files"
   fail=1
 elif [ -n "$allowed_profile_ui_changed" ]; then
-  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ]; then
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ] || [ "${EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE:-0}" = "1" ]; then
     echo "$allowed_profile_ui_changed"
     python3 - <<'PY_PHASE14A_COMPAT'
 from pathlib import Path
@@ -377,11 +378,18 @@ assert ".profile-preferences-card" in style
 assert ".profile-preference-list" in style
 assert ".profile-preference-row" in style
 
-print("PASS: read-only Profile preference UI files are live and explicitly allowed")
+index = Path("frontend/wrapper-ui/index.html").read_text()
+if "frontend/wrapper-ui/index.html" in """${allowed_profile_ui_changed}""":
+    assert "v=20260614214d" in index
+    assert "/app.js?v=20260614214d" in index
+    assert "./styles.css?v=20260614214d" in index
+    assert "/study/styles.css?v=20260612000409" in index
+
+print("PASS: read-only Profile preference UI/cache-bust files are live and explicitly allowed")
 PY_PHASE14A_COMPAT
   else
     echo "$allowed_profile_ui_changed"
-    echo "FAIL: frontend files changed without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1"
+    echo "FAIL: frontend files changed without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1 or EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE=1"
     fail=1
   fi
 else
