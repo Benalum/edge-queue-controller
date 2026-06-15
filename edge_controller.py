@@ -20964,6 +20964,240 @@ def _stage5p13t_disabled_profile_preferences_write_endpoint_contract(user_id: st
     }
 
 
+
+# --- Phase 13U disabled profile preferences UI support contract helper --------
+
+def _stage5p13u_disabled_profile_preferences_ui_support_contract(user_id: str | None = None, ui_context: dict | None = None) -> dict:
+    """Disabled, pure UI-support contract for future profile preferences UI."""
+    ui_context = ui_context or {}
+    raw_user_id = "" if user_id is None else str(user_id)
+
+    preference_sections = {
+        "account_language": [
+            "preferred_language",
+            "study_language",
+            "timezone",
+            "locale",
+        ],
+        "study_preferences": [
+            "learning_style",
+            "study_explanation_depth",
+            "study_answer_strictness",
+            "study_session_default_mode",
+        ],
+        "companion_preferences": [
+            "companion_behavior",
+            "companion_tone",
+            "companion_memory_scope",
+        ],
+        "voice_preferences": [
+            "voice_enabled",
+            "listen_enabled",
+            "speak_enabled",
+            "auto_listen_enabled",
+            "auto_speak_enabled",
+        ],
+        "calendar_preferences": [
+            "calendar_provider_preference",
+        ],
+        "display_accessibility": [
+            "notification_preference",
+            "accessibility_large_text",
+            "accessibility_reduce_motion",
+        ],
+    }
+
+    read_endpoint = {
+        "endpoint": "/api/profile/preferences",
+        "method": "GET",
+        "current_route_enabled": False,
+        "future_route_required_before_ui_enable": True,
+        "owned_by_backend_api": True,
+        "returns_safe_defaults": True,
+        "must_not_return_secrets": True,
+        "must_not_infer_sensitive_attributes": True,
+        "must_not_create_rows": True,
+        "must_not_write_on_read": True,
+    }
+
+    write_endpoint = {
+        "endpoint": "/api/profile/preferences",
+        "method": "PATCH",
+        "current_route_enabled": False,
+        "future_route_required_before_ui_enable": True,
+        "owned_by_backend_api": True,
+        "uses_field_allowlist": True,
+        "rejects_unknown_fields": True,
+        "rejects_forbidden_fields": True,
+        "validates_enum_values": True,
+        "validates_boolean_values": True,
+        "must_not_change_auth_fields": True,
+        "must_not_change_credit_fields": True,
+        "must_not_trigger_model_call": True,
+        "must_not_enqueue_job": True,
+        "must_not_dispatch_worker": True,
+    }
+
+    ui_state_contract = {
+        "current_ui_enabled": False,
+        "current_frontend_wired": False,
+        "current_profile_settings_page_changed": False,
+        "future_profile_settings_ui_allowed": True,
+        "future_ui_reads_backend_preferences": True,
+        "future_ui_writes_backend_preferences": True,
+        "future_ui_uses_safe_defaults_until_read_success": True,
+        "future_ui_handles_unauthenticated_with_login_redirect": True,
+        "future_ui_handles_unknown_fields_as_client_error": True,
+        "future_ui_keeps_typed_input_available": True,
+        "future_ui_does_not_enable_voice_by_default": True,
+        "future_ui_does_not_start_microphone_automatically": True,
+        "future_ui_does_not_speak_automatically": True,
+        "future_ui_does_not_store_calendar_events": True,
+        "future_ui_does_not_create_custom_calendar_database": True,
+    }
+
+    form_contract = {
+        "form_sections": preference_sections,
+        "save_button_disabled_in_this_phase": True,
+        "read_button_disabled_in_this_phase": True,
+        "form_submission_disabled_in_this_phase": True,
+        "partial_patch_allowed_later": True,
+        "dirty_field_tracking_required_later": True,
+        "client_side_validation_is_assistive_only": True,
+        "server_side_validation_required": True,
+        "unknown_field_rejection_must_be_server_enforced": True,
+        "forbidden_field_rejection_must_be_server_enforced": True,
+        "auth_fields_must_not_be_editable": True,
+        "credit_fields_must_not_be_editable": True,
+        "provider_tokens_must_not_be_visible": True,
+        "calendar_events_must_not_be_visible_in_preferences_form": True,
+        "audio_blobs_must_not_be_visible_in_preferences_form": True,
+    }
+
+    calendar_ui_boundary = {
+        "allowed_future_calendar_providers": ["none", "google_calendar", "apple_calendar"],
+        "calendar_provider_preference_visible_later": True,
+        "custom_local_calendar_database_allowed": False,
+        "controller_calendar_event_storage_allowed": False,
+        "calendar_connection_required_before_calendar_reads": True,
+        "calendar_writes_require_explicit_user_request": True,
+        "calendar_events_must_not_be_stored_by_controller": True,
+        "calendar_preferences_ui_must_not_show_raw_provider_tokens": True,
+    }
+
+    voice_ui_boundary = {
+        "voice_settings_visible_later": True,
+        "voice_defaults_remain_disabled": True,
+        "listen_default_must_remain_false": True,
+        "speak_default_must_remain_false": True,
+        "auto_listen_default_must_remain_false": True,
+        "auto_speak_default_must_remain_false": True,
+        "browser_microphone_requires_explicit_user_action": True,
+        "browser_speech_output_requires_explicit_user_action": True,
+        "typed_input_must_remain_available": True,
+    }
+
+    activation_gates = {
+        "requires_profile_preference_schema_migration": True,
+        "requires_profile_preference_read_route": True,
+        "requires_profile_preference_write_route": True,
+        "requires_profile_settings_ui_patch": True,
+        "requires_authenticated_read_smoke": True,
+        "requires_authenticated_write_smoke": True,
+        "requires_safe_default_ui_smoke": True,
+        "requires_field_allowlist_ui_smoke": True,
+        "requires_unknown_field_rejection_ui_smoke": True,
+        "requires_forbidden_field_rejection_ui_smoke": True,
+        "requires_enum_validation_ui_smoke": True,
+        "requires_boolean_validation_ui_smoke": True,
+        "requires_no_auth_field_edit_smoke": True,
+        "requires_no_credit_field_edit_smoke": True,
+        "requires_no_secret_exposure_smoke": True,
+        "requires_no_calendar_local_storage_smoke": True,
+        "requires_voice_defaults_regression_smoke": True,
+        "requires_typed_input_regression_smoke": True,
+        "requires_no_login_redirect_regression": True,
+        "requires_study_ui_preference_read_smoke": True,
+        "requires_companion_ui_preference_read_smoke": True,
+        "requires_live_smoke_before_enable": True,
+    }
+
+    return {
+        "source": "phase_13u_disabled_profile_preferences_ui_support_contract_helper",
+        "mode": "disabled_profile_preferences_ui_support_contract_only",
+        "read_only": True,
+        "ui_support_contract_only": True,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "frontend_wired": False,
+        "profile_settings_ui_wired": False,
+        "database_wired": False,
+        "database_read_allowed_now": False,
+        "database_write_allowed_now": False,
+        "schema_migration_allowed": False,
+        "profile_write_allowed": False,
+        "frontend_mutation_allowed": False,
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "worker_dispatch_allowed": False,
+        "storage_write_allowed": False,
+        "file_upload_allowed": False,
+        "calendar_write_allowed": False,
+        "tool_call_allowed": False,
+        "execute_now": False,
+        "would_call": "none",
+        "user_id": raw_user_id,
+        "ui_context_seen_as_context_only": bool(ui_context),
+        "future_read_endpoint_contract": read_endpoint,
+        "future_write_endpoint_contract": write_endpoint,
+        "future_ui_state_contract": ui_state_contract,
+        "future_form_contract": form_contract,
+        "preference_section_contract": preference_sections,
+        "calendar_ui_boundary_contract": calendar_ui_boundary,
+        "voice_ui_boundary_contract": voice_ui_boundary,
+        "privacy_permission_contract": {
+            "no_profile_write_in_this_phase": True,
+            "no_background_personalization_changes": True,
+            "no_sensitive_attribute_inference": True,
+            "preferences_must_not_expose_secrets": True,
+            "ui_must_not_expose_auth_fields": True,
+            "ui_must_not_expose_credit_fields": True,
+            "ui_must_not_expose_provider_tokens": True,
+            "ui_must_not_store_calendar_events": True,
+            "ui_must_not_store_audio_blobs": True,
+            "ui_must_not_trigger_model_call": True,
+            "ui_must_not_enqueue_job": True,
+            "ui_must_not_dispatch_worker": True,
+        },
+        "activation_gates": activation_gates,
+        "safety": {
+            "not_connected_to_live_profile_routes": True,
+            "not_connected_to_live_profile_settings_ui": True,
+            "not_connected_to_live_study_ui": True,
+            "not_connected_to_live_companion_ui": True,
+            "no_route_registration": True,
+            "no_database_read": True,
+            "no_database_write_now": True,
+            "no_table_creation": True,
+            "no_schema_migration": True,
+            "no_profile_write": True,
+            "no_database_write": True,
+            "no_frontend_mutation": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_worker_dispatch": True,
+            "no_storage_write": True,
+            "no_file_upload": True,
+            "no_calendar_write": True,
+            "no_custom_calendar_database": True,
+            "no_browser_microphone_access": True,
+            "no_browser_speech_output": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
