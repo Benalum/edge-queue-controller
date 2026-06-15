@@ -21198,6 +21198,283 @@ def _stage5p13u_disabled_profile_preferences_ui_support_contract(user_id: str | 
     }
 
 
+
+# --- Phase 13V disabled profile preferences contract rollup helper ------------
+
+def _stage5p13v_disabled_profile_preferences_contract_rollup(user_id: str | None = None) -> dict:
+    """Disabled, pure rollup contract for the profile preferences stack."""
+    raw_user_id = "" if user_id is None else str(user_id)
+
+    component_contracts = [
+        {
+            "phase": "phase-13p-disabled-voice-settings-contract",
+            "helper": "_stage5p13p_disabled_voice_settings_contract",
+            "scope": "voice settings boundary",
+            "required_doc": "docs/phase-13p-disabled-voice-settings-contract.md",
+            "required_smoke": "ops/smoke/check-phase-13p-disabled-voice-settings-contract.sh",
+            "status": "disabled_source_only",
+        },
+        {
+            "phase": "phase-13q-disabled-profile-study-preferences-contract",
+            "helper": "_stage5p13q_disabled_profile_study_preferences_contract",
+            "scope": "profile and study preference planning",
+            "required_doc": "docs/phase-13q-disabled-profile-study-preferences-contract.md",
+            "required_smoke": "ops/smoke/check-phase-13q-disabled-profile-study-preferences-contract.sh",
+            "status": "disabled_source_only",
+        },
+        {
+            "phase": "phase-13r-disabled-profile-preferences-schema-design",
+            "helper": "_stage5p13r_disabled_profile_preferences_schema_design",
+            "scope": "future app_user_preferences schema design",
+            "required_doc": "docs/phase-13r-disabled-profile-preferences-schema-design.md",
+            "required_smoke": "ops/smoke/check-phase-13r-disabled-profile-preferences-schema-design.sh",
+            "status": "disabled_source_only",
+        },
+        {
+            "phase": "phase-13s-disabled-profile-preferences-read-endpoint-contract",
+            "helper": "_stage5p13s_disabled_profile_preferences_read_endpoint_contract",
+            "scope": "future preferences GET endpoint contract",
+            "required_doc": "docs/phase-13s-disabled-profile-preferences-read-endpoint-contract.md",
+            "required_smoke": "ops/smoke/check-phase-13s-disabled-profile-preferences-read-endpoint-contract.sh",
+            "status": "disabled_source_only",
+        },
+        {
+            "phase": "phase-13t-disabled-profile-preferences-write-endpoint-contract",
+            "helper": "_stage5p13t_disabled_profile_preferences_write_endpoint_contract",
+            "scope": "future preferences PATCH endpoint contract",
+            "required_doc": "docs/phase-13t-disabled-profile-preferences-write-endpoint-contract.md",
+            "required_smoke": "ops/smoke/check-phase-13t-disabled-profile-preferences-write-endpoint-contract.sh",
+            "status": "disabled_source_only",
+        },
+        {
+            "phase": "phase-13u-disabled-profile-preferences-ui-support-contract",
+            "helper": "_stage5p13u_disabled_profile_preferences_ui_support_contract",
+            "scope": "future profile preferences UI support contract",
+            "required_doc": "docs/phase-13u-disabled-profile-preferences-ui-support-contract.md",
+            "required_smoke": "ops/smoke/check-phase-13u-disabled-profile-preferences-ui-support-contract.sh",
+            "status": "disabled_source_only",
+        },
+    ]
+
+    profile_preference_stack_readiness = {
+        "rollup_complete_for_disabled_contracts": True,
+        "profile_preference_schema_design_present": True,
+        "profile_preference_read_contract_present": True,
+        "profile_preference_write_contract_present": True,
+        "profile_preference_ui_support_contract_present": True,
+        "voice_settings_contract_present": True,
+        "study_preference_contract_present": True,
+        "all_components_disabled": True,
+        "all_components_source_only": True,
+        "all_components_unwired": True,
+        "ready_for_future_live_schema_phase": True,
+        "ready_for_future_live_read_endpoint_phase": False,
+        "ready_for_future_live_write_endpoint_phase": False,
+        "ready_for_future_profile_settings_ui_phase": False,
+        "live_activation_allowed_now": False,
+    }
+
+    future_live_activation_order = [
+        "add app_user_preferences schema migration with rollback-safe smoke",
+        "add authenticated GET /api/profile/preferences read endpoint",
+        "add authenticated PATCH /api/profile/preferences write endpoint",
+        "add server-side validation for allowlists, enums, booleans, and forbidden fields",
+        "add Profile settings UI read-only display smoke",
+        "add Profile settings UI edit/save smoke",
+        "add Study preference consumption smoke",
+        "add Companion preference consumption smoke",
+        "add voice defaults regression smoke",
+        "add calendar provider boundary smoke",
+        "run final live preference stack rollup before enabling broad use",
+    ]
+
+    field_groups = {
+        "account_language": [
+            "preferred_language",
+            "study_language",
+            "timezone",
+            "locale",
+        ],
+        "study_preferences": [
+            "learning_style",
+            "study_explanation_depth",
+            "study_answer_strictness",
+            "study_session_default_mode",
+        ],
+        "companion_preferences": [
+            "companion_behavior",
+            "companion_tone",
+            "companion_memory_scope",
+        ],
+        "voice_preferences": [
+            "voice_enabled",
+            "listen_enabled",
+            "speak_enabled",
+            "auto_listen_enabled",
+            "auto_speak_enabled",
+        ],
+        "calendar_preferences": [
+            "calendar_provider_preference",
+        ],
+        "display_accessibility": [
+            "notification_preference",
+            "accessibility_large_text",
+            "accessibility_reduce_motion",
+        ],
+    }
+
+    endpoint_rollup = {
+        "future_read_endpoint": "/api/profile/preferences",
+        "future_read_method": "GET",
+        "future_write_endpoint": "/api/profile/preferences",
+        "future_write_method": "PATCH",
+        "current_read_route_enabled": False,
+        "current_write_route_enabled": False,
+        "current_profile_settings_ui_enabled": False,
+        "future_routes_require_authenticated_user": True,
+        "future_routes_use_backend_api_authority": True,
+        "future_read_returns_safe_defaults": True,
+        "future_read_must_not_write_on_read": True,
+        "future_write_uses_field_allowlist": True,
+        "future_write_rejects_unknown_fields": True,
+        "future_write_rejects_forbidden_fields": True,
+        "future_write_validates_enum_values": True,
+        "future_write_validates_boolean_values": True,
+        "future_routes_must_not_return_secrets": True,
+        "future_routes_must_not_change_auth_fields": True,
+        "future_routes_must_not_change_credit_fields": True,
+        "future_routes_must_not_trigger_model_call": True,
+        "future_routes_must_not_enqueue_job": True,
+        "future_routes_must_not_dispatch_worker": True,
+    }
+
+    calendar_rollup = {
+        "allowed_future_calendar_providers": ["none", "google_calendar", "apple_calendar"],
+        "calendar_provider_preference_only": True,
+        "custom_local_calendar_database_allowed": False,
+        "controller_calendar_event_storage_allowed": False,
+        "controller_owned_calendar_event_storage_allowed": False,
+        "calendar_provider_connection_required_before_calendar_reads": True,
+        "calendar_writes_require_explicit_user_request": True,
+        "calendar_events_must_not_be_stored_by_controller": True,
+        "provider_tokens_must_not_be_visible": True,
+    }
+
+    voice_rollup = {
+        "voice_settings_contract_present": True,
+        "voice_defaults_remain_disabled": True,
+        "listen_default_must_remain_false": True,
+        "speak_default_must_remain_false": True,
+        "auto_listen_default_must_remain_false": True,
+        "auto_speak_default_must_remain_false": True,
+        "browser_microphone_requires_explicit_user_action": True,
+        "browser_speech_output_requires_explicit_user_action": True,
+        "typed_input_must_remain_available": True,
+    }
+
+    activation_gates = {
+        "requires_schema_migration_smoke": True,
+        "requires_read_endpoint_smoke": True,
+        "requires_write_endpoint_smoke": True,
+        "requires_authenticated_user_boundary_smoke": True,
+        "requires_safe_defaults_smoke": True,
+        "requires_no_write_on_read_smoke": True,
+        "requires_field_allowlist_smoke": True,
+        "requires_unknown_field_rejection_smoke": True,
+        "requires_forbidden_field_rejection_smoke": True,
+        "requires_enum_validation_smoke": True,
+        "requires_boolean_validation_smoke": True,
+        "requires_no_secret_exposure_smoke": True,
+        "requires_no_auth_field_change_smoke": True,
+        "requires_no_credit_field_change_smoke": True,
+        "requires_profile_settings_ui_smoke": True,
+        "requires_study_ui_preference_read_smoke": True,
+        "requires_companion_ui_preference_read_smoke": True,
+        "requires_voice_defaults_regression_smoke": True,
+        "requires_typed_input_regression_smoke": True,
+        "requires_no_calendar_local_storage_smoke": True,
+        "requires_no_controller_calendar_event_storage_smoke": True,
+        "requires_final_live_rollup_before_enable": True,
+    }
+
+    return {
+        "source": "phase_13v_disabled_profile_preferences_contract_rollup_helper",
+        "mode": "disabled_profile_preferences_contract_rollup_only",
+        "read_only": True,
+        "rollup_contract_only": True,
+        "runtime_action_available": False,
+        "route_wired": False,
+        "frontend_wired": False,
+        "profile_settings_ui_wired": False,
+        "database_wired": False,
+        "database_read_allowed_now": False,
+        "database_write_allowed_now": False,
+        "schema_migration_allowed": False,
+        "profile_write_allowed": False,
+        "frontend_mutation_allowed": False,
+        "model_call_allowed": False,
+        "job_enqueue_allowed": False,
+        "worker_dispatch_allowed": False,
+        "storage_write_allowed": False,
+        "file_upload_allowed": False,
+        "calendar_write_allowed": False,
+        "tool_call_allowed": False,
+        "execute_now": False,
+        "would_call": "none",
+        "user_id": raw_user_id,
+        "component_contracts": component_contracts,
+        "profile_preference_stack_readiness": profile_preference_stack_readiness,
+        "future_live_activation_order": future_live_activation_order,
+        "field_groups": field_groups,
+        "endpoint_rollup_contract": endpoint_rollup,
+        "calendar_rollup_contract": calendar_rollup,
+        "voice_rollup_contract": voice_rollup,
+        "privacy_permission_rollup": {
+            "no_profile_write_in_this_phase": True,
+            "no_background_personalization_changes": True,
+            "no_sensitive_attribute_inference": True,
+            "preferences_must_not_expose_secrets": True,
+            "ui_must_not_expose_auth_fields": True,
+            "ui_must_not_expose_credit_fields": True,
+            "ui_must_not_expose_provider_tokens": True,
+            "routes_must_not_accept_auth_fields": True,
+            "routes_must_not_accept_credit_fields": True,
+            "routes_must_not_store_calendar_events": True,
+            "routes_must_not_store_audio_blobs": True,
+            "routes_must_not_trigger_model_call": True,
+            "routes_must_not_enqueue_job": True,
+            "routes_must_not_dispatch_worker": True,
+        },
+        "activation_gates": activation_gates,
+        "safety": {
+            "not_connected_to_live_profile_routes": True,
+            "not_connected_to_live_profile_settings_ui": True,
+            "not_connected_to_live_study_ui": True,
+            "not_connected_to_live_companion_ui": True,
+            "no_route_registration": True,
+            "no_database_read": True,
+            "no_database_write_now": True,
+            "no_table_creation": True,
+            "no_schema_migration": True,
+            "no_profile_write": True,
+            "no_database_write": True,
+            "no_frontend_mutation": True,
+            "no_model_invocation": True,
+            "no_queue_write": True,
+            "no_worker_dispatch": True,
+            "no_storage_write": True,
+            "no_file_upload": True,
+            "no_calendar_write": True,
+            "no_custom_calendar_database": True,
+            "no_controller_calendar_event_storage": True,
+            "no_browser_microphone_access": True,
+            "no_browser_speech_output": True,
+            "no_tool_call": True,
+            "no_ollama_direct_call": True,
+        },
+    }
+
+
 # --- Phase 13F disabled admin Study-answer preview endpoint ----------------
 
 @app.post("/admin/study-answer-preview")
