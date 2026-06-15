@@ -58,13 +58,28 @@ missing = [item for item in required if item not in text]
 if missing:
     raise SystemExit(f"FAIL: missing Study UI queue-flow markers: {missing}")
 
-if "/api/chat/queued" in text:
-    raise SystemExit("FAIL: Study UI unexpectedly already references /api/chat/queued; update Phase 14I-S doc/smoke")
+has_phase14iu_adapter = "PHASE_14I_U_STUDY_UI_QUEUED_CHAT_ADAPTER" in text
+
+if "/api/chat/queued" in text and not has_phase14iu_adapter:
+    raise SystemExit("FAIL: Study UI references /api/chat/queued without Phase 14I-U adapter marker")
 
 if text.count("/jobs") != 2:
-    raise SystemExit(f"FAIL: expected Study UI /jobs count 2, got {text.count('/jobs')}")
+    raise SystemExit(f"FAIL: expected Study UI legacy /jobs fallback count 2, got {text.count('/jobs')}")
 
-print("PASS: Study UI direct /jobs companion flow matches Phase 14I-S inspection baseline")
+if has_phase14iu_adapter:
+    required_u = [
+        "url: `${base}/chat/queued`,",
+        "body: { message: prompt, requested_model: \"gemma4:e4b\" }",
+        "`${base}/chat/queued/${encodeURIComponent(jobId)}`",
+        "url: `${base}/jobs`,",
+        "`${base}/jobs/${jobId}`",
+    ]
+    missing_u = [item for item in required_u if item not in text]
+    if missing_u:
+        raise SystemExit(f"FAIL: Phase 14I-U adapter marker present but required fallback markers missing: {missing_u}")
+    print("PASS: Study UI direct /jobs fallback preserved with expected Phase 14I-U queued-chat adapter")
+else:
+    print("PASS: Study UI direct /jobs companion flow matches Phase 14I-S inspection baseline")
 PY2
 
 echo

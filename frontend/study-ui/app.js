@@ -1007,6 +1007,7 @@ if (companionConfirmWrongBtn) {
 
     const paths = [
       normalizePollUrl(pollUrl),
+      `${base}/chat/queued/${encodeURIComponent(jobId)}`,
       `${base}/jobs/${jobId}`,
       `${base}/job/${jobId}`,
     ].filter(Boolean);
@@ -1082,7 +1083,12 @@ if (companionConfirmWrongBtn) {
     const prompt = buildCompanionPrompt(message);
 
     const attempts = [
-      // COMPANION_JOB_FIRST_V1: prefer queued jobs before direct companion chat to avoid gateway timeouts.
+      // PHASE_14I_U_STUDY_UI_QUEUED_CHAT_ADAPTER: prefer app_jobs queued chat before legacy local jobs.
+      {
+        url: `${base}/chat/queued`,
+        body: { message: prompt, requested_model: "gemma4:e4b" },
+      },
+      // COMPANION_JOB_FIRST_V1: keep legacy local jobs fallback during migration.
       {
         url: `${base}/jobs`,
         body: { job_type: "ollama_chat", prompt, requested_model: "gemma4:e4b" },
