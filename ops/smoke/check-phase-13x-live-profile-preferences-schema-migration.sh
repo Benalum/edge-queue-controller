@@ -164,8 +164,21 @@ PY
 echo
 echo "=== no live preference routes/UI wired ==="
 if grep -nE '@app\.(get|post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"' edge_controller.py; then
-  echo "FAIL: live profile preference routes should not exist in Phase 13X"
-  fail=1
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_READ_ROUTE_LIVE:-0}" = "1" ]; then
+    disallowed_routes="$(
+      grep -nE '@app\.(post|put|patch)\("/api/profile/(preferences|study-preferences|companion-preferences|voice-settings)"|@app\.get\("/api/profile/(study-preferences|companion-preferences|voice-settings)"' edge_controller.py || true
+    )"
+    if [ -n "$disallowed_routes" ]; then
+      echo "$disallowed_routes"
+      echo "FAIL: Phase 13Y allows only GET /api/profile/preferences, not write/sub-routes"
+      fail=1
+    else
+      echo "PASS: GET /api/profile/preferences is live and explicitly allowed by EDGE_ALLOW_PROFILE_PREFERENCES_READ_ROUTE_LIVE=1"
+    fi
+  else
+    echo "FAIL: live profile preference routes should not exist before Phase 13Y"
+    fail=1
+  fi
 else
   echo "PASS: no live profile preference routes were added"
 fi

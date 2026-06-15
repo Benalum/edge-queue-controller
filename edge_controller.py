@@ -12715,6 +12715,166 @@ def _account_enriched_public_user(row):
     return base
 
 
+_PROFILE_PREFERENCE_FIELDS = [
+    "preferred_language",
+    "study_language",
+    "learning_style",
+    "study_explanation_depth",
+    "study_answer_strictness",
+    "study_session_default_mode",
+    "companion_behavior",
+    "companion_tone",
+    "companion_memory_scope",
+    "voice_enabled",
+    "listen_enabled",
+    "speak_enabled",
+    "auto_listen_enabled",
+    "auto_speak_enabled",
+    "timezone",
+    "locale",
+    "calendar_provider_preference",
+    "notification_preference",
+    "accessibility_large_text",
+    "accessibility_reduce_motion",
+]
+
+_PROFILE_PREFERENCE_BOOLEAN_FIELDS = {
+    "voice_enabled",
+    "listen_enabled",
+    "speak_enabled",
+    "auto_listen_enabled",
+    "auto_speak_enabled",
+    "accessibility_large_text",
+    "accessibility_reduce_motion",
+}
+
+
+def _profile_preferences_safe_defaults() -> dict:
+    return {
+        "preferred_language": "en",
+        "study_language": "en",
+        "learning_style": "balanced",
+        "study_explanation_depth": "normal",
+        "study_answer_strictness": "balanced",
+        "study_session_default_mode": "standard_review",
+        "companion_behavior": "supportive_tutor",
+        "companion_tone": "calm_clear",
+        "companion_memory_scope": "session_and_profile_approved",
+        "voice_enabled": False,
+        "listen_enabled": False,
+        "speak_enabled": False,
+        "auto_listen_enabled": False,
+        "auto_speak_enabled": False,
+        "timezone": "profile_default",
+        "locale": "en-US",
+        "calendar_provider_preference": "none",
+        "notification_preference": "none",
+        "accessibility_large_text": False,
+        "accessibility_reduce_motion": False,
+    }
+
+
+def _profile_preferences_bool(value) -> bool:
+    if value is None:
+        return False
+    try:
+        return bool(int(value))
+    except Exception:
+        return False
+
+
+def _profile_preferences_merge_row(row) -> dict:
+    preferences = _profile_preferences_safe_defaults()
+
+    if row is None:
+        return preferences
+
+    for field in _PROFILE_PREFERENCE_FIELDS:
+        if field not in row.keys():
+            continue
+
+        value = row[field]
+
+        if field in _PROFILE_PREFERENCE_BOOLEAN_FIELDS:
+            preferences[field] = _profile_preferences_bool(value)
+            continue
+
+        if value is not None:
+            preferences[field] = value
+
+    if not preferences.get("study_language"):
+        preferences["study_language"] = preferences.get("preferred_language") or "en"
+
+    return preferences
+
+
+def _profile_preferences_read_response(user_id: int) -> dict:
+    """
+    Phase 13Y live read helper for GET /api/profile/preferences.
+
+    This helper opens SQLite in read-only mode and never creates a missing
+    app_user_preferences row. Missing rows return safe defaults.
+    """
+    db_uri = f"file:{DB_PATH.resolve()}?mode=ro"
+
+    with sqlite3.connect(db_uri, uri=True) as conn:
+        conn.row_factory = sqlite3.Row
+
+        user_row = conn.execute(
+            """
+            SELECT id, email, display_name
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        if user_row is None:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        preference_row = conn.execute(
+            """
+            SELECT *
+            FROM app_user_preferences
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+    row_exists = preference_row is not None
+    preferences = _profile_preferences_merge_row(preference_row)
+
+    return {
+        "ok": True,
+        "source": "phase_13y_live_profile_preferences_read_endpoint",
+        "mode": "live_profile_preferences_read_endpoint",
+        "user_id": int(user_id),
+        "preferences": preferences,
+        "available_fields": list(_PROFILE_PREFERENCE_FIELDS),
+        "meta": {
+            "row_exists": bool(row_exists),
+            "created_on_read": False,
+            "wrote_database": False,
+            "source_tables": ["app_users", "app_user_preferences"],
+            "profile_is_source_of_truth": True,
+            "backend_api_is_authority": True,
+            "frontend_reads_from_backend_only": True,
+            "safe_defaults_returned_when_missing_row": not row_exists,
+            "typed_input_must_remain_available": True,
+            "number_word_equivalence_must_remain_available": True,
+            "calendar_provider_preference_only": True,
+            "custom_local_calendar_database_allowed": False,
+            "controller_calendar_event_storage_allowed": False,
+        },
+    }
+
+
+@app.get("/api/profile/preferences")
+async def api_profile_preferences_read(request: Request):
+    user_row = _auth_current_user_from_request(request)
+    return _profile_preferences_read_response(int(user_row["id"]))
+
+
 @app.post("/system/account/bootstrap-admin")
 async def system_account_bootstrap_admin(request: Request):
     """
