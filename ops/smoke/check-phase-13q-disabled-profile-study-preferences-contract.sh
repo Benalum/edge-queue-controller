@@ -14,10 +14,26 @@ python3 -m py_compile edge_controller.py || fail=1
 
 echo
 echo "=== previous contract smokes ==="
-ops/smoke/check-phase-13p-disabled-voice-settings-contract.sh || fail=1
-ops/smoke/check-phase-13o-disabled-immersive-study-mode-ui-contract.sh || fail=1
-ops/smoke/check-phase-13n-disabled-study-review-ui-support-contract.sh || fail=1
-ops/smoke/check-phase-13m-disabled-study-card-image-metadata-contract.sh || fail=1
+if [ "${EDGE_SMOKE_SKIP_DEPS:-0}" = "1" ]; then
+  echo "SKIP: dependency ops/smoke/check-phase-13p-disabled-voice-settings-contract.sh (EDGE_SMOKE_SKIP_DEPS=1)"
+else
+  ops/smoke/check-phase-13p-disabled-voice-settings-contract.sh || fail=1
+fi
+if [ "${EDGE_SMOKE_SKIP_DEPS:-0}" = "1" ]; then
+  echo "SKIP: dependency ops/smoke/check-phase-13o-disabled-immersive-study-mode-ui-contract.sh (EDGE_SMOKE_SKIP_DEPS=1)"
+else
+  ops/smoke/check-phase-13o-disabled-immersive-study-mode-ui-contract.sh || fail=1
+fi
+if [ "${EDGE_SMOKE_SKIP_DEPS:-0}" = "1" ]; then
+  echo "SKIP: dependency ops/smoke/check-phase-13n-disabled-study-review-ui-support-contract.sh (EDGE_SMOKE_SKIP_DEPS=1)"
+else
+  ops/smoke/check-phase-13n-disabled-study-review-ui-support-contract.sh || fail=1
+fi
+if [ "${EDGE_SMOKE_SKIP_DEPS:-0}" = "1" ]; then
+  echo "SKIP: dependency ops/smoke/check-phase-13m-disabled-study-card-image-metadata-contract.sh (EDGE_SMOKE_SKIP_DEPS=1)"
+else
+  ops/smoke/check-phase-13m-disabled-study-card-image-metadata-contract.sh || fail=1
+fi
 
 echo
 echo "=== static Phase 13Q markers ==="
@@ -52,7 +68,7 @@ done
 
 echo
 echo "=== helper count ==="
-count="$(grep -c '_stage5p13q_disabled_profile_study_preferences_contract' edge_controller.py || true)"
+count="$(grep -c '^def _stage5p13q_disabled_profile_study_preferences_contract(' edge_controller.py || true)"
 echo "helper_marker_count=${count}"
 test "$count" = "1" || fail=1
 

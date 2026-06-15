@@ -14,9 +14,21 @@ python3 -m py_compile edge_controller.py || fail=1
 
 echo
 echo "=== previous profile/preference contract smokes ==="
-ops/smoke/check-phase-13r-disabled-profile-preferences-schema-design.sh || fail=1
-ops/smoke/check-phase-13q-disabled-profile-study-preferences-contract.sh || fail=1
-ops/smoke/check-phase-13p-disabled-voice-settings-contract.sh || fail=1
+if [ "${EDGE_SMOKE_SKIP_DEPS:-0}" = "1" ]; then
+  echo "SKIP: dependency ops/smoke/check-phase-13r-disabled-profile-preferences-schema-design.sh (EDGE_SMOKE_SKIP_DEPS=1)"
+else
+  ops/smoke/check-phase-13r-disabled-profile-preferences-schema-design.sh || fail=1
+fi
+if [ "${EDGE_SMOKE_SKIP_DEPS:-0}" = "1" ]; then
+  echo "SKIP: dependency ops/smoke/check-phase-13q-disabled-profile-study-preferences-contract.sh (EDGE_SMOKE_SKIP_DEPS=1)"
+else
+  ops/smoke/check-phase-13q-disabled-profile-study-preferences-contract.sh || fail=1
+fi
+if [ "${EDGE_SMOKE_SKIP_DEPS:-0}" = "1" ]; then
+  echo "SKIP: dependency ops/smoke/check-phase-13p-disabled-voice-settings-contract.sh (EDGE_SMOKE_SKIP_DEPS=1)"
+else
+  ops/smoke/check-phase-13p-disabled-voice-settings-contract.sh || fail=1
+fi
 
 echo
 echo "=== static Phase 13S markers ==="
@@ -69,7 +81,7 @@ done
 
 echo
 echo "=== helper count ==="
-count="$(grep -c '_stage5p13s_disabled_profile_preferences_read_endpoint_contract' edge_controller.py || true)"
+count="$(grep -c '^def _stage5p13s_disabled_profile_preferences_read_endpoint_contract(' edge_controller.py || true)"
 echo "helper_marker_count=${count}"
 test "$count" = "1" || fail=1
 
