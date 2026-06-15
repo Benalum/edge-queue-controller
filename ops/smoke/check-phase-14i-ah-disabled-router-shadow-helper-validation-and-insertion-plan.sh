@@ -32,45 +32,79 @@ fi
 echo "PASS: compile/frontend syntax check complete"
 
 echo
-echo "=== helper exists but is not wired ==="
-python3 - <<'PY'
+echo
+echo "=== helper wiring compatibility verification ==="
+python3 - <<'INNERPY'
 from pathlib import Path
 
-edge = Path("edge_controller.py").read_text()
+text = Path("edge_controller.py").read_text()
 
-required = [
-    "def _phase14iag_queued_chat_router_shadow_enabled() -> bool:",
-    "def _phase14iag_queued_chat_router_shadow_decision(guard_payload: dict | None) -> dict:",
-    'return _phase14ik_env_bool("EDGE_QUEUED_CHAT_ROUTER_SHADOW_ENABLED", False)',
-    "queued_chat_router_shadow_disabled",
+route_start = text.index('@app.post("/api/chat/queued")')
+route_end = text.index('@app.get("/api/chat/queued/{job_id}")', route_start)
+route = text[route_start:route_end]
+
+call = "_phase14iag_queued_chat_router_shadow_decision(guard_payload)"
+ai_start = "# STAGE_14I_AI_QUEUED_CHAT_ROUTER_SHADOW_WIRING_START"
+ai_end = "# STAGE_14I_AI_QUEUED_CHAT_ROUTER_SHADOW_WIRING_END"
+
+required_global = [
+    "def _phase14iag_queued_chat_router_shadow_enabled",
+    "def _phase14iag_queued_chat_router_shadow_decision",
+    "EDGE_QUEUED_CHAT_ROUTER_SHADOW_ENABLED",
+    "live_model_selection_changed",
+    "model_call_allowed",
+    "job_enqueue_allowed",
+    "browser_exposure_allowed",
 ]
-missing = [item for item in required if item not in edge]
-if missing:
-    raise SystemExit(f"FAIL: missing helper markers: {missing}")
 
-route_start = edge.find('@app.post("/api/chat/queued")')
-if route_start < 0:
-    raise SystemExit("FAIL: queued-chat route not found")
+for marker in required_global:
+    if marker not in text:
+        raise SystemExit(f"FAIL: missing global shadow safety marker: {marker}")
 
-next_route = edge.find("\n@app.", route_start + 1)
-route_block = edge[route_start:] if next_route < 0 else edge[route_start:next_route]
+if call in route or ai_start in route or ai_end in route:
+    required_route = [
+        ai_start,
+        call,
+        ai_end,
+        "payload=guard_payload",
+        'requested_model=request.requested_model or "synthetic"',
+    ]
+    for marker in required_route:
+        if marker not in route:
+            raise SystemExit(f"FAIL: missing post-AI route marker: {marker}")
 
-if "_phase14iag_queued_chat_router_shadow_decision" in route_block:
-    raise SystemExit("FAIL: helper unexpectedly wired into queued-chat route")
+    if route.count(call) != 1:
+        raise SystemExit(f"FAIL: expected exactly one queued-chat shadow call, found {route.count(call)}")
 
-route_required = [
-    "_s5f17_reject_client_provided_user_id(guard_payload)",
-    "_s5f19_create_real_user_queued_chat_job(",
-    'requested_model=guard_payload.get("requested_model") or guard_payload.get("model")',
-]
-missing_route = [item for item in route_required if item not in route_block]
-if missing_route:
-    raise SystemExit(f"FAIL: missing route insertion markers: {missing_route}")
+    call_line = [line.strip() for line in route.splitlines() if call in line]
+    if call_line != [call]:
+        raise SystemExit("FAIL: shadow helper return value should be discarded")
 
-print("PASS: helper exists, route insertion markers exist, helper not wired yet")
-PY
+    call_idx = route.index(call)
+    creation_idx = route.index("if _s5f19_real_user_creation_helper_enabled():")
+    if call_idx >= creation_idx:
+        raise SystemExit("FAIL: shadow call appears after real-user job creation gate")
 
-echo
+    if route.rfind("auth_user =", 0, call_idx) == -1:
+        raise SystemExit("FAIL: shadow call appears before auth resolution")
+
+    forbidden_response_keys = [
+        '"router_shadow"',
+        "'router_shadow'",
+        '"router_decision"',
+        "'router_decision'",
+        '"shadow_decision"',
+        "'shadow_decision'",
+    ]
+    for key in forbidden_response_keys:
+        if key in route:
+            raise SystemExit(f"FAIL: queued-chat route exposes forbidden router key: {key}")
+
+    print("PASS: post-AI shadow-only queued-chat wiring is compatible")
+else:
+    print("PASS: pre-AI helper remains unwired")
+INNERPY
+echo "PASS: helper exists and queued-chat wiring state is compatible"
 echo "=== current frontend behavior unchanged ==="
 python3 - <<'PY'
 from pathlib import Path

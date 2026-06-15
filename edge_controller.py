@@ -19013,6 +19013,13 @@ async def s5f9_create_queued_chat(
                     },
                 ) from exc
 
+        # STAGE_14I_AI_QUEUED_CHAT_ROUTER_SHADOW_WIRING_START
+        # Default-off shadow evaluation only. The return value is
+        # intentionally discarded so live requested_model pass-through,
+        # persistence, and browser response shape remain unchanged.
+        _phase14iag_queued_chat_router_shadow_decision(guard_payload)
+        # STAGE_14I_AI_QUEUED_CHAT_ROUTER_SHADOW_WIRING_END
+
         if _s5f19_real_user_creation_helper_enabled():
             try:
                 queued = _s5f19_create_real_user_queued_chat_job(
@@ -19517,8 +19524,9 @@ def _phase14iag_queued_chat_router_shadow_decision(guard_payload: dict | None) -
     router decision. When explicitly enabled later, it calls the deterministic
     Phase 13A router foundation helper and returns a narrow safe shadow shape.
 
-    This helper is intentionally not wired to /api/chat/queued yet.
-    It must not control live model selection.
+    This helper is wired to /api/chat/queued as a default-off shadow-only
+    hook. It must not control live model selection, mutate payloads,
+    persist shadow output, or expose router internals to the browser.
     """
     if not _phase14iag_queued_chat_router_shadow_enabled():
         return {
