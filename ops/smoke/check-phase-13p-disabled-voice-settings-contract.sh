@@ -222,7 +222,7 @@ if [ -n "$frontend_changed" ]; then
   echo "FAIL: disabled Phase 13P should not modify unrelated frontend files"
   fail=1
 elif [ -n "$allowed_profile_ui_changed" ]; then
-  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ] || [ "${EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE:-0}" = "1" ]; then
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ] || [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_WRITE_LIVE:-0}" = "1" ] || [ "${EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE:-0}" = "1" ]; then
     echo "$allowed_profile_ui_changed"
     python3 - <<'PY_PHASE13P14A'
 from pathlib import Path
@@ -252,30 +252,32 @@ forbidden = [
     "/api/jobs",
     "/api/chat/queued",
     "/api/study/session/command",
-    'method: "PATCH"',
-    "PATCH /api/profile/preferences",
 ]
 bad = [item for item in forbidden if item in block]
 assert not bad, bad
 
 style = Path("frontend/wrapper-ui/styles.css").read_text()
 assert "PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1" in style
+assert "PHASE_14F_PROFILE_PREFERENCES_UI_WRITE_V1" in text
+assert "PHASE_14F_PROFILE_PREFERENCES_UI_WRITE_V1" in style
+assert 'method: "PATCH"' in text
+assert "saveProfilePreferencesFromProfilePage" in text
 assert ".profile-preferences-card" in style
 assert ".profile-preference-list" in style
 assert ".profile-preference-row" in style
 
 index = Path("frontend/wrapper-ui/index.html").read_text()
 if "frontend/wrapper-ui/index.html" in """${allowed_profile_ui_changed}""":
-    assert "v=20260614214d" in index
-    assert "/app.js?v=20260614214d" in index
-    assert "./styles.css?v=20260614214d" in index
+    assert "v=20260614214f" in index
+    assert "/app.js?v=20260614214f" in index
+    assert "./styles.css?v=20260614214f" in index
     assert "/study/styles.css?v=20260612000409" in index
 
 print("PASS: read-only Profile preference UI/cache-bust files are live and explicitly allowed")
 PY_PHASE13P14A
   else
     echo "$allowed_profile_ui_changed"
-    echo "FAIL: frontend files changed without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1 or EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE=1"
+    echo "FAIL: frontend files changed without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1 or EDGE_ALLOW_PROFILE_PREFERENCES_UI_WRITE_LIVE=1, EDGE_ALLOW_PROFILE_PREFERENCES_UI_WRITE_LIVE=1, or EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE=1"
     fail=1
   fi
 else

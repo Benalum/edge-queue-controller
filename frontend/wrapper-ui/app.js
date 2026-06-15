@@ -38,7 +38,9 @@ let supportTickets = null;
 let supportThread = null;
 let profilePreferences = null;
 let profilePreferencesLoading = false;
+let profilePreferencesSaving = false;
 let profilePreferencesError = "";
+let profilePreferencesSaveMessage = "";
 let adRewardStatus = null;
 let googleRewardedSlot = null;
 let googleRewardedReadyEvent = null;
@@ -4992,9 +4994,10 @@ function renderProfilePreferencesCard() {
   return `
     <div class="summary-card profile-preferences-card" data-phase14a-profile-preferences-card="ready">
       <span>Preferences</span>
-      <strong>Read-only display</strong>
-      <p>These values are read from /api/profile/preferences. Saving comes in a later phase.</p>
+      <strong>Editable preferences</strong>
+      <p>These values are read from /api/profile/preferences. Save only updates backend-owned profile preferences.</p>
       ${renderProfilePreferenceRows(prefs)}
+      ${renderProfilePreferencesForm(prefs)}
     </div>
   `;
 }
@@ -5027,6 +5030,266 @@ async function loadProfilePreferencesForProfilePage({ force = false } = {}) {
     if (normalizeWrapperAuthRoute(window.location.pathname || "/") === "/profile") {
       renderPage();
     }
+  }
+}
+
+// PHASE_14F_PROFILE_PREFERENCES_UI_WRITE_V1
+// Editable profile preference controls. This phase only writes allowed
+// profile preference fields through the backend-owned PATCH endpoint.
+// It does not activate microphone capture, speech output, calendar auth,
+// model calls, jobs, workers, or tools.
+function profilePreferenceSafe(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderProfilePreferenceSelect(name, label, value, options) {
+  const safeName = profilePreferenceSafe(name);
+  const safeLabel = profilePreferenceSafe(label);
+  const current = String(value ?? "");
+
+  return `
+    <label class="profile-preference-control">
+      <span>${safeLabel}</span>
+      <select name="${safeName}" data-profile-preference-field="${safeName}">
+        ${options.map((option) => {
+          const optionValue = String(option[0] ?? "");
+          const optionLabel = String(option[1] ?? optionValue);
+          const selected = optionValue === current ? " selected" : "";
+          return `<option value="${profilePreferenceSafe(optionValue)}"${selected}>${profilePreferenceSafe(optionLabel)}</option>`;
+        }).join("")}
+      </select>
+    </label>
+  `;
+}
+
+function renderProfilePreferenceToggle(name, label, value, detail) {
+  const safeName = profilePreferenceSafe(name);
+  const checked = Boolean(value) ? " checked" : "";
+
+  return `
+    <label class="profile-preference-toggle">
+      <input type="checkbox" name="${safeName}" data-profile-preference-field="${safeName}"${checked} />
+      <span>
+        <strong>${profilePreferenceSafe(label)}</strong>
+        <small>${profilePreferenceSafe(detail)}</small>
+      </span>
+    </label>
+  `;
+}
+
+function renderProfilePreferencesForm(preferences) {
+  const prefs = preferences || {};
+  const message = profilePreferencesSaveMessage
+    ? `<p class="profile-preference-save-message">${profilePreferenceSafe(profilePreferencesSaveMessage)}</p>`
+    : "";
+
+  return `
+    <form class="profile-preference-form" data-phase14f-profile-preferences-form="true">
+      <div class="profile-preference-control-grid">
+        ${renderProfilePreferenceSelect("preferred_language", "Preferred language", prefs.preferred_language, [
+          ["en", "English"],
+          ["es", "Spanish"],
+          ["fr", "French"],
+          ["de", "German"],
+          ["it", "Italian"],
+          ["pt", "Portuguese"],
+          ["ja", "Japanese"],
+          ["ko", "Korean"],
+          ["zh", "Chinese"],
+        ])}
+
+        ${renderProfilePreferenceSelect("study_language", "Study language", prefs.study_language, [
+          ["en", "English"],
+          ["es", "Spanish"],
+          ["fr", "French"],
+          ["de", "German"],
+          ["it", "Italian"],
+          ["pt", "Portuguese"],
+          ["ja", "Japanese"],
+          ["ko", "Korean"],
+          ["zh", "Chinese"],
+        ])}
+
+        ${renderProfilePreferenceSelect("learning_style", "Learning style", prefs.learning_style, [
+          ["balanced", "Balanced"],
+          ["visual", "Visual"],
+          ["step_by_step", "Step by step"],
+          ["concise", "Concise"],
+          ["detailed", "Detailed"],
+        ])}
+
+        ${renderProfilePreferenceSelect("study_explanation_depth", "Explanation depth", prefs.study_explanation_depth, [
+          ["brief", "Brief"],
+          ["normal", "Normal"],
+          ["deep", "Deep"],
+        ])}
+
+        ${renderProfilePreferenceSelect("study_answer_strictness", "Answer strictness", prefs.study_answer_strictness, [
+          ["lenient", "Lenient"],
+          ["balanced", "Balanced"],
+          ["strict", "Strict"],
+        ])}
+
+        ${renderProfilePreferenceSelect("study_session_default_mode", "Study mode", prefs.study_session_default_mode, [
+          ["standard_review", "Standard review"],
+          ["immersive_review", "Immersive review"],
+        ])}
+
+        ${renderProfilePreferenceSelect("companion_behavior", "Companion behavior", prefs.companion_behavior, [
+          ["supportive_tutor", "Supportive tutor"],
+          ["direct_helper", "Direct helper"],
+          ["study_coach", "Study coach"],
+        ])}
+
+        ${renderProfilePreferenceSelect("companion_tone", "Companion tone", prefs.companion_tone, [
+          ["calm_clear", "Calm and clear"],
+          ["encouraging", "Encouraging"],
+          ["concise", "Concise"],
+        ])}
+
+        ${renderProfilePreferenceSelect("companion_memory_scope", "Companion memory scope", prefs.companion_memory_scope, [
+          ["session_only", "Session only"],
+          ["session_and_profile_approved", "Session and profile approved"],
+        ])}
+
+        ${renderProfilePreferenceSelect("calendar_provider_preference", "Calendar provider", prefs.calendar_provider_preference, [
+          ["none", "None"],
+          ["google_calendar", "Google Calendar"],
+          ["apple_calendar", "Apple Calendar"],
+        ])}
+
+        ${renderProfilePreferenceSelect("notification_preference", "Notifications", prefs.notification_preference, [
+          ["none", "None"],
+          ["email", "Email"],
+          ["in_app", "In app"],
+        ])}
+      </div>
+
+      <div class="profile-preference-toggle-grid">
+        ${renderProfilePreferenceToggle("voice_enabled", "Voice preference", prefs.voice_enabled, "Stores preference only. Does not activate microphone or speakers.")}
+        ${renderProfilePreferenceToggle("listen_enabled", "Listen preference", prefs.listen_enabled, "Stores preference only. Listening still requires an explicit future action.")}
+        ${renderProfilePreferenceToggle("speak_enabled", "Speak preference", prefs.speak_enabled, "Stores preference only. Speaking still requires an explicit future action.")}
+        ${renderProfilePreferenceToggle("auto_listen_enabled", "Auto-listen preference", prefs.auto_listen_enabled, "Stored as off by default. No background listening is activated.")}
+        ${renderProfilePreferenceToggle("auto_speak_enabled", "Auto-speak preference", prefs.auto_speak_enabled, "Stored as off by default. No automatic speech is activated.")}
+        ${renderProfilePreferenceToggle("accessibility_large_text", "Large text", prefs.accessibility_large_text, "Stores a future display preference.")}
+        ${renderProfilePreferenceToggle("accessibility_reduce_motion", "Reduce motion", prefs.accessibility_reduce_motion, "Stores a future accessibility preference.")}
+      </div>
+
+      <div class="profile-preference-actions">
+        <button class="primary-btn" type="submit" data-profile-preferences-save="true"${profilePreferencesSaving ? " disabled" : ""}>
+          ${profilePreferencesSaving ? "Saving..." : "Save preferences"}
+        </button>
+        <button class="ghost-btn" type="button" data-profile-preferences-refresh="true"${profilePreferencesSaving ? " disabled" : ""}>
+          Refresh
+        </button>
+      </div>
+
+      ${message}
+    </form>
+  `;
+}
+
+function collectProfilePreferencesFormPatch() {
+  const form = document.querySelector('[data-phase14f-profile-preferences-form="true"]');
+  if (!form) return {};
+
+  const current = profilePreferences?.preferences || {};
+  const fields = [
+    "preferred_language",
+    "study_language",
+    "learning_style",
+    "study_explanation_depth",
+    "study_answer_strictness",
+    "study_session_default_mode",
+    "companion_behavior",
+    "companion_tone",
+    "companion_memory_scope",
+    "calendar_provider_preference",
+    "notification_preference",
+    "voice_enabled",
+    "listen_enabled",
+    "speak_enabled",
+    "auto_listen_enabled",
+    "auto_speak_enabled",
+    "accessibility_large_text",
+    "accessibility_reduce_motion",
+  ];
+
+  const patch = {};
+
+  fields.forEach((field) => {
+    const input = form.querySelector(`[name="${field}"]`);
+    if (!input) return;
+
+    const nextValue = input.type === "checkbox" ? Boolean(input.checked) : String(input.value || "");
+    const currentValue = input.type === "checkbox" ? Boolean(current[field]) : String(current[field] ?? "");
+
+    if (nextValue !== currentValue) {
+      patch[field] = nextValue;
+    }
+  });
+
+  return patch;
+}
+
+async function saveProfilePreferencesFromProfilePage(event) {
+  if (event) event.preventDefault();
+
+  if (!authState.token) {
+    openAuthModal("login");
+    return;
+  }
+
+  const patch = collectProfilePreferencesFormPatch();
+
+  if (!Object.keys(patch).length) {
+    profilePreferencesSaveMessage = "No preference changes to save.";
+    renderPage();
+    return;
+  }
+
+  profilePreferencesSaving = true;
+  profilePreferencesSaveMessage = "Saving preferences...";
+  renderPage();
+
+  try {
+    const result = await api("/profile/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+
+    profilePreferences = result;
+    profilePreferencesError = "";
+    profilePreferencesSaveMessage = "Preferences saved.";
+  } catch (err) {
+    profilePreferencesSaveMessage = sanitizeVisibleErrorText(err?.message || "Could not save preferences.");
+  } finally {
+    profilePreferencesSaving = false;
+    if (normalizeWrapperAuthRoute(window.location.pathname || "/") === "/profile") {
+      renderPage();
+    }
+  }
+}
+
+function bindProfilePreferencesControls() {
+  const form = document.querySelector('[data-phase14f-profile-preferences-form="true"]');
+  if (form) {
+    form.addEventListener("submit", saveProfilePreferencesFromProfilePage);
+  }
+
+  const refreshBtn = document.querySelector('[data-profile-preferences-refresh="true"]');
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", () => {
+      profilePreferencesError = "";
+      profilePreferencesSaveMessage = "";
+      loadProfilePreferencesForProfilePage({ force: true });
+    });
   }
 }
 
@@ -5189,6 +5452,7 @@ function renderPage() {
     }
 
     $("app").innerHTML = renderLoggedInProfilePage();
+    bindProfilePreferencesControls();
     loadProfilePreferencesForProfilePage();
     return;
   }

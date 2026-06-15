@@ -271,7 +271,7 @@ if [ -n "$frontend_changed" ]; then
   echo "FAIL: this disabled profile contract should not modify unrelated frontend files"
   fail=1
 elif [ -n "$allowed_profile_ui_changed" ]; then
-  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ] || [ "${EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE:-0}" = "1" ]; then
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ] || [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_WRITE_LIVE:-0}" = "1" ] || [ "${EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE:-0}" = "1" ]; then
     echo "$allowed_profile_ui_changed"
     python3 - <<'PY_PHASE14A_COMPAT'
 from pathlib import Path
@@ -292,11 +292,6 @@ for item in required:
     assert item in block, item
 
 forbidden = [
-    'method: "PATCH"',
-    "PATCH /api/profile/preferences",
-    "profilePreferencesSave",
-    "saveProfilePreferences",
-    "data-profile-preferences-save",
     "navigator.mediaDevices",
     "getUserMedia",
     "SpeechRecognition",
@@ -314,22 +309,26 @@ assert not bad, bad
 
 style = Path("frontend/wrapper-ui/styles.css").read_text()
 assert "PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1" in style
+assert "PHASE_14F_PROFILE_PREFERENCES_UI_WRITE_V1" in text
+assert "PHASE_14F_PROFILE_PREFERENCES_UI_WRITE_V1" in style
+assert 'method: "PATCH"' in text
+assert "saveProfilePreferencesFromProfilePage" in text
 assert ".profile-preferences-card" in style
 assert ".profile-preference-list" in style
 assert ".profile-preference-row" in style
 
 index = Path("frontend/wrapper-ui/index.html").read_text()
 if "frontend/wrapper-ui/index.html" in """${allowed_profile_ui_changed}""":
-    assert "v=20260614214d" in index
-    assert "/app.js?v=20260614214d" in index
-    assert "./styles.css?v=20260614214d" in index
+    assert "v=20260614214f" in index
+    assert "/app.js?v=20260614214f" in index
+    assert "./styles.css?v=20260614214f" in index
     assert "/study/styles.css?v=20260612000409" in index
 
 print("PASS: read-only Profile preference UI/cache-bust files are live and explicitly allowed")
 PY_PHASE14A_COMPAT
   else
     echo "$allowed_profile_ui_changed"
-    echo "FAIL: frontend files changed without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1 or EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE=1"
+    echo "FAIL: frontend files changed without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1 or EDGE_ALLOW_PROFILE_PREFERENCES_UI_WRITE_LIVE=1, EDGE_ALLOW_PROFILE_PREFERENCES_UI_WRITE_LIVE=1, or EDGE_ALLOW_WRAPPER_CACHE_BUST_LIVE=1"
     fail=1
   fi
 else

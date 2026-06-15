@@ -204,7 +204,7 @@ frontend_live_markers="$(
     || true
 )"
 if [ -n "$frontend_live_markers" ]; then
-  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ]; then
+  if [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE:-0}" = "1" ] || [ "${EDGE_ALLOW_PROFILE_PREFERENCES_UI_WRITE_LIVE:-0}" = "1" ]; then
     echo "$frontend_live_markers"
     python3 - <<'PYCHECK14A'
 from pathlib import Path
@@ -225,11 +225,6 @@ for item in required:
     assert item in block, item
 
 forbidden = [
-    'method: "PATCH"',
-    "PATCH /api/profile/preferences",
-    "profilePreferencesSave",
-    "saveProfilePreferences",
-    "data-profile-preferences-save",
     "navigator.mediaDevices",
     "getUserMedia",
     "SpeechRecognition",
@@ -245,6 +240,10 @@ assert not bad, bad
 
 style = Path("frontend/wrapper-ui/styles.css").read_text()
 assert "PHASE_14A_PROFILE_PREFERENCES_UI_READ_V1" in style
+assert "PHASE_14F_PROFILE_PREFERENCES_UI_WRITE_V1" in text
+assert "PHASE_14F_PROFILE_PREFERENCES_UI_WRITE_V1" in style
+assert 'method: "PATCH"' in text
+assert "saveProfilePreferencesFromProfilePage" in text
 assert ".profile-preferences-card" in style
 assert ".profile-preference-list" in style
 assert ".profile-preference-row" in style
@@ -253,7 +252,7 @@ print("PASS: Phase 14A read-only Profile preference UI block is explicitly allow
 PYCHECK14A
   else
     echo "$frontend_live_markers"
-    echo "FAIL: frontend preference API markers wired without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1"
+    echo "FAIL: frontend preference API markers wired without EDGE_ALLOW_PROFILE_PREFERENCES_UI_READ_LIVE=1 or EDGE_ALLOW_PROFILE_PREFERENCES_UI_WRITE_LIVE=1"
     exit 1
   fi
 else
