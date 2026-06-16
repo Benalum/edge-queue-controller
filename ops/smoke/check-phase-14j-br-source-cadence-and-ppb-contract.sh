@@ -25,7 +25,7 @@ done
 
 echo
 echo "=== PPB policy markers in docs/source text ==="
-ppb_marker_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'PPB_RUN|Project Pilot Bridge|delete-only|hard_block|destructive repository|repository deletion|branch deletion' docs ops 2>/dev/null | wc -l | tr -d ' ')"
+ppb_marker_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'PPB_RUN|Project Pilot Bridge|delete-only|hard_block|destructive repository|repository deletion|branch deletion' docs ops 2>/dev/null | wc -l | tr -d ' ')"
 printf 'ppb_policy_marker_hits=%s\n' "$ppb_marker_hits"
 
 if [ "$ppb_marker_hits" -le 0 ]; then

@@ -13,12 +13,12 @@ test -f edge_controller.py
 python3 -m py_compile edge_controller.py
 echo "PASS: edge_controller.py compiles"
 
-study_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'Study|study' . 2>/dev/null | wc -l | tr -d ' ')"
-companion_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'Companion|companion' . 2>/dev/null | wc -l | tr -d ' ')"
-profile_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'Profile|profile|Account|account|login|Login|register|Register' . 2>/dev/null | wc -l | tr -d ' ')"
-system_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'System|system|Admin|admin|health|status|Status' . 2>/dev/null | wc -l | tr -d ' ')"
-calendar_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'Calendar|calendar|Google Calendar|Apple Calendar' . 2>/dev/null | wc -l | tr -d ' ')"
-credits_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'Credits|credits|credit|reward|Reward|ads|Ads' . 2>/dev/null | wc -l | tr -d ' ')"
+study_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'Study|study' . 2>/dev/null | wc -l | tr -d ' ')"
+companion_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'Companion|companion' . 2>/dev/null | wc -l | tr -d ' ')"
+profile_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'Profile|profile|Account|account|login|Login|register|Register' . 2>/dev/null | wc -l | tr -d ' ')"
+system_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'System|system|Admin|admin|health|status|Status' . 2>/dev/null | wc -l | tr -d ' ')"
+calendar_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'Calendar|calendar|Google Calendar|Apple Calendar' . 2>/dev/null | wc -l | tr -d ' ')"
+credits_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'Credits|credits|credit|reward|Reward|ads|Ads' . 2>/dev/null | wc -l | tr -d ' ')"
 
 printf 'study_hits=%s\n' "$study_hits"
 printf 'companion_hits=%s\n' "$companion_hits"
@@ -36,6 +36,8 @@ echo
 echo "=== top product UI/static files ==="
 grep -RIl \
   --exclude-dir=.git \
+    --exclude-dir=.cleanup-archive \
+    --exclude-dir=.cleanup-backups \
   --exclude-dir=__pycache__ \
   --exclude-dir=node_modules \
   --exclude-dir=.venv \

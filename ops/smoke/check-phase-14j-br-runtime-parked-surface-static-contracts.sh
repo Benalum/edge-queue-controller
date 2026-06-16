@@ -39,7 +39,7 @@ done
 
 echo
 echo "=== parked router/warmup/model risk markers, static only ==="
-router_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'router|warmup|Ollama|ollama|model selection|model_selection' . 2>/dev/null | wc -l | tr -d ' ')"
+router_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'router|warmup|Ollama|ollama|model selection|model_selection' . 2>/dev/null | wc -l | tr -d ' ')"
 printf 'router_warmup_static_hits=%s\n' "$router_hits"
 echo "PASS: router/warmup/model surface counted statically only"
 

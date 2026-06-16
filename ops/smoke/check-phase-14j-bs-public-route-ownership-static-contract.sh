@@ -13,10 +13,10 @@ test -f edge_controller.py
 python3 -m py_compile edge_controller.py
 echo "PASS: edge_controller.py compiles"
 
-route_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'route|Route|@app|FastAPI|/api/|/study|/companion|/calendar|/profile|/account|/credits|/system|/admin' . 2>/dev/null | wc -l | tr -d ' ')"
-controller_api_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E '/api/auth|/api/account|/api/credits|/api/system|/api/jobs|/profile|/login|/register' . 2>/dev/null | wc -l | tr -d ' ')"
-ct101_proxy_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E '/api/study|/api/companion|/api/calendar|study-app|companion-app|calendar-app' . 2>/dev/null | wc -l | tr -d ' ')"
-public_gateway_hits="$(grep -RIn --exclude-dir=.git --exclude='*.sqlite3' --exclude='*.db' -E 'public gateway|Public gateway|gateway|Gateway|proxy|Proxy|route ownership|Route ownership' docs edge_controller.py ops 2>/dev/null | wc -l | tr -d ' ')"
+route_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'route|Route|@app|FastAPI|/api/|/study|/companion|/calendar|/profile|/account|/credits|/system|/admin' . 2>/dev/null | wc -l | tr -d ' ')"
+controller_api_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E '/api/auth|/api/account|/api/credits|/api/system|/api/jobs|/profile|/login|/register' . 2>/dev/null | wc -l | tr -d ' ')"
+ct101_proxy_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E '/api/study|/api/companion|/api/calendar|study-app|companion-app|calendar-app' . 2>/dev/null | wc -l | tr -d ' ')"
+public_gateway_hits="$(grep -RIn --exclude-dir=.git --exclude-dir=.cleanup-archive --exclude-dir=.cleanup-backups --exclude='*.sqlite3' --exclude='*.db' -E 'public gateway|Public gateway|gateway|Gateway|proxy|Proxy|route ownership|Route ownership' docs edge_controller.py ops 2>/dev/null | wc -l | tr -d ' ')"
 
 printf 'route_hits=%s\n' "$route_hits"
 printf 'controller_api_hits=%s\n' "$controller_api_hits"
@@ -32,6 +32,8 @@ echo
 echo "=== top route ownership files ==="
 grep -RIl \
   --exclude-dir=.git \
+    --exclude-dir=.cleanup-archive \
+    --exclude-dir=.cleanup-backups \
   --exclude-dir=__pycache__ \
   --exclude-dir=node_modules \
   --exclude-dir=.venv \
