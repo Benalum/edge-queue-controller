@@ -133,11 +133,20 @@ helper_calls = [
     "_phase14j_filter_workers_for_lane(",
 ]
 
-found = [m for m in helper_calls if m in outside]
-if found:
-    raise SystemExit("FAIL: Phase 14J lane helper calls found outside helper block: " + ", ".join(found))
-
-print("PASS: Phase 14J lane helpers remain unwired outside helper block")
+phase_h_smoke = Path("ops/smoke/check-phase-14j-h-disabled-scheduler-prefilter-skeleton.sh")
+if phase_h_smoke.exists():
+    allowed_after_h = {"_phase14j_lane_workers_enabled("}
+    found = [m for m in helper_calls if m in outside and m not in allowed_after_h]
+    if found:
+        raise SystemExit("FAIL: unexpected Phase 14J helper calls found outside helper block after Phase 14J-H: " + ", ".join(found))
+    if "_phase14j_lane_workers_enabled(" not in outside:
+        raise SystemExit("FAIL: expected Phase 14J-H scheduler gate call missing outside helper block")
+    print("PASS: Phase 14J lane helper compatibility verified after Phase 14J-H")
+else:
+    found = [m for m in helper_calls if m in outside]
+    if found:
+        raise SystemExit("FAIL: Phase 14J lane helper calls found outside helper block: " + ", ".join(found))
+    print("PASS: Phase 14J lane helpers remain unwired outside helper block")
 PY
 
 echo
@@ -170,12 +179,15 @@ for node in module.body:
         src = ast.get_source_segment(text, node) or ""
         for helper in helper_names:
             if helper in src:
+                phase_h_smoke = Path("ops/smoke/check-phase-14j-h-disabled-scheduler-prefilter-skeleton.sh")
+                if phase_h_smoke.exists() and node.name == "select_best_worker_for_job" and helper == "_phase14j_lane_workers_enabled":
+                    continue
                 bad.append(f"{node.name}:{helper}")
 
 if bad:
     raise SystemExit("FAIL: scheduler function references lane helper unexpectedly: " + ", ".join(bad))
 
-print("PASS: scheduler target functions do not reference lane helpers")
+print("PASS: scheduler target function lane-helper references are compatible with current phase")
 PY
 
 echo

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== Phase 14J-G disabled scheduler integration plan ==="
+echo "=== Phase 14J-H disabled scheduler pre-filter skeleton ==="
 
-PHASE="phase-14j-g-disabled-scheduler-integration-plan"
+PHASE="phase-14j-h-disabled-scheduler-prefilter-skeleton"
 DOC="docs/${PHASE}.md"
 SMOKE="ops/smoke/check-${PHASE}.sh"
 
@@ -12,7 +12,7 @@ echo "=== required files ==="
 for f in "$DOC" "$SMOKE" "edge_controller.py"; do
   test -f "$f"
 done
-echo "PASS: required 14J-G docs/smoke/runtime files exist"
+echo "PASS: required 14J-H docs/smoke/runtime files exist"
 
 echo
 echo "=== in-memory runtime syntax check ==="
@@ -27,25 +27,25 @@ echo "=== documentation markers ==="
 python3 - <<'PY'
 from pathlib import Path
 
-doc = Path("docs/phase-14j-g-disabled-scheduler-integration-plan.md").read_text()
+doc = Path("docs/phase-14j-h-disabled-scheduler-prefilter-skeleton.md").read_text()
 
 required = [
-    "docs/smoke-only plan",
-    "This phase does not change scheduler behavior",
-    "This phase does not wire lane helpers into scheduler code",
+    "adds a scheduler gate check only",
+    "This phase does not enable persistent lane workers",
+    "This phase does not call the lane worker filter helper",
     "This phase does not filter the primary worker",
+    "This phase does not change worker scoring",
+    "This phase does not change worker assignment",
     "This phase does not change worker registration",
     "This phase does not call live model endpoints",
     "This phase does not mutate CT101",
     "This phase does not mutate job 23",
+    "select_best_worker_for_job",
     "_phase14j_lane_workers_enabled",
     "_phase14j_filter_workers_for_lane",
-    "select_best_worker_for_job",
-    "score_worker_for_job should not be changed",
-    "EDGE_PERSISTENT_LANE_WORKERS_ENABLED",
-    "Required No-Behavior-Change Rule",
-    "Primary/default worker filtering remains separate",
-    "Phase 14J-H",
+    "When the gate is enabled in this phase, behavior still remains unchanged",
+    "This phase does not modify score_worker_for_job",
+    "Phase 14J-I",
 ]
 
 missing = [m for m in required if m not in doc]
@@ -56,30 +56,7 @@ print("PASS: documentation markers verified")
 PY
 
 echo
-echo "=== helper skeleton markers present ==="
-python3 - <<'PY'
-from pathlib import Path
-
-text = Path("edge_controller.py").read_text()
-
-required = [
-    "EDGE_PERSISTENT_LANE_WORKERS_ENABLED",
-    "_phase14j_lane_workers_enabled",
-    "_phase14j_job_lane_metadata",
-    "_phase14j_worker_lane_metadata",
-    "_phase14j_worker_eligible_for_job",
-    "_phase14j_filter_workers_for_lane",
-]
-
-missing = [m for m in required if m not in text]
-if missing:
-    raise SystemExit("FAIL: missing Phase 14J-E helper markers: " + ", ".join(missing))
-
-print("PASS: Phase 14J-E helper markers remain present")
-PY
-
-echo
-echo "=== scheduler surfaces present and compatible with current phase ==="
+echo "=== scheduler gate skeleton present and bounded ==="
 python3 - <<'PY'
 from pathlib import Path
 import ast
@@ -100,33 +77,67 @@ missing = [name for name in required_defs if name not in defs]
 if missing:
     raise SystemExit("FAIL: missing scheduler surfaces: " + ", ".join(missing))
 
-phase_h_exists = Path("ops/smoke/check-phase-14j-h-disabled-scheduler-prefilter-skeleton.sh").exists()
+target_src = ast.get_source_segment(text, defs["select_best_worker_for_job"]) or ""
 
-helper_names = [
-    "_phase14j_lane_workers_enabled",
-    "_phase14j_job_lane_metadata",
-    "_phase14j_worker_lane_metadata",
-    "_phase14j_worker_eligible_for_job",
-    "_phase14j_filter_workers_for_lane",
+required_markers = [
+    "Phase 14J-H disabled scheduler pre-filter integration skeleton",
+    "phase14j_lane_scheduler_gate_enabled = _phase14j_lane_workers_enabled()",
+    "if phase14j_lane_scheduler_gate_enabled:",
 ]
 
-bad = []
-for name in required_defs:
-    src = ast.get_source_segment(text, defs[name]) or ""
-    for helper in helper_names:
-        if helper in src:
-            if phase_h_exists and name == "select_best_worker_for_job" and helper == "_phase14j_lane_workers_enabled":
-                continue
-            bad.append(f"{name}:{helper}")
+missing_markers = [m for m in required_markers if m not in target_src]
+if missing_markers:
+    raise SystemExit("FAIL: missing scheduler skeleton markers: " + ", ".join(missing_markers))
 
-if bad:
-    raise SystemExit("FAIL: scheduler surfaces reference unexpected lane helpers: " + ", ".join(bad))
+if target_src.count("_phase14j_lane_workers_enabled(") != 1:
+    raise SystemExit("FAIL: expected exactly one lane gate call in select_best_worker_for_job")
 
-print("PASS: scheduler surfaces exist and remain compatible with current phase")
+blocked_calls = [
+    "_phase14j_filter_workers_for_lane(",
+    "_phase14j_worker_eligible_for_job(",
+    "_phase14j_job_lane_metadata(",
+    "_phase14j_worker_lane_metadata(",
+]
+
+found = [m for m in blocked_calls if m in target_src]
+if found:
+    raise SystemExit("FAIL: scheduler skeleton calls filter/metadata helpers too early: " + ", ".join(found))
+
+print("PASS: scheduler gate skeleton is present and bounded")
 PY
 
 echo
-echo "=== lane helpers isolated except approved 14J-H scheduler gate ==="
+echo "=== score_worker_for_job remains free of lane helper calls ==="
+python3 - <<'PY'
+from pathlib import Path
+import ast
+
+text = Path("edge_controller.py").read_text()
+module = ast.parse(text)
+
+defs = {node.name: node for node in module.body if isinstance(node, ast.FunctionDef)}
+score = defs.get("score_worker_for_job")
+if score is None:
+    raise SystemExit("FAIL: score_worker_for_job missing")
+
+src = ast.get_source_segment(text, score) or ""
+helpers = [
+    "_phase14j_lane_workers_enabled",
+    "_phase14j_filter_workers_for_lane",
+    "_phase14j_worker_eligible_for_job",
+    "_phase14j_job_lane_metadata",
+    "_phase14j_worker_lane_metadata",
+]
+
+found = [h for h in helpers if h in src]
+if found:
+    raise SystemExit("FAIL: score_worker_for_job references lane helpers: " + ", ".join(found))
+
+print("PASS: score_worker_for_job remains unchanged by lane helpers")
+PY
+
+echo
+echo "=== helper block and post-H scheduler call shape ==="
 python3 - <<'PY'
 from pathlib import Path
 
@@ -142,8 +153,8 @@ if not end_marker:
     raise SystemExit("FAIL: Phase 14J-E helper block boundary missing")
 
 outside = before + "def _phase14iag_queued_chat_router_shadow_enabled" + after
-phase_h_exists = Path("ops/smoke/check-phase-14j-h-disabled-scheduler-prefilter-skeleton.sh").exists()
 
+allowed = {"_phase14j_lane_workers_enabled("}
 helper_calls = [
     "_phase14j_lane_workers_enabled(",
     "_phase14j_job_lane_metadata(",
@@ -152,19 +163,14 @@ helper_calls = [
     "_phase14j_filter_workers_for_lane(",
 ]
 
-if phase_h_exists:
-    allowed = {"_phase14j_lane_workers_enabled("}
-    found = [m for m in helper_calls if m in outside and m not in allowed]
-    if found:
-        raise SystemExit("FAIL: unexpected Phase 14J helper calls found outside helper block after Phase 14J-H: " + ", ".join(found))
-    if outside.count("_phase14j_lane_workers_enabled(") != 1:
-        raise SystemExit("FAIL: expected exactly one Phase 14J-H scheduler gate call outside helper block")
-    print("PASS: Phase 14J helper compatibility verified after Phase 14J-H")
-else:
-    found = [m for m in helper_calls if m in outside]
-    if found:
-        raise SystemExit("FAIL: Phase 14J helper calls found outside helper block: " + ", ".join(found))
-    print("PASS: Phase 14J helpers remain isolated to helper block")
+unexpected = [m for m in helper_calls if m in outside and m not in allowed]
+if unexpected:
+    raise SystemExit("FAIL: unexpected helper calls outside helper block: " + ", ".join(unexpected))
+
+if outside.count("_phase14j_lane_workers_enabled(") != 1:
+    raise SystemExit("FAIL: expected exactly one scheduler gate call outside helper block")
+
+print("PASS: only the approved scheduler gate call exists outside helper block")
 PY
 
 echo
@@ -199,7 +205,7 @@ print("PASS: router writer absent and disabled warmup markers still present")
 PY
 
 echo
-echo "=== changed files limited to Phase 14J-G or 14J-H docs/smoke/runtime update set ==="
+echo "=== changed files limited to Phase 14J-H runtime/docs/smoke and compatibility smoke updates ==="
 python3 - <<'PY'
 import subprocess
 
@@ -227,7 +233,7 @@ python3 - <<'PY'
 from pathlib import Path
 import re
 
-smoke = Path("ops/smoke/check-phase-14j-g-disabled-scheduler-integration-plan.sh").read_text()
+smoke = Path("ops/smoke/check-phase-14j-h-disabled-scheduler-prefilter-skeleton.sh").read_text()
 
 live_cmd_re = re.compile(r"^\s*(curl|psql|pg_dump|ollama|ssh|docker|pct)\b")
 bad = []
@@ -238,10 +244,10 @@ for lineno, line in enumerate(smoke.splitlines(), 1):
         bad.append(f"line {lineno}: live/external command: {stripped}")
 
 if bad:
-    raise SystemExit("FAIL: 14J-G smoke contains forbidden live/external behavior:\n" + "\n".join(bad))
+    raise SystemExit("FAIL: 14J-H smoke contains forbidden live/external behavior:\n" + "\n".join(bad))
 
 print("PASS: smoke behavior guard passed")
 PY
 
 echo
-echo "=== done: Phase 14J-G disabled scheduler integration plan smoke complete ==="
+echo "=== done: Phase 14J-H disabled scheduler pre-filter skeleton smoke complete ==="

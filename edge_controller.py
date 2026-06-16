@@ -399,6 +399,12 @@ def select_best_worker_for_job(job: dict[str, Any]) -> dict[str, Any]:
     If no healthy/capable worker exists, the edge job stays queued.
     This is the first safety gate before true multi-worker routing.
     """
+    # Phase 14J-H disabled scheduler pre-filter integration skeleton.
+    phase14j_lane_scheduler_gate_enabled = _phase14j_lane_workers_enabled()
+    if phase14j_lane_scheduler_gate_enabled:
+        # Future phases may add a lane filter call here after a separate gate.
+        pass
+
     init_worker_registry_db()
 
     requirements = estimate_job_requirements(job)

@@ -230,11 +230,20 @@ helper_names = [
     "_phase14j_filter_workers_for_lane",
 ]
 
-found_outside = [name for name in helper_names if name in outside]
-if found_outside:
-    raise SystemExit("FAIL: helper names found outside helper block, possible integration: " + ", ".join(found_outside))
-
-print("PASS: helper skeletons are not wired outside their helper block")
+phase_h_smoke = Path("ops/smoke/check-phase-14j-h-disabled-scheduler-prefilter-skeleton.sh")
+if phase_h_smoke.exists():
+    allowed_after_h = {"_phase14j_lane_workers_enabled"}
+    found_outside = [name for name in helper_names if name in outside and name not in allowed_after_h]
+    if found_outside:
+        raise SystemExit("FAIL: unexpected helper names found outside helper block after Phase 14J-H: " + ", ".join(found_outside))
+    if "_phase14j_lane_workers_enabled" not in outside:
+        raise SystemExit("FAIL: expected Phase 14J-H gate call missing outside helper block")
+    print("PASS: helper skeleton compatibility verified after Phase 14J-H")
+else:
+    found_outside = [name for name in helper_names if name in outside]
+    if found_outside:
+        raise SystemExit("FAIL: helper names found outside helper block, possible integration: " + ", ".join(found_outside))
+    print("PASS: helper skeletons are not wired outside their helper block")
 PY
 
 echo
