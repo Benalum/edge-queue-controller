@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== Phase 14J-BW smoke: active source-only UI/route inventory ==="
-echo "MUTATION_SCOPE=read_only_active_source_static_inventory"
+echo "=== Phase 14J-BX smoke: active source UI map inventory ==="
+echo "MUTATION_SCOPE=read_only_active_source_map"
 echo "NO CT101 call"
 echo "NO model/Ollama endpoint call"
 echo "NO DB mutation"
@@ -26,16 +26,17 @@ skip_parts = {
 }
 allowed_suffixes = {".py", ".js", ".ts", ".tsx", ".html", ".css", ".md", ".sh", ".json", ".jsonc"}
 
-patterns = {
-    "controller_owned_routes": re.compile(r"(/api/auth|/api/account|/api/credits|/api/system|/api/jobs|/profile|/login|/register|credits|account|profile|system|admin)", re.I),
-    "product_surfaces": re.compile(r"(study|companion|calendar|profile|account|credits|admin|system)", re.I),
-    "ui_static": re.compile(r"(html|css|template|button|card|page|wrapper|dashboard|nav|header|footer)", re.I),
-    "gateway_proxy": re.compile(r"(gateway|proxy|cloudflare|route|worker)", re.I),
-    "runtime_sensitive": re.compile(r"(ollama|model|ct101|scheduler|worker|lane|warmup)", re.I),
+classes = {
+    "controller_public_ui": re.compile(r"(login|register|profile|account|credits|system|admin|status|wrapper|public)", re.I),
+    "cloudflare_gateway": re.compile(r"(cloudflare|gateway|proxy|worker|wrangler)", re.I),
+    "study_ui_static": re.compile(r"(study|deck|card|review)", re.I),
+    "companion_ui_static": re.compile(r"(companion|chat|queue|conversation)", re.I),
+    "calendar_static": re.compile(r"(calendar|google|apple)", re.I),
+    "protected_runtime": re.compile(r"(ct101|ollama|model|scheduler|worker|lane|warmup|job)", re.I),
 }
 
-counts = {key: 0 for key in patterns}
-top = {key: [] for key in patterns}
+counts = {key: 0 for key in classes}
+top = {key: [] for key in classes}
 
 for path in sorted(Path(".").rglob("*")):
     if not path.is_file():
@@ -49,29 +50,27 @@ for path in sorted(Path(".").rglob("*")):
         text = path.read_text(errors="ignore")
     except Exception:
         continue
-    for key, pattern in patterns.items():
+    for key, pattern in classes.items():
         if pattern.search(rel) or pattern.search(text):
             counts[key] += 1
             if len(top[key]) < 8:
                 top[key].append(rel)
 
-print("ACTIVE_SOURCE_ONLY_INVENTORY=completed")
+print("ACTIVE_SOURCE_UI_MAP=completed")
 for key, value in counts.items():
     print(f"{key}_files={value}")
 
 for key, items in top.items():
     print()
-    print(f"--- active source top {key} files ---")
+    print(f"--- active UI map {key} files ---")
     for item in items:
         print(item)
 
-if counts["controller_owned_routes"] <= 0:
-    raise SystemExit("FAIL: no active source controller-owned route candidates found")
-if counts["product_surfaces"] <= 0:
-    raise SystemExit("FAIL: no active source product surface candidates found")
-if counts["ui_static"] <= 0:
-    raise SystemExit("FAIL: no active source UI/static candidates found")
+if counts["controller_public_ui"] <= 0:
+    raise SystemExit("FAIL: no active controller public UI candidates found")
+if counts["cloudflare_gateway"] <= 0:
+    raise SystemExit("FAIL: no active Cloudflare/gateway candidates found")
 
 print()
-print("PASS: active source-only UI/route inventory completed")
+print("PASS: controller-owned active source UI map inventory completed")
 PY
