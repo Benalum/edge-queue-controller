@@ -1,3 +1,4 @@
+// APC_PHASE_14J_CB_STATIC_ROUTE_CONTRACT: public gateway contract marker only; no runtime behavior change.
 const ALLOWED_ROUTES = [
   { method: "POST", pattern: /^\/api\/auth\/register$/ },
   { method: "GET",  pattern: /^\/api\/auth\/verify-email$/ },
