@@ -1,0 +1,59 @@
+# Phase 14J-L candidate map review
+source_map:docs/phase-14j-k-lane-filter-candidate-variable-map-select-best-worker-variable-map.txt
+source_snapshot:docs/phase-14j-j-lane-filter-exact-insertion-inspection-select-best-worker-snapshot.txt
+runtime_change_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+job_23_mutation_in_this_phase:no
+
+current_scheduler_state:
+- gate_call_count:1
+- filter_call_present:no
+- score_call_present:yes
+
+candidate_names:
+- candidates
+- rows
+- workers
+
+assignments:
+- line 403: phase14j_lane_scheduler_gate_enabled = _phase14j_lane_workers_enabled()
+- line 410: requirements = estimate_job_requirements(job)
+- line 413: rows = conn.execute( """ SELECT * FROM workers ORDER BY worker_id ASC """ ).fetchall()
+- line 421: workers = [worker_row_to_dict(row) for row in rows]
+- line 423: candidates = []
+- line 424: rejected = []
+- line 427: ok = score_worker_for_job(worker, requirements)
+- line 427: reasons = score_worker_for_job(worker, requirements)
+- line 427: score = score_worker_for_job(worker, requirements)
+- line 429: item = { "worker_id": worker.get("worker_id"), "name": worker.get("name"), "target_name": worker.get("target_name"), "computed_health": worker.get("computed_health"), 
+
+for_loops:
+- line 426: for worker in workers
+
+calls:
+- line 403: _phase14j_lane_workers_enabled
+- line 408: init_worker_registry_db
+- line 410: estimate_job_requirements
+- line 412: db
+- line 413: execute
+- line 413: fetchall
+- line 421: worker_row_to_dict
+- line 427: score_worker_for_job
+- line 430: get
+- line 431: get
+- line 432: get
+- line 433: get
+- line 439: append
+- line 441: append
+- line 443: sort
+
+pre_runtime_decision:
+- Do not add a filter call until the exact candidate list variable is confirmed from the map.
+- First runtime filter call must remain behind EDGE_PERSISTENT_LANE_WORKERS_ENABLED.
+- Disabled gate must preserve pass-through behavior.
+- score_worker_for_job must remain unchanged.
+- primary/default worker filtering remains separate.
+
+safe_next_phase_candidate:
+- Phase 14J-M disabled lane filter call skeleton, only if the map clearly identifies the candidate worker list variable.
