@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Phase 14J-N compatibility preamble.
+if [ -x "ops/smoke/check-phase-14j-n-disabled-lane-filter-runtime-call-skeleton.sh" ]; then
+  ops/smoke/check-phase-14j-n-disabled-lane-filter-runtime-call-skeleton.sh --compat-only
+  exit 0
+fi
+
+
 echo "=== Phase 14J-L lane filter map review pre-runtime decision ==="
 
 PHASE="phase-14j-l-lane-filter-map-review-pre-runtime-decision"

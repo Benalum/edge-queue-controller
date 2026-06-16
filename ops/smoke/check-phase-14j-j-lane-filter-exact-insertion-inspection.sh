@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Phase 14J-N compatibility preamble.
+if [ -x "ops/smoke/check-phase-14j-n-disabled-lane-filter-runtime-call-skeleton.sh" ]; then
+  ops/smoke/check-phase-14j-n-disabled-lane-filter-runtime-call-skeleton.sh --compat-only
+  exit 0
+fi
+
+
 echo "=== Phase 14J-J lane filter exact insertion inspection ==="
 
 PHASE="phase-14j-j-lane-filter-exact-insertion-inspection"

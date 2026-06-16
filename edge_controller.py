@@ -420,6 +420,10 @@ def select_best_worker_for_job(job: dict[str, Any]) -> dict[str, Any]:
 
     workers = [worker_row_to_dict(row) for row in rows]
 
+    # Phase 14J-N disabled lane filter runtime call skeleton.
+    if phase14j_lane_scheduler_gate_enabled:
+        workers = _phase14j_filter_workers_for_lane(workers, job)
+
     candidates = []
     rejected = []
 
