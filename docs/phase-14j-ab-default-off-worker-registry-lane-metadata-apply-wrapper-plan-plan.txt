@@ -1,0 +1,84 @@
+# Phase 14J-AB default-off worker registry lane metadata apply-wrapper plan
+
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+database_schema_change_in_this_phase:no
+job_23_mutation_in_this_phase:no
+worker_registry_mutation_in_this_phase:no
+worker_registration_change_in_this_phase:no
+scheduler_behavior_change_in_this_phase:no
+apply_wrapper_created_in_this_phase:no
+apply_wrapper_executed_in_this_phase:no
+sql_artifact_applied_in_this_phase:no
+
+source_artifacts:
+- ops/db/default-off-worker-registry-lane-metadata.sql
+- docs/phase-14j-aa-default-off-worker-registry-lane-metadata-schema-artifact-no-apply-artifact.txt
+- docs/phase-14j-z-default-off-worker-registry-lane-metadata-schema-patch-contract-contract.txt
+
+future_apply_wrapper_goal:
+- Create a future guarded apply wrapper for the default-off worker registry lane metadata SQL artifact.
+- The wrapper must inspect existing columns before attempting any ALTER TABLE statement.
+- The wrapper must apply only missing additive columns.
+- The wrapper must not run if unexpected table or DB conditions are found.
+- The wrapper must not enable EDGE_PERSISTENT_LANE_WORKERS_ENABLED.
+- The wrapper must not restart or reload services.
+- The wrapper must not call endpoints.
+- The wrapper must not contact CT101.
+- The wrapper must not mutate job 23.
+
+future_apply_wrapper_required_inputs:
+- explicit approval to perform DB/schema mutation
+- clean git checkpoint
+- current HEAD and tag guard
+- confirmed SQLite DB path
+- confirmed target table: workers
+- confirmed SQL artifact path
+- backup/snapshot strategy
+- rollback/restore strategy
+- post-apply bounded read-only inspection plan
+
+future_apply_wrapper_required_guards:
+- stop if git tree is dirty
+- stop if DB file is missing
+- stop if DB is not SQLite
+- stop if workers table is missing
+- stop if required pre-existing columns are missing unexpectedly
+- stop if any target column exists with incompatible type/default
+- stop if backup/snapshot cannot be created
+- stop if EDGE_PERSISTENT_LANE_WORKERS_ENABLED is enabled
+- stop if SQL artifact contains destructive statements
+
+future_target_columns:
+- worker_role TEXT DEFAULT 'primary'
+- worker_lane TEXT DEFAULT ''
+- accepts_lane_jobs INTEGER DEFAULT 0
+- capabilities TEXT DEFAULT '[]'
+- disabled INTEGER DEFAULT 0
+- current_running_jobs INTEGER DEFAULT 0
+- state TEXT DEFAULT 'available'
+- computed_health TEXT DEFAULT ''
+
+future_post_apply_required_checks:
+- verify all target columns exist
+- verify existing workers remain default-off
+- verify EDGE_PERSISTENT_LANE_WORKERS_ENABLED remains absent or disabled
+- verify scheduler static shape unchanged
+- verify score_worker_for_job remains isolated
+- verify router writer remains absent
+- verify disabled warmup markers remain present
+- rerun focused static smokes
+- commit/tag only after all checks pass
+
+future_rollback_policy:
+- SQLite column removal is not a simple safe rollback.
+- Future apply must create a DB backup or snapshot before mutation.
+- Restore from backup/snapshot is the rollback path if schema apply breaks expectations.
+- If additive columns are harmless, they may be left in place while service flag remains disabled.
+
+candidate_next_phase:
+- Phase 14J-AC default-off worker registry lane metadata apply-wrapper artifact, no execution.
