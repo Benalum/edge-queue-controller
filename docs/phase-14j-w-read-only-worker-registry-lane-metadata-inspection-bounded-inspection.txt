@@ -1,0 +1,27 @@
+# Phase 14J-W bounded read-only worker registry lane metadata inspection
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_mutation_in_this_phase:no
+database_query_scope:bounded_read_only_worker_registry
+job_23_mutation_in_this_phase:no
+service_restart_or_reload_in_this_phase:no
+endpoint_call_in_this_phase:no
+
+db_candidate_count:17
+sqlite_candidate_count:1
+db_open_mode:sqlite_uri_mode_ro
+chosen_db_basename:edge_queue.sqlite3
+worker_registry_table_candidates:worker_events,workers
+chosen_worker_table:workers
+expected_field_presence:
+- present:worker_id,name,target_name,max_concurrent_jobs
+- missing:computed_health,state,capabilities,worker_role,worker_lane,accepts_lane_jobs,current_running_jobs,disabled
+lane_metadata_status:missing_lane_metadata
+bounded_row_count:0
+bounded_rows:
+
+inspection_result:
+- CHECK: worker registry lane metadata columns are missing; do not enable persistent lane workers yet
