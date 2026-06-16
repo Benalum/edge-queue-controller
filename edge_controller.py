@@ -19738,6 +19738,10 @@ def _phase14j_worker_eligible_for_job(worker, job):
         base.update({"eligible": False, "reason_code": "primary_fallback_not_allowed"})
         return base
 
+    if job_meta["requires_lane_worker"] and not worker_meta["accepts_lane_jobs"]:
+        base.update({"eligible": False, "reason_code": "lane_jobs_not_accepted"})
+        return base
+
     if job_meta["requires_lane_worker"] and job_meta["job_lane"] != "default":
         if worker_meta["worker_lane"] != job_meta["job_lane"]:
             base.update({"eligible": False, "reason_code": "lane_mismatch"})
@@ -19758,6 +19762,10 @@ def _phase14j_filter_workers_for_lane(workers, job):
         return []
 
     if not _phase14j_lane_workers_enabled():
+        return list(workers)
+
+    job_meta = _phase14j_job_lane_metadata(job)
+    if not job_meta["requires_lane_worker"] or job_meta["job_lane"] == "default":
         return list(workers)
 
     eligible = []
