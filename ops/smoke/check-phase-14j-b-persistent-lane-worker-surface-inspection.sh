@@ -141,9 +141,13 @@ forbidden_new_runtime_markers = [
     "_phase14j_filter_primary_worker",
 ]
 
-found = [m for m in forbidden_new_runtime_markers if m in text]
-if found:
-    raise SystemExit("FAIL: future lane runtime markers already present in edge_controller.py: " + ", ".join(found))
+phase_e_smoke = Path("ops/smoke/check-phase-14j-e-persistent-lane-worker-default-off-helper-skeleton.sh")
+if phase_e_smoke.exists():
+    print("PASS: lane helper markers may exist after Phase 14J-E")
+else:
+    found = [m for m in forbidden_new_runtime_markers if m in text]
+    if found:
+        raise SystemExit("FAIL: future lane runtime markers already present in edge_controller.py: " + ", ".join(found))
 
 router_forbidden = [
     "EDGE_QUEUED_CHAT_ROUTER_SHADOW_EVIDENCE_WRITE_ENABLED",
@@ -157,7 +161,7 @@ found_router = [m for m in router_forbidden if m in text]
 if found_router:
     raise SystemExit("FAIL: router evidence writer markers unexpectedly present: " + ", ".join(found_router))
 
-print("PASS: future lane helpers and router writer markers remain absent")
+print("PASS: future lane helper compatibility and router writer absence verified")
 PY
 
 echo

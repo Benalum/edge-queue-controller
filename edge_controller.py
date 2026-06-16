@@ -19506,6 +19506,199 @@ def _stage5p13a_disabled_intent_router_foundation(
 
 # --- Phase 14I-AG disabled queued-chat router shadow helper ----------------
 
+
+# Phase 14J-E persistent lane worker default-off helper skeletons.
+# These helpers are intentionally not integrated into scheduler behavior yet.
+def _phase14j_bounded_label(value, default="unknown", max_len=64):
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        text = "true" if value else "false"
+    else:
+        text = str(value)
+    text = text.strip().lower().replace(" ", "_")
+    cleaned = "".join(ch for ch in text if ch.isalnum() or ch in ("_", "-", ".", ":"))
+    if not cleaned:
+        return default
+    return cleaned[:max_len]
+
+
+def _phase14j_bounded_int(value, default=0, max_value=1048576):
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return default
+    if number < 0:
+        return default
+    if number > max_value:
+        return max_value
+    return number
+
+
+def _phase14j_bool(value, default=False):
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    text = str(value).strip().lower()
+    if text in ("1", "true", "yes", "on"):
+        return True
+    if text in ("", "0", "false", "no", "off", "none", "null"):
+        return False
+    return default
+
+
+def _phase14j_bounded_capability_labels(value, max_items=16):
+    if value is None:
+        values = []
+    elif isinstance(value, (list, tuple, set)):
+        values = list(value)
+    else:
+        values = str(value).replace(";", ",").split(",")
+
+    result = []
+    for item in values:
+        label = _phase14j_bounded_label(item, default="", max_len=64)
+        if label and label not in result:
+            result.append(label)
+        if len(result) >= max_items:
+            break
+    return result
+
+
+def _phase14j_lane_workers_enabled():
+    value = __import__("os").environ.get("EDGE_PERSISTENT_LANE_WORKERS_ENABLED", "")
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+
+def _phase14j_job_lane_metadata(job):
+    if not isinstance(job, dict):
+        job = {}
+
+    return {
+        "job_lane": _phase14j_bounded_label(
+            job.get("job_lane") or job.get("lane") or job.get("queue_lane"),
+            default="default",
+        ),
+        "required_capabilities": _phase14j_bounded_capability_labels(
+            job.get("required_capabilities") or job.get("capabilities") or job.get("capability")
+        ),
+        "preferred_worker_role": _phase14j_bounded_label(
+            job.get("preferred_worker_role") or job.get("worker_role"),
+            default="any",
+        ),
+        "allow_primary_fallback": _phase14j_bool(job.get("allow_primary_fallback"), default=True),
+        "allow_legacy_fallback": _phase14j_bool(job.get("allow_legacy_fallback"), default=True),
+        "requires_lane_worker": _phase14j_bool(job.get("requires_lane_worker"), default=False),
+        "estimated_vram_mb": _phase14j_bounded_int(job.get("estimated_vram_mb"), default=0),
+        "estimated_ram_mb": _phase14j_bounded_int(job.get("estimated_ram_mb"), default=0),
+        "estimated_duration_class": _phase14j_bounded_label(
+            job.get("estimated_duration_class"),
+            default="unknown",
+        ),
+        "priority_class": _phase14j_bounded_label(job.get("priority_class"), default="normal"),
+    }
+
+
+def _phase14j_worker_lane_metadata(worker):
+    if not isinstance(worker, dict):
+        worker = {}
+
+    state = _phase14j_bounded_label(worker.get("state") or worker.get("status"), default="unknown")
+    return {
+        "worker_id": _phase14j_bounded_label(worker.get("worker_id") or worker.get("id"), default="unknown"),
+        "worker_role": _phase14j_bounded_label(
+            worker.get("worker_role") or worker.get("role"),
+            default="default",
+        ),
+        "worker_lane": _phase14j_bounded_label(
+            worker.get("worker_lane") or worker.get("lane") or worker.get("pool"),
+            default="default",
+        ),
+        "worker_pool": _phase14j_bounded_label(worker.get("worker_pool") or worker.get("pool"), default="default"),
+        "capabilities": _phase14j_bounded_capability_labels(worker.get("capabilities")),
+        "max_concurrent_jobs": _phase14j_bounded_int(worker.get("max_concurrent_jobs"), default=1, max_value=1024),
+        "current_running_jobs": _phase14j_bounded_int(worker.get("current_running_jobs"), default=0, max_value=1024),
+        "supports_primary_fallback": _phase14j_bool(worker.get("supports_primary_fallback"), default=True),
+        "accepts_lane_jobs": _phase14j_bool(worker.get("accepts_lane_jobs"), default=False),
+        "disabled": _phase14j_bool(worker.get("disabled"), default=(state == "disabled")),
+        "stale": _phase14j_bool(worker.get("stale"), default=(state == "stale")),
+        "unhealthy": _phase14j_bool(worker.get("unhealthy"), default=(state == "unhealthy")),
+        "offline": _phase14j_bool(worker.get("offline"), default=(state == "offline")),
+    }
+
+
+def _phase14j_worker_eligible_for_job(worker, job):
+    job_meta = _phase14j_job_lane_metadata(job)
+    worker_meta = _phase14j_worker_lane_metadata(worker)
+
+    base = {
+        "worker_id": worker_meta["worker_id"],
+        "job_lane": job_meta["job_lane"],
+        "worker_lane": worker_meta["worker_lane"],
+        "matched_capabilities": [],
+        "missing_capabilities": [],
+        "fallback_used": False,
+        "blocked_by_state": "",
+        "gate_enabled": _phase14j_lane_workers_enabled(),
+    }
+
+    if not base["gate_enabled"]:
+        base.update({"eligible": True, "reason_code": "lane_gate_disabled"})
+        return base
+
+    for state_name in ("disabled", "stale", "unhealthy", "offline"):
+        if worker_meta[state_name]:
+            base.update({
+                "eligible": False,
+                "reason_code": f"worker_{state_name}",
+                "blocked_by_state": state_name,
+            })
+            return base
+
+    required = set(job_meta["required_capabilities"])
+    available = set(worker_meta["capabilities"])
+    missing = sorted(required - available)
+    base["matched_capabilities"] = sorted(required & available)
+    base["missing_capabilities"] = missing
+    if missing:
+        base.update({"eligible": False, "reason_code": "missing_capabilities"})
+        return base
+
+    role = worker_meta["worker_role"]
+    if job_meta["requires_lane_worker"] and role in ("primary", "default") and not job_meta["allow_primary_fallback"]:
+        base.update({"eligible": False, "reason_code": "primary_fallback_not_allowed"})
+        return base
+
+    if job_meta["requires_lane_worker"] and job_meta["job_lane"] != "default":
+        if worker_meta["worker_lane"] != job_meta["job_lane"]:
+            base.update({"eligible": False, "reason_code": "lane_mismatch"})
+            return base
+
+    max_jobs = worker_meta["max_concurrent_jobs"]
+    running = worker_meta["current_running_jobs"]
+    if max_jobs > 0 and running >= max_jobs:
+        base.update({"eligible": False, "reason_code": "capacity_reached"})
+        return base
+
+    base.update({"eligible": True, "reason_code": "eligible"})
+    return base
+
+
+def _phase14j_filter_workers_for_lane(workers, job):
+    if not isinstance(workers, list):
+        return []
+
+    if not _phase14j_lane_workers_enabled():
+        return list(workers)
+
+    eligible = []
+    for worker in workers:
+        result = _phase14j_worker_eligible_for_job(worker, job)
+        if result.get("eligible") is True:
+            eligible.append(worker)
+    return eligible
+
 def _phase14iag_queued_chat_router_shadow_enabled() -> bool:
     """
     Disabled-by-default backend flag for future queued-chat router shadow decisions.

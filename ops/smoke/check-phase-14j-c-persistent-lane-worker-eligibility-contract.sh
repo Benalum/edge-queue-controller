@@ -75,11 +75,25 @@ forbidden = [
     "_phase14j_filter_workers_for_lane",
 ]
 
-found = [m for m in forbidden if m in text]
-if found:
-    raise SystemExit("FAIL: future lane helper markers already present in edge_controller.py: " + ", ".join(found))
-
-print("PASS: future lane helper markers remain absent from runtime")
+phase_e_smoke = Path("ops/smoke/check-phase-14j-e-persistent-lane-worker-default-off-helper-skeleton.sh")
+if phase_e_smoke.exists():
+    required = [
+        "EDGE_PERSISTENT_LANE_WORKERS_ENABLED",
+        "_phase14j_lane_workers_enabled",
+        "_phase14j_job_lane_metadata",
+        "_phase14j_worker_lane_metadata",
+        "_phase14j_worker_eligible_for_job",
+        "_phase14j_filter_workers_for_lane",
+    ]
+    missing = [m for m in required if m not in text]
+    if missing:
+        raise SystemExit("FAIL: expected Phase 14J-E helper markers missing: " + ", ".join(missing))
+    print("PASS: future lane helper markers present after Phase 14J-E")
+else:
+    found = [m for m in forbidden if m in text]
+    if found:
+        raise SystemExit("FAIL: future lane helper markers already present in edge_controller.py: " + ", ".join(found))
+    print("PASS: future lane helper markers remain absent from runtime")
 PY
 
 echo
