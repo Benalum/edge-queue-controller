@@ -1,0 +1,41 @@
+# Phase 14J-AC apply-wrapper artifact record
+
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+database_schema_change_in_this_phase:no
+job_23_mutation_in_this_phase:no
+worker_registry_mutation_in_this_phase:no
+worker_registration_change_in_this_phase:no
+scheduler_behavior_change_in_this_phase:no
+apply_wrapper_created_in_this_phase:yes
+apply_wrapper_executed_in_this_phase:no
+sql_artifact_applied_in_this_phase:no
+
+created_wrapper:
+- ops/db/apply-default-off-worker-registry-lane-metadata.sh
+
+wrapper_guard:
+- requires exact confirmation phrase APPLY_DEFAULT_OFF_WORKER_LANE_METADATA
+- refuses if EDGE_PERSISTENT_LANE_WORKERS_ENABLED=1
+- refuses if DB file is missing
+- refuses if SQL artifact is missing
+- creates DB backup before mutation when executed in a future approved phase
+- applies only missing additive columns
+- does not enable persistent lane workers
+- does not restart or reload services
+- does not call endpoints
+- does not contact CT101
+- does not mutate job 23
+
+no_execution_boundary:
+- This phase must not run the wrapper.
+- This phase must not apply SQL.
+- This phase must not mutate the SQLite database.
+- This phase must not change the service environment.
+
+candidate_next_phase:
+- Phase 14J-AD apply-wrapper static validation and pre-apply checkpoint, docs/smoke only.
