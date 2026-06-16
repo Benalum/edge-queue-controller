@@ -998,6 +998,7 @@ def worker_heartbeat(
                 ),
             )
         else:
+            registration_metadata = _phase14j_default_off_worker_registration_metadata()
             conn.execute(
                 """
                 INSERT INTO workers (
@@ -1021,9 +1022,17 @@ def worker_heartbeat(
                     last_error,
                     first_seen_at,
                     last_heartbeat_at,
-                    updated_at
+                    updated_at,
+                    worker_role,
+                    worker_lane,
+                    accepts_lane_jobs,
+                    capabilities,
+                    disabled,
+                    current_running_jobs,
+                    state,
+                    computed_health
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     payload.worker_id,
@@ -1047,6 +1056,14 @@ def worker_heartbeat(
                     now,
                     now,
                     now,
+                    registration_metadata["worker_role"],
+                    registration_metadata["worker_lane"],
+                    registration_metadata["accepts_lane_jobs"],
+                    registration_metadata["capabilities"],
+                    registration_metadata["disabled"],
+                    registration_metadata["current_running_jobs"],
+                    registration_metadata["state"],
+                    registration_metadata["computed_health"],
                 ),
             )
 
