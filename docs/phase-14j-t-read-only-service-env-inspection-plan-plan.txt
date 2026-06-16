@@ -1,0 +1,60 @@
+# Phase 14J-T read-only service environment inspection plan
+
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+job_23_mutation_in_this_phase:no
+warmup_execution_enablement_in_this_phase:no
+router_model_selection_enablement_in_this_phase:no
+router_evidence_writer_enablement_in_this_phase:no
+live_service_inspection_in_this_phase:no
+
+future_inspection_goal:
+- Inspect whether EDGE_PERSISTENT_LANE_WORKERS_ENABLED is currently present in the controller service environment.
+- Inspect only bounded environment keys needed for persistent lane worker readiness.
+- Do not print secrets.
+- Do not print full service environment.
+- Do not mutate systemd.
+- Do not restart services.
+- Do not call endpoints.
+- Do not query the database.
+- Do not contact CT101.
+
+future_allowed_read_only_command_classes:
+- systemctl show edge-queue-controller with specific Environment property only
+- grep/sort/sed/tr redaction pipeline
+- git status/log/tag verification
+- local static smokes
+
+future_forbidden_output:
+- Authorization headers
+- Bearer tokens
+- cookies
+- session values
+- passwords
+- secrets
+- private keys
+- raw prompts
+- full job payloads
+- full service environment dump
+
+future_expected_keys:
+- EDGE_PERSISTENT_LANE_WORKERS_ENABLED
+- EDGE_POWER_AUTO_PAUSED
+- EDGE_POWER_AUTO_TICK_FULL
+- EDGE_POWER_EXECUTE_STOPS
+- EDGE_POWER_EXECUTE_HOST_SHUTDOWN
+- EDGE_PROXMOX_HOST
+- EDGE_PROXMOX_HOST_ID
+- EDGE_PROXMOX_SSH_TARGET
+
+future_success_condition:
+- Current value of EDGE_PERSISTENT_LANE_WORKERS_ENABLED is absent, empty, 0, false, no, or off.
+- If present as enabled, stop and do not continue enablement.
+- Output remains bounded and redacted.
+
+candidate_next_phase:
+- Phase 14J-U read-only current service environment inspection, if explicitly approved.
