@@ -1,0 +1,52 @@
+# Phase 14J-AE bounded read-only DB path and backup readiness inspection
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_mutation_in_this_phase:no
+database_schema_change_in_this_phase:no
+job_23_mutation_in_this_phase:no
+worker_registry_mutation_in_this_phase:no
+worker_registration_change_in_this_phase:no
+scheduler_behavior_change_in_this_phase:no
+apply_wrapper_executed_in_this_phase:no
+sql_artifact_applied_in_this_phase:no
+backup_created_in_this_phase:no
+
+service_flag_inspection:
+- EDGE_PERSISTENT_LANE_WORKERS_ENABLED:<absent>
+- lane_worker_flag_disabled_or_absent:yes
+
+db_path_inspection:
+- chosen_db_basename:edge_queue.sqlite3
+- db_exists:yes
+- db_is_file:yes
+- db_header_is_sqlite:yes
+
+backup_readiness_inspection:
+- parent_basename:edge-queue-controller
+- parent_exists:yes
+- parent_is_dir:yes
+- parent_readable:yes
+- parent_writable:yes
+- backup_created:no
+- db_size_bytes:42217472
+- free_bytes:187382366208
+- enough_free_for_one_copy:yes
+
+sqlite_schema_readiness:
+- workers_table_exists:yes
+- required_existing_present:worker_id,name,target_name,max_concurrent_jobs
+- required_existing_missing:<none>
+- target_columns_present:<none>
+- target_columns_missing:worker_role,worker_lane,accepts_lane_jobs,capabilities,disabled,current_running_jobs,state,computed_health
+- schema_apply_needed:yes
+
+artifact_readiness:
+- sql_artifact_exists:yes
+- wrapper_exists:yes
+- wrapper_executable:yes
+
+inspection_result:
+- PASS: pre-apply DB path and backup readiness checks are satisfied for a future explicitly approved apply phase
