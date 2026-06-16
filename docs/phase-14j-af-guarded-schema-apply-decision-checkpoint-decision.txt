@@ -1,0 +1,49 @@
+# Phase 14J-AF guarded schema apply decision checkpoint
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+database_schema_change_in_this_phase:no
+job_23_mutation_in_this_phase:no
+worker_registry_mutation_in_this_phase:no
+worker_registration_change_in_this_phase:no
+scheduler_behavior_change_in_this_phase:no
+apply_wrapper_executed_in_this_phase:no
+sql_artifact_applied_in_this_phase:no
+backup_created_in_this_phase:no
+
+reviewed_readiness:
+- phase_14j_ae_readiness:pass
+- db_basename:edge_queue.sqlite3
+- workers_table_exists:yes
+- target_columns_missing:worker_role,worker_lane,accepts_lane_jobs,capabilities,disabled,current_running_jobs,state,computed_health
+- schema_apply_needed:yes
+- backup_ready:yes
+- lane_worker_flag_disabled_or_absent:yes
+
+decision:
+- READY_FOR_EXPLICIT_APPLY_APPROVAL:yes
+- APPLY_IN_THIS_PHASE:no
+- REASON: this phase is only a decision checkpoint
+
+required_explicit_apply_confirmation:
+- Future apply command must include exact wrapper phrase: APPLY_DEFAULT_OFF_WORKER_LANE_METADATA
+- User must explicitly approve DB/schema mutation before running the apply wrapper.
+- Future apply phase must create backup before mutation.
+- Future apply phase must leave EDGE_PERSISTENT_LANE_WORKERS_ENABLED absent or disabled.
+- Future apply phase must run post-apply read-only inspection before any enablement.
+
+stop_conditions_for_future_apply:
+- stop if git tree is dirty
+- stop if HEAD or origin/main is not the approved checkpoint
+- stop if EDGE_PERSISTENT_LANE_WORKERS_ENABLED is enabled
+- stop if DB path differs unexpectedly
+- stop if workers table is missing
+- stop if required existing columns are missing
+- stop if backup cannot be created
+- stop if SQL artifact contains destructive statements
+
+candidate_next_phase:
+- Phase 14J-AG guarded schema apply with backup, explicit DB mutation phase, only after explicit approval
