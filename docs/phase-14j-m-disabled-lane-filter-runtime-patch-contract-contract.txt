@@ -1,0 +1,46 @@
+# Phase 14J-M disabled lane filter runtime patch contract
+
+runtime_change_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+job_23_mutation_in_this_phase:no
+
+selected_candidate_variable:workers
+source_rows_variable:rows
+scored_output_variable:candidates
+rejected_output_variable:rejected
+
+current_assignment_shape:
+- rows = conn.execute(...).fetchall()
+- workers = [worker_row_to_dict(row) for row in rows]
+- candidates = []
+- rejected = []
+- for worker in workers
+- score_worker_for_job(worker, requirements)
+
+future_runtime_patch_shape:
+1. Keep the existing Phase 14J-H gate variable.
+2. Keep rows loading unchanged.
+3. Keep workers construction unchanged.
+4. Insert any future lane filter call after workers is built and before candidates is initialized.
+5. Call _phase14j_filter_workers_for_lane(workers, job) only when phase14j_lane_scheduler_gate_enabled is true.
+6. When the gate is false, workers must remain unchanged.
+7. score_worker_for_job must remain unchanged.
+8. primary/default worker filtering remains separate.
+9. fallback behavior must remain unchanged unless a later fallback phase explicitly changes it.
+
+approved_future_helper:_phase14j_filter_workers_for_lane
+approved_future_runtime_function:select_best_worker_for_job
+approved_future_insertion_after:workers = [worker_row_to_dict(row) for row in rows]
+approved_future_insertion_before:candidates = []
+
+not_allowed_in_next_runtime_patch:
+- CT101 mutation
+- live model calls
+- job 23 mutation
+- warmup execution enablement
+- router activation
+- router evidence writer activation
+- score_worker_for_job changes
+- worker registration changes
+- browser/API output shape changes
