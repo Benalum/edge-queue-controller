@@ -1,0 +1,55 @@
+# Phase 14J-AD apply-wrapper static validation and pre-apply checkpoint
+
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+database_schema_change_in_this_phase:no
+job_23_mutation_in_this_phase:no
+worker_registry_mutation_in_this_phase:no
+worker_registration_change_in_this_phase:no
+scheduler_behavior_change_in_this_phase:no
+apply_wrapper_created_in_this_phase:no
+apply_wrapper_executed_in_this_phase:no
+sql_artifact_applied_in_this_phase:no
+
+source_artifacts:
+- ops/db/apply-default-off-worker-registry-lane-metadata.sh
+- ops/db/default-off-worker-registry-lane-metadata.sql
+- docs/phase-14j-ac-default-off-worker-registry-lane-metadata-apply-wrapper-artifact-no-execution-artifact.txt
+- docs/phase-14j-ab-default-off-worker-registry-lane-metadata-apply-wrapper-plan-plan.txt
+- docs/phase-14j-aa-default-off-worker-registry-lane-metadata-schema-artifact-no-apply-artifact.txt
+
+static_validation_goal:
+- Validate wrapper syntax without executing the wrapper.
+- Validate wrapper guard markers.
+- Validate SQL artifact remains additive-only.
+- Validate no service/endpoints/CT101/job 23 behavior is introduced.
+- Validate scheduler static shape remains unchanged.
+- Validate persistent lane workers remain disabled unless a later explicit enablement gate is approved.
+
+pre_apply_checkpoint_decision:
+- Do not apply schema in this phase.
+- Do not run the wrapper in this phase.
+- Do not enable EDGE_PERSISTENT_LANE_WORKERS_ENABLED in this phase.
+- Do not restart or reload services in this phase.
+- Do not call endpoints in this phase.
+- Do not contact CT101 in this phase.
+- Do not mutate job 23 in this phase.
+
+required_before_future_apply:
+- explicit approval to perform DB/schema mutation
+- clean git checkpoint
+- current HEAD and tag guard
+- bounded DB path confirmation
+- backup/snapshot creation
+- wrapper dry/static validation
+- post-apply bounded read-only inspection plan
+- rollback/restore plan
+- stop condition if service flag is enabled
+- stop condition if DB or workers table is unexpected
+
+candidate_next_phase:
+- Phase 14J-AE guarded pre-apply DB path and backup readiness inspection, read-only.
