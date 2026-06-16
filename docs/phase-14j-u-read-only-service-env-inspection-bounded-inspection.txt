@@ -1,0 +1,29 @@
+# Phase 14J-U bounded read-only service environment inspection
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+job_23_mutation_in_this_phase:no
+service_restart_or_reload_in_this_phase:no
+
+inspected_service:edge-queue-controller
+inspection_method:systemctl show -p Environment --value with allowlisted keys only
+full_environment_dump:no
+
+bounded_environment_keys:
+- EDGE_PERSISTENT_LANE_WORKERS_ENABLED=<absent>
+- EDGE_POWER_AUTO_PAUSED=0
+- EDGE_POWER_AUTO_TICK_FULL=0
+- EDGE_POWER_EXECUTE_STOPS=1
+- EDGE_POWER_EXECUTE_HOST_SHUTDOWN=1
+- EDGE_PROXMOX_HOST=100.88.194.19
+- EDGE_PROXMOX_HOST_ID=pveso
+- EDGE_PROXMOX_SSH_TARGET=r***@100.88.194.19
+
+lane_workers_flag_raw_state:<absent>
+lane_workers_flag_disabled:yes
+
+inspection_result:
+- PASS: EDGE_PERSISTENT_LANE_WORKERS_ENABLED is absent or disabled
