@@ -1,0 +1,75 @@
+# Phase 14J-CF - Source Refresh Handoff Snapshot and New-Chat Checkpoint
+
+PHASE_14J_CF_SOURCE_REFRESH_HANDOFF_SNAPSHOT_AND_NEW_CHAT_CHECKPOINT
+
+Date: 2026-06-16
+
+## Scope
+
+MUTATION_SCOPE=docs_smoke_only_source_refresh_handoff_snapshot
+
+This phase records a handoff checkpoint after the CE safe static batch rollup.
+
+This phase is not runtime activation.
+
+## Main result
+
+SOURCE_REFRESH_HANDOFF_SNAPSHOT=created
+
+NEW_CHAT_CONTINUATION_PROMPT=created
+
+SAFE_BATCH_MODE=pause_for_handoff
+
+## Recovery note
+
+CF_RECOVERY_REASON=previous_timeout_due_verbose_baseline_reexecution_and_nested_markdown_fence_removed
+
+## Current milestone
+
+CURRENT_MILESTONE=three_bounded_static_patch_batches_verified
+
+COMPLETED_STATIC_PATCH=batch_bz_static_ui_copy_layout
+COMPLETED_STATIC_PATCH=batch_cb_static_ui_route_contract
+COMPLETED_STATIC_PATCH=batch_cd_static_ui_gateway_contract
+
+ACTIVE_SOURCE_STATIC_BASELINE_VERSION=v4_created
+
+SAFE_STATIC_ULTRA_CONCISE_V4_BASELINE_SMOKE=available
+
+V4_BASELINE_REFERENCE=available_not_reexecuted_in_handoff_smoke_to_avoid_timeout
+
+## Source refresh decision
+
+SOURCE_REFRESH_CADENCE=milestone_handoff_or_runtime_gate
+
+SOURCE_REFRESH_RECOMMENDATION=refresh_uploaded_source_files_before_major_next_step
+
+TERMINAL_OUTPUT_CURRENT_TRUTH=preferred_when_newer_than_uploaded_source
+
+## Next options
+
+NEXT_SAFE_OPTION=build_updated_source_files_and_new_chat_handoff
+NEXT_SAFE_OPTION=continue_safe_static_batches
+NEXT_SAFE_OPTION=runtime_gate_only_with_explicit_user_approval
+
+## Runtime boundary
+
+ACTIVATION_REQUIRES_EXPLICIT_USER_APPROVAL
+
+Runtime activation remains blocked.
+
+## Non-activation confirmations
+
+RUNTIME_ACTIVATION=not_performed
+SERVICE_RESTART_RELOAD=not_performed
+CT101_MODEL_OLLAMA_CALLS=forbidden
+CT101_MODEL_JOB_MUTATION=not_performed
+DB_MUTATION=not_performed
+JOB_MUTATION=not_performed
+LANE_WORKER_ENABLEMENT=not_performed
+SCHEDULER_LANE_DISPATCH_ACTIVATION=not_performed
+PRIMARY_WORKER_FILTERING_ACTIVATION=not_performed
+ROUTER_MODEL_SELECTION_ACTIVATION=not_performed
+WARMUP_EXECUTION_ACTIVATION=not_performed
+
+DO_NOT_RERUN_14J_AG_APPLY_WRAPPER
