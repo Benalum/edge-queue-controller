@@ -19581,6 +19581,30 @@ def _phase14j_lane_workers_enabled():
     return str(value).strip().lower() in ("1", "true", "yes", "on")
 
 
+def _phase14j_default_off_worker_registration_metadata():
+    """
+    Phase 14J-AK pure default-off worker registration metadata helper.
+
+    This helper returns the future registration metadata defaults for the
+    SQLite workers table after the Phase 14J-AG schema apply.
+
+    It is intentionally not wired into worker heartbeat/registration writes in
+    Phase 14J-AK. Schema presence and helper presence are not runtime
+    activation. A later gated phase must explicitly approve registration
+    write wiring.
+    """
+    return {
+        "worker_role": "primary",
+        "worker_lane": "",
+        "accepts_lane_jobs": 0,
+        "capabilities": "[]",
+        "disabled": 0,
+        "current_running_jobs": 0,
+        "state": "available",
+        "computed_health": "",
+    }
+
+
 def _phase14j_job_lane_metadata(job):
     if not isinstance(job, dict):
         job = {}
