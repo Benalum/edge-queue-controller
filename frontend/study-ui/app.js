@@ -1,3 +1,4 @@
+// APC_PHASE_14J_CD_STATIC_UI_CONTRACT: static metadata/accessibility contract marker only; no runtime behavior change.
 // APC_PHASE_14J_CB_STATIC_UI_PATCH: static accessibility/copy marker only; no runtime behavior change.
 // APC_PHASE_14J_BZ_STATIC_UI_PATCH: static UI copy/layout marker only; no runtime behavior change.
 const API_BASE = "/api";

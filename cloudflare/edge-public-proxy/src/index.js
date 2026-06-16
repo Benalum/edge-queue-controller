@@ -1,3 +1,4 @@
+// APC_PHASE_14J_CD_PUBLIC_GATEWAY_ROUTE_OWNERSHIP_CONTRACT: static route ownership marker only; no runtime behavior change.
 // APC_PHASE_14J_CB_STATIC_ROUTE_CONTRACT: public gateway contract marker only; no runtime behavior change.
 const ALLOWED_ROUTES = [
   { method: "POST", pattern: /^\/api\/auth\/register$/ },
