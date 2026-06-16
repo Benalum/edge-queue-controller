@@ -953,6 +953,7 @@ def worker_heartbeat(
         ).fetchone()
 
         if existing:
+            registration_metadata = _phase14j_default_off_worker_registration_metadata()
             conn.execute(
                 """
                 UPDATE workers
@@ -973,7 +974,15 @@ def worker_heartbeat(
                     vram_free_mb = ?,
                     last_error = ?,
                     last_heartbeat_at = ?,
-                    updated_at = ?
+                    updated_at = ?,
+                    worker_role = COALESCE(worker_role, ?),
+                    worker_lane = COALESCE(worker_lane, ?),
+                    accepts_lane_jobs = COALESCE(accepts_lane_jobs, ?),
+                    capabilities = COALESCE(capabilities, ?),
+                    disabled = COALESCE(disabled, ?),
+                    current_running_jobs = COALESCE(current_running_jobs, ?),
+                    state = COALESCE(state, ?),
+                    computed_health = COALESCE(computed_health, ?)
                 WHERE worker_id = ?
                 """,
                 (
@@ -994,6 +1003,14 @@ def worker_heartbeat(
                     payload.last_error,
                     now,
                     now,
+                    registration_metadata["worker_role"],
+                    registration_metadata["worker_lane"],
+                    registration_metadata["accepts_lane_jobs"],
+                    registration_metadata["capabilities"],
+                    registration_metadata["disabled"],
+                    registration_metadata["current_running_jobs"],
+                    registration_metadata["state"],
+                    registration_metadata["computed_health"],
                     payload.worker_id,
                 ),
             )
