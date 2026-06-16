@@ -1,0 +1,69 @@
+# Phase 14J-V worker registry lane metadata inspection plan
+
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+job_23_mutation_in_this_phase:no
+warmup_execution_enablement_in_this_phase:no
+router_model_selection_enablement_in_this_phase:no
+router_evidence_writer_enablement_in_this_phase:no
+worker_registry_inspection_in_this_phase:no
+
+future_inspection_goal:
+- Inspect registered workers for lane metadata readiness.
+- Confirm whether worker rows expose worker_role, worker_lane, accepts_lane_jobs, current_running_jobs, max_concurrent_jobs, disabled, state, and capabilities.
+- Confirm whether any worker is currently eligible for lane filtering if the gate is enabled later.
+- Confirm whether primary fallback is represented clearly.
+- Confirm whether lane metadata is absent and must be added through a separate gated worker registration phase.
+
+future_allowed_read_only_command_classes:
+- local Python static inspection of edge_controller.py
+- bounded read-only worker registry query only if explicitly approved in Phase 14J-W
+- no DB mutation
+- no worker heartbeat mutation
+- no worker registration mutation
+- no scheduler mutation
+- no endpoint calls
+- no live model calls
+- no CT101 contact
+
+future_expected_fields:
+- worker_id
+- name
+- target_name
+- computed_health
+- state
+- capabilities
+- worker_role
+- worker_lane
+- accepts_lane_jobs
+- current_running_jobs
+- max_concurrent_jobs
+- disabled
+
+future_forbidden_output:
+- raw prompts
+- full job payloads
+- auth headers
+- bearer tokens
+- cookies
+- session values
+- passwords
+- secrets
+- private keys
+- full DB dumps
+- full worker heartbeat payloads
+
+future_success_condition:
+- Inspection output is bounded.
+- No secrets are printed.
+- No database writes occur.
+- No service environment changes occur.
+- No scheduler behavior changes occur.
+- If lane metadata is absent, stop and plan a separate default-off worker registration metadata phase.
+
+candidate_next_phase:
+- Phase 14J-W read-only worker registry lane metadata inspection, if explicitly approved.
