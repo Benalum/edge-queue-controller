@@ -17,6 +17,8 @@ count_matches() {
   pattern="$1"
   grep -RIl \
     --exclude-dir=.git \
+    --exclude-dir=.cgpt-bridge \
+    --exclude-dir=cleanup \
     --exclude-dir=.cleanup-archive \
     --exclude-dir=.cleanup-backups \
     --exclude-dir=__pycache__ \
@@ -45,6 +47,9 @@ print_top() {
   echo "=== top files: $title ==="
   grep -RIl \
     --exclude-dir=.git \
+    --exclude-dir=.cleanup-archive \
+    --exclude-dir=.cgpt-bridge \
+    --exclude-dir=cleanup \
     --exclude-dir=.cleanup-archive \
     --exclude-dir=.cleanup-backups \
     --exclude-dir=__pycache__ \
