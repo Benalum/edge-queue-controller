@@ -1,23 +1,47 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PHASE="phase-14j-cn-post-patch-gate-b0-result-checkpoint"
+PHASE="phase-14j-cw-gate-b2-worker-metadata-seed-result-checkpoint"
 DOC="docs/${PHASE}.md"
 DB="edge_queue.sqlite3"
 SERVICE="edge-queue-controller.service"
 
-echo "=== ${PHASE} historical compatibility smoke after Phase 14J-CV ==="
-echo "HISTORICAL_PRE_CV_ZERO_WORKER_SMOKE_COMPATIBILITY_AFTER_CV=yes"
+echo "=== Phase 14J-CW smoke: Gate B2 seed result checkpoint ==="
 
 test -f "$DOC"
-echo "PASS: historical doc exists"
+echo "PASS: CW doc exists"
 
-grep -F "PHASE_14J_CN_POST_PATCH_GATE_B0_RESULT_CHECKPOINT" "$DOC" >/dev/null
-echo "PASS: historical phase marker found: PHASE_14J_CN_POST_PATCH_GATE_B0_RESULT_CHECKPOINT"
-
-if grep -F "NO_SECRETS_PRINTED=yes" "$DOC" >/dev/null; then
-  echo "PASS: historical no-secrets marker retained"
-fi
+for marker in \
+  "PHASE_14J_CW_GATE_B2_WORKER_METADATA_SEED_RESULT_CHECKPOINT" \
+  "MUTATION_SCOPE=docs_smoke_only_seed_result_checkpoint_and_pre_cv_smoke_compatibility" \
+  "GATE_B2_PRODUCTION_WORKER_METADATA_SEED_RESULT=passed_backup_first_default_off_seed" \
+  "PRODUCTION_DB_MUTATION=performed_in_prior_phase_cv" \
+  "BACKUP_CREATED_IN_CV=yes" \
+  "SEEDED_WORKER_ROWS=2" \
+  "SEEDED_WORKER_IDS=primary-default-metadata,study-lane-metadata-default-off" \
+  "WORKER_FACTS_AFTER_CV=2,1,1,1" \
+  "SEEDED_ROWS_DISABLED_OR_OFFLINE=verified" \
+  "JOB_SUMMARY_UNCHANGED=verified" \
+  "DEFAULT_OFF_ENV_REMAINED_UNSET=verified" \
+  "PRE_SEED_ZERO_WORKER_SMOKES_ARE_HISTORICAL_AFTER_CV=yes" \
+  "HISTORICAL_PRE_CV_ZERO_WORKER_SMOKE_COMPATIBILITY_AFTER_CV=yes" \
+  "SOURCE_MUTATION=not_performed" \
+  "PRODUCTION_DB_MUTATION=not_performed" \
+  "JOB_MUTATION=not_performed" \
+  "SERVICE_RESTART_RELOAD=not_performed" \
+  "CT101_CALL=not_performed" \
+  "MODEL_OLLAMA_CALL=not_performed" \
+  "SCHEDULER_LANE_DISPATCH_ACTIVATION=not_performed" \
+  "PRIMARY_WORKER_FILTERING_ACTIVATION=not_performed" \
+  "PERSISTENT_LANE_WORKER_STARTUP=not_performed" \
+  "RUNTIME_ACTIVATION=not_performed" \
+  "DO_NOT_RERUN_14J_AG_APPLY_WRAPPER=preserved" \
+  "NO_SECRETS_PRINTED=yes" \
+  "GATE_B2_SEED_RESULT_CHECKPOINT=completed" \
+  "NEXT_SAFE_PHASE=gate_b3_seeded_worker_metadata_activation_readiness_plan"; do
+  grep -F "$marker" "$DOC" >/dev/null
+  echo "PASS: marker found: $marker"
+done
 
 echo
 echo "=== post-CV runtime/default-off seeded metadata guard ==="
@@ -61,4 +85,5 @@ test "$worker_facts" = "2,1,1,1"
 test "$seeded_count" = "2"
 test "$safe_seeded_count" = "2"
 
-echo "PASS: historical smoke compatible with post-CV seeded metadata"
+echo "PASS: production runtime remains default-off after CV seed"
+echo "PASS: Phase 14J-CW seed result checkpoint smoke passed"

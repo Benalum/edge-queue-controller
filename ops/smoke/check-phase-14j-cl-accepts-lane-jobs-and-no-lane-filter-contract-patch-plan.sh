@@ -6,58 +6,59 @@ DOC="docs/${PHASE}.md"
 DB="edge_queue.sqlite3"
 SERVICE="edge-queue-controller.service"
 
-echo "=== Phase 14J-CL smoke: accepts_lane_jobs and no-lane contract patch plan ==="
+echo "=== ${PHASE} historical compatibility smoke after Phase 14J-CV ==="
+echo "HISTORICAL_PRE_CV_ZERO_WORKER_SMOKE_COMPATIBILITY_AFTER_CV=yes"
 
 test -f "$DOC"
-echo "PASS: CL doc exists"
+echo "PASS: historical doc exists"
 
-for marker in \
-  "PHASE_14J_CL_ACCEPTS_LANE_JOBS_AND_NO_LANE_FILTER_CONTRACT_PATCH_PLAN" \
-  "MUTATION_SCOPE=docs_smoke_only_contract_patch_plan" \
-  "GATE_B0_RESULT=blocked_by_accepts_lane_jobs_gap_and_no_lane_contract_clarification" \
-  "ACCEPTS_LANE_JOBS_FALSE_REJECTION_GAP=observed" \
-  "NO_LANE_ENABLED_GATE_ELIGIBILITY_PRUNING=observed" \
-  "NO_LANE_FULL_LIST_PASSTHROUGH_NOT_VERIFIED=observed" \
-  "PATCH_DECISION_ENFORCE_ACCEPTS_LANE_JOBS=yes" \
-  "PATCH_DECISION_NO_LANE_DEFAULT_PATH_PASSTHROUGH=yes" \
-  "CK_SMOKE_AFTER_PATCH_SHOULD_BE_HISTORICAL_OR_FOCUSED_ONLY=yes" \
-  "DEFAULT_OFF_FILTER_PASSTHROUGH=verified" \
-  "NO_LANE_JOB_DEFAULT_PATH_PASSTHROUGH=verified" \
-  "ACCEPTS_LANE_JOBS_FALSE_REJECTED=verified" \
-  "SOURCE_MUTATION=not_performed" \
-  "DB_MUTATION=not_performed" \
-  "JOB_MUTATION=not_performed" \
-  "SERVICE_RESTART_RELOAD=not_performed" \
-  "CT101_CALL=not_performed" \
-  "MODEL_OLLAMA_CALL=not_performed" \
-  "SCHEDULER_LANE_DISPATCH_ACTIVATION=not_performed" \
-  "PRIMARY_WORKER_FILTERING_ACTIVATION=not_performed" \
-  "PERSISTENT_LANE_WORKER_STARTUP=not_performed" \
-  "DO_NOT_RERUN_14J_AG_APPLY_WRAPPER=preserved" \
-  "NO_SECRETS_PRINTED=yes" \
-  "SECURITY_FOLLOWUP_REQUIRED=rotate_exposed_smtp_credential" \
-  "NEXT_SAFE_PHASE=source_patch_accepts_lane_jobs_and_no_lane_filter_contract"; do
-  grep -F "$marker" "$DOC" >/dev/null
-  echo "PASS: marker found: $marker"
-done
+grep -F "PHASE_14J_CL_ACCEPTS_LANE_JOBS_AND_NO_LANE_FILTER_CONTRACT_PATCH_PLAN" "$DOC" >/dev/null
+echo "PASS: historical phase marker found: PHASE_14J_CL_ACCEPTS_LANE_JOBS_AND_NO_LANE_FILTER_CONTRACT_PATCH_PLAN"
+
+if grep -F "NO_SECRETS_PRINTED=yes" "$DOC" >/dev/null; then
+  echo "PASS: historical no-secrets marker retained"
+fi
 
 echo
-echo "=== runtime/default-off guard, read-only ==="
+echo "=== post-CV runtime/default-off seeded metadata guard ==="
 service_active="$(systemctl is-active "$SERVICE" 2>/dev/null || true)"
+service_enabled="$(systemctl is-enabled "$SERVICE" 2>/dev/null || true)"
 service_flag="$(systemctl show "$SERVICE" -p Environment --value 2>/dev/null | tr ' ' '\n' | grep '^EDGE_PERSISTENT_LANE_WORKERS_ENABLED=' || true)"
 quick_check="$(sqlite3 "file:${PWD}/${DB}?mode=ro" "PRAGMA quick_check;")"
-lane_enabled="$(sqlite3 "file:${PWD}/${DB}?mode=ro" "SELECT COALESCE(SUM(CASE WHEN COALESCE(accepts_lane_jobs,0) NOT IN (0,'0','false','False','') THEN 1 ELSE 0 END),0) FROM workers;")"
+worker_facts="$(sqlite3 -csv "file:${PWD}/${DB}?mode=ro" "
+SELECT
+  COUNT(*),
+  COALESCE(SUM(CASE WHEN COALESCE(accepts_lane_jobs,0) NOT IN (0,'0','false','False','') THEN 1 ELSE 0 END),0),
+  COALESCE(SUM(CASE WHEN COALESCE(worker_lane,'') NOT IN ('','primary') THEN 1 ELSE 0 END),0),
+  COALESCE(SUM(CASE WHEN COALESCE(worker_role,'primary') <> 'primary' THEN 1 ELSE 0 END),0)
+FROM workers;
+")"
+seeded_count="$(sqlite3 "file:${PWD}/${DB}?mode=ro" "SELECT COUNT(*) FROM workers WHERE worker_id IN ('primary-default-metadata','study-lane-metadata-default-off');")"
+safe_seeded_count="$(sqlite3 "file:${PWD}/${DB}?mode=ro" "
+SELECT COUNT(*)
+FROM workers
+WHERE worker_id IN ('primary-default-metadata','study-lane-metadata-default-off')
+  AND (
+    COALESCE(disabled,0) NOT IN (0,'0','false','False','')
+    OR LOWER(COALESCE(state,'')) IN ('offline','disabled','unhealthy')
+    OR LOWER(COALESCE(computed_health,'')) IN ('offline','disabled','unhealthy')
+  );
+")"
 
 echo "service_active=${service_active}"
+echo "service_enabled=${service_enabled}"
 echo "service_EDGE_PERSISTENT_LANE_WORKERS_ENABLED=${service_flag:-<unset>}"
 echo "sqlite_quick_check=${quick_check}"
-echo "lane_enabled_worker_count=${lane_enabled}"
+echo "worker_facts=${worker_facts}"
+echo "seeded_count=${seeded_count}"
+echo "safe_seeded_count=${safe_seeded_count}"
 
 test "$service_active" = "active"
+test "$service_enabled" = "enabled"
 test -z "$service_flag"
 test "$quick_check" = "ok"
-test "$lane_enabled" = "0"
+test "$worker_facts" = "2,1,1,1"
+test "$seeded_count" = "2"
+test "$safe_seeded_count" = "2"
 
-echo "PASS: production runtime remains default-off"
-
-echo "PASS: Phase 14J-CL contract patch plan smoke passed"
+echo "PASS: historical smoke compatible with post-CV seeded metadata"

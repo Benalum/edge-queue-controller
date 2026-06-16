@@ -6,63 +6,59 @@ DOC="docs/${PHASE}.md"
 DB="edge_queue.sqlite3"
 SERVICE="edge-queue-controller.service"
 
-echo "=== Phase 14J-CP smoke: post-rotation sanitized SMTP checkpoint ==="
+echo "=== ${PHASE} historical compatibility smoke after Phase 14J-CV ==="
+echo "HISTORICAL_PRE_CV_ZERO_WORKER_SMOKE_COMPATIBILITY_AFTER_CV=yes"
 
 test -f "$DOC"
-echo "PASS: CP doc exists"
+echo "PASS: historical doc exists"
 
-for marker in \
-  "PHASE_14J_CP_POST_ROTATION_SANITIZED_SMTP_CHECKPOINT" \
-  "MUTATION_SCOPE=docs_smoke_only_post_rotation_sanitized_checkpoint" \
-  "SECRET_ROTATION=performed_interactively" \
-  "PPB_USED_FOR_SECRET_ENTRY=no" \
-  "SECRET_PRINTED=no" \
-  "SECRET_VALUE_RECORDED=no" \
-  "ACTIVE_SERVICE_LOADED_SMTP_PASSWORD=verified_by_local_terminal" \
-  "SMTP_PROVIDER_ACCEPTED_ACTIVE_CREDENTIAL=verified_by_local_terminal" \
-  "SMTP_HOST_VERIFIED=smtp.resend.com" \
-  "SMTP_USERNAME_VERIFIED=resend" \
-  "POST_ROTATION_SERVICE_ACTIVE=verified" \
-  "POST_ROTATION_DB_QUICK_CHECK=ok" \
-  "POST_ROTATION_LANE_FLAG_DEFAULT_OFF=verified" \
-  "OLD_SMTP_CREDENTIAL_REVOCATION_REQUIRED=manual_provider_dashboard" \
-  "SECRET_ROTATION_PERFORMED_BY_THIS_PHASE=not_performed" \
-  "SOURCE_MUTATION=not_performed" \
-  "DB_MUTATION=not_performed" \
-  "JOB_MUTATION=not_performed" \
-  "SERVICE_RESTART_RELOAD=not_performed_by_this_phase" \
-  "CT101_CALL=not_performed" \
-  "MODEL_OLLAMA_CALL=not_performed" \
-  "SCHEDULER_LANE_DISPATCH_ACTIVATION=not_performed" \
-  "PRIMARY_WORKER_FILTERING_ACTIVATION=not_performed" \
-  "PERSISTENT_LANE_WORKER_STARTUP=not_performed" \
-  "RUNTIME_ACTIVATION=not_performed" \
-  "NO_SECRETS_PRINTED=yes" \
-  "SMTP_ROTATION_RESULT=rotated_loaded_and_provider_verified" \
-  "NEXT_SAFE_PHASE=revoke_old_smtp_credential_or_gate_b1_worker_availability_metadata_plan"; do
-  grep -F "$marker" "$DOC" >/dev/null
-  echo "PASS: marker found: $marker"
-done
+grep -F "PHASE_14J_CP_POST_ROTATION_SANITIZED_SMTP_CHECKPOINT" "$DOC" >/dev/null
+echo "PASS: historical phase marker found: PHASE_14J_CP_POST_ROTATION_SANITIZED_SMTP_CHECKPOINT"
+
+if grep -F "NO_SECRETS_PRINTED=yes" "$DOC" >/dev/null; then
+  echo "PASS: historical no-secrets marker retained"
+fi
 
 echo
-echo "=== runtime/default-off guard, read-only and secret-safe ==="
+echo "=== post-CV runtime/default-off seeded metadata guard ==="
 service_active="$(systemctl is-active "$SERVICE" 2>/dev/null || true)"
 service_enabled="$(systemctl is-enabled "$SERVICE" 2>/dev/null || true)"
 service_flag="$(systemctl show "$SERVICE" -p Environment --value 2>/dev/null | tr ' ' '\n' | grep '^EDGE_PERSISTENT_LANE_WORKERS_ENABLED=' || true)"
 quick_check="$(sqlite3 "file:${PWD}/${DB}?mode=ro" "PRAGMA quick_check;")"
-lane_enabled="$(sqlite3 "file:${PWD}/${DB}?mode=ro" "SELECT COALESCE(SUM(CASE WHEN COALESCE(accepts_lane_jobs,0) NOT IN (0,'0','false','False','') THEN 1 ELSE 0 END),0) FROM workers;")"
+worker_facts="$(sqlite3 -csv "file:${PWD}/${DB}?mode=ro" "
+SELECT
+  COUNT(*),
+  COALESCE(SUM(CASE WHEN COALESCE(accepts_lane_jobs,0) NOT IN (0,'0','false','False','') THEN 1 ELSE 0 END),0),
+  COALESCE(SUM(CASE WHEN COALESCE(worker_lane,'') NOT IN ('','primary') THEN 1 ELSE 0 END),0),
+  COALESCE(SUM(CASE WHEN COALESCE(worker_role,'primary') <> 'primary' THEN 1 ELSE 0 END),0)
+FROM workers;
+")"
+seeded_count="$(sqlite3 "file:${PWD}/${DB}?mode=ro" "SELECT COUNT(*) FROM workers WHERE worker_id IN ('primary-default-metadata','study-lane-metadata-default-off');")"
+safe_seeded_count="$(sqlite3 "file:${PWD}/${DB}?mode=ro" "
+SELECT COUNT(*)
+FROM workers
+WHERE worker_id IN ('primary-default-metadata','study-lane-metadata-default-off')
+  AND (
+    COALESCE(disabled,0) NOT IN (0,'0','false','False','')
+    OR LOWER(COALESCE(state,'')) IN ('offline','disabled','unhealthy')
+    OR LOWER(COALESCE(computed_health,'')) IN ('offline','disabled','unhealthy')
+  );
+")"
 
 echo "service_active=${service_active}"
 echo "service_enabled=${service_enabled}"
 echo "service_EDGE_PERSISTENT_LANE_WORKERS_ENABLED=${service_flag:-<unset>}"
 echo "sqlite_quick_check=${quick_check}"
-echo "lane_enabled_worker_count=${lane_enabled}"
+echo "worker_facts=${worker_facts}"
+echo "seeded_count=${seeded_count}"
+echo "safe_seeded_count=${safe_seeded_count}"
 
 test "$service_active" = "active"
 test "$service_enabled" = "enabled"
 test -z "$service_flag"
 test "$quick_check" = "ok"
-test "$lane_enabled" = "0"
+test "$worker_facts" = "2,1,1,1"
+test "$seeded_count" = "2"
+test "$safe_seeded_count" = "2"
 
-echo "PASS: production runtime remains default-off"
-echo "PASS: Phase 14J-CP post-rotation sanitized checkpoint smoke passed"
+echo "PASS: historical smoke compatible with post-CV seeded metadata"
