@@ -1,0 +1,53 @@
+# Phase 14J-AA schema artifact record
+
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+database_schema_change_in_this_phase:no
+job_23_mutation_in_this_phase:no
+worker_registry_mutation_in_this_phase:no
+worker_registration_change_in_this_phase:no
+scheduler_behavior_change_in_this_phase:no
+sql_artifact_created:yes
+sql_artifact_applied:no
+
+source_contract:
+- Phase 14J-Z created the no-apply schema patch contract.
+- Target DB remains edge_queue.sqlite3.
+- Target table remains workers.
+- Future patch must be additive only.
+- Future patch must preserve default-off behavior.
+
+sql_artifact:
+- ops/db/default-off-worker-registry-lane-metadata.sql
+
+artifact_columns:
+- worker_role TEXT DEFAULT 'primary'
+- worker_lane TEXT DEFAULT ''
+- accepts_lane_jobs INTEGER DEFAULT 0
+- capabilities TEXT DEFAULT '[]'
+- disabled INTEGER DEFAULT 0
+- current_running_jobs INTEGER DEFAULT 0
+- state TEXT DEFAULT 'available'
+- computed_health TEXT DEFAULT ''
+
+no_apply_boundary:
+- This phase must not run sqlite3.
+- This phase must not run a Python sqlite mutation.
+- This phase must not run an apply wrapper.
+- This phase must not change the live database.
+- This phase must not restart or reload services.
+- This phase must not enable EDGE_PERSISTENT_LANE_WORKERS_ENABLED.
+
+future_apply_requirement:
+- A future apply wrapper must inspect existing columns before applying.
+- A future apply wrapper must create a backup/snapshot first or stop.
+- A future apply wrapper must only add missing columns.
+- A future apply wrapper must verify safe defaults after apply.
+- A future apply wrapper must leave persistent lane workers disabled.
+
+candidate_next_phase:
+- Phase 14J-AB default-off worker registry lane metadata apply-wrapper plan, docs/smoke only.
