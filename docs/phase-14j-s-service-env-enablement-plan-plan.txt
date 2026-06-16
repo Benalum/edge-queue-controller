@@ -1,0 +1,52 @@
+# Phase 14J-S service environment enablement plan
+
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+job_23_mutation_in_this_phase:no
+warmup_execution_enablement_in_this_phase:no
+router_model_selection_enablement_in_this_phase:no
+router_evidence_writer_enablement_in_this_phase:no
+
+future_flag:
+- EDGE_PERSISTENT_LANE_WORKERS_ENABLED=1
+
+future_enablement_scope:
+- controller service environment only
+- no CT101 mutation unless separately approved
+- no database migration
+- no live model call
+- no job 23 mutation
+- no router model selection activation
+- no router evidence writer activation
+
+required_before_enablement:
+- inspect current service environment without secrets
+- verify current worker registry shape or plan a safe read-only inspection
+- verify lane metadata exists or define how workers opt into lane metadata
+- define primary fallback decision
+- define rollback command
+- define observability checks
+- define smoke checks to run before and after enablement
+- define maximum blast radius
+- define stop conditions
+
+rollback_requirement:
+- remove or set EDGE_PERSISTENT_LANE_WORKERS_ENABLED=0
+- restart/reload only the controller service if explicitly approved
+- verify disabled pass-through smoke after rollback
+
+observability_requirement:
+- scheduler preview/status must remain safe
+- no raw prompts
+- no auth headers
+- no cookies
+- no full queue payloads
+- no secrets
+- no model endpoint calls
+
+candidate_next_phase:
+- Phase 14J-T read-only current service environment inspection plan
