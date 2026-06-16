@@ -1,0 +1,82 @@
+# Phase 14J-Z default-off worker registry lane metadata schema patch contract
+
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+database_schema_change_in_this_phase:no
+job_23_mutation_in_this_phase:no
+worker_registry_mutation_in_this_phase:no
+worker_registration_change_in_this_phase:no
+scheduler_behavior_change_in_this_phase:no
+
+source_decision:
+- Phase 14J-X blocks persistent lane worker enablement.
+- Phase 14J-Y designs default-off worker registry lane metadata support.
+- Phase 14J-W selected SQLite DB: edge_queue.sqlite3.
+- Phase 14J-W selected worker table: workers.
+- Phase 14J-W found missing lane metadata columns.
+
+future_patch_goal:
+- Add additive worker registry metadata columns in a future separately gated phase.
+- Preserve existing rows and existing worker registration behavior.
+- Preserve current scheduler behavior while EDGE_PERSISTENT_LANE_WORKERS_ENABLED is absent or disabled.
+- Avoid CT101 mutation unless separately approved.
+- Avoid service environment changes.
+- Avoid live endpoint calls.
+- Avoid live model calls.
+- Avoid job 23 mutation.
+
+future_target_table:
+- workers
+
+future_additive_columns:
+- worker_role TEXT DEFAULT 'primary'
+- worker_lane TEXT DEFAULT ''
+- accepts_lane_jobs INTEGER DEFAULT 0
+- capabilities TEXT DEFAULT '[]'
+- disabled INTEGER DEFAULT 0
+- current_running_jobs INTEGER DEFAULT 0
+- state TEXT DEFAULT 'available'
+- computed_health TEXT DEFAULT ''
+
+future_patch_constraints:
+- Additive only.
+- No column removal.
+- No table rebuild unless explicitly approved.
+- No destructive migration.
+- No scheduler activation.
+- No service flag enablement.
+- No worker registration behavior change in the schema-only phase.
+- Existing workers must remain compatible.
+- Existing workers must not become lane workers by default.
+- Existing workers must not accept lane jobs by default.
+- Existing primary/default scheduling must continue.
+
+future_pre_apply_checks:
+- verify current HEAD and tag
+- verify SQLite DB path and workers table
+- verify missing columns before patch
+- verify no unexpected pending git changes
+- back up or snapshot strategy must be decided before apply
+- define rollback strategy before apply
+- define post-apply read-only inspection before apply
+
+future_post_apply_checks:
+- verify all additive columns exist
+- verify existing rows retain safe defaults
+- verify EDGE_PERSISTENT_LANE_WORKERS_ENABLED remains absent or disabled
+- verify scheduler static shape unchanged
+- verify score_worker_for_job remains isolated from lane helpers
+- verify router writer remains absent
+- verify disabled warmup markers remain present
+
+rollback_policy:
+- Since SQLite cannot safely drop columns in a simple rollback, rollback should rely on pre-apply backup/snapshot if schema apply is ever performed.
+- Service flag rollback remains separate and must keep lane filtering disabled.
+- Additive metadata columns may be left in place if harmless and default-off.
+
+candidate_next_phase:
+- Phase 14J-AA default-off worker registry lane metadata schema artifact, docs/smoke only, no apply.
