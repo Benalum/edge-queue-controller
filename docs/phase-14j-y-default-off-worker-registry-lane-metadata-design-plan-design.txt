@@ -1,0 +1,67 @@
+# Phase 14J-Y default-off worker registry lane metadata design plan
+
+runtime_change_in_this_phase:no
+service_environment_change_in_this_phase:no
+persistent_lane_workers_enabled_in_this_phase:no
+ct101_mutation_in_this_phase:no
+live_model_call_in_this_phase:no
+database_query_or_mutation_in_this_phase:no
+database_schema_change_in_this_phase:no
+job_23_mutation_in_this_phase:no
+worker_registry_mutation_in_this_phase:no
+worker_registration_change_in_this_phase:no
+scheduler_behavior_change_in_this_phase:no
+
+source_decision:
+- Phase 14J-X blocks persistent lane worker enablement.
+- Reason: worker registry lane metadata columns are missing.
+- Phase 14J-W selected table: workers.
+- Phase 14J-W found present fields: worker_id,name,target_name,max_concurrent_jobs.
+- Phase 14J-W found missing fields: computed_health,state,capabilities,worker_role,worker_lane,accepts_lane_jobs,current_running_jobs,disabled.
+
+design_goal:
+- Add worker registry lane metadata support in a future default-off phase.
+- Preserve current scheduler behavior while the service flag is disabled.
+- Preserve existing worker registration compatibility.
+- Avoid CT101 mutation unless separately approved.
+- Avoid live model calls.
+- Avoid job 23 mutation.
+
+candidate_schema_additions:
+- worker_role TEXT DEFAULT 'primary'
+- worker_lane TEXT DEFAULT ''
+- accepts_lane_jobs INTEGER DEFAULT 0
+- capabilities TEXT DEFAULT '[]'
+- disabled INTEGER DEFAULT 0
+- current_running_jobs INTEGER DEFAULT 0
+- state TEXT DEFAULT 'available'
+- computed_health TEXT DEFAULT ''
+
+compatibility_policy:
+- Existing workers default to primary role.
+- Existing workers do not accept lane jobs by default.
+- Existing workers receive empty worker_lane.
+- Existing workers remain eligible for current non-lane scheduling behavior.
+- Lane filtering remains behind EDGE_PERSISTENT_LANE_WORKERS_ENABLED.
+- No worker is treated as a lane worker without explicit opt-in metadata.
+
+registration_policy:
+- Worker registration may later accept optional lane metadata.
+- Missing lane metadata must default safely.
+- Registration payloads must not require new fields for existing workers.
+- Registration must not expose secrets.
+- Registration must not include raw prompts or job payloads.
+
+activation_policy:
+- Schema support alone must not enable filtering.
+- Registration support alone must not enable filtering.
+- Service environment enablement remains separate.
+- Live scheduler behavior remains unchanged until a later explicit enablement gate.
+
+rollback_policy:
+- Additive metadata columns should be safe to leave in place.
+- Service flag rollback must keep lane filtering disabled.
+- Existing scheduler behavior must continue if metadata is absent, empty, or defaulted.
+
+candidate_next_phase:
+- Phase 14J-Z default-off worker registry lane metadata schema patch contract, docs/smoke only.
