@@ -18,7 +18,12 @@ from wakeonlan import send_magic_packet
 
 load_dotenv()
 
-DB_PATH = Path("edge_queue.sqlite3")
+DB_PATH = Path(
+    os.environ.get("EDGE_QUEUE_SQLITE_DB_PATH")
+    or os.environ.get("EDGE_QUEUE_DB_PATH")
+    or os.environ.get("EDGE_CONTROLLER_DB_PATH")
+    or "edge_queue.sqlite3"
+)
 
 EDGE_DRY_RUN = os.getenv("EDGE_DRY_RUN", "true").lower() == "true"
 HOST_CHECK_URL = os.getenv("HOST_CHECK_URL", "http://127.0.0.1:3010")
