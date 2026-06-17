@@ -1,0 +1,117 @@
+# Phase 14J-ET - Park Tailscale Hardening and Plan Website VM Migration
+
+PHASE_14J_ET_PARK_TAILSCALE_HARDENING_AND_PLAN_WEBSITE_VM_MIGRATION
+
+## Scope
+
+MUTATION_SCOPE=docs_smoke_only_architecture_migration_plan
+
+This phase records the architecture pivot after Phase 14J-ES. It parks Tailscale policy hardening and starts the migration plan to move production website responsibilities off the laptop.
+
+No VM/container is created in this phase. No Cloudflare route is changed. No Tailscale ACL/grants/tag is changed. No firewall is changed. No service restart/reload is performed. No worker is started. No runtime behavior is activated. No production DB/job mutation is performed.
+
+SAFE_TRAP_PATTERN=yes
+NO_TRAP_EXIT=yes
+
+## Carried-forward state
+
+PHASE_14J_ES_RESULT=ready_for_final_manual_apply_or_post_change_validation_gate
+TAILSCALE_HARDENING_STATUS=parked
+TAILSCALE_POLICY_MUTATION_PERFORMED=no
+TAILSCALE_ADMIN_CONSOLE_CHANGE_PERFORMED=no
+FIREWALL_MUTATION_PERFORMED=no
+LAN_FIREWALL_TCP22_OPEN_PERFORMED=no
+WORKER_START_PERFORMED=no
+RUNTIME_ACTIVATION_PERFORMED=no
+
+## Architecture decision
+
+ARCHITECTURE_PIVOT=move_production_website_off_laptop
+LOW_POWER_PROXMOX_HOST_CONNECTED_TO_TAILSCALE=yes
+WEBSITE_EDGE_TARGET=vm_on_low_power_proxmox
+WEBSITE_EDGE_ISOLATION_MODEL=vm_for_public_edge
+CONTROLLER_QUEUE_TARGET=private_container_or_vm_later
+AI_RUNTIME_TARGET=private_llms_ct101_runtime
+LAPTOP_TARGET_ROLE=admin_dev_only
+PVESO_TARGET_ROLE=private_heavy_ai_runtime
+TAILSCALE_HARDENING_RESUME_AFTER_WEBSITE_MIGRATION=yes
+
+## Migration plan
+
+MIGRATION_STAGE_1=repo_docs_smoke_checkpoint
+MIGRATION_STAGE_2=low_power_proxmox_read_only_inventory
+MIGRATION_STAGE_3=website_vm_design
+MIGRATION_STAGE_4=website_vm_create_after_explicit_approval
+MIGRATION_STAGE_5=website_app_clone_and_local_test
+MIGRATION_STAGE_6=cloudflare_test_route_parallel_validation
+MIGRATION_STAGE_7=production_cutover_after_explicit_approval
+MIGRATION_STAGE_8=controller_queue_private_container_or_vm_migration
+MIGRATION_STAGE_9=remove_laptop_from_production_path
+MIGRATION_STAGE_10=tailscale_vlan_firewall_hardening
+
+## Website VM target
+
+WEBSITE_VM_PURPOSE=public_website_edge
+WEBSITE_VM_PUBLIC_FACING=yes
+WEBSITE_VM_RUNS_CLOUDFLARE_TUNNEL=planned
+WEBSITE_VM_RUNS_WRAPPER_OR_PUBLIC_FRONTEND=planned
+WEBSITE_VM_HAS_PROXMOX_MANAGEMENT_ACCESS=no
+WEBSITE_VM_HAS_WORKER_START_ACCESS=no
+WEBSITE_VM_HAS_RUNTIME_ACTIVATION_ACCESS=no
+WEBSITE_VM_HAS_SERVICE_RESTART_ACCESS=no
+WEBSITE_VM_HAS_RAW_INFRASTRUCTURE_SECRETS=no
+
+## Internal migration target
+
+CONTROLLER_QUEUE_MIGRATION=planned_after_website_edge
+CONTROLLER_QUEUE_PUBLIC_FACING=no
+CONTROLLER_QUEUE_PRIVATE_ONLY=yes
+CT101_LLMS_DIRECT_PUBLIC_ACCESS=no
+PUBLIC_USERS_CAN_CONTROL_INFRASTRUCTURE=no
+
+## Safety gates
+
+REQUIRE_LOW_POWER_PROXMOX_INVENTORY_BEFORE_VM_CREATE=yes
+REQUIRE_WEBSITE_VM_DESIGN_BEFORE_VM_CREATE=yes
+REQUIRE_EXPLICIT_VM_CREATE_APPROVAL=yes
+REQUIRE_CLOUDFLARE_TEST_ROUTE_BEFORE_PRODUCTION_CUTOVER=yes
+REQUIRE_EXPLICIT_PRODUCTION_CUTOVER_APPROVAL=yes
+REQUIRE_ROLLBACK_PLAN_FOR_CLOUDFLARE_CUTOVER=yes
+REQUIRE_NO_TAILSCALE_HARDENING_DURING_WEBSITE_BASELINE=yes
+REQUIRE_NO_LAN_FIREWALL_TCP22_OPEN=yes
+REQUIRE_NO_WORKER_START=yes
+REQUIRE_NO_RUNTIME_ACTIVATION=yes
+REQUIRE_NO_PRODUCTION_DB_JOB_MUTATION=yes
+REQUIRE_NO_RERUN_14J_AG_APPLY_WRAPPER=yes
+
+## Boundaries preserved
+
+APP_SOURCE_MUTATION=not_performed
+PRODUCTION_DB_MUTATION=not_performed
+JOB_MUTATION=not_performed
+CONTROLLER_SERVICE_RESTART_RELOAD=not_performed
+PROXMOX_SERVICE_RESTART_RELOAD=not_performed
+FIREWALL_MUTATION=not_performed
+SSH_CONFIG_MUTATION=not_performed
+LAN_FIREWALL_TCP22_OPEN=not_performed
+TAILSCALE_ACL_MUTATION=not_performed
+TAILSCALE_ADMIN_CONSOLE_CHANGE=not_performed
+PROXMOX_USER_MUTATION=not_performed
+CLOUDFLARE_ROUTE_MUTATION=not_performed
+VM_CREATION=not_performed
+CONTAINER_CREATION=not_performed
+CT101_CALL=not_performed
+MODEL_OLLAMA_CALL=not_performed
+POWER_ENDPOINT_CALL=not_performed
+WORKER_START_PERFORMED=no
+RUNTIME_ACTIVATION=not_performed
+SERVICE_ENV_MUTATION=not_performed
+GITHUB_BRANCH_OR_REPO_DELETE=not_performed
+FULL_SYSTEMD_ENVIRONMENT_PRINTING=not_performed
+RAW_SECRET_PRINTING=not_performed
+DO_NOT_RERUN_14J_AG_APPLY_WRAPPER=preserved
+
+## Result
+
+WEBSITE_VM_MIGRATION_PLAN_RESULT=ready_for_low_power_proxmox_inventory
+NEXT_SAFE_PHASE=low_power_proxmox_read_only_inventory
