@@ -1,0 +1,153 @@
+# Phase 14J-ER - Tailscale SSH Policy Approval Packet
+
+PHASE_14J_ER_TAILSCALE_SSH_POLICY_APPROVAL_PACKET
+
+## Scope
+
+MUTATION_SCOPE=docs_smoke_only_tailscale_ssh_policy_approval_packet
+
+This phase creates an approval packet only. It does not apply Tailscale ACLs, does not change the Tailscale admin console, does not mutate Proxmox users, does not mutate SSH config, does not open LAN firewall TCP22, and does not change controller service environment.
+
+SAFE_TRAP_PATTERN=yes
+NO_TRAP_EXIT=yes
+
+## Carried-forward EQ result
+
+EQ_RESULT=ready_for_candidate_c_approval_packet
+EQ_SELECTED_PATH=dedicated_tagged_automation_identity_candidate_c
+EQ_FALLBACK_PATH=narrow_tailscale_ssh_accept_rule_candidate_b
+EQ_PARKED_PATH=standard_openssh_over_tailscale_ip_candidate_d
+NONINTERACTIVE_SSH_READY=no
+TAILSCALE_ADDITIONAL_CHECK_REQUIRED=yes
+DIRECT_LAN_SSHD_REQUIRED=no
+LAN_FIREWALL_TCP22_OPEN_REQUIRED=no
+GUARDED_WORKER_START_REMAINS_BLOCKED=yes
+
+## Approval packet intent
+
+TAILSCALE_SSH_POLICY_APPROVAL_PACKET=ready
+APPROVAL_PACKET_TARGET_CANDIDATE=Candidate_C_dedicated_tagged_automation_identity
+APPROVAL_PACKET_PURPOSE=allow_controller_to_perform_bounded_noninteractive_proxmox_management_over_tailscale_without_opening_lan_ssh
+APPROVAL_PACKET_DOES_NOT_APPLY_POLICY=yes
+APPROVAL_PACKET_PLACEHOLDER_ONLY=yes
+APPROVAL_PACKET_NO_RAW_DEVICE_NAMES=yes
+APPROVAL_PACKET_NO_RAW_USER_NAMES=yes
+APPROVAL_PACKET_NO_RAW_TAILSCALE_AUTH_URL=yes
+
+## Candidate C policy shape, placeholder-only
+
+POLICY_SHAPE_PLACEHOLDER_ONLY=yes
+POLICY_SHAPE_TAGOWNERS_REQUIRED=yes
+POLICY_SHAPE_SSH_ACTION=accept
+POLICY_SHAPE_SRC=tag_apc_controller_placeholder
+POLICY_SHAPE_DST=tag_proxmox_management_placeholder
+POLICY_SHAPE_USERS=dedicated_automation_user_placeholder
+POLICY_SHAPE_NO_CHECK_ACTION_FOR_AUTOMATION_PATH=yes
+POLICY_SHAPE_KEEP_HUMAN_ADMIN_CHECK_MODE_SEPARATE=yes
+POLICY_SHAPE_NO_WILDCARD_SRC=yes
+POLICY_SHAPE_NO_WILDCARD_DST=yes
+POLICY_SHAPE_NO_WILDCARD_USERS=yes
+POLICY_SHAPE_NO_BROAD_ROOT_ACCESS=yes
+
+## Required human/admin review checklist
+
+REVIEW_CHECK_CONTROLLER_SOURCE_SCOPE=yes
+REVIEW_CHECK_PROXMOX_DESTINATION_SCOPE=yes
+REVIEW_CHECK_AUTOMATION_USER_SCOPE=yes
+REVIEW_CHECK_TAG_OWNER_SCOPE=yes
+REVIEW_CHECK_HUMAN_ADMIN_CHECK_MODE_REMAINS_SEPARATE=yes
+REVIEW_CHECK_NO_LAN_FIREWALL_OPEN=yes
+REVIEW_CHECK_NO_PROXMOX_FIREWALL_WEAKENING=yes
+REVIEW_CHECK_NO_CONTROLLER_SERVICE_ENV_CHANGE_IN_THIS_PACKET=yes
+REVIEW_CHECK_NO_WORKER_START_IN_THIS_PACKET=yes
+REVIEW_CHECK_NO_RUNTIME_ACTIVATION_IN_THIS_PACKET=yes
+REVIEW_CHECK_ROLLBACK_PLAN_PRESENT=yes
+
+## Rollback plan, placeholder-only
+
+ROLLBACK_PLAN_REQUIRED=yes
+ROLLBACK_PLAN_STEP_1=do_not_apply_if_policy_diff_is_unclear
+ROLLBACK_PLAN_STEP_2=save_current_tailnet_policy_before_change
+ROLLBACK_PLAN_STEP_3=apply_candidate_policy_only_after_explicit_user_approval
+ROLLBACK_PLAN_STEP_4=run_post_change_read_only_noninteractive_ssh_diagnostic
+ROLLBACK_PLAN_STEP_5=if_diagnostic_fails_restore_previous_tailnet_policy
+ROLLBACK_PLAN_STEP_6=verify_runtime_default_off_state_remains_unchanged
+ROLLBACK_PLAN_NO_WORKER_START=yes
+ROLLBACK_PLAN_NO_RUNTIME_ACTIVATION=yes
+
+## Post-change validation gate, future phase only
+
+POST_CHANGE_VALIDATION_REQUIRED=yes
+POST_CHANGE_VALIDATION_PHASE=phase-14j-es-tailscale-ssh-policy-post-change-read-only-validation
+POST_CHANGE_VALIDATION_CHECK_TARGET_HASH_ONLY=yes
+POST_CHANGE_VALIDATION_CHECK_TCP22_BANNER_HASH_ONLY=yes
+POST_CHANGE_VALIDATION_CHECK_BATCHMODE_NONINTERACTIVE_MARKER=yes
+POST_CHANGE_VALIDATION_CHECK_NO_REMOTE_MUTATION=yes
+POST_CHANGE_VALIDATION_CHECK_NO_PRODUCTION_DB_MUTATION=yes
+POST_CHANGE_VALIDATION_CHECK_NO_JOB_MUTATION=yes
+POST_CHANGE_VALIDATION_CHECK_NO_WORKER_START=yes
+POST_CHANGE_VALIDATION_CHECK_NO_RUNTIME_ACTIVATION=yes
+
+## Explicit approval required before any mutation
+
+TAILSCALE_ACL_MUTATION=requires_future_explicit_approval
+TAILSCALE_ADMIN_CONSOLE_CHANGE=requires_future_explicit_approval
+PROXMOX_USER_MUTATION=requires_future_explicit_approval
+SSH_CONFIG_MUTATION=requires_future_explicit_approval
+SERVICE_ENV_MUTATION=requires_future_explicit_approval
+FIREWALL_MUTATION=not_planned
+LAN_FIREWALL_TCP22_OPEN=not_planned
+WORKER_START=not_allowed
+RUNTIME_ACTIVATION=not_allowed
+
+## Approval phrase for future mutation phase
+
+APPROVAL_PHRASE_REQUIRED_FOR_NEXT_MUTATION=yes
+APPROVAL_PHRASE_SUMMARY=approve_tailnet_policy_candidate_c_only_after_review_no_lan_firewall_no_worker_start_no_runtime_activation
+
+The future approval must explicitly confirm:
+- Candidate C policy shape has been reviewed in the Tailscale admin console.
+- Any real device, tag, and user names were reviewed locally by the user/admin, not pasted into chat.
+- No LAN firewall TCP22 opening is allowed.
+- No worker start or runtime activation is allowed.
+- A rollback plan exists.
+- Post-change read-only validation is required.
+
+## Boundaries preserved by ER
+
+APP_SOURCE_MUTATION=not_performed
+PRODUCTION_DB_MUTATION=not_performed
+JOB_MUTATION=not_performed
+CONTROLLER_SERVICE_RESTART_RELOAD=not_performed
+PROXMOX_SERVICE_RESTART_RELOAD=not_performed
+FIREWALL_MUTATION=not_performed
+SSH_CONFIG_MUTATION=not_performed
+LAN_FIREWALL_TCP22_OPEN=not_performed
+TAILSCALE_ACL_MUTATION=not_performed
+TAILSCALE_ADMIN_CONSOLE_CHANGE=not_performed
+PROXMOX_USER_MUTATION=not_performed
+CT101_CALL=not_performed
+MODEL_OLLAMA_CALL=not_performed
+POWER_ENDPOINT_CALL=not_performed
+WORKER_START_PERFORMED=no
+SCHEDULER_LANE_DISPATCH_ACTIVATION=not_performed
+PRIMARY_WORKER_FILTERING_ACTIVATION=not_performed
+PERSISTENT_LANE_WORKER_STARTUP=not_performed
+RUNTIME_ACTIVATION=not_performed
+SERVICE_ENV_MUTATION=not_performed
+PROXMOX_SSH_CALL=not_performed
+PROXMOX_REMOTE_COMMAND_EXECUTION=not_performed
+GITHUB_BRANCH_OR_REPO_DELETE=not_performed
+FULL_SYSTEMD_ENVIRONMENT_PRINTING=not_performed
+RAW_SSH_TARGET_PRINTING=not_performed
+RAW_KEY_PATH_PRINTING=not_performed
+RAW_TAILSCALE_AUTH_URL_RECORDING=not_performed
+HASH_ONLY_CONFIGURED_TARGET_OUTPUT=yes
+DO_NOT_RERUN_14J_AG_APPLY_WRAPPER=preserved
+NO_SECRETS_PRINTED=yes
+
+## Result
+
+TAILSCALE_SSH_POLICY_APPROVAL_PACKET_RESULT=ready_for_user_admin_review
+
+NEXT_SAFE_PHASE=tailscale_ssh_policy_user_admin_review_required
