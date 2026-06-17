@@ -1,0 +1,133 @@
+# Phase 14J-EN - Tailscale SSH Noninteractive Readiness Read-Only Diagnostics
+
+PHASE_14J_EN_TAILSCALE_SSH_NONINTERACTIVE_READINESS_READ_ONLY_DIAGNOSTICS
+
+## Scope
+
+MUTATION_SCOPE=docs_smoke_only_tailscale_ssh_noninteractive_readiness_result
+
+This phase records the approved Tailscale SSH noninteractive readiness read-only diagnostic result.
+
+SAFE_TRAP_PATTERN=yes
+NO_TRAP_EXIT=yes
+
+No app source is mutated. No production DB rows are changed. No jobs are mutated. No controller service is restarted or reloaded. No Proxmox service is restarted or reloaded. No firewall is mutated. No ssh config is mutated. No LAN firewall TCP22 opening occurs. No Tailscale ACL is mutated. No Tailscale admin console change occurs. No Proxmox user is mutated. No controller power endpoint is called. No worker is started. No runtime is activated. No service environment is mutated. No GitHub branch or repository deletion occurs. No full systemd environment is printed. No raw SSH target or raw key path is printed. No raw Tailscale auth URL is recorded.
+
+## Diagnostic result carried forward
+
+EN_DIAGNOSTICS_RESULT=completed_read_only
+EN_MUTATION_RESULT=none
+CONFIGURED_PROXMOX_SSH_TARGET_PRESENT=yes
+CONFIGURED_PROXMOX_SSH_TARGET_HASH=7d65a629e9ce
+CONFIGURED_PROXMOX_SSH_HOST_HASH=9960b990ae47
+CONFIGURED_PROXMOX_SSH_USER_HASH=4813494d137e
+CONFIGURED_PROXMOX_SSH_USER_PRESENT=yes
+CONFIGURED_PROXMOX_SSH_TARGET_RAW_PRINTED=no
+CONFIGURED_PROXMOX_KEY_PATH_RAW_PRINTED=no
+
+CONFIGURED_TARGET_TCP22_RESULT=received
+CONFIGURED_TARGET_BANNER_PREFIX=SSH-2.0
+CONFIGURED_TARGET_BANNER_VENDOR=Tailscale
+CONFIGURED_TARGET_BANNER_HASH=e687598eb9c872c4
+
+SSH_G_RC=0
+SSH_G_HOSTNAME_HASH=9960b990ae47
+SSH_G_USER_HASH=4813494d137e
+SSH_G_PORT=22
+SSH_G_BATCHMODE=no
+SSH_G_PROXYCOMMAND_PRESENT=no
+SSH_G_IDENTITYFILE_COUNT=1
+SSH_G_RAW_OUTPUT_PRINTED=no
+SSH_G_STDERR_EMPTY=yes
+
+SSH_BATCHMODE_RC=255
+SSH_BATCHMODE_STDOUT_SIZE=0
+SSH_BATCHMODE_REMOTE_MARKER_SEEN=no
+SSH_BATCHMODE_STDOUT_EMPTY=yes
+
+SSH_VERBOSE_RC=255
+SSH_VERBOSE_STDOUT_SIZE=0
+SSH_VERBOSE_REMOTE_MARKER_SEEN=no
+SSH_VERBOSE_AUTH_TAILSCALE_SEEN=yes
+SSH_VERBOSE_AUTH_AUTHENTICATING_SEEN=yes
+SSH_VERBOSE_AUTH_HOSTKEY_SEEN=yes
+SSH_VERBOSE_AUTH_PUBLICKEY_SEEN=no
+SSH_VERBOSE_AUTH_PERMISSION_DENIED_SEEN=no
+SSH_VERBOSE_AUTH_NO_MORE_METHODS_SEEN=no
+SSH_VERBOSE_AUTH_CONNECTION_CLOSED_SEEN=no
+SSH_VERBOSE_AUTH_STAGE_REQUIRED_TAILSCALE_ADDITIONAL_CHECK=yes
+SSH_VERBOSE_AUTH_STAGE_RAW_URL_RECORDED=no
+
+TAILSCALE_SSH_NONINTERACTIVE_READINESS_STATUS=tailscale_ssh_noninteractive_tailscale_auth_or_acl_issue
+
+## Interpretation
+
+EN_NARROWED_RESULT=tailscale_ssh_requires_additional_auth_check_for_noninteractive_command
+CONFIGURED_TAILSCALE_TARGET_NETWORK_REACHABLE=yes
+CONFIGURED_TAILSCALE_TARGET_BANNER_VENDOR=Tailscale
+SSH_CONFIG_EXPANSION_WORKS=yes
+NONINTERACTIVE_SSH_READY=no
+REMOTE_COMMAND_EXECUTED=no
+TAILSCALE_AUTH_OR_ACL_ISSUE_CONFIRMED=yes
+TAILSCALE_ADDITIONAL_CHECK_REQUIRED=yes
+DIRECT_LAN_SSHD_REQUIRED=no
+LAN_FIREWALL_TCP22_OPEN_REQUIRED=no
+GUARDED_WORKER_START_REMAINS_BLOCKED=yes
+
+The configured Tailscale target is reachable and resolves through SSH configuration. The failure is not LAN reachability. It is the Tailscale SSH authorization/additional-check path for noninteractive command execution.
+
+## Safety state after diagnostics
+
+GIT_STATUS_AFTER=clean
+SERVICE_ACTIVE_AFTER=active
+SERVICE_ENABLED_AFTER=enabled
+SERVICE_FLAG_REMAINED_UNSET=verified
+SQLITE_QUICK_CHECK_AFTER=ok
+WORKER_FACTS_UNCHANGED=verified
+STUDY_ROW_REMAINED_ENABLED_OFFLINE=verified
+JOB_SUMMARY_UNCHANGED=verified
+PRODUCTION_STATE_UNCHANGED_AFTER_DIAGNOSTICS=verified
+
+## Next phase
+
+NEXT_PHASE_NAME=phase-14j-eo-tailscale-ssh-auth-policy-repair-plan
+
+The next phase should be docs/smoke-only planning for how to make the configured Tailscale SSH management path suitable for safe noninteractive automation without opening LAN SSH. Any future Tailscale ACL/admin-console/user mapping change must require explicit approval and should be serialized.
+
+## Boundaries preserved by EN
+
+APP_SOURCE_MUTATION=not_performed
+PRODUCTION_DB_MUTATION=not_performed
+JOB_MUTATION=not_performed
+CONTROLLER_SERVICE_RESTART_RELOAD=not_performed
+PROXMOX_SERVICE_RESTART_RELOAD=not_performed
+FIREWALL_MUTATION=not_performed
+SSH_CONFIG_MUTATION=not_performed
+LAN_FIREWALL_TCP22_OPEN=not_performed
+TAILSCALE_ACL_MUTATION=not_performed
+TAILSCALE_ADMIN_CONSOLE_CHANGE=not_performed
+PROXMOX_USER_MUTATION=not_performed
+CT101_CALL=not_performed
+MODEL_OLLAMA_CALL=not_performed
+POWER_ENDPOINT_CALL=not_performed
+WORKER_START_PERFORMED=no
+SCHEDULER_LANE_DISPATCH_ACTIVATION=not_performed
+PRIMARY_WORKER_FILTERING_ACTIVATION=not_performed
+PERSISTENT_LANE_WORKER_STARTUP=not_performed
+RUNTIME_ACTIVATION=not_performed
+SERVICE_ENV_MUTATION=not_performed
+PROXMOX_REMOTE_COMMAND_MUTATION=not_performed
+GITHUB_BRANCH_OR_REPO_DELETE=not_performed
+FULL_SYSTEMD_ENVIRONMENT_PRINTING=not_performed
+RAW_SSH_TARGET_PRINTING=not_performed
+RAW_KEY_PATH_PRINTING=not_performed
+RAW_TAILSCALE_AUTH_URL_RECORDING=not_performed
+HASH_ONLY_CONFIGURED_TARGET_OUTPUT=yes
+DO_NOT_RERUN_14J_AG_APPLY_WRAPPER=preserved
+NO_SECRETS_PRINTED=yes
+
+## Result
+
+TAILSCALE_SSH_NONINTERACTIVE_READINESS_READ_ONLY_DIAGNOSTICS_RESULT=completed_tailscale_auth_or_acl_additional_check_required
+
+NEXT_SAFE_PHASE=tailscale_ssh_auth_policy_repair_plan
