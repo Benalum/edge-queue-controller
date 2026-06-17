@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/phase-14j-fk-plan-explicit-website-edge-cloudflare-tunnel-transport.md"
+
+echo "=== Phase 14J-FK smoke: explicit website-edge Cloudflare tunnel transport plan ==="
+
+test -f "$DOC"
+
+require_marker() {
+  local marker="$1"
+  if grep -Fq -- "$marker" "$DOC"; then
+    echo "PASS: marker present: $marker"
+  else
+    echo "FAIL: marker missing: $marker" >&2
+    exit 1
+  fi
+}
+
+require_marker "PHASE_14J_FK_PLAN_EXPLICIT_WEBSITE_EDGE_CLOUDFLARE_TUNNEL_TRANSPORT"
+require_marker "Previous commit: 052ca89"
+require_marker "MUTATION_SCOPE=docs_smoke_only_explicit_cloudflare_tunnel_transport_plan"
+require_marker "FJ_REMOTE_CLOUDFLARE_API_CALL_PERFORMED=no"
+require_marker "FJ_CLOUDFLARE_ROUTE_MUTATION_PERFORMED=no"
+require_marker "FJ_CLOUDFLARE_TEST_ROUTE_APPLY_PERFORMED=no"
+require_marker "FJ_CLOUDFLARED_INSTALL_PERFORMED=no"
+require_marker "WEBSITE_EDGE_NGINX_STATIC_WRAPPER_LOCAL_RUNTIME_APPLY_PASSED=yes"
+require_marker "WEBSITE_EDGE_NGINX_LOCAL_PORT=18080"
+require_marker "WEBSITE_EDGE_NGINX_LISTENER_SCOPE=loopback_only"
+require_marker "WEBSITE_EDGE_CLOUDFLARED_ABSENT=yes"
+require_marker "TRANSPORT_DECISION=dedicated_website_edge_cloudflare_tunnel_to_loopback_nginx"
+require_marker "TRANSPORT_ORIGIN=website_edge_nginx_loopback_127_0_0_1_18080"
+require_marker "TRANSPORT_PUBLIC_SCOPE=temporary_test_hostname_only"
+require_marker "TRANSPORT_PRODUCTION_SCOPE=no_apex_cutover_no_primary_route_replacement"
+require_marker "CREDENTIAL_DECISION=prefer_new_dedicated_cloudflare_tunnel_token_or_scoped_token"
+require_marker "GLOBAL_API_KEY_ALLOWED=no"
+require_marker "BROAD_ACCOUNT_TOKEN_ALLOWED=no"
+require_marker "DEDICATED_TOKEN_ALLOWED=yes"
+require_marker "TOKEN_PRINTING_ALLOWED=no"
+require_marker "TOKEN_COMMIT_ALLOWED=no"
+require_marker "TOKEN_SOURCE_FILE_ALLOWED=no"
+require_marker "TOKEN_APC_LAST_OUTPUT_ALLOWED=no"
+require_marker "TOKEN_INTERACTIVE_ENTRY_REQUIRED=yes"
+require_marker "FUTURE_FL_ALLOWED_WEBSITE_EDGE_ONLY=yes"
+require_marker "FUTURE_FL_ALLOWED_CLOUDFLARED_INSTALL_ONLY=yes"
+require_marker "FUTURE_FL_ALLOWED_NO_TUNNEL_AUTH_TOKEN=yes"
+require_marker "FUTURE_FL_ALLOWED_NO_CLOUDFLARE_ROUTE_MUTATION=yes"
+require_marker "FUTURE_FL_ALLOWED_NO_TEST_HOSTNAME_APPLY=yes"
+require_marker "FUTURE_FL_ALLOWED_NO_PRODUCTION_CUTOVER=yes"
+require_marker "FUTURE_FM_ALLOWED_DEDICATED_TUNNEL_TOKEN_ONLY=yes"
+require_marker "FUTURE_FM_ALLOWED_INTERACTIVE_SECRET_ENTRY_ONLY=yes"
+require_marker "FUTURE_FM_ALLOWED_ORIGIN_127_0_0_1_18080=yes"
+require_marker "FUTURE_FM_ALLOWED_TEMPORARY_TEST_HOSTNAME_ONLY=yes"
+require_marker "FUTURE_DENY_GLOBAL_CLOUDFLARE_API_KEY=yes"
+require_marker "FUTURE_DENY_TOKEN_PRINTING=yes"
+require_marker "FUTURE_DENY_TOKEN_COMMIT=yes"
+require_marker "FUTURE_DENY_TOKEN_IN_SOURCE_FILES=yes"
+require_marker "FUTURE_DENY_TOKEN_IN_APC_LAST_OUTPUT=yes"
+require_marker "FUTURE_DENY_APEX_PRODUCTION_CUTOVER=yes"
+require_marker "FUTURE_DENY_PRIMARY_PUBLIC_ROUTE_REPLACEMENT=yes"
+require_marker "FUTURE_DENY_PROXMOX_PUBLIC_EXPOSURE=yes"
+require_marker "FUTURE_DENY_CONTROLLER_QUEUE_MIGRATION=yes"
+require_marker "FUTURE_DENY_WORKER_START=yes"
+require_marker "FUTURE_DENY_RUNTIME_ACTIVATION_EXCEPT_STATIC_TUNNEL=yes"
+require_marker "FUTURE_DENY_PRODUCTION_DB_JOB_MUTATION=yes"
+require_marker "FUTURE_DENY_CT101_CALL=yes"
+require_marker "FUTURE_DENY_MODEL_OLLAMA_ENDPOINT_CALL=yes"
+require_marker "FUTURE_DENY_DOCKER_INSTALL=yes"
+require_marker "FUTURE_DENY_NODE_NPM_INSTALL=yes"
+require_marker "FUTURE_DENY_TAILSCALE_ACL_GRANTS_TAG_MUTATION=yes"
+require_marker "FUTURE_DENY_TAILSCALE_SSH_MODE_ENABLEMENT=yes"
+require_marker "FUTURE_DENY_SUBNET_ROUTES=yes"
+require_marker "FUTURE_DENY_EXIT_NODE=yes"
+require_marker "FUTURE_DENY_SECRETS_RAW_IPS_AUTH_URLS=yes"
+require_marker "FUTURE_DENY_14J_AG_APPLY_WRAPPER_RERUN=yes"
+require_marker "ROLLBACK_REQUIRED_BEFORE_TEST_HOSTNAME_APPLY=yes"
+require_marker "ROLLBACK_MUST_NOT_TOUCH_PRODUCTION_APEX_ROUTE=yes"
+require_marker "PHASE_14J_FK_RESULT=explicit_website_edge_cloudflare_tunnel_transport_plan_recorded"
+require_marker "NEXT_SAFE_PHASE=approve_website_edge_cloudflared_install_only_without_tunnel_auth_or_route_mutation"
+
+echo "PASS: Phase 14J-FK explicit website-edge Cloudflare tunnel transport plan is complete"
