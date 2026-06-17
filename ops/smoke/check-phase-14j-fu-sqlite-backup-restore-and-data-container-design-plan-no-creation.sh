@@ -41,7 +41,7 @@ echo "--- DB path/config boundary markers ---"
 require_fixed 'edge_controller.py` uses `DB_PATH = Path("edge_queue.sqlite3")'
 require_fixed "PHASE_14J_FU_DB_PATH_CONFIGURABILITY=current_controller_db_path_repo_relative_default_only"
 require_fixed "default-off/env-based controller DB path configurability patch"
-require_fixed "default behavior still uses repo-local `edge_queue.sqlite3`"
+require_fixed 'default behavior still uses repo-local `edge_queue.sqlite3`'
 
 echo "--- future plan markers ---"
 require_fixed "persistent SQLite backup script"
