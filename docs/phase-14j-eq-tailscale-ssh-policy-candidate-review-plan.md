@@ -1,0 +1,138 @@
+# Phase 14J-EQ - Tailscale SSH Policy Candidate Review Plan
+
+PHASE_14J_EQ_TAILSCALE_SSH_POLICY_CANDIDATE_REVIEW_PLAN
+
+## Scope
+
+MUTATION_SCOPE=docs_smoke_only_tailscale_ssh_policy_candidate_review_plan
+
+This phase reviews the non-applied policy candidates from EP and selects the safest planning path for a future approval packet. It does not apply Tailscale ACLs, does not change the Tailscale admin console, does not mutate Proxmox users, does not mutate SSH config, does not open LAN firewall TCP22, and does not change controller service environment.
+
+SAFE_TRAP_PATTERN=yes
+NO_TRAP_EXIT=yes
+
+## Carried-forward EP result
+
+EP_RESULT=ready_for_policy_candidate_review_plan
+EP_RECOMMENDATION=prefer_candidate_c_then_candidate_b_as_fallback
+NONINTERACTIVE_SSH_READY=no
+TAILSCALE_ADDITIONAL_CHECK_REQUIRED=yes
+DIRECT_LAN_SSHD_REQUIRED=no
+LAN_FIREWALL_TCP22_OPEN_REQUIRED=no
+GUARDED_WORKER_START_REMAINS_BLOCKED=yes
+
+## Candidate review
+
+TAILSCALE_SSH_POLICY_CANDIDATE_REVIEW_PLAN=ready
+
+CANDIDATE_A_REVIEW=not_selected_for_runtime_automation
+CANDIDATE_A_REASON=keeps_manual_check_mode_and_blocks_noninteractive_automation
+
+CANDIDATE_B_REVIEW=acceptable_fallback_if_dedicated_tags_are_not_ready
+CANDIDATE_B_REASON=narrow_accept_rule_can_enable_noninteractive_automation_but_must_avoid_wildcards_and_broad_root_access
+
+CANDIDATE_C_REVIEW=selected_for_approval_packet_design
+CANDIDATE_C_REASON=best_separation_between_human_admin_check_mode_and_controller_automation_identity
+CANDIDATE_C_SELECTED=yes
+
+CANDIDATE_D_REVIEW=parked_alternative
+CANDIDATE_D_REASON=standard_openssh_over_tailscale_ip_may_work_but_requires_key_management_and_proxmox_openssh_readiness_review
+CANDIDATE_D_SELECTED=no
+
+## Selected design path
+
+EQ_SELECTED_PATH=dedicated_tagged_automation_identity_candidate_c
+EQ_FALLBACK_PATH=narrow_tailscale_ssh_accept_rule_candidate_b
+EQ_PARKED_PATH=standard_openssh_over_tailscale_ip_candidate_d
+
+The next approval packet should describe a dedicated controller automation identity and a scoped Proxmox management destination. It should use placeholders or hash-only references until the user/admin reviews the real Tailscale policy in the admin console.
+
+## Required approval-packet contents
+
+REQUIRE_APPROVAL_PACKET_POLICY_INTENT=yes
+REQUIRE_APPROVAL_PACKET_POLICY_SHAPE_PLACEHOLDER_ONLY=yes
+REQUIRE_APPROVAL_PACKET_NO_RAW_DEVICE_NAMES_IN_CHAT=yes
+REQUIRE_APPROVAL_PACKET_SOURCE_SCOPE=yes
+REQUIRE_APPROVAL_PACKET_DESTINATION_SCOPE=yes
+REQUIRE_APPROVAL_PACKET_USER_SCOPE=yes
+REQUIRE_APPROVAL_PACKET_TAG_OWNER_REVIEW=yes
+REQUIRE_APPROVAL_PACKET_ROLLBACK_PLAN=yes
+REQUIRE_APPROVAL_PACKET_POST_CHANGE_READ_ONLY_VALIDATION=yes
+REQUIRE_APPROVAL_PACKET_NO_RUNTIME_ACTIVATION=yes
+REQUIRE_APPROVAL_PACKET_NO_WORKER_START=yes
+REQUIRE_APPROVAL_PACKET_NO_LAN_FIREWALL_OPEN=yes
+REQUIRE_APPROVAL_PACKET_NO_RERUN_14J_AG_APPLY_WRAPPER=yes
+
+## Still disallowed
+
+TAILSCALE_ACL_MUTATION=not_allowed
+TAILSCALE_ADMIN_CONSOLE_CHANGE=not_allowed
+PROXMOX_USER_MUTATION=not_allowed
+SSH_CONFIG_MUTATION=not_allowed
+FIREWALL_MUTATION=not_allowed
+LAN_FIREWALL_TCP22_OPEN=not_allowed
+SERVICE_ENV_MUTATION=not_allowed
+POWER_ENDPOINT_CALL=not_allowed
+WORKER_START=not_allowed
+RUNTIME_ACTIVATION=not_allowed
+
+## Future mutation gate
+
+Before any actual Tailscale policy or admin-console change:
+
+REQUIRE_EXPLICIT_USER_APPROVAL_FOR_TAILSCALE_POLICY_MUTATION=yes
+REQUIRE_EXPLICIT_POLICY_DIFF_REVIEW=yes
+REQUIRE_EXPLICIT_ROLLBACK_PLAN=yes
+REQUIRE_EXPLICIT_POST_CHANGE_READ_ONLY_DIAGNOSTIC=yes
+REQUIRE_EXPLICIT_NO_LAN_FIREWALL_OPEN_CONFIRMATION=yes
+REQUIRE_EXPLICIT_NO_RUNTIME_ACTIVATION_CONFIRMATION=yes
+REQUIRE_EXPLICIT_NO_WORKER_START_CONFIRMATION=yes
+REQUIRE_HASH_ONLY_TARGET_OUTPUT=yes
+REQUIRE_NO_RAW_TAILSCALE_AUTH_URL_RECORDING=yes
+REQUIRE_SAFE_SUBSHELL_TRAP_PATTERN=yes
+REQUIRE_NO_EXIT_IN_TRAP=yes
+
+## Next phase
+
+NEXT_PHASE_NAME=phase-14j-er-tailscale-ssh-policy-approval-packet
+
+The next phase should create a docs/smoke-only approval packet for Candidate C. It must not mutate Tailscale ACLs/admin settings, Proxmox users, SSH config, firewall, controller service environment, DB, jobs, workers, or runtime.
+
+## Boundaries preserved by EQ
+
+APP_SOURCE_MUTATION=not_performed
+PRODUCTION_DB_MUTATION=not_performed
+JOB_MUTATION=not_performed
+CONTROLLER_SERVICE_RESTART_RELOAD=not_performed
+PROXMOX_SERVICE_RESTART_RELOAD=not_performed
+FIREWALL_MUTATION=not_performed
+SSH_CONFIG_MUTATION=not_performed
+LAN_FIREWALL_TCP22_OPEN=not_performed
+TAILSCALE_ACL_MUTATION=not_performed
+TAILSCALE_ADMIN_CONSOLE_CHANGE=not_performed
+PROXMOX_USER_MUTATION=not_performed
+CT101_CALL=not_performed
+MODEL_OLLAMA_CALL=not_performed
+POWER_ENDPOINT_CALL=not_performed
+WORKER_START_PERFORMED=no
+SCHEDULER_LANE_DISPATCH_ACTIVATION=not_performed
+PRIMARY_WORKER_FILTERING_ACTIVATION=not_performed
+PERSISTENT_LANE_WORKER_STARTUP=not_performed
+RUNTIME_ACTIVATION=not_performed
+SERVICE_ENV_MUTATION=not_performed
+PROXMOX_SSH_CALL=not_performed
+PROXMOX_REMOTE_COMMAND_EXECUTION=not_performed
+GITHUB_BRANCH_OR_REPO_DELETE=not_performed
+FULL_SYSTEMD_ENVIRONMENT_PRINTING=not_performed
+RAW_SSH_TARGET_PRINTING=not_performed
+RAW_KEY_PATH_PRINTING=not_performed
+RAW_TAILSCALE_AUTH_URL_RECORDING=not_performed
+HASH_ONLY_CONFIGURED_TARGET_OUTPUT=yes
+DO_NOT_RERUN_14J_AG_APPLY_WRAPPER=preserved
+NO_SECRETS_PRINTED=yes
+
+## Result
+
+TAILSCALE_SSH_POLICY_CANDIDATE_REVIEW_PLAN_RESULT=ready_for_candidate_c_approval_packet
+
+NEXT_SAFE_PHASE=tailscale_ssh_policy_approval_packet
