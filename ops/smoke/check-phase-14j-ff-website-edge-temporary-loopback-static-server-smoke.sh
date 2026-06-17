@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/phase-14j-ff-website-edge-temporary-loopback-static-server-smoke.md"
+
+echo "=== Phase 14J-FF smoke: website-edge temporary loopback static server smoke record ==="
+
+test -f "$DOC"
+
+require_marker() {
+  local marker="$1"
+  if grep -Fq -- "$marker" "$DOC"; then
+    echo "PASS: marker present: $marker"
+  else
+    echo "FAIL: marker missing: $marker" >&2
+    exit 1
+  fi
+}
+
+require_marker "PHASE_14J_FF_WEBSITE_EDGE_TEMPORARY_LOOPBACK_STATIC_SERVER_SMOKE"
+require_marker "Previous commit: 5de0f65"
+require_marker "hostname=website-edge"
+require_marker "os_version=26.04"
+require_marker "head_now=03a6b4e"
+require_marker "tag_now=03a6b4e"
+require_marker "git_status_short=<clean>"
+require_marker "PASS: sparse checkout patterns match expected non-cone static paths"
+require_marker "actual_worktree_file_count=18"
+require_marker "PASS: actual filesystem worktree limited to frontend/wrapper-ui and frontend/study-ui"
+require_marker "PASS: command absent before ff: docker"
+require_marker "PASS: command absent before ff: cloudflared"
+require_marker "PASS: command absent before ff: node"
+require_marker "PASS: command absent before ff: npm"
+require_marker "PASS: required static file present: frontend/wrapper-ui/index.html"
+require_marker "PASS: required static file present: frontend/wrapper-ui/app.js"
+require_marker "PASS: required static file present: frontend/wrapper-ui/styles.css"
+require_marker "PASS: required static file present: frontend/wrapper-ui/queued_chat_config.js"
+require_marker "temporary loopback server responded locally"
+require_marker "PASS: listener is bound to loopback on selected port"
+require_marker "PASS: no wildcard/non-loopback listener detected for selected port"
+require_marker "local_get_root_index_html_status=200"
+require_marker "PASS: local GET / matches frontend/wrapper-ui/index.html"
+require_marker "local_get_app_js_status=200"
+require_marker "PASS: local GET /app.js matches frontend/wrapper-ui/app.js"
+require_marker "local_get_styles_css_status=200"
+require_marker "PASS: local GET /styles.css matches frontend/wrapper-ui/styles.css"
+require_marker "local_get_queued_chat_config_js_status=200"
+require_marker "PASS: local GET /queued_chat_config.js matches frontend/wrapper-ui/queued_chat_config.js"
+require_marker "PASS: no listener remains on temporary loopback port"
+require_marker "PASS: temporary server stopped before exit"
+require_marker "git_status_after=<clean>"
+require_marker "PASS: checkout remains clean after loopback smoke"
+require_marker "PASS: command absent after ff: docker"
+require_marker "PASS: command absent after ff: cloudflared"
+require_marker "PASS: command absent after ff: node"
+require_marker "PASS: command absent after ff: npm"
+require_marker "PHASE_14J_FF_RESULT=passed"
+require_marker "temporary_loopback_static_server_smoke=passed"
+require_marker "temporary_server_stopped_before_exit=yes"
+require_marker "nginx_config_mutation_performed=no"
+require_marker "systemd_runtime_creation_performed=no"
+require_marker "app_deployment_performed=no"
+require_marker "cloudflare_test_route_performed=no"
+require_marker "cloudflare_production_cutover_performed=no"
+require_marker "docker_install_performed=no"
+require_marker "cloudflared_install_performed=no"
+require_marker "node_npm_install_performed=no"
+require_marker "controller_queue_migration_performed=no"
+require_marker "worker_start_performed=no"
+require_marker "runtime_activation_limited_to_temporary_loopback_static_smoke=yes"
+require_marker "production_db_job_mutation_performed=no"
+require_marker "ct101_call_performed=no"
+require_marker "model_ollama_endpoint_call_performed=no"
+require_marker "tailscale_acl_grants_tag_mutation_performed=no"
+require_marker "tailscale_ssh_mode_enablement_performed=no"
+require_marker "phase_14j_ag_apply_wrapper_rerun_performed=no"
+require_marker "phase_exit_code=0"
+require_marker "PHASE_14J_FF_RESULT=website_edge_temporary_loopback_static_server_smoke_recorded"
+require_marker "NEXT_SAFE_PHASE=plan_nginx_static_wrapper_local_runtime_without_cloudflare_cutover"
+
+echo "PASS: Phase 14J-FF temporary loopback static server smoke record is complete"
