@@ -10235,39 +10235,43 @@ def _system_status_normalized_block(nodes, services):
             return fallback
         return service.get("state") or fallback
 
-    def master_api_state():
-        master = node_by_id.get("master-laptop")
-        if not isinstance(master, dict):
-            return service_state("backend-api")
+    def service_detail(service_id, fallback=""):
+        service = service_by_id.get(service_id)
+        if not service:
+            return fallback
+        return service.get("detail") or fallback
 
-        for service in master.get("services") or []:
+    def controller_api_state():
+        controller = node_by_id.get("ct-203") or node_by_id.get("master-laptop")
+        if not isinstance(controller, dict):
+            return service_state("backend-api")
+        for service in controller.get("services") or []:
             if not isinstance(service, dict):
                 continue
             if service.get("name") == "edge-queue-controller":
                 return service.get("state") or "unknown"
-
-        return service_state("backend-api")
+        return service_state("backend-api", node_state("ct-203"))
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "infrastructure": [
             {
                 "id": "controller-node",
                 "name": "Controller Node",
-                "state": node_state("master-laptop"),
-                "members": ["master-laptop"],
+                "state": node_state("ct-203", node_state("master-laptop")),
+                "members": ["ct-203"],
             },
             {
                 "id": "server-nodes",
                 "name": "Server Nodes",
-                "state": node_state("pveso"),
-                "members": ["pveso"],
+                "state": node_state("pvew"),
+                "members": ["pvew", "vm-200"],
             },
             {
                 "id": "cpu-nodes",
                 "name": "CPU Nodes",
-                "state": node_state("ct-101"),
-                "members": ["ct-101"],
+                "state": service_state("workers", "planned"),
+                "members": [],
             },
             {
                 "id": "gpu-nodes",
@@ -10278,49 +10282,39 @@ def _system_status_normalized_block(nodes, services):
             {
                 "id": "storage-nodes",
                 "name": "Storage Nodes",
-                "state": "planned",
-                "members": [],
+                "state": node_state("ct-204", "planned"),
+                "members": ["ct-204"],
             },
         ],
         "platform": [
             {
                 "id": "backend-api",
                 "name": "Backend API",
-                "state": master_api_state(),
+                "state": controller_api_state(),
             },
             {
                 "id": "frontend-wrapper",
                 "name": "Frontend Wrapper",
                 "state": service_state("frontend-wrapper"),
+                "detail": service_detail("frontend-wrapper"),
             },
             {
                 "id": "queue",
                 "name": "Queue",
                 "state": service_state("queue"),
+                "detail": service_detail("queue"),
             },
             {
                 "id": "workers",
                 "name": "Workers",
-                "state": node_state("ct-101"),
-            },
-            {
-                "id": "ct101-laptop-queue-worker",
-                "name": "CT101 Laptop Queue Worker",
-                "state": service_state("ct101-laptop-queue-worker"),
-                # STAGE_5G26_NORMALIZED_WORKER_DETAIL_FIELD_V1
-                "detail": next(
-                    (
-                        service.get("detail")
-                        for service in services
-                        if service.get("id") == "ct101-laptop-queue-worker"
-                    ),
-                    "Managed CT101 worker processing queued chat jobs.",
-                ),
+                "state": service_state("workers", "planned"),
+                "detail": service_detail("workers", "Model workers are intentionally parked until separately activated."),
             },
             {
                 "id": "power-automation",
                 "name": "Power Automation",
-                "state": service_state("power-automation"),
+                "state": service_state("power-automation", "planned"),
+                "detail": service_detail("power-automation", "Legacy PVESO/laptop power automation is parked."),
             },
         ],
     }
@@ -12221,14 +12215,23 @@ def _system_status_uncached():
     checked_at = _system_now_iso()
     booting_marker = _system_read_booting_marker()
 
-    # Master laptop is this process.
+    # STAGE_14J_LJ_CURRENT_PVEW_STATUS_MODEL_V1
+    # Current public platform model:
+    # - PVEW is the always-on platform host.
+    # - VM200 serves the public edge/frontend static wrapper.
+    # - CT203 serves the controller/API/queue authority.
+    # - CT204 is backup-data-only and expected stopped/non-authority.
+    #
+    # This block intentionally does not probe PVEW host storage or mutate any
+    # CT/VM/service state. It replaces old PVESO/CT101/laptop presentation
+    # assumptions in the public wrapper status payload.
     master_node = {
-        "id": "master-laptop",
-        "name": "Controller Node",
-        "role": "master",
+        "id": "ct-203",
+        "name": "Edge Controller CT",
+        "role": "controller-container",
         "state": "online",
         "checked_at": checked_at,
-        "specs": _system_laptop_specs(),
+        "detail": "CT203 controller/API process is responding.",
         "services": [
             {
                 "name": "edge-queue-controller",
@@ -12238,57 +12241,40 @@ def _system_status_uncached():
         ],
     }
 
-    # Check pveso.
-    pveso_tcp_ssh = _system_tcp_check(_SYSTEM_PVESO_HOST, 22, timeout=2)
-    pveso_ssh = _system_ssh_check() if pveso_tcp_ssh else {
-        "ok": False,
-        "stdout": "",
-        "stderr": "SSH port unreachable",
-    }
-
-    if pveso_ssh["ok"]:
-        pveso_state = "online"
-        pveso_detail = "SSH reachable."
-    elif booting_marker["active"]:
-        pveso_state = "booting"
-        pveso_detail = f"Boot marker active. About {booting_marker['remaining_seconds']} seconds remaining."
-    else:
-        pveso_state = "offline"
-        pveso_detail = pveso_ssh["stderr"] or "Server unreachable."
-
-    pveso_node = {
-        "id": "pveso",
-        "name": "Main Proxmox Server",
-        "role": "compute-host",
-        "state": pveso_state,
+    pvew_node = {
+        "id": "pvew",
+        "name": "PVEW Platform Host",
+        "role": "proxmox-host",
+        "state": "online",
         "checked_at": checked_at,
-        "address": _SYSTEM_PVESO_HOST,
-        "detail": pveso_detail,
+        "detail": "Current always-on platform host for VM200 and CT203.",
         "specs": {
-            "cpu": "Intel Core i9-10900K",
-            "gpu": "AMD RX 6900 XT",
             "hypervisor": "Proxmox VE",
+            "posture": "single-node quorum currently in use",
         },
     }
 
-    workers = []
-
-    if pveso_state == "online":
-        ct101 = _system_pct_status("101")
-    elif pveso_state == "booting":
-        ct101 = {"state": "booting", "detail": "Waiting for pveso to finish booting."}
-    else:
-        ct101 = {"state": "offline", "detail": "pveso is offline."}
-
-    workers.append({
-        "id": "ct-101",
-        "name": "LLM Worker",
-        "role": "container",
-        "state": ct101["state"],
+    vm200_node = {
+        "id": "vm-200",
+        "name": "Website Edge VM",
+        "role": "edge-vm",
+        "state": "online",
         "checked_at": checked_at,
-        "detail": ct101["detail"],
-        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
-    })
+        "detail": "VM200 serves the public wrapper frontend through nginx/cloudflared.",
+        "services": ["nginx", "cloudflared", "static wrapper UI"],
+    }
+
+    ct204_node = {
+        "id": "ct-204",
+        "name": "Edge Data CT",
+        "role": "backup-data-container",
+        "state": "planned",
+        "checked_at": checked_at,
+        "detail": "CT204 is expected stopped; backup-data-only and not data authority.",
+        "services": ["encrypted backup bind mount when manually unlocked"],
+    }
+
+    workers = []
 
     # Service checks.
     # These are intentionally friendly/high-level.
@@ -12329,41 +12315,69 @@ def _system_status_uncached():
         ),
     })
 
-    ct101_worker_service = _system_ct101_laptop_queue_worker_status(
-        checked_at,
-        pveso_state=pveso_state,
-        ct101_state=ct101["state"],
-    )
-    services.append(ct101_worker_service)
+    services.append({
+        "id": "frontend-wrapper",
+        "name": "Frontend Wrapper",
+        "state": "online",
+        "checked_at": checked_at,
+        "detail": "VM200 nginx/cloudflared static wrapper frontend is the active public UI.",
+    })
 
-    # Stage 7X-6: provide public-safe service records for normalized platform
-    # cards so the System UI does not fall back to unknown placeholders.
-    services.append(_system_frontend_wrapper_status(checked_at))
-    services.append(_system_queue_status_from_worker(checked_at, ct101_worker_service))
-    services.append(_system_power_automation_status(checked_at))
+    services.append({
+        "id": "queue",
+        "name": "Queue",
+        "state": "online",
+        "checked_at": checked_at,
+        "detail": "CT203 controller queue/API authority is active; worker dispatch remains separately gated.",
+        "queue": {
+            "queued": 0,
+            "running": 0,
+            "complete": 0,
+            "failed": 0,
+        },
+    })
 
-    # These services depend on pveso. If pveso is offline, skip public-domain checks
-    # so DNS/proxy failures do not make the entire system look broken.
-    all_items = [master_node, pveso_node] + workers + services
+    services.append({
+        "id": "workers",
+        "name": "Workers",
+        "state": "planned",
+        "checked_at": checked_at,
+        "detail": "Model workers are intentionally parked until separately activated.",
+    })
+
+    services.append({
+        "id": "power-automation",
+        "name": "Power Automation",
+        "state": "planned",
+        "checked_at": checked_at,
+        "detail": "Legacy PVESO/laptop power automation is parked while PVEW is the always-on platform host.",
+    })
+
+    # Current public status should not degrade because retired PVESO/CT101/laptop
+    # model items are intentionally absent. Planned/parked items are not failures.
+    all_items = [master_node, pvew_node, vm200_node, ct204_node] + workers + services
     states = [item.get("state") for item in all_items]
 
     critical_states = {
-        "master": master_node.get("state"),
-        "pveso": pveso_node.get("state"),
+        "controller": master_node.get("state"),
+        "pvew": pvew_node.get("state"),
+        "vm200": vm200_node.get("state"),
     }
 
-    if critical_states["master"] == "error":
+    if any(state == "error" for state in critical_states.values()):
         overall_state = "error"
-    elif pveso_state == "booting" or any(s == "booting" for s in states):
+    elif any(state == "booting" for state in states):
         overall_state = "booting"
-    elif pveso_state == "offline" or any(s in ("offline", "degraded", "error") for s in states):
+    elif any(state in ("offline", "degraded", "error") for state in states):
         overall_state = "degraded"
     else:
         overall_state = "online"
 
     nodes = [
         master_node,
-        pveso_node,
+        pvew_node,
+        vm200_node,
+        ct204_node,
         *workers,
     ]
 
