@@ -12113,6 +12113,35 @@ def system_local_health():
     }
 
 
+
+def _system_private_storage_status(checked_at: str) -> dict:
+    """
+    Public-safe encrypted private storage policy status.
+
+    CT203 runs inside a container and does not directly inspect the PVEW host
+    mount. Until a separately approved host-visible signal exists, the live
+    mount state is intentionally reported as unknown.
+    """
+    return {
+        "id": "apc-private-storage",
+        "name": "Encrypted Private Backup Storage",
+        "state": "unknown",
+        "checked_at": checked_at,
+        "mount_state": "unknown",
+        "policy": "manual-unlock-only",
+        "mountpoint": "/srv/apc-private-data",
+        "detail": (
+            "Manual-unlock encrypted backup storage. Live host mount state is "
+            "not inspected from CT203."
+        ),
+        "ct204": {
+            "role": "backup-data-only",
+            "expected_state": "stopped",
+            "data_authority": False,
+        },
+    }
+
+
 _SYSTEM_STATUS_CACHE_TTL_SECONDS_DEFAULT = 2.0
 _system_status_cache = {
     "cached_at": 0.0,
@@ -12338,12 +12367,15 @@ def _system_status_uncached():
         *workers,
     ]
 
+    private_storage_status = _system_private_storage_status(checked_at)
+
     return {
         "ok": True,
         "checked_at": checked_at,
         "overall_state": overall_state,
         "nodes": nodes,
         "services": services,
+        "private_storage_status": private_storage_status,
         "model_memory_status": _stage5p12aj_public_model_memory_status_snapshot(),
         "normalized": _system_status_normalized_block(nodes, services),
     }
