@@ -737,11 +737,50 @@ function normalizedItems(source, key, requiredIds) {
   return valid;
 }
 
+function privateStorageInfrastructureDetail(storage) {
+  const ct204 = storage?.ct204 || {};
+  const policy = storage?.policy || "unknown";
+  const mountState = storage?.mount_state || storage?.state || "unknown";
+  const mountpoint = storage?.mountpoint || "unknown";
+  const expectedState = ct204.expected_state || "unknown";
+  const authority = ct204.data_authority === true
+    ? "true"
+    : ct204.data_authority === false
+      ? "false"
+      : "unknown";
+
+  return `Private backup storage policy: ${policy}; mount: ${mountState}; path: ${mountpoint}; CT204 expected: ${expectedState}; authority: ${authority}.`;
+}
+
+function privateStorageInfrastructureGroup(source = lastStatus) {
+  const storage = source?.private_storage_status;
+  if (!storage || typeof storage !== "object") return null;
+
+  const state = storage.state || storage.mount_state || "unknown";
+  const detail = privateStorageInfrastructureDetail(storage);
+
+  return {
+    id: "storage-nodes",
+    name: "Storage Nodes",
+    state,
+    counts: statusCounts([state]),
+    detail,
+    members: [
+      {
+        id: storage.id || "apc-private-storage",
+        name: storage.name || "Encrypted Private Backup Storage",
+        state,
+        detail,
+      },
+    ],
+  };
+}
+
 function normalizedInfrastructureGroups(source = lastStatus) {
   const items = normalizedItems(source, "infrastructure", NORMALIZED_INFRASTRUCTURE_IDS);
   if (!items) return null; // Fallback to infrastructureGroups() when normalized.infrastructure is unavailable.
 
-  return items.map((item) => {
+  const groups = items.map((item) => {
     const members = Array.isArray(item.members) ? item.members : [];
     const state = item.state || "unknown";
 
@@ -754,6 +793,15 @@ function normalizedInfrastructureGroups(source = lastStatus) {
       members,
     };
   });
+
+  const storageGroup = privateStorageInfrastructureGroup(source);
+  if (storageGroup) {
+    const existingIndex = groups.findIndex((group) => group.id === "storage-nodes");
+    if (existingIndex >= 0) groups[existingIndex] = storageGroup;
+    else groups.push(storageGroup);
+  }
+
+  return groups;
 }
 
 function normalizedPlatformGroups(source = lastStatus) {
@@ -841,7 +889,7 @@ function infrastructureGroups() {
       states: [],
       detail: "Future GPU processing containers for image/video jobs.",
     }),
-    makeInfraGroup({
+    privateStorageInfrastructureGroup(lastStatus) || makeInfraGroup({
       id: "storage-nodes",
       name: "Storage Nodes",
       states: [],
@@ -6727,7 +6775,11 @@ function cleanRenderInfrastructure() {
   );
 
   const gpuNodes = [];
-  const storageNodes = [];
+  const storageGroup = privateStorageInfrastructureGroup(cleanAdminSystem);
+  const storageNodes = storageGroup
+    ? (storageGroup.members || []).map(() => ({ state: storageGroup.state || "unknown" }))
+    : [];
+  const storageDescription = storageGroup?.detail || "Future NAS/storage stations.";
 
   return `
     <section class="system-section">
@@ -6741,7 +6793,7 @@ function cleanRenderInfrastructure() {
         ${cleanGroupCard("Server Nodes", cleanWorstState(serverNodes), serverNodes, "Configured Proxmox server nodes.")}
         ${cleanGroupCard("CPU Nodes", cleanWorstState(cpuNodes), cpuNodes, "CPU processing containers currently configured.")}
         ${cleanGroupCard("GPU Nodes", cleanWorstState(gpuNodes), gpuNodes, "Future GPU processing containers for image/video jobs.")}
-        ${cleanGroupCard("Storage Nodes", cleanWorstState(storageNodes), storageNodes, "Future NAS/storage stations.")}
+        ${cleanGroupCard("Storage Nodes", cleanWorstState(storageNodes), storageNodes, storageDescription)}
       </div>
 
       <div class="actions">
