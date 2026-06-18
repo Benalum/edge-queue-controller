@@ -324,7 +324,7 @@ function authHeaders(extra = {}) {
  *
  * Note: The wrapper makes fetch calls to /api/* paths, which are translated
  * by the laptop wrapper to laptop controller routes,
- * or proxied to CT101 /api/* compatibility endpoints as appropriate.
+ * or proxied to current CT203 controller/API/queue endpoints as appropriate.
  */
 async function api(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
@@ -689,7 +689,7 @@ const NORMALIZED_PLATFORM_IDS = [
   "frontend-wrapper",
   "queue",
   "workers",
-  "ct101-laptop-queue-worker",
+  "ct203-controller-queue",
   "power-automation",
 ];
 
@@ -706,7 +706,7 @@ const NORMALIZED_PLATFORM_DETAILS = {
   "frontend-wrapper": "Public wrapper and browser experience.",
   queue: "Job queue and scheduling surface.",
   workers: "Worker capacity and processing services.",
-  "ct101-laptop-queue-worker": "Managed CT101 worker processing queued chat jobs with guarded one-at-a-time execution.",
+  "ct203-controller-queue": "CT203 controller/API/queue authority for the current PVEW-hosted platform.",
   "power-automation": "Power automation status.",
 };
 
@@ -860,9 +860,9 @@ function makeInfraGroup({ id, name, states, detail }) {
 }
 
 function infrastructureGroups() {
-  const controller = nodeById("master-laptop");
-  const pveso = nodeById("pveso");
-  const cpuNode = nodeById("ct-101");
+  const controller = nodeById("ct-203");
+  const platformHost = nodeById("pvew");
+  const websiteEdge = nodeById("vm-200");
 
   return [
     makeInfraGroup({
@@ -874,13 +874,13 @@ function infrastructureGroups() {
     makeInfraGroup({
       id: "server-nodes",
       name: "Server Nodes",
-      states: [pveso?.state || "offline"],
+      states: [platformHost?.state || "offline"],
       detail: "Configured Proxmox server nodes.",
     }),
     makeInfraGroup({
       id: "cpu-nodes",
       name: "CPU Nodes",
-      states: [cpuNode?.state || "offline"],
+      states: [websiteEdge?.state || "offline"],
       detail: "CPU processing containers currently configured.",
     }),
     makeInfraGroup({
@@ -6760,8 +6760,8 @@ function cleanRenderInfrastructure() {
     `;
   }
 
-  const controllerNodes = nodes.filter((n) => n.role === "master" || n.id === "master-laptop");
-  const serverNodes = nodes.filter((n) => n.role === "compute-host" || n.id === "pveso");
+  const controllerNodes = nodes.filter((n) => n.id === "ct-203" || n.role === "controller" || n.role === "controller-api-queue");
+  const serverNodes = nodes.filter((n) => n.id === "pvew" || n.id === "vm-200" || n.role === "platform-host" || n.role === "website-edge");
 
   // Current design: only LLM/Ollama container counts as CPU node.
   // GPU and Storage nodes are future groups until explicitly registered.
@@ -7695,7 +7695,7 @@ async function sendWebPresence(reason = "") {
   const now = Date.now();
 
   // Debounce normal presence sends, but never debounce the first logged-in
-  // heartbeat after auth state changes. This is what powers CT101 for logged-in users.
+  // heartbeat after auth state changes. This keeps authenticated CT203 controller status fresh for logged-in users.
   if (!webPresenceShouldBypassDebounce(reason) && now - webPresenceLastSentAt < 55_000) {
     return;
   }
