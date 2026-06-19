@@ -46,7 +46,7 @@ require "Not start CT204"
 require "Not restart or reload CT203 service"
 require "Not print secrets"
 require "APPROVE_PHASE_14J_MR_CREATE_CT203_BACKUP_ON_PVEW_PRIVATE_STORAGE_NO_SERVICE_RESTART"
-require "Create one timestamped backup directory under `/srv/apc-private-data/backups/ct203`"
+require 'Create one timestamped backup directory under `/srv/apc-private-data/backups/ct203`'
 require "Generate backup manifest and SHA256SUMS"
 require "Storage unlock/mount/format/key/crypttab/fstab mutation"
 require "PASS_PHASE_14J_MQ_CT203_PRIVATE_STORAGE_BACKUP_EXECUTION_PLAN_NO_APPLY_DONE"
