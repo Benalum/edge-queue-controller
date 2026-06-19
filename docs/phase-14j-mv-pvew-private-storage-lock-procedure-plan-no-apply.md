@@ -33,18 +33,22 @@ New-chat baseline observed during 14J-MU-R2:
 - public app sha256 remained 8c32e726f50b0255643ac46c5187feb2bd7722184cb7db188f054675bf513751;
 - public deployed legacy hits were absent.
 
-## Public contract warning carried forward
+## Public CT204 data_authority correction carried forward
 
-14J-MU-R2 found:
+14J-MU-R2 initially reported:
 
 - ct204_data_authority=missing
 - data_authority_paths=absent
 
-This is public status contract drift because the intended public contract says CT204 should expose data_authority=false. It is not evidence that CT204 is authoritative. The same baseline still showed CT204 expected_state=stopped and state=planned, with no explicit data_authority=true.
+14J-MV-A corrected this as a jq boolean false handling issue, not a public contract issue. The live compact public JSON showed:
 
-Lock/unmount apply must not rely only on the public JSON for CT204 authority. It must verify CT204 state directly from PVEW immediately before any mutation.
+- private_storage_status.ct204.role=backup-data-only
+- private_storage_status.ct204.expected_state=stopped
+- private_storage_status.ct204.data_authority=false
 
-A later public status contract repair phase should restore an explicit public-safe CT204 data_authority=false field.
+The corrected interpretation is that public status currently satisfies the intended CT204 non-authority field.
+
+Lock/unmount apply must still not rely only on public JSON. It must verify CT204 state directly from PVEW immediately before any mutation.
 
 ## Current private storage evidence carried forward from 14J-MT
 
