@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -euo pipefail
+set +H
+
+PHASE="phase-14j-mr-create-ct203-backup-on-pvew-private-storage-no-service-restart"
+DOC="docs/${PHASE}.md"
+
+echo "=== smoke: ${PHASE} ==="
+
+require() {
+  local pattern="$1"
+  if ! grep -Fq "$pattern" "$DOC"; then
+    echo "FAIL: missing required pattern: $pattern"
+    exit 1
+  fi
+}
+
+test -f "$DOC"
+
+require "Phase 14J-MR"
+require "Create CT203 Backup on PVEW Private Storage, No Service Restart"
+require "APPROVE_PHASE_14J_MR_CREATE_CT203_BACKUP_ON_PVEW_PRIVATE_STORAGE_NO_SERVICE_RESTART"
+require "fed0a48"
+require "controller-phase-14j-mq-a-smoke-backtick-hygiene-repair-no-apply-2026-06-18"
+require "PASS_PHASE_14J_MQ_A_SMOKE_BACKTICK_HYGIENE_REPAIR_NO_APPLY_DONE"
+require "backup_bundle_path=/srv/apc-private-data/backups/ct203/ct203-backup-"
+require "backup_manifest_created=yes"
+require "backup_sha256sums_created=yes"
+require "backup_sha256_entry_count="
+require "backup_bundle_file_count="
+require "SQLite DB backup: \`db/edge_queue.sqlite3\`"
+require "CT203 env file: \`config/edge-queue-controller.env\`"
+require "pvew_backup_exitcode=0"
+require "pvew_ssh_connect=pass"
+require "pvew_remote_user=root"
+require "pvew_pct_binary=present"
+require "pvew_qm_binary=present"
+require "private_storage_findmnt=mounted_or_path_on_mount"
+require "private_storage_mountpoint=/srv/apc-private-data"
+require "private_storage_source=/dev/mapper/apc_private_data"
+require "private_storage_filesystem=ext4"
+require "private_storage_dir_mode=700 owner=root group=root"
+require "ct203_status_before=running"
+require "ct203_status_after=running"
+require "ct204_status_before=stopped"
+require "ct204_status_after=stopped"
+require "vm200_status_before=running"
+require "vm200_status_after=running"
+require "ct203_service_state_before=active"
+require "ct203_service_state_after=active"
+require "sqlite_backup_created_inside_ct203=yes"
+require "sqlite_backup_integrity_check=ok"
+require "ct203_temp_backup_files_removed=yes"
+require "ct203_env_file_copied_to_private_storage=yes"
+require "ct203_env_file_contents_printed=no"
+require "backup_bundle_created_and_verified=yes"
+require "public_status_http_before=200"
+require "public_status_http_after=200"
+require "overall_state_after=online"
+require "normalized_schema_version_after=2"
+require "node_ids_sorted_after=ct-203,ct-204,pvew,vm-200"
+require "storage_policy_after=manual-unlock-only"
+require "storage_mount_state_after=unknown"
+require "ct204_expected_state_after_public=stopped"
+require "ct204_data_authority_after_public=false"
+require "No env file contents or secrets were printed"
+require "no service restart/reload/enable/start/stop"
+require "no storage unlock/mount/format/key/crypttab/fstab mutation"
+require "no DB restore/import/migration"
+require "no CT204 start"
+require "no PVESO wake/start"
+require "PASS_PHASE_14J_MR_CREATE_CT203_BACKUP_ON_PVEW_PRIVATE_STORAGE_NO_SERVICE_RESTART_DONE"
+
+echo "PASS: 14J-MR CT203 private-storage backup evidence present"
+echo "PASS_${PHASE}"
