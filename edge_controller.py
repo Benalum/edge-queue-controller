@@ -5650,6 +5650,236 @@ def _public_create_ollama_job(prompt: str, requested_model: str | None = None, u
     return row_to_dict(row)
 
 
+
+
+# STAGE_15_D_MOCK_QUEUED_CHAT_COMPAT_BEGIN
+_CHAT_QUEUED_MOCK_MODEL = "mock/no-model"
+_CHAT_QUEUED_JOB_TYPE = "companion.chat"
+
+
+def _chat_queued_now_iso():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _chat_queued_normalize_prompt(payload):
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="JSON object required.")
+
+    value = payload.get("message")
+    if value is None:
+        value = payload.get("prompt")
+    if value is None:
+        value = payload.get("input")
+
+    if not isinstance(value, str) or not value.strip():
+        raise HTTPException(status_code=400, detail="message, prompt, or input is required.")
+
+    prompt = value.strip()
+    if len(prompt) > _public_max_prompt_chars():
+        raise HTTPException(
+            status_code=400,
+            detail=f"prompt is too long. Max characters: {_public_max_prompt_chars()}.",
+        )
+    return prompt
+
+
+def _chat_queued_safe_metadata(payload):
+    if not isinstance(payload, dict):
+        return {}
+    metadata = payload.get("metadata")
+    if isinstance(metadata, dict):
+        safe = {}
+        for key, value in metadata.items():
+            if isinstance(key, str) and len(key) <= 80:
+                if isinstance(value, (str, int, float, bool)) or value is None:
+                    safe[key] = value
+        return safe
+    return {}
+
+
+def _chat_queued_decision(user_id, prompt, metadata=None):
+    return {
+        "decision_version": 1,
+        "user_id": int(user_id),
+        "surface": "companion",
+        "intent": _CHAT_QUEUED_JOB_TYPE,
+        "intent_confidence": 1.0,
+        "route_type": "queue_job",
+        "job_type": _CHAT_QUEUED_JOB_TYPE,
+        "model_tier": "medium",
+        "requested_model": _CHAT_QUEUED_MOCK_MODEL,
+        "requires_confirmation": False,
+        "reason": "mock queued companion compatibility; no model call",
+        "model_call": "not_started",
+        "safety_flags": [
+            "no_model_call",
+            "no_worker_activation",
+            "no_scheduler_activation",
+        ],
+        "metadata": metadata or {},
+    }
+
+
+def _chat_queued_create_mock_job(user_id, prompt, decision):
+    now = _chat_queued_now_iso()
+    with db() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO jobs (
+                job_type,
+                prompt,
+                requested_model,
+                status,
+                attempts,
+                created_at,
+                updated_at,
+                user_id
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                _CHAT_QUEUED_JOB_TYPE,
+                prompt,
+                _CHAT_QUEUED_MOCK_MODEL,
+                "queued",
+                0,
+                now,
+                now,
+                int(user_id),
+            ),
+        )
+        job_id = int(cur.lastrowid)
+        row = conn.execute(
+            """
+            SELECT *
+            FROM jobs
+            WHERE id = ?
+            """,
+            (job_id,),
+        ).fetchone()
+    return row_to_dict(row)
+
+
+def _chat_queued_get_job_with_result(job_id, user_id):
+    with db() as conn:
+        job = conn.execute(
+            """
+            SELECT *
+            FROM jobs
+            WHERE id = ?
+              AND user_id = ?
+              AND job_type = ?
+            LIMIT 1
+            """,
+            (
+                int(job_id),
+                int(user_id),
+                _CHAT_QUEUED_JOB_TYPE,
+            ),
+        ).fetchone()
+
+        if not job:
+            return None
+
+        result = conn.execute(
+            """
+            SELECT *
+            FROM job_results
+            WHERE job_id = ?
+            LIMIT 1
+            """,
+            (int(job_id),),
+        ).fetchone()
+
+    return {
+        "job": row_to_dict(job),
+        "result": row_to_dict(result) if result else None,
+    }
+
+
+def _chat_queued_serialize_job(data):
+    job = data["job"]
+    result = data.get("result")
+
+    response = {
+        "ok": True,
+        "job_id": int(job["id"]),
+        "user_id": job.get("user_id"),
+        "status": job.get("status"),
+        "job_type": job.get("job_type"),
+        "requested_model": job.get("requested_model"),
+        "model_tier": "medium",
+        "model_call": "not_started",
+        "attempts": job.get("attempts"),
+        "last_error": job.get("last_error"),
+        "created_at": job.get("created_at"),
+        "updated_at": job.get("updated_at"),
+        "forwarded_at": job.get("forwarded_at"),
+        "result": result,
+        "error": job.get("last_error"),
+    }
+
+    if result:
+        response["model_call"] = "mock/no-model_result_present"
+
+    return response
+
+
+@app.post("/api/chat/queued")
+async def api_chat_queued_create(request: Request):
+    await _require_public_api_key(request)
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.")
+
+    prompt = _chat_queued_normalize_prompt(payload)
+    metadata = _chat_queued_safe_metadata(payload)
+    decision = _chat_queued_decision(user_id=user_id, prompt=prompt, metadata=metadata)
+    job = _chat_queued_create_mock_job(user_id=user_id, prompt=prompt, decision=decision)
+
+    return {
+        "ok": True,
+        "job_id": int(job["id"]),
+        "user_id": user_id,
+        "status": job["status"],
+        "route_type": decision["route_type"],
+        "job_type": decision["job_type"],
+        "model_tier": decision["model_tier"],
+        "requested_model": decision["requested_model"],
+        "model_call": decision["model_call"],
+        "poll_url": f"/api/chat/queued/{job['id']}",
+        "queue_status_url": f"/api/chat/queue/status?job_id={job['id']}",
+        "message": "Mock queued companion job accepted. No model call has been started.",
+    }
+
+
+@app.get("/api/chat/queued/{job_id}")
+async def api_chat_queued_get(job_id: int, request: Request):
+    await _require_public_api_key(request)
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
+
+    data = _chat_queued_get_job_with_result(job_id=job_id, user_id=user_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Queued chat job not found.")
+
+    return _chat_queued_serialize_job(data)
+
+
+@app.get("/api/chat/queue/status")
+async def api_chat_queue_status(request: Request, job_id: int = 0, id: int = 0):
+    selected_job_id = int(job_id or id or 0)
+    if selected_job_id < 1:
+        raise HTTPException(status_code=400, detail="job_id is required.")
+    return await api_chat_queued_get(selected_job_id, request)
+
+
+# STAGE_15_D_MOCK_QUEUED_CHAT_COMPAT_END
+
 @app.post("/public/jobs")
 async def public_create_job(request: Request):
     await _require_public_api_key(request)
