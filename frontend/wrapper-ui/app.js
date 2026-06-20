@@ -3560,7 +3560,9 @@ function stage5p10fSetText(id, value) {
 
 function stage5p10fUpdateQueueDisplay(data) {
   const queue = data && data.queue ? data.queue : {};
-  const job = data && data.job ? data.job : null;
+  // STAGE_15_F_MOCK_QUEUE_STATUS_POLISH_BEGIN
+  const job = data && data.job ? data.job : (data && data.job_id ? data : null);
+  // STAGE_15_F_MOCK_QUEUE_STATUS_POLISH_END
 
   const waiting = Number(queue.waiting_count || 0);
   const running = Number(queue.running_count || 0);
@@ -3574,6 +3576,13 @@ function stage5p10fUpdateQueueDisplay(data) {
   // - no active queue: "0 / 0"
   if (job && job.status && job.status !== "not_found") {
     const status = String(job.status || "").toLowerCase();
+
+    // STAGE_15_F_MOCK_QUEUE_SUMMARY_QUEUED_STATE_BEGIN
+    if (["queued", "pending", "waiting", "created"].includes(status)) {
+      stage5p10fSetText("queuedChatQueueSummary", "Queued");
+      return;
+    }
+    // STAGE_15_F_MOCK_QUEUE_SUMMARY_QUEUED_STATE_END
 
     if (job.position !== null && job.position !== undefined) {
       const denominator = total > 0 ? total : waiting;
@@ -3683,8 +3692,20 @@ async function queuedChatPollJob(jobId) {
     const job = data?.job || data;
     const status = String(job?.status || "").toLowerCase();
 
+    // STAGE_15_F_MOCK_QUEUE_STATUS_POLISH_BEGIN
+    const requestedModel = String(job?.requested_model || data?.requested_model || "").toLowerCase();
+    const modelCallState = String(job?.model_call || data?.model_call || "").toLowerCase();
+    const isMockNoModel = requestedModel === "mock/no-model" || modelCallState === "not_started";
+    if (isMockNoModel && ["queued", "pending", "waiting", "created"].includes(status)) {
+      return {
+        reply: "Your message is queued safely. The model worker is not active yet, so no assistant reply has been generated.",
+        detail: `job ${jobId} - mock/no-model - waiting for model worker`
+      };
+    }
+    // STAGE_15_F_MOCK_QUEUE_STATUS_POLISH_END
+
     if (status === "complete" || status === "completed") {
-      const result = job?.result_json || {};
+      const result = job?.result_json || job?.result || {};
       const reply = result.reply || result.response || result.text || "Completed, but no reply text was returned.";
       return {
         reply,
