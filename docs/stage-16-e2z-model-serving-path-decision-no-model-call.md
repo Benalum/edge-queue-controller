@@ -24,7 +24,7 @@ Explicitly not performed:
 
 Before E2Z:
 
-- Repo HEAD/origin: `f8f58e7`.
+- Repo HEAD/origin: `dd99327`.
 - Public `/`: HTTP 200.
 - Public `/login`: HTTP 200.
 - Public `/api/me`: HTTP 401.
@@ -35,7 +35,6 @@ Before E2Z:
 - Private storage not mounted.
 - CT203 controller active.
 - CT203 health/status HTTP 200.
-- DB counts remained at the known post-login baseline.
 
 ## E2Y Carry-Forward
 

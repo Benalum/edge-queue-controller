@@ -35,14 +35,13 @@ probe_expect() {
   expect="$2"
   tmp="$(mktemp)"
   set +e
-  out="$(curl -sS --connect-timeout 6 --max-time 15 -o "$tmp" -w "%{http_code} %{time_total} %{size_download}" "$PUBLIC_BASE$path" 2>/dev/null)"
+  out="$(curl -sS --connect-timeout 6 --max-time 15 -o "$tmp" -w "%{http_code}" "$PUBLIC_BASE$path" 2>/dev/null)"
   rc=$?
   set -e
-  code="$(printf "%s" "$out" | awk '{print $1}')"
-  echo "public_path=${path} rc=${rc} http=${code} expect=${expect}"
+  echo "public_path=${path} rc=${rc} http=${out} expect=${expect}"
   rm -f "$tmp"
   test "$rc" = "0"
-  test "$code" = "$expect"
+  test "$out" = "$expect"
 }
 
 probe_expect / 200
