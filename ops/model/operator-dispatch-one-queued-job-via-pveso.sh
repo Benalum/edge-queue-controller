@@ -374,8 +374,8 @@ ss -ltnp | grep -E ':11434[[:space:]]' || true
 
 local_11434_count="$(ss -ltnp | awk '$4 ~ /^127[.]0[.]0[.]1:11434$/ {n++} END {print n+0}')"
 nonlocal_11434_count="$(ss -ltnp | awk '$4 ~ /:11434$/ && $4 !~ /^127[.]0[.]0[.]1:11434$/ && $4 !~ /^\[::1\]:11434$/ {n++} END {print n+0}')"
-serve_count="$(ps -eo args | grep -E '[o]llama serve' | wc -l | tr -d ' ')"
-runner_count="$(ps -eo args | grep -E '[o]llama_llama_server|[o]llama runner|[r]unners/' | wc -l | tr -d ' ')"
+serve_count="$(ps -eo args | awk '/[o]llama serve/ {n++} END {print n+0}')"
+runner_count="$(ps -eo args | awk '/[o]llama_llama_server|[o]llama runner|[r]unners\// {n++} END {print n+0}')"
 
 echo "ollama_localhost_11434_listener_count=$local_11434_count expected_ge=1"
 echo "ollama_nonlocal_11434_listener_count=$nonlocal_11434_count expected=0"
@@ -487,7 +487,7 @@ run_execute_approved() {
   cat "$RUN_DIR/db_postflight.json"
 
   echo "=== pveso runner postflight ==="
-  timeout 60 tailscale ssh "$PVESO_TS_SSH" 'bash -lc '"'"'runner_count="$(ps -eo args | grep -E "[o]llama_llama_server|[o]llama runner|[r]unners/" | wc -l | tr -d " ")"; echo "ollama_runner_process_count_after=$runner_count expected=0"; test "$runner_count" = "0"'"'"'' \
+  timeout 60 tailscale ssh "$PVESO_TS_SSH" 'bash -lc '"'"'runner_count="$(ps -eo args | awk "/[o]llama_llama_server|[o]llama runner|[r]unners\\// {n++} END {print n+0}")"; echo "ollama_runner_process_count_after=$runner_count expected=0"; test "$runner_count" = "0"'"'"'' \
     | tee "$RUN_DIR/pveso_postflight.txt"
 
   {
