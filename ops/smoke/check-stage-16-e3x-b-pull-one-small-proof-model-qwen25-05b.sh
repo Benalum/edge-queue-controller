@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3x-b-pull-one-small-proof-model-qwen25-05b.md"
+
+echo "=== Stage 16 E3X-B smoke: pulled one small proof model qwen2.5:0.5b ==="
+
+test -s "$DOC"
+
+grep -F "Pull One Small Proof Model qwen2.5:0.5b" "$DOC"
+grep -F "E3X_B_PULL_ONE_SMALL_PROOF_MODEL_QWEN25_05B_OK" "$DOC"
+grep -F "APPROVE_STAGE_16_E3X_B_PULL_ONE_SMALL_PROOF_MODEL_QWEN25_05B_ONLY" "$DOC"
+grep -F "HEAD/origin/main/remote: 64a4d5a" "$DOC"
+grep -F "model=qwen2.5:0.5b" "$DOC"
+grep -F "scope=one_model_only" "$DOC"
+grep -F "visible_to_host_ollama=true" "$DOC"
+grep -F "E3X_B_PREFLIGHT_OK" "$DOC"
+grep -F "E3X_B_PULL_MODEL=qwen2.5:0.5b" "$DOC"
+grep -F "E3X_B_PULL_SCOPE=one_model_only" "$DOC"
+grep -F "E3X_B_APPROVED_MODEL_PULL_DONE" "$DOC"
+grep -F "E3X_B_SMALL_PROOF_MODEL_PRESENT_AFTER=true" "$DOC"
+grep -F "E3X_B_PULLED_MODEL_VISIBLE_TO_HOST_OLLAMA=qwen2.5:0.5b" "$DOC"
+grep -F "E3X_B_POSTFLIGHT_OK" "$DOC"
+grep -F "PVESO_ACTIVE_MODEL_CLIENT_COUNT=0" "$DOC"
+grep -F "CT101_STATUS=stopped" "$DOC"
+grep -F "CT101_ONBOOT=0" "$DOC"
+grep -F "E3X-B did not:" "$DOC"
+grep -F "write the DB" "$DOC"
+grep -F "insert a job" "$DOC"
+grep -F "call a model generation endpoint" "$DOC"
+grep -F "docker pull" "$DOC"
+grep -F "E3X-C — insert one fresh small-model proof job" "$DOC"
+grep -F "requested_model=qwen2.5:0.5b" "$DOC"
+grep -F "job_type=stage16_e3x_small_model_timeout_safe_completion_smoke" "$DOC"
+grep -F "Do not rerun E3V-Q" "$DOC"
+grep -F "Do not retry job 29" "$DOC"
+grep -F "Do not rerun job 30" "$DOC"
+grep -F "Use a fresh job id for the small-model completion proof" "$DOC"
+
+echo "E3X_B_PULL_ONE_SMALL_PROOF_MODEL_QWEN25_05B_SMOKE_OK"
