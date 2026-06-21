@@ -1,0 +1,30 @@
+# Stage 16 E3Z static template only.
+# Do not install, enable, start, restart, or reload this unit in E3Z-C.
+# Future install target, if explicitly approved:
+#   /etc/systemd/system/edge-queue-scheduler-one-shot.service
+
+[Unit]
+Description=AI Platform Control one-shot queue scheduler tick
+Documentation=file:/opt/edge-queue-controller/docs/stage-16-e3z-c-static-scheduler-service-timer-artifacts-no-install-no-start.md
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/opt/edge-queue-controller/ops/scheduler/stage-16-e3z-scheduler-tick.sh
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/edge-queue-controller
+EnvironmentFile=-/etc/edge-queue-controller/scheduler-one-shot.env
+Environment=EDGE_SCHEDULER_MODE=one-shot-timer
+Environment=EDGE_SCHEDULER_ONE_JOB_PER_TICK=1
+Environment=EDGE_SCHEDULER_MAX_JOBS_PER_TICK=1
+Environment=EDGE_SCHEDULER_MAX_RUNTIME_SECONDS=120
+Environment=EDGE_PERSISTENT_LANE_WORKERS_ENABLED=0
+Environment=EDGE_SCHEDULER_DELEGATION_COMMAND_ENABLED=0
+ExecStart=/usr/bin/env bash /opt/edge-queue-controller/ops/scheduler/stage-16-e3z-scheduler-tick.sh --run
+TimeoutStartSec=150
+KillMode=process
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/edge-queue-controller /tmp

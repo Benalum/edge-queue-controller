@@ -1,0 +1,17 @@
+# Stage 16 E3Z static template only.
+# Do not install, enable, start, restart, or reload this timer in E3Z-C.
+# Future install target, if explicitly approved:
+#   /etc/systemd/system/edge-queue-scheduler-one-shot.timer
+
+[Unit]
+Description=AI Platform Control one-shot queue scheduler timer
+
+[Timer]
+Unit=edge-queue-scheduler-one-shot.service
+OnBootSec=5min
+OnUnitActiveSec=2min
+AccuracySec=10s
+Persistent=false
+
+[Install]
+WantedBy=timers.target
