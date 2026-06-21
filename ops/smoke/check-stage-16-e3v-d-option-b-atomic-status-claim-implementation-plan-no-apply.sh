@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3v-d-option-b-atomic-status-claim-implementation-plan-no-apply.md"
+
+echo "=== Stage 16 E3V-D smoke: Option B atomic-status-claim implementation plan, no apply ==="
+
+test -s "$DOC"
+
+grep -F "No Apply" "$DOC" || grep -F "no-apply implementation plan" "$DOC"
+grep -F "No DB write is performed" "$DOC"
+grep -F "No job is claimed" "$DOC"
+grep -F "OPTION_B_SCHEMA_CAPABLE=true" "$DOC"
+grep -F "Do not dispatch job 23" "$DOC"
+grep -F "Do not dispatch job 24" "$DOC"
+grep -F "Do not rerun job 27" "$DOC"
+grep -F "Do not rerun job 28" "$DOC"
+grep -F "add a claim-aware helper mode" "$DOC"
+grep -F "ops/scheduler/stage-16-e3v-run-one-existing-status-atomic-claim-dispatch.sh" "$DOC"
+grep -F "APPROVE_STAGE_16_E3V_RUN_ONE_EXISTING_STATUS_ATOMIC_CLAIM_DISPATCH_ONLY" "$DOC"
+grep -F "UPDATE jobs" "$DOC"
+grep -F "SET status='running'" "$DOC"
+grep -F "BEGIN IMMEDIATE" "$DOC"
+grep -F "changes() == 1" "$DOC"
+grep -F "queued -> running" "$DOC"
+grep -F "running -> completed" "$DOC"
+grep -F "attempts=attempts+1" "$DOC"
+grep -F "job_results.job_id is the primary key" "$DOC"
+grep -F "qwen2.5:32b-instruct-q4_K_M" "$DOC"
+grep -F "non-localhost 11434 listener count must be 0" "$DOC"
+grep -F "CT101_STATUS=stopped" "$DOC"
+grep -F "CT101_ONBOOT=0" "$DOC"
+grep -F "completed_with_one_result_do_not_rerun" "$DOC"
+grep -F "running_zero_results_runner_active_do_not_rerun" "$DOC"
+grep -F "atomic_claim_result.txt" "$DOC"
+grep -F "selected target is job 23" "$DOC"
+grep -F "selected target is job 28" "$DOC"
+grep -F "persistent scheduler activation remains blocked" "$DOC"
+grep -F "E3V-K explicitly approved Option B atomic-claim one-shot dispatch" "$DOC"
+grep -F "It does not write the DB" "$DOC"
+grep -F "It does not call a model" "$DOC"
+
+echo "E3V_D_NO_APPLY_OPTION_B_IMPLEMENTATION_PLAN_SMOKE_OK"
