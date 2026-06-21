@@ -468,6 +468,7 @@ run_execute_approved() {
 
   set +e
   APC_MANUAL_COMPLETION_APPROVAL="$HELPER_REQUIRED_APPROVAL" \
+  JOB_ID="$JOB_ID" \
   timeout "$MAX_RUNTIME_SECONDS" bash "$HELPER_PATH" \
     --job-id "$JOB_ID" \
     > "$RUN_DIR/dispatch.stdout.txt" \
