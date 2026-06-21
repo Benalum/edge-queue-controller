@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3w-g-r1-final-timeout-safe-runtime-closure-refined-runner-check.md"
+
+echo "=== Stage 16 E3W-G-R1 smoke: final timeout-safe runtime closure refined runner check ==="
+
+test -s "$DOC"
+
+grep -F "Final Timeout-Safe Runtime Closure with Refined Runner Check" "$DOC"
+grep -F "E3W_G_R1_FINAL_TIMEOUT_SAFE_RUNTIME_CLOSURE_OK" "$DOC"
+grep -F "HEAD/origin/main/remote: fc48c23" "$DOC"
+grep -F "E3W-F proved the timeout-safe wrapper fixes the E3V-Q failure mode" "$DOC"
+grep -F "job_29=status=failed attempts=1 result_rows=0" "$DOC"
+grep -F "job_30=status=failed attempts=1 result_rows=0" "$DOC"
+grep -F "job_results_total=10" "$DOC"
+grep -F "running_e3v_e3w_jobs=0" "$DOC"
+grep -F "eligible_e3v_e3w_jobs=0" "$DOC"
+grep -F "active_model_clients=0" "$DOC"
+grep -F "E3W_G_R1_PVESO_RUNNER_CLASSIFICATION=" "$DOC"
+grep -F "DB_INTEGRITY=ok" "$DOC"
+grep -F "JOB_29_CLOSURE id=29 status=failed attempts=1" "$DOC"
+grep -F "JOB_30_CLOSURE id=30 status=failed attempts=1" "$DOC"
+grep -F "E3W_G_R1_RUNNING_E3V_E3W_JOB_COUNT=0" "$DOC"
+grep -F "E3W_G_R1_ELIGIBLE_E3V_E3W_JOB_COUNT=0" "$DOC"
+grep -F "E3W_G_R1_DB_CLOSURE_OK" "$DOC"
+grep -F "OLLAMA_SERVICE_STATE=active" "$DOC"
+grep -F "OLLAMA_NONLOCALHOST_11434_LISTENER_COUNT=0" "$DOC"
+grep -F "PVESO_ACTIVE_MODEL_CLIENT_COUNT=0" "$DOC"
+grep -F "CT101_STATUS=stopped" "$DOC"
+grep -F "CT101_ONBOOT=0" "$DOC"
+grep -F "E3W_G_R1_PVESO_REFINED_CLOSURE_OK" "$DOC"
+grep -F "No process was killed" "$DOC"
+grep -F "The timeout-safe wrapper is now proven for the failure path" "$DOC"
+grep -F "PVESO currently has only 19 GB / 32B-class local models" "$DOC"
+grep -F "E3X-A — select/install or prepare a smaller local proof model on PVESO" "$DOC"
+grep -F "Do not rerun E3V-Q" "$DOC"
+grep -F "Do not retry job 29" "$DOC"
+grep -F "Do not rerun job 30" "$DOC"
+grep -F "Use a fresh job id for any future runtime proof" "$DOC"
+
+echo "E3W_G_R1_FINAL_TIMEOUT_SAFE_RUNTIME_CLOSURE_SMOKE_OK"
