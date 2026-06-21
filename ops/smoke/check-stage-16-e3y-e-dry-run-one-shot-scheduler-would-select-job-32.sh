@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3y-e-dry-run-one-shot-scheduler-would-select-job-32.md"
+
+echo "=== Stage 16 E3Y-E smoke: dry-run one-shot scheduler would select job 32 ==="
+
+test -s "$DOC"
+
+grep -F "Dry-Run One-Shot Scheduler Would Select Job 32" "$DOC"
+grep -F "E3Y_E_DRY_RUN_ONE_SHOT_SCHEDULER_WOULD_SELECT_JOB_32_OK" "$DOC"
+grep -F "HEAD/origin/main/remote: 4ac1d7d" "$DOC"
+grep -F "job_id=32" "$DOC"
+grep -F "requested_model=qwen2.5:0.5b" "$DOC"
+grep -F "job_type=stage16_e3y_scheduler_one_shot_small_model_completion_smoke" "$DOC"
+grep -F "E3Y_ONE_SHOT_SCHEDULER_DRY_RUN_ONLY" "$DOC"
+grep -F "E3W_TIMEOUT_SAFE_WRAPPER_DRY_RUN_ONLY" "$DOC"
+grep -F "E3W_CANDIDATE_JOB id=32 status=queued attempts=0" "$DOC"
+grep -F "WOULD_ATOMIC_CLAIM job_id=32 model=qwen2.5:0.5b" "$DOC"
+grep -F "E3Y_ONE_SHOT_SCHEDULER_DRY_RUN_WOULD_SELECT_JOB id=32 model=qwen2.5:0.5b job_type=stage16_e3y_scheduler_one_shot_small_model_completion_smoke" "$DOC"
+grep -F "E3Y_ONE_SHOT_SCHEDULER_DRY_RUN_NO_DB_WRITE_NO_MODEL_CALL" "$DOC"
+grep -F "E3Y_E_DB_STAT_UNCHANGED_DURING_DRY_RUN=true" "$DOC"
+grep -F "DB_INTEGRITY_AFTER_DRY_RUN=ok" "$DOC"
+grep -F "JOBS_TOTAL_AFTER_DRY_RUN=31" "$DOC"
+grep -F "JOB_RESULTS_TOTAL_AFTER_DRY_RUN=11" "$DOC"
+grep -F "JOB32_AFTER_DRY_RUN id=32 status=queued attempts=0" "$DOC"
+grep -F "E3Y_E_ELIGIBLE_SCHEDULER_SELECTED_JOB_COUNT_AFTER_DRY_RUN=1" "$DOC"
+grep -F "E3Y_E_RUNNING_STAGE16_PROOF_JOB_COUNT_AFTER_DRY_RUN=0" "$DOC"
+grep -F "E3Y_E_READONLY_POSTFLIGHT_OK" "$DOC"
+grep -F "E3Y-E did not:" "$DOC"
+grep -F "claim job 32" "$DOC"
+grep -F "call a model" "$DOC"
+grep -F "activate scheduler" "$DOC"
+grep -F "activate persistent workers" "$DOC"
+grep -F "E3Y-F — approved one-shot scheduler runtime proof for job 32" "$DOC"
+grep -F "APPROVE_STAGE_16_E3Y_F_RUN_ONE_SHOT_SCHEDULER_SMALL_MODEL_JOB_ONLY" "$DOC"
+grep -F "Do not rerun E3V-Q" "$DOC"
+grep -F "Do not retry job 29" "$DOC"
+grep -F "Do not rerun job 30" "$DOC"
+grep -F "Do not rerun job 31" "$DOC"
+grep -F "Use job 32 only for the approved E3Y scheduler one-shot proof path" "$DOC"
+
+echo "E3Y_E_DRY_RUN_ONE_SHOT_SCHEDULER_WOULD_SELECT_JOB_32_SMOKE_OK"
