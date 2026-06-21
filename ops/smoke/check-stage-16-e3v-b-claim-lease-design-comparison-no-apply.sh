@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3v-b-claim-lease-design-comparison-no-apply.md"
+
+echo "=== Stage 16 E3V-B smoke: claim/lease design comparison, no apply ==="
+
+test -s "$DOC"
+
+grep -F "No Apply" "$DOC" || grep -F "no-apply only" "$DOC"
+grep -F "No schema migration is performed" "$DOC"
+grep -F "No DB write is performed" "$DOC"
+grep -F "job_28_status=completed" "$DOC"
+grep -F "job_28_attempts=1" "$DOC"
+grep -F "job_28_result_rows=1" "$DOC"
+grep -F "Do not rerun job 28" "$DOC"
+grep -F "Do not reuse job 27" "$DOC"
+grep -F "Scheduler activation has not been performed" "$DOC"
+grep -F "Persistent worker activation has not been performed" "$DOC"
+grep -F "Option A" "$DOC"
+grep -F "Option B" "$DOC"
+grep -F "Option C" "$DOC"
+grep -F "Option D" "$DOC"
+grep -F "atomic status transition claim" "$DOC"
+grep -F "dedicated lease columns" "$DOC"
+grep -F "dispatch_claims" "$DOC"
+grep -F "Not acceptable for persistent scheduler activation" "$DOC"
+grep -F "Best long-term path before persistent scheduler activation" "$DOC"
+grep -F "E3V-B recommends a staged path" "$DOC"
+grep -F "Use Option B for the next no-apply implementation design" "$DOC"
+grep -F "Use Option C before persistent scheduler activation" "$DOC"
+grep -F "APPROVE_STAGE_16_E3V_RUN_ONE_EXISTING_STATUS_ATOMIC_CLAIM_DISPATCH_ONLY" "$DOC"
+grep -F "schema migration" "$DOC"
+grep -F "persistent scheduler activation" "$DOC"
+grep -F "persistent worker activation" "$DOC"
+grep -F "E3V-C read-only schema capability check" "$DOC"
+grep -F "E3V-D no-apply Option B atomic-status-claim implementation plan" "$DOC"
+grep -F "Do not run another job until a new explicit approval is requested and granted" "$DOC"
+
+echo "E3V_B_NO_APPLY_CLAIM_LEASE_DESIGN_SMOKE_OK"
