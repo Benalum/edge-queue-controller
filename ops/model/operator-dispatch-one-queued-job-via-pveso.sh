@@ -3,6 +3,7 @@ set -euo pipefail
 
 PHASE="stage-16-e3p-b-controlled-dispatch-implementation-no-run"
 REQUIRED_EXEC_APPROVAL="APPROVE_STAGE_16_E3P_D_RUN_OPERATOR_DISPATCH_ONE_JOB_MODEL_DB_COMPLETION"
+HELPER_REQUIRED_APPROVAL="APPROVE_STAGE_16_E3M_B_RUN_MANUAL_COMPLETION_HELPER_FOR_ONE_QUEUED_JOB_ONE_MODEL_CALL_ONE_JOB_UPDATE_ONE_JOB_RESULT_INSERT_NO_WORKER_ACTIVATION_NO_SCHEDULER_ACTIVATION_NO_MODEL_PULL_NO_PUBLIC_EXPOSURE_KEEP_CT101_STOPPED"
 DEFAULT_RUN_ROOT="${APC_OPERATOR_DISPATCH_RUN_ROOT:-/tmp/apc-operator-dispatch-runs}"
 
 PVEW_SSH_DEFAULT="${PVEW_SSH:-root@pvew}"
@@ -55,6 +56,7 @@ phase=$PHASE
 artifact=ops/model/operator-dispatch-one-queued-job-via-pveso.sh
 mode=E3P_B_EXECUTION_CAPABLE_NO_RUN
 required_execution_approval=$REQUIRED_EXEC_APPROVAL
+helper_required_approval=$HELPER_REQUIRED_APPROVAL
 ct203_db_path=$CT203_DB_PATH_DEFAULT
 ctid=$CTID_DEFAULT
 helper_path=$HELPER_DEFAULT
@@ -439,6 +441,7 @@ run_execute_approved() {
     echo "ct203_db_path=$CT203_DB_PATH"
     echo "helper_path=$HELPER_PATH"
     echo "adapter_path=$ADAPTER_PATH"
+    echo "helper_required_approval=$HELPER_REQUIRED_APPROVAL"
   } > "$RUN_DIR/command.env.allowlist.txt"
 
   echo "=== ct203 preflight ==="
@@ -464,6 +467,7 @@ run_execute_approved() {
   echo "dispatch_stderr=$RUN_DIR/dispatch.stderr.txt"
 
   set +e
+  APC_MANUAL_COMPLETION_APPROVAL="$HELPER_REQUIRED_APPROVAL" \
   timeout "$MAX_RUNTIME_SECONDS" bash "$HELPER_PATH" \
     --job-id "$JOB_ID" \
     > "$RUN_DIR/dispatch.stdout.txt" \
