@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3y-b-scheduler-one-shot-design-no-activation.md"
+
+echo "=== Stage 16 E3Y-B smoke: scheduler one-shot design no activation ==="
+
+test -s "$DOC"
+
+grep -F "Scheduler One-Shot Design, No Activation" "$DOC"
+grep -F "E3Y_B_SCHEDULER_ONE_SHOT_DESIGN_NO_ACTIVATION_OK" "$DOC"
+grep -F "HEAD/origin/main/remote: 86db861" "$DOC"
+grep -F "E3Y_B_DB_READINESS_OK" "$DOC"
+grep -F "E3Y_B_REPO_DESIGN_INPUTS_OK" "$DOC"
+grep -F "E3Y_B_WRAPPER_READY_FOR_ONE_SHOT_DELEGATION=true" "$DOC"
+grep -F "E3Y_B_SCHEDULER_ACTIVATION_REMAINS_BLOCKED=true" "$DOC"
+grep -F "E3Y_B_PERSISTENT_WORKER_ACTIVATION_REMAINS_BLOCKED=true" "$DOC"
+grep -F "Introduce a manually invoked one-shot scheduler path" "$DOC"
+grep -F "This is not persistent scheduler activation" "$DOC"
+grep -F "This is not persistent worker activation" "$DOC"
+grep -F "ops/scheduler/stage-16-e3y-one-shot-scheduler-dispatch.sh" "$DOC"
+grep -F "E3Y_ONE_SHOT_SCHEDULER_DRY_RUN_WOULD_SELECT_JOB" "$DOC"
+grep -F "APPROVE_STAGE_16_E3Y_C_INSERT_ONE_FRESH_SCHEDULER_SELECTED_SMALL_MODEL_JOB_ONLY" "$DOC"
+grep -F "stage16_e3y_scheduler_one_shot_small_model_completion_smoke" "$DOC"
+grep -F "E3Y-D — implement one-shot scheduler wrapper, no run" "$DOC"
+grep -F "E3Y-E — dry-run one-shot scheduler would select fresh job" "$DOC"
+grep -F "E3Y-F — approved one-shot scheduler runtime proof" "$DOC"
+grep -F "Still disallowed:" "$DOC"
+grep -F "persistent scheduler activation" "$DOC"
+grep -F "persistent workers" "$DOC"
+grep -F "E3Y-B did not:" "$DOC"
+grep -F "activate scheduler" "$DOC"
+grep -F "activate persistent workers" "$DOC"
+grep -F "call a model" "$DOC"
+grep -F "Do not rerun E3V-Q" "$DOC"
+grep -F "Do not retry job 29" "$DOC"
+grep -F "Do not rerun job 30" "$DOC"
+grep -F "Do not rerun job 31 without a new explicit plan and approval" "$DOC"
+
+echo "E3Y_B_SCHEDULER_ONE_SHOT_DESIGN_NO_ACTIVATION_SMOKE_OK"
