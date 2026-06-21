@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3w-e-dry-run-timeout-safe-wrapper-would-claim-job-30.md"
+
+echo "=== Stage 16 E3W-E smoke: dry-run timeout-safe wrapper would claim job 30 ==="
+
+test -s "$DOC"
+
+grep -F "Dry-Run Timeout-Safe Wrapper Would Claim Job 30" "$DOC"
+grep -F "E3W_E_DRY_RUN_TIMEOUT_SAFE_WRAPPER_WOULD_CLAIM_JOB_30_OK" "$DOC"
+grep -F "HEAD/origin/main/remote: ceb5b60" "$DOC"
+grep -F "job_id=30" "$DOC"
+grep -F "requested_model=qwen2.5:32b-instruct-q4_K_M" "$DOC"
+grep -F "job_type=stage16_e3w_timeout_safe_one_job_model_smoke" "$DOC"
+grep -F "model_timeout_seconds=45" "$DOC"
+grep -F "wrapper_total_seconds=120" "$DOC"
+grep -F "num_predict=8" "$DOC"
+grep -F "E3W-E did not:" "$DOC"
+grep -F "write the DB" "$DOC"
+grep -F "claim a job" "$DOC"
+grep -F "call a model" "$DOC"
+grep -F "E3W_TIMEOUT_SAFE_WRAPPER_DRY_RUN_ONLY" "$DOC"
+grep -F "E3W_READONLY_CANDIDATE_PREFLIGHT_OK" "$DOC"
+grep -F "E3W_CANDIDATE_JOB id=30 status=queued attempts=0" "$DOC"
+grep -F "E3W_EXPECTED_ELIGIBLE_JOB_COUNT=1" "$DOC"
+grep -F "E3W_PVESO_PREFLIGHT_OK" "$DOC"
+grep -F "WOULD_ATOMIC_CLAIM job_id=30 model=qwen2.5:32b-instruct-q4_K_M" "$DOC"
+grep -F "WOULD_MARK_FAILED_INTERNALLY_ON_MODEL_TIMEOUT_OR_ERROR" "$DOC"
+grep -F "E3W_TIMEOUT_SAFE_DRY_RUN_WOULD_CLAIM_ONE_JOB_NO_RUNTIME" "$DOC"
+grep -F "E3W_E_DB_STAT_UNCHANGED_DURING_DRY_RUN=true" "$DOC"
+grep -F "JOB30_AFTER_DRY_RUN id=30 status=queued attempts=0" "$DOC"
+grep -F "result_rows=0" "$DOC"
+grep -F "E3W_E_ELIGIBLE_MATCHING_JOB_COUNT_AFTER_DRY_RUN=1" "$DOC"
+grep -F "E3W-F — approved timeout-safe one-job runtime proof for job 30" "$DOC"
+grep -F "APPROVE_STAGE_16_E3W_F_RUN_ONE_TIMEOUT_SAFE_JOB_ONLY" "$DOC"
+grep -F "Do not rerun E3V-Q" "$DOC"
+grep -F "Do not retry job 29" "$DOC"
+
+echo "E3W_E_DRY_RUN_TIMEOUT_SAFE_WRAPPER_WOULD_CLAIM_JOB_30_SMOKE_OK"
