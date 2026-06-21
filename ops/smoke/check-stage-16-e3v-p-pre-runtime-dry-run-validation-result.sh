@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3v-p-pre-runtime-dry-run-validation-result.md"
+
+echo "=== Stage 16 E3V-P smoke: pre-runtime dry-run validation result ==="
+
+test -s "$DOC"
+
+grep -F "E3V_OPTION_B_DRY_RUN_GUARD_PREFLIGHT_OK" "$DOC"
+grep -F "E3V_DRY_RUN_RESULT=WOULD_CLAIM_ONE_JOB_NO_RUNTIME" "$DOC"
+grep -F "E3V_DRY_RUN_ELIGIBLE_JOB_COUNT=1" "$DOC"
+grep -F "WOULD_ATOMIC_CLAIM job_id=29" "$DOC"
+grep -F "wrapper_rc=0" "$DOC"
+grep -F "HEAD/origin/main/remote: d3e179b" "$DOC"
+grep -F "JOB29_BEFORE" "$DOC"
+grep -F "JOB29_AFTER" "$DOC"
+grep -F "status=queued" "$DOC"
+grep -F "attempts=0" "$DOC"
+grep -F "result_rows=0" "$DOC"
+grep -F "NO_DB_WRITE" "$DOC"
+grep -F "NO_DB_CLAIM" "$DOC"
+grep -F "NO_ADAPTER_CALL" "$DOC"
+grep -F "NO_MODEL_CALL" "$DOC"
+grep -F "DB_OPEN_MODE=sqlite_uri_mode_ro_immutable" "$DOC"
+grep -F "DB_INTEGRITY=ok" "$DOC"
+grep -F "DUPLICATE_JOB_RESULTS none" "$DOC"
+grep -F "CT203_DB_STAT_UNCHANGED=true" "$DOC"
+grep -F "PVESO_PREFLIGHT_OK" "$DOC"
+grep -F "OLLAMA_NONLOCALHOST_11434_LISTENER_COUNT=0" "$DOC"
+grep -F "PVESO_RUNNER_OR_ADAPTER_PROCESS_COUNT=0" "$DOC"
+grep -F "TARGET_MODEL_PRESENT=true" "$DOC"
+grep -F "CT101_STATUS=stopped" "$DOC"
+grep -F "CT101_ONBOOT=0" "$DOC"
+grep -F "No runtime marker was found" "$DOC"
+grep -F "Runtime apply remains blocked" "$DOC"
+grep -F "APPROVE_STAGE_16_E3V_Q_RUN_JOB_29_OPTION_B_ATOMIC_CLAIM_DISPATCH_ONLY" "$DOC"
+grep -F "E3V-Q may be run only with explicit approval" "$DOC"
+
+echo "E3V_P_DOC_SMOKE_OK"
