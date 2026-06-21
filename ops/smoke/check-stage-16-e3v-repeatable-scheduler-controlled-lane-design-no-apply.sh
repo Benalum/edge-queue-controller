@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3v-repeatable-scheduler-controlled-lane-design-no-apply.md"
+
+echo "=== Stage 16 E3V-A smoke: repeatable scheduler-controlled lane design, no apply ==="
+
+test -s "$DOC"
+
+grep -F "No Apply" "$DOC" || grep -F "no-apply design" "$DOC"
+grep -F "RESULT=PASS_STAGE_16_E3U_C2_SCHEDULER_SELECTED_CONTROLLED_DISPATCH_JOB_28" "$DOC"
+grep -F "job_28_status=completed" "$DOC"
+grep -F "job_28_attempts=1" "$DOC"
+grep -F "job_28_result_rows=1" "$DOC"
+grep -F "job_results_total=10" "$DOC"
+grep -F "pveso_runner_count_after=0" "$DOC"
+grep -F "Do not rerun job 28" "$DOC"
+grep -F "Do not reuse job 27" "$DOC"
+grep -F "Scheduler activation has not been performed" "$DOC"
+grep -F "Persistent worker activation has not been performed" "$DOC"
+grep -F "PVESO Ollama remains private and localhost-only" "$DOC"
+grep -F "one-job-at-a-time dispatch guard" "$DOC"
+grep -F "duplicate result guard" "$DOC"
+grep -F "status=queued" "$DOC"
+grep -F "requested_model is allowlisted" "$DOC"
+grep -F "job 23 rejected" "$DOC"
+grep -F "job 24 rejected" "$DOC"
+grep -F "Option A" "$DOC"
+grep -F "Option B" "$DOC"
+grep -F "Option C" "$DOC"
+grep -F "APPROVE_STAGE_16_E3V_RUN_ONE_REPEATABLE_SCHEDULER_CONTROLLED_MODEL_JOB_ONLY" "$DOC"
+grep -F "persistent scheduler activation" "$DOC"
+grep -F "persistent worker activation" "$DOC"
+grep -F "completed_with_one_result_do_not_rerun" "$DOC"
+grep -F "queued_zero_results_no_runner_new_approval_required" "$DOC"
+grep -F "duplicate_result_failure_do_not_rerun" "$DOC"
+grep -F "It does not call a model" "$DOC"
+grep -F "It does not write the DB" "$DOC"
+
+echo "E3V_A_NO_APPLY_DESIGN_SMOKE_OK"
