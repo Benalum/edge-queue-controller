@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3u-c2-scheduler-selected-controlled-dispatch-job-28-result.md"
+
+echo "=== Stage 16 E3U-C2-R3 smoke: documented scheduler-selected controlled dispatch result ==="
+
+test -s "$DOC"
+
+grep -F "RESULT=PASS_STAGE_16_E3U_C2_SCHEDULER_SELECTED_CONTROLLED_DISPATCH_JOB_28" "$DOC"
+grep -F "target_job_id=28" "$DOC"
+grep -F "job_28_status=completed" "$DOC"
+grep -F "job_28_attempts=1" "$DOC"
+grep -F "job_28_result_rows=1" "$DOC"
+grep -F "job_results_total=10" "$DOC"
+grep -F "pveso_runner_count_after=0" "$DOC"
+grep -F "RECOVERY_DECISION=DO_NOT_RERUN_DOCUMENT_SUCCESS" "$DOC"
+grep -F "APPROVE_STAGE_16_E3U_RUN_ONE_SCHEDULER_CONTROLLED_DISPATCH_FOR_JOB_28_ONLY" "$DOC"
+grep -F "JOB_RESULTS_TOTAL_BEFORE=9" "$DOC"
+grep -F "JOB_28_STATUS_BEFORE=queued" "$DOC"
+grep -F "JOB_28_RESULT_ROWS_BEFORE=0" "$DOC"
+grep -F "E3U_C2_CT203_PREFLIGHT_OK" "$DOC"
+grep -F "ELIGIBLE_WOULD_CLAIM_COUNT=1" "$DOC"
+grep -F "WOULD_CLAIM job_id=28" "$DOC"
+grep -F "PVESO_PREFLIGHT_OK" "$DOC"
+grep -F "OLLAMA_NONLOCALHOST_11434_LISTENER_COUNT=0" "$DOC"
+grep -F "CT101_STATUS=stopped" "$DOC"
+grep -F "ONE_SHOT_MODEL_ADAPTER_RESULT=PASS" "$DOC"
+grep -F "MANUAL_COMPLETION_HELPER_DB_RESULT=PASS" "$DOC"
+grep -F "MANUAL_COMPLETION_HELPER_RESULT=PASS" "$DOC"
+grep -F "JOB_RESULTS_TOTAL=10" "$DOC"
+grep -F "JOB_28_STATUS=completed" "$DOC"
+grep -F "JOB_28_RESULT_ROWS=1" "$DOC"
+grep -F "JOB_28_RESULT_MODEL=qwen2.5:32b-instruct-q4_K_M" "$DOC"
+grep -F "RECOVERY_CLASSIFICATION=completed_with_one_result_do_not_rerun" "$DOC"
+grep -F "E3U_C2_R2_CT203_COMPLETION_POSTFLIGHT_OK" "$DOC"
+grep -F "PVESO_RUNNER_OR_ADAPTER_PROCESS_COUNT_AFTER=0" "$DOC"
+grep -F "PVESO_CT101_POSTFLIGHT_OK" "$DOC"
+grep -F "DO_NOT_RERUN_JOB_28" "$DOC"
+grep -F "persistent_worker_activation=not_performed" "$DOC"
+
+echo "E3U_C2_R3_DOC_SMOKE_OK"
