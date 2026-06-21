@@ -17,6 +17,64 @@ sanitize_stream() {
     -e 's/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/<redacted-mac>/g'
 }
 
+ct203_db_guard_python() {
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "$PVEW_SSH" 'pct exec 203 -- python3 -' 2>&1 <<'PY'
+import sqlite3
+import subprocess
+
+DB = "/var/lib/edge-queue-controller/edge_queue.sqlite3"
+MARKER = "APC_STAGE16_E3K_A_SYNTHETIC_QUEUED_JOB_ONLY"
+
+def active(unit):
+    try:
+        return subprocess.check_output(["systemctl", "is-active", unit], text=True, stderr=subprocess.DEVNULL).strip()
+    except Exception:
+        return "unknown"
+
+def listener_count():
+    try:
+        out = subprocess.check_output(["ss", "-ltnp"], text=True, stderr=subprocess.DEVNULL)
+        return sum(1 for line in out.splitlines() if ":7070" in line)
+    except Exception:
+        return -1
+
+print("edge_queue_controller_active=" + active("edge-queue-controller.service"))
+print("listener_7070=" + str(listener_count()))
+
+conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
+conn.row_factory = sqlite3.Row
+try:
+    print("db_integrity=" + str(conn.execute("pragma integrity_check").fetchone()[0]))
+    for table in ["user_sessions", "jobs", "job_results", "router_logs", "router_resolution_steps", "router_feedback", "workers", "worker_events"]:
+        try:
+            print(f"{table}=" + str(conn.execute(f"select count(*) from {table}").fetchone()[0]))
+        except Exception:
+            print(f"{table}=<query_failed>")
+    rows = conn.execute(
+        """
+        select id, status, job_type, requested_model, length(coalesce(prompt, '')) as prompt_len
+        from jobs
+        where job_type = ?
+          and status = ?
+          and requested_model = ?
+          and coalesce(prompt, '') like ?
+        order by id desc
+        """,
+        ("stage16_e3k_synthetic_model_smoke", "queued", "qwen2.5:32b-instruct-q4_K_M", f"%{MARKER}%"),
+    ).fetchall()
+    print("synthetic_e3k_a_jobs=" + str(len(rows)))
+    if rows:
+        row = rows[0]
+        print("synthetic_e3k_a_id=" + str(row["id"]))
+        print("synthetic_e3k_a_status=" + str(row["status"]))
+        print("synthetic_e3k_a_job_type=" + str(row["job_type"]))
+        print("synthetic_e3k_a_requested_model=" + str(row["requested_model"]))
+        print("synthetic_e3k_a_prompt_len=" + str(row["prompt_len"]))
+finally:
+    conn.close()
+PY
+}
+
 {
 echo "=== Stage 16 E3K-A smoke: one synthetic queued DB job inserted ==="
 echo "NO further job insert/update/delete"
@@ -58,24 +116,8 @@ done
 rm -f /tmp/apc_e3k_a_smoke_public_body.txt /tmp/apc_e3k_a_smoke_public_err.txt
 
 echo
-echo "--- CT203 DB guard read-only ---"
-ct203_out="$(
-ssh -o BatchMode=yes -o ConnectTimeout=10 "$PVEW_SSH" 'bash -s' 2>&1 <<'PVEW_REMOTE'
-set -u
-pct exec 203 -- bash -lc '
-set -u
-DB="/var/lib/edge-queue-controller/edge_queue.sqlite3"
-echo "edge_queue_controller_active=$(systemctl is-active edge-queue-controller.service 2>/dev/null || true)"
-echo "listener_7070=$(ss -ltnp 2>/dev/null | grep -c ":7070" || true)"
-sqlite3 "file:$DB?mode=ro" "pragma integrity_check;" 2>/dev/null | sed "s/^/db_integrity=/"
-for t in user_sessions jobs job_results router_logs router_resolution_steps router_feedback workers worker_events; do
-  c="$(sqlite3 "file:$DB?mode=ro" "select count(*) from $t;" 2>/dev/null || echo "<query_failed>")"
-  echo "$t=$c"
-done
-echo "synthetic_e3k_a_jobs=$(sqlite3 "file:$DB?mode=ro" "select count(*) from jobs where coalesce(prompt,'''') like ''%APC_STAGE16_E3K_A_SYNTHETIC_QUEUED_JOB_ONLY%'' or coalesce(payload,'''') like ''%APC_STAGE16_E3K_A_SYNTHETIC_QUEUED_JOB_ONLY%'' or coalesce(payload_json,'''') like ''%APC_STAGE16_E3K_A_SYNTHETIC_QUEUED_JOB_ONLY%'';" 2>/dev/null || echo "<query_failed>")"
-'
-PVEW_REMOTE
-)" || true
+echo "--- CT203 DB guard read-only via Python ---"
+ct203_out="$(ct203_db_guard_python || true)"
 echo "$ct203_out"
 
 for expected in \
@@ -90,7 +132,11 @@ for expected in \
   "router_feedback=0" \
   "workers=2" \
   "worker_events=3" \
-  "synthetic_e3k_a_jobs=1"
+  "synthetic_e3k_a_jobs=1" \
+  "synthetic_e3k_a_id=25" \
+  "synthetic_e3k_a_status=queued" \
+  "synthetic_e3k_a_job_type=stage16_e3k_synthetic_model_smoke" \
+  "synthetic_e3k_a_requested_model=qwen2.5:32b-instruct-q4_K_M"
 do
   echo "$ct203_out" | grep -q "^${expected}$" || mark_fail "CT203 guard mismatch: $expected"
 done
