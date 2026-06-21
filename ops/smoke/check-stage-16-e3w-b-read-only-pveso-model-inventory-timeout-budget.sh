@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-16-e3w-b-read-only-pveso-model-inventory-timeout-budget.md"
+
+echo "=== Stage 16 E3W-B smoke: read-only PVESO model inventory timeout budget ==="
+
+test -s "$DOC"
+
+grep -F "Read-Only PVESO Model Inventory and Timeout Budget" "$DOC"
+grep -F "E3W_B_PVESO_READ_ONLY_INVENTORY_OK" "$DOC"
+grep -F "Corrected model recommendation for the next timeout-safe proof" "$DOC"
+grep -F "E3W_B_CORRECTED_RECOMMENDED_MODEL=none_small_fast_local_model_present" "$DOC"
+grep -F "Both are 19 GB / 32B-class models" "$DOC"
+grep -F "E3W_B_SELECTION_HEURISTIC_OVERMATCHED_32B=true" "$DOC"
+grep -F "E3W_B_DO_NOT_TREAT_32B_AS_SMALL_FAST_MODEL=true" "$DOC"
+grep -F "model_timeout_seconds=45" "$DOC"
+grep -F "wrapper_total_seconds=120" "$DOC"
+grep -F "ppb_outer_seconds_at_least=300" "$DOC"
+grep -F "num_predict=8" "$DOC"
+grep -F "HEAD/origin/main/remote: 62c0da8" "$DOC"
+grep -F "E3W-B did not:" "$DOC"
+grep -F "write the DB" "$DOC"
+grep -F "claim a job" "$DOC"
+grep -F "call a model" "$DOC"
+grep -F "pull a model" "$DOC"
+grep -F "OLLAMA_SERVICE_STATE=active" "$DOC"
+grep -F "OLLAMA_NONLOCALHOST_11434_LISTENER_COUNT=0" "$DOC"
+grep -F "CT101_STATUS=stopped" "$DOC"
+grep -F "CT101_ONBOOT=0" "$DOC"
+grep -F "E3W_B_LOCAL_MODEL_COUNT=2" "$DOC"
+grep -F "qwen2.5-coder:32b-instruct-q4_K_M" "$DOC"
+grep -F "qwen2.5:32b-instruct-q4_K_M" "$DOC"
+grep -F "E3W-C — implement timeout-safe wrapper changes, no run" "$DOC"
+grep -F "internal failure update after claim" "$DOC"
+grep -F "Do not rerun E3V-Q" "$DOC"
+grep -F "Do not retry job 29" "$DOC"
+grep -F "The next runtime proof must use a new job id" "$DOC"
+
+echo "E3W_B_READ_ONLY_PVESO_MODEL_INVENTORY_TIMEOUT_BUDGET_SMOKE_OK"
