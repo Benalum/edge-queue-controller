@@ -1,0 +1,22 @@
+# Example only. Do not install, enable, unmask, or start from repo-only stages.
+#
+# Suggested future path if explicitly approved:
+# /etc/systemd/system/edge-ct101-ollama-worker.service
+#
+# Default posture must remain disabled/inactive until explicit apply approval.
+
+[Unit]
+Description=Edge CT101 minimal Ollama worker
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/edge-ct101-worker/ct101-worker.env
+WorkingDirectory=/opt/edge-queue-controller
+ExecStart=/usr/bin/python3 /opt/edge-queue-controller/ops/workers/ct101_minimal_ollama_worker.py --loop
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
