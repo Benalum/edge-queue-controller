@@ -33,6 +33,7 @@ profiles:
     thinking_mode: none
     hidethinking_required: false
     allowed_job_types:
+      - stage16_e3z_limited_persistent_worker_one_job_proof
       - stage16_e3z_service_managed_worker_one_shot_proof
       - stage16_e3z_worker_one_shot_activation_proof
       - stage16_e3z_cj_concurrency_model_proof
