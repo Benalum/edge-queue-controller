@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""
-Stage 16 E3Z CT101 minimal Ollama worker skeleton.
+"""Stage 16 E3Z CT101 minimal Ollama worker.
 
-Repository-only skeleton:
-- Default-off.
-- Safe to import and self-test without CT203, CT101, Docker, Ollama, or systemd access.
-- Live loop is intentionally guarded by EDGE_WORKER_ENABLED=1 and not used by repo smoke.
+This worker is intentionally conservative. It supports:
+- self tests that do not touch live systems
+- an exact one-shot mode for a specified job id
+- a limited persistent one-job proof mode guarded by explicit allowlist/exit/runtime settings
+
+It refuses by default unless EDGE_WORKER_ENABLED=1.
 """
 
 from __future__ import annotations
@@ -21,7 +22,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 
 class WorkerRefusal(RuntimeError):
@@ -44,6 +45,12 @@ class WorkerConfig:
     strict_runtime_containment: bool
     allow_model_concurrency: bool
     allowed_container_names: Tuple[str, ...]
+    proof_mode: str
+    allowed_job_ids: Tuple[int, ...]
+    exit_after_one_success: bool
+    max_runtime_seconds: Optional[int]
+    refuse_if_scheduler_active: bool
+    refuse_if_timer_active: bool
 
 
 @dataclass(frozen=True)
@@ -65,30 +72,83 @@ class ModelProfile:
     enabled_by_default: bool
 
 
+def parse_bool(value: str, *, default: bool = False) -> bool:
+    raw = str(value).strip().lower()
+    if raw == "":
+        return default
+    if raw in {"1", "true", "yes", "on"}:
+        return True
+    if raw in {"0", "false", "no", "off"}:
+        return False
+    raise WorkerRefusal("REFUSE_WORKER_BOOL_INVALID")
+
+
+def parse_allowed_job_ids(value: str) -> Tuple[int, ...]:
+    raw = str(value or "").strip()
+    if not raw:
+        return tuple()
+    ids: List[int] = []
+    for part in raw.split(","):
+        item = part.strip()
+        if not item or not re.fullmatch(r"[0-9]+", item):
+            raise WorkerRefusal("REFUSE_WORKER_ALLOWED_JOB_IDS_INVALID")
+        parsed = int(item)
+        if parsed <= 0:
+            raise WorkerRefusal("REFUSE_WORKER_ALLOWED_JOB_IDS_INVALID")
+        ids.append(parsed)
+    if len(set(ids)) != len(ids):
+        raise WorkerRefusal("REFUSE_WORKER_ALLOWED_JOB_IDS_INVALID")
+    return tuple(ids)
+
+
+def parse_optional_positive_int(value: Optional[str], marker: str) -> Optional[int]:
+    if value is None or str(value).strip() == "":
+        return None
+    raw = str(value).strip()
+    if not re.fullmatch(r"[0-9]+", raw):
+        raise WorkerRefusal(marker)
+    parsed = int(raw)
+    if parsed <= 0:
+        raise WorkerRefusal(marker)
+    return parsed
+
+
 def load_env(env: Optional[Dict[str, str]] = None) -> WorkerConfig:
     src = dict(os.environ if env is None else env)
-
-    def truthy(name: str, default: str = "0") -> bool:
-        return src.get(name, default).strip() == "1"
 
     allowed_raw = src.get("EDGE_ALLOWED_CONTAINER_NAMES", "ollama").strip()
     allowed = tuple(x.strip() for x in allowed_raw.split(",") if x.strip())
 
-    max_jobs = int(src.get("EDGE_MAX_JOBS_PER_LOOP", "1"))
+    try:
+        max_jobs = int(src.get("EDGE_MAX_JOBS_PER_LOOP", "1"))
+    except ValueError as exc:
+        raise WorkerRefusal("REFUSE_CONFIG_MAX_JOBS_NOT_ONE") from exc
     if max_jobs != 1:
         raise WorkerRefusal("REFUSE_CONFIG_MAX_JOBS_NOT_ONE")
 
+    allowed_job_ids = parse_allowed_job_ids(src.get("EDGE_ALLOWED_JOB_IDS", ""))
+    max_runtime_seconds = parse_optional_positive_int(
+        src.get("EDGE_MAX_RUNTIME_SECONDS"),
+        "REFUSE_WORKER_MAX_RUNTIME_SECONDS_INVALID",
+    )
+
     return WorkerConfig(
-        worker_enabled=truthy("EDGE_WORKER_ENABLED", "0"),
+        worker_enabled=parse_bool(src.get("EDGE_WORKER_ENABLED", "0"), default=False),
         worker_id=src.get("EDGE_WORKER_ID", "ct101-minimal-ollama-worker"),
         ct203_api_base=src.get("EDGE_CT203_API_BASE", "http://192.168.0.250:7070").rstrip("/"),
         token_file=src.get("EDGE_CT203_INTERNAL_QUEUE_TOKEN_FILE", "/opt/ai-platform/.secrets/laptop-queue.env"),
         model_profile_file=src.get("EDGE_MODEL_PROFILE_FILE", "ops/model-profiles/ct101-ollama-model-profiles.stage16-e3z.yaml"),
         claim_policy=src.get("EDGE_CLAIM_POLICY", "one_at_a_time"),
         max_jobs_per_loop=max_jobs,
-        strict_runtime_containment=truthy("EDGE_STRICT_RUNTIME_CONTAINMENT", "1"),
-        allow_model_concurrency=truthy("EDGE_ALLOW_MODEL_CONCURRENCY", "0"),
+        strict_runtime_containment=parse_bool(src.get("EDGE_STRICT_RUNTIME_CONTAINMENT", "1"), default=True),
+        allow_model_concurrency=parse_bool(src.get("EDGE_ALLOW_MODEL_CONCURRENCY", "0"), default=False),
         allowed_container_names=allowed,
+        proof_mode=src.get("EDGE_PROOF_MODE", "").strip(),
+        allowed_job_ids=allowed_job_ids,
+        exit_after_one_success=parse_bool(src.get("EDGE_EXIT_AFTER_ONE_SUCCESS", "0"), default=False),
+        max_runtime_seconds=max_runtime_seconds,
+        refuse_if_scheduler_active=parse_bool(src.get("EDGE_REFUSE_IF_SCHEDULER_ACTIVE", "1"), default=True),
+        refuse_if_timer_active=parse_bool(src.get("EDGE_REFUSE_IF_TIMER_ACTIVE", "1"), default=True),
     )
 
 
@@ -197,7 +257,62 @@ def validate_model_profile_document(data: Any) -> None:
         raise WorkerRefusal("REFUSE_QWEN3_FLAGS_INVALID")
 
 
-def runtime_preflight(config: WorkerConfig, *, live: bool = False) -> None:
+def validate_allowed_job_id(config: WorkerConfig, job_id: int) -> None:
+    if config.allowed_job_ids and tuple(config.allowed_job_ids) != (job_id,):
+        raise WorkerRefusal("REFUSE_WORKER_CLAIMED_JOB_ID_NOT_ALLOWED")
+
+
+def validate_limited_proof_mode(config: WorkerConfig, *, job_id: Optional[int] = None) -> int:
+    if config.proof_mode != "limited_persistent_one_job":
+        raise WorkerRefusal("REFUSE_WORKER_PROOF_MODE_GUARD_FAILED")
+    if config.allow_model_concurrency:
+        raise WorkerRefusal("REFUSE_MODEL_CONCURRENCY_NOT_ENABLED_FOR_FIRST_WORKER")
+    if len(config.allowed_job_ids) == 0:
+        raise WorkerRefusal("REFUSE_WORKER_EXACT_JOB_CLAIM_REQUIRED")
+    if len(config.allowed_job_ids) != 1:
+        raise WorkerRefusal("REFUSE_WORKER_ALLOWED_JOB_IDS_INVALID")
+    allowed_id = config.allowed_job_ids[0]
+    if job_id is not None and job_id != allowed_id:
+        raise WorkerRefusal("REFUSE_WORKER_CLAIMED_JOB_ID_NOT_ALLOWED")
+    if not config.exit_after_one_success:
+        raise WorkerRefusal("REFUSE_WORKER_EXIT_AFTER_ONE_SUCCESS_REQUIRED")
+    if not config.max_runtime_seconds:
+        raise WorkerRefusal("REFUSE_WORKER_MAX_RUNTIME_SECONDS_INVALID")
+    if not config.refuse_if_scheduler_active:
+        raise WorkerRefusal("REFUSE_WORKER_PROOF_MODE_GUARD_FAILED")
+    if not config.refuse_if_timer_active:
+        raise WorkerRefusal("REFUSE_WORKER_PROOF_MODE_GUARD_FAILED")
+    return allowed_id
+
+
+def _active_systemd_lines() -> str:
+    proc = subprocess.run(["systemctl", "list-units", "--state=active", "--no-legend"], text=True, capture_output=True, check=False)
+    if proc.returncode != 0:
+        return ""
+    return proc.stdout
+
+
+def _active_timer_lines() -> str:
+    proc = subprocess.run(["systemctl", "list-timers", "--all", "--no-legend"], text=True, capture_output=True, check=False)
+    if proc.returncode != 0:
+        return ""
+    return proc.stdout
+
+
+def guard_scheduler_timer_inactive(config: WorkerConfig) -> None:
+    if config.refuse_if_scheduler_active:
+        active_units = _active_systemd_lines().lower()
+        for line in active_units.splitlines():
+            if ("edge" in line or "queue" in line or "worker" in line) and "scheduler" in line:
+                raise WorkerRefusal("REFUSE_WORKER_SCHEDULER_ACTIVE")
+    if config.refuse_if_timer_active:
+        active_timers = _active_timer_lines().lower()
+        for line in active_timers.splitlines():
+            if ("edge" in line or "queue" in line or "worker" in line or "scheduler" in line) and ".timer" in line:
+                raise WorkerRefusal("REFUSE_WORKER_TIMER_ACTIVE")
+
+
+def runtime_preflight(config: WorkerConfig, *, live: bool = False, job_id: Optional[int] = None, loop: bool = False) -> None:
     if not config.worker_enabled:
         raise WorkerRefusal("REFUSE_WORKER_DISABLED")
     if config.claim_policy != "one_at_a_time":
@@ -207,12 +322,21 @@ def runtime_preflight(config: WorkerConfig, *, live: bool = False) -> None:
     if config.allow_model_concurrency:
         raise WorkerRefusal("REFUSE_MODEL_CONCURRENCY_NOT_ENABLED_FOR_FIRST_WORKER")
 
+    if config.proof_mode:
+        validate_limited_proof_mode(config, job_id=job_id)
+    elif loop:
+        raise WorkerRefusal("REFUSE_MAIN_LOOP_REQUIRES_LIMITED_PROOF_MODE")
+    elif config.allowed_job_ids and job_id is not None:
+        validate_allowed_job_id(config, job_id)
+
     if not live:
         return
 
+    if config.proof_mode:
+        guard_scheduler_timer_inactive(config)
+
     if config.strict_runtime_containment:
-        cmd = ["docker", "ps", "--format", "{{.Names}}"]
-        proc = subprocess.run(cmd, text=True, capture_output=True, check=False)
+        proc = subprocess.run(["docker", "ps", "--format", "{{.Names}}"], text=True, capture_output=True, check=False)
         if proc.returncode != 0:
             raise WorkerRefusal("REFUSE_DOCKER_PS_FAILED")
         running = tuple(sorted(x.strip() for x in proc.stdout.splitlines() if x.strip()))
@@ -266,7 +390,6 @@ def extract_expected_marker(job: Dict[str, Any]) -> str:
         return str(response_json["expected_marker"]).strip()
 
     prompt = str(job.get("prompt") or "")
-    # Current proof prompt wording: "... nothing else: MARKER"
     match = re.search(r"nothing else:\s*([A-Za-z0-9_.:-]+)\s*$", prompt)
     if not match:
         raise WorkerRefusal("REFUSE_EXPECTED_MARKER_NOT_FOUND")
@@ -278,7 +401,7 @@ def validate_completion(profile: ModelProfile, job: Dict[str, Any], response_tex
         raise WorkerRefusal("REFUSE_UNSUPPORTED_COMPLETION_VALIDATION")
     expected = extract_expected_marker(job)
     if response_text != expected:
-        raise WorkerRefusal("REFUSE_MODEL_OUTPUT_NOT_EXACT")
+        raise WorkerRefusal("REFUSE_WORKER_EXACT_MARKER_MISMATCH")
     return expected
 
 
@@ -322,6 +445,7 @@ def _extract_claimed_job(claim_response: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def claim_one_job(config: WorkerConfig, token: str, job_id: int) -> Dict[str, Any]:
+    validate_allowed_job_id(config, job_id)
     status, body = _post_json(
         config,
         token,
@@ -334,7 +458,7 @@ def claim_one_job(config: WorkerConfig, token: str, job_id: int) -> Dict[str, An
     job = _extract_claimed_job(body)
     cid = int(job.get("id") or job.get("job_id") or 0)
     if cid != job_id:
-        raise WorkerRefusal("REFUSE_CLAIM_INVARIANT_WRONG_JOB")
+        raise WorkerRefusal("REFUSE_CLAIMED_JOB_ID_NOT_ALLOWED")
     if str(job.get("status") or "") != "running":
         raise WorkerRefusal("REFUSE_CLAIM_INVARIANT_NOT_RUNNING")
     if int(job.get("attempts") or 0) < 1:
@@ -354,6 +478,7 @@ def run_ollama_call(profile: ModelProfile, prompt: str) -> str:
 
 
 def complete_job(config: WorkerConfig, token: str, job_id: int, profile: ModelProfile, response_text: str) -> None:
+    validate_allowed_job_id(config, job_id)
     status, _body = _post_json(
         config,
         token,
@@ -363,7 +488,7 @@ def complete_job(config: WorkerConfig, token: str, job_id: int, profile: ModelPr
             "model": profile.model_name,
             "response_text": response_text,
             "response_json": {
-                "stage": "stage-16-e3z-cs-skeleton",
+                "stage": "stage-16-e3z-ec-worker-guards",
                 "profile_id": profile.profile_id,
                 "exact_match": True,
             },
@@ -373,14 +498,7 @@ def complete_job(config: WorkerConfig, token: str, job_id: int, profile: ModelPr
         raise WorkerRefusal("REFUSE_COMPLETE_HTTP_NOT_200")
 
 
-def main_once(config: WorkerConfig, *, job_id: Optional[int] = None, live: bool = False) -> int:
-    runtime_preflight(config, live=live)
-    profiles = load_model_profiles(config.model_profile_file)
-    token = load_token(config.token_file)
-
-    if job_id is None:
-        raise WorkerRefusal("REFUSE_NO_JOB_ID_FOR_SKELETON_ONCE")
-
+def run_one_claim_complete(config: WorkerConfig, profiles: Dict[str, ModelProfile], token: str, job_id: int) -> int:
     claimed = claim_one_job(config, token, job_id)
     profile = get_eligible_profile_for_job(claimed, profiles)
     response = run_ollama_call(profile, str(claimed.get("prompt") or ""))
@@ -389,9 +507,69 @@ def main_once(config: WorkerConfig, *, job_id: Optional[int] = None, live: bool 
     return 0
 
 
+def main_once(config: WorkerConfig, *, job_id: Optional[int] = None, live: bool = False) -> int:
+    if job_id is None:
+        raise WorkerRefusal("REFUSE_NO_JOB_ID_FOR_SKELETON_ONCE")
+    runtime_preflight(config, live=live, job_id=job_id)
+    profiles = load_model_profiles(config.model_profile_file)
+    token = load_token(config.token_file)
+    return run_one_claim_complete(config, profiles, token, job_id)
+
+
 def main_loop(config: WorkerConfig) -> int:
-    # A real polling loop is intentionally not implemented in this skeleton.
-    raise WorkerRefusal("REFUSE_MAIN_LOOP_NOT_IMPLEMENTED_IN_REPO_SKELETON")
+    allowed_job_id = validate_limited_proof_mode(config)
+    runtime_preflight(config, live=True, job_id=allowed_job_id, loop=True)
+    profiles = load_model_profiles(config.model_profile_file)
+    token = load_token(config.token_file)
+
+    started = time.monotonic()
+    claimed_count = 0
+    completed_count = 0
+    failed_count = 0
+    last_claimed_job_id: Optional[int] = None
+    last_completed_job_id: Optional[int] = None
+
+    while True:
+        elapsed = time.monotonic() - started
+        if config.max_runtime_seconds is not None and elapsed > config.max_runtime_seconds:
+            raise WorkerRefusal("REFUSE_WORKER_MAX_RUNTIME_SECONDS_EXCEEDED")
+
+        try:
+            claimed = claim_one_job(config, token, allowed_job_id)
+            claimed_count += 1
+            last_claimed_job_id = int(claimed.get("id") or claimed.get("job_id") or 0)
+            if claimed_count > 1:
+                raise WorkerRefusal("REFUSE_WORKER_MULTIPLE_JOBS_CLAIMED_IN_PROOF_MODE")
+
+            profile = get_eligible_profile_for_job(claimed, profiles)
+            response = run_ollama_call(profile, str(claimed.get("prompt") or ""))
+            validate_completion(profile, claimed, response)
+            complete_job(config, token, allowed_job_id, profile, response)
+            completed_count += 1
+            last_completed_job_id = allowed_job_id
+
+            if (
+                claimed_count == 1
+                and completed_count == 1
+                and failed_count == 0
+                and last_claimed_job_id == allowed_job_id
+                and last_completed_job_id == allowed_job_id
+            ):
+                print("E3Z_WORKER_LIMITED_PERSISTENT_ONE_JOB_SUCCESS=1")
+                return 0
+            raise WorkerRefusal("REFUSE_WORKER_PROOF_MODE_GUARD_FAILED")
+        except WorkerRefusal:
+            failed_count += 1
+            raise
+
+
+def _expect_refusal(marker: str, func, *args, **kwargs) -> None:
+    try:
+        func(*args, **kwargs)
+    except WorkerRefusal as exc:
+        assert marker in str(exc), (marker, str(exc))
+        return
+    raise AssertionError(f"{marker} did not refuse")
 
 
 def _self_test(profile_path: str) -> int:
@@ -430,50 +608,100 @@ def _self_test(profile_path: str) -> int:
     assert extract_expected_marker(job) == "E3Z-CON-QWEN3-A-OK"
     assert validate_completion(selected, job, "E3Z-CON-QWEN3-A-OK") == "E3Z-CON-QWEN3-A-OK"
 
-    try:
-        validate_completion(selected, job, "wrong")
-    except WorkerRefusal as exc:
-        assert "REFUSE_MODEL_OUTPUT_NOT_EXACT" in str(exc)
-    else:
-        raise AssertionError("non-exact output did not refuse")
+    _expect_refusal("REFUSE_WORKER_EXACT_MARKER_MISMATCH", validate_completion, selected, job, "wrong")
 
     disabled_config = load_env({"EDGE_WORKER_ENABLED": "0", "EDGE_MAX_JOBS_PER_LOOP": "1"})
-    try:
-        runtime_preflight(disabled_config, live=False)
-    except WorkerRefusal as exc:
-        assert "REFUSE_WORKER_DISABLED" in str(exc)
-    else:
-        raise AssertionError("disabled worker did not refuse")
+    _expect_refusal("REFUSE_WORKER_DISABLED", runtime_preflight, disabled_config, live=False)
 
+    assert parse_allowed_job_ids("47") == (47,)
+    assert parse_allowed_job_ids("47,48") == (47, 48)
+    _expect_refusal("REFUSE_WORKER_ALLOWED_JOB_IDS_INVALID", parse_allowed_job_ids, "abc")
+    _expect_refusal("REFUSE_WORKER_ALLOWED_JOB_IDS_INVALID", parse_allowed_job_ids, "47,47")
+    _expect_refusal("REFUSE_WORKER_MAX_RUNTIME_SECONDS_INVALID", parse_optional_positive_int, "0", "REFUSE_WORKER_MAX_RUNTIME_SECONDS_INVALID")
+
+    base_env = {
+        "EDGE_WORKER_ENABLED": "1",
+        "EDGE_MAX_JOBS_PER_LOOP": "1",
+        "EDGE_CLAIM_POLICY": "one_at_a_time",
+        "EDGE_ALLOW_MODEL_CONCURRENCY": "0",
+        "EDGE_PROOF_MODE": "limited_persistent_one_job",
+        "EDGE_ALLOWED_JOB_IDS": "47",
+        "EDGE_EXIT_AFTER_ONE_SUCCESS": "1",
+        "EDGE_MAX_RUNTIME_SECONDS": "180",
+        "EDGE_REFUSE_IF_SCHEDULER_ACTIVE": "1",
+        "EDGE_REFUSE_IF_TIMER_ACTIVE": "1",
+    }
+    proof_config = load_env(base_env)
+    assert validate_limited_proof_mode(proof_config) == 47
+    validate_limited_proof_mode(proof_config, job_id=47)
+    validate_allowed_job_id(proof_config, 47)
+    _expect_refusal("REFUSE_WORKER_CLAIMED_JOB_ID_NOT_ALLOWED", validate_allowed_job_id, proof_config, 48)
+
+    env_multi = dict(base_env, EDGE_ALLOWED_JOB_IDS="47,48")
+    _expect_refusal("REFUSE_WORKER_ALLOWED_JOB_IDS_INVALID", validate_limited_proof_mode, load_env(env_multi))
+
+    env_no_exit = dict(base_env, EDGE_EXIT_AFTER_ONE_SUCCESS="0")
+    _expect_refusal("REFUSE_WORKER_EXIT_AFTER_ONE_SUCCESS_REQUIRED", validate_limited_proof_mode, load_env(env_no_exit))
+
+    env_no_runtime = dict(base_env)
+    env_no_runtime.pop("EDGE_MAX_RUNTIME_SECONDS")
+    _expect_refusal("REFUSE_WORKER_MAX_RUNTIME_SECONDS_INVALID", validate_limited_proof_mode, load_env(env_no_runtime))
+
+    env_concurrent = dict(base_env, EDGE_ALLOW_MODEL_CONCURRENCY="1")
+    _expect_refusal("REFUSE_MODEL_CONCURRENCY_NOT_ENABLED_FOR_FIRST_WORKER", validate_limited_proof_mode, load_env(env_concurrent))
+
+    env_no_allowed = dict(base_env, EDGE_ALLOWED_JOB_IDS="")
+    _expect_refusal("REFUSE_WORKER_EXACT_JOB_CLAIM_REQUIRED", validate_limited_proof_mode, load_env(env_no_allowed))
+
+    once_config = load_env({
+        "EDGE_WORKER_ENABLED": "1",
+        "EDGE_MAX_JOBS_PER_LOOP": "1",
+        "EDGE_CLAIM_POLICY": "one_at_a_time",
+        "EDGE_ALLOW_MODEL_CONCURRENCY": "0",
+        "EDGE_ALLOWED_JOB_IDS": "47",
+    })
+    runtime_preflight(once_config, live=False, job_id=47)
+    _expect_refusal("REFUSE_WORKER_CLAIMED_JOB_ID_NOT_ALLOWED", runtime_preflight, once_config, live=False, job_id=48)
+
+    loop_config = load_env({
+        "EDGE_WORKER_ENABLED": "1",
+        "EDGE_MAX_JOBS_PER_LOOP": "1",
+        "EDGE_CLAIM_POLICY": "one_at_a_time",
+        "EDGE_ALLOW_MODEL_CONCURRENCY": "0",
+    })
+    _expect_refusal("REFUSE_MAIN_LOOP_REQUIRES_LIMITED_PROOF_MODE", runtime_preflight, loop_config, live=False, loop=True)
+
+    print("E3Z_EC_WORKER_GUARD_SELF_TEST_OK=1")
     print("E3Z_CS_WORKER_SELF_TEST_OK=1")
     return 0
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Stage 16 E3Z CT101 minimal Ollama worker skeleton")
+    parser = argparse.ArgumentParser(description="Stage 16 E3Z CT101 minimal Ollama worker")
     parser.add_argument("--self-test", action="store_true", help="run repo-only self tests")
     parser.add_argument("--profile-file", default="ops/model-profiles/ct101-ollama-model-profiles.stage16-e3z.yaml")
     parser.add_argument("--once", action="store_true", help="run one live job; guarded by EDGE_WORKER_ENABLED=1")
-    parser.add_argument("--loop", action="store_true", help="run live loop; not implemented in repo skeleton")
+    parser.add_argument("--loop", action="store_true", help="run limited persistent proof loop; guarded by strict proof env")
     parser.add_argument("--job-id", type=int, default=None)
     args = parser.parse_args(argv)
 
-    if args.self_test:
-        return _self_test(args.profile_file)
+    try:
+        if args.self_test:
+            return _self_test(args.profile_file)
 
-    config = load_env()
-    if args.once:
-        return main_once(config, job_id=args.job_id, live=True)
-    if args.loop:
-        return main_loop(config)
+        config = load_env()
+        if args.once:
+            return main_once(config, job_id=args.job_id, live=True)
+        if args.loop:
+            return main_loop(config)
 
-    print("REFUSE_NO_MODE_SELECTED")
-    return 2
+        print("REFUSE_NO_MODE_SELECTED")
+        return 2
+    except WorkerRefusal as exc:
+        print(str(exc))
+        return 1
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except WorkerRefusal as exc:
-        print(str(exc))
-        raise SystemExit(1)
+    raise SystemExit(main())
+
