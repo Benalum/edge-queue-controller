@@ -1,0 +1,141 @@
+# Stage 16 E3Z CT101 Ollama model profiles.
+#
+# Repo-only artifact. These profiles are intentionally disabled by default.
+# They are not activated by this file being present in the repository.
+# Runtime use requires a later explicit apply/activation boundary.
+#
+# Safety contract:
+# - CT203 claim policy remains one_at_a_time.
+# - Do not assume max_jobs > 1 is honored by CT203 claim endpoint.
+# - Do not start or unmask CT101 persistent worker service from this artifact.
+# - Do not activate scheduler or timer from this artifact.
+# - Do not expose model endpoints directly to public users.
+
+schema_version: 1
+artifact_id: ct101_ollama_model_profiles_stage16_e3z
+runtime_owner: ct101
+model_runtime: ollama_docker_container
+container_name: ollama
+claim_policy_default: one_at_a_time
+enabled_by_default: false
+
+profiles:
+  - profile_id: qwen25_router_small
+    model_name: qwen2.5:0.5b
+    role: router_small
+    endpoint_type: ollama_cli_in_container
+    container_name: ollama
+    cli_flags: []
+    timeout_seconds: 90
+    max_concurrent_model_calls: 2
+    claim_policy: one_at_a_time
+    exact_marker_supported: true
+    thinking_mode: none
+    hidethinking_required: false
+    allowed_job_types:
+      - stage16_e3z_cj_concurrency_model_proof
+      - future_router_small_probe
+    completion_validation_policy: exact_marker_only
+    enabled_by_default: false
+    proof:
+      exact_marker_jobs:
+        - 39
+        - 41
+        - 42
+      concurrency_overlap_seconds: 1.452
+      notes: Proven exact marker and two-call bounded concurrency in Stage 16 E3Z.
+    notes: Proven small router candidate. No extra CLI flags required.
+
+  - profile_id: qwen3_router_small
+    model_name: qwen3:0.6b
+    role: router_small
+    endpoint_type: ollama_cli_in_container
+    container_name: ollama
+    cli_flags:
+      - --think=false
+      - --hidethinking
+    timeout_seconds: 90
+    max_concurrent_model_calls: 2
+    claim_policy: one_at_a_time
+    exact_marker_supported: true
+    thinking_mode: disabled
+    hidethinking_required: true
+    allowed_job_types:
+      - stage16_e3z_cj_concurrency_model_proof
+      - future_router_small_probe
+    completion_validation_policy: exact_marker_only
+    enabled_by_default: false
+    proof:
+      exact_marker_jobs:
+        - 40
+        - 43
+        - 44
+      concurrency_overlap_seconds: 0.566
+      notes: Proven exact marker and two-call bounded concurrency only with thinking disabled and hidden.
+    notes: Requires --think=false --hidethinking. Do not run exact-marker proof jobs without those flags.
+
+  - profile_id: qwen3_1_7b_candidate
+    model_name: qwen3:1.7b
+    role: router_small_or_study_light_candidate
+    endpoint_type: ollama_cli_in_container
+    container_name: ollama
+    cli_flags: []
+    timeout_seconds: 120
+    max_concurrent_model_calls: 1
+    claim_policy: one_at_a_time
+    exact_marker_supported: false
+    thinking_mode: must_be_proven
+    hidethinking_required: false
+    allowed_job_types:
+      - future_single_model_probe_only
+    completion_validation_policy: no_default_until_proven
+    enabled_by_default: false
+    proof:
+      exact_marker_jobs: []
+      concurrency_overlap_seconds: null
+      notes: Installed model candidate, not yet proven through CT203 queue path.
+    notes: Keep single-call only until deterministic and latency proof passes.
+
+  - profile_id: gemma3_study_light_candidate
+    model_name: gemma3:4b
+    role: study_light_candidate
+    endpoint_type: ollama_cli_in_container
+    container_name: ollama
+    cli_flags: []
+    timeout_seconds: 180
+    max_concurrent_model_calls: 1
+    claim_policy: one_at_a_time
+    exact_marker_supported: false
+    thinking_mode: unknown
+    hidethinking_required: false
+    allowed_job_types:
+      - future_single_model_probe_only
+    completion_validation_policy: no_default_until_proven
+    enabled_by_default: false
+    proof:
+      exact_marker_jobs: []
+      concurrency_overlap_seconds: null
+      notes: Installed study-light candidate, not yet proven through CT203 queue path.
+    notes: Keep single-call only until deterministic and latency proof passes.
+
+  - profile_id: gemma4_companion_candidate
+    model_name: gemma4:e4b
+    role: companion_default_candidate
+    endpoint_type: ollama_cli_in_container
+    container_name: ollama
+    cli_flags: []
+    timeout_seconds: 240
+    max_concurrent_model_calls: 1
+    claim_policy: one_at_a_time
+    exact_marker_supported: false
+    thinking_mode: unknown
+    hidethinking_required: false
+    allowed_job_types:
+      - future_single_model_probe_only
+    completion_validation_policy: no_default_until_proven
+    enabled_by_default: false
+    proof:
+      exact_marker_jobs: []
+      concurrency_overlap_seconds: null
+      notes: Installed companion candidate, not yet proven through CT203 queue path.
+    notes: Keep single-call only until deterministic, latency, and memory behavior proof passes.
