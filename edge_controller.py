@@ -22997,15 +22997,20 @@ async def admin_study_answer_preview(request: Request, payload: dict | None = No
     }
 
 # E3Z_BL_CT203_SQLITE_WORKER_ENDPOINTS_BEGIN
-# Disabled-by-default CT203-native SQLite worker API skeleton.
+# Disabled-by-default CT203-native SQLite worker API.
 # Runtime activation is intentionally blocked unless EDGE_CT203_SQLITE_WORKER_API_ENABLED=1.
 
 import hmac as _e3z_bl_hmac
+import json as _e3z_bl_json
 import os as _e3z_bl_os
 import sqlite3 as _e3z_bl_sqlite3
+from datetime import datetime as _e3z_bl_datetime
 from fastapi import Header as _E3ZBL_Header
 from fastapi import HTTPException as _E3ZBL_HTTPException
 from pydantic import BaseModel as _E3ZBL_BaseModel
+
+
+_E3Z_BL_RETIRED_PROOF_JOB_IDS = {29, 30, 31, 32, 33, 34}
 
 
 def _e3z_bl_bool_env(name: str, default: bool = False) -> bool:
@@ -23019,6 +23024,10 @@ def _e3z_bl_worker_api_enabled() -> bool:
     return _e3z_bl_bool_env("EDGE_CT203_SQLITE_WORKER_API_ENABLED", False)
 
 
+def _e3z_bl_now() -> str:
+    return _e3z_bl_datetime.utcnow().isoformat(timespec="microseconds") + "Z"
+
+
 def _e3z_bl_db_path() -> str:
     return (
         _e3z_bl_os.getenv("EDGE_QUEUE_SQLITE_DB_PATH")
@@ -23026,6 +23035,12 @@ def _e3z_bl_db_path() -> str:
         or _e3z_bl_os.getenv("EDGE_CONTROLLER_DB_PATH")
         or "/var/lib/edge-queue-controller/edge_queue.sqlite3"
     )
+
+
+def _e3z_bl_conn():
+    conn = _e3z_bl_sqlite3.connect(_e3z_bl_db_path())
+    conn.row_factory = _e3z_bl_sqlite3.Row
+    return conn
 
 
 def _e3z_bl_require_worker_api(
@@ -23037,7 +23052,7 @@ def _e3z_bl_require_worker_api(
             detail={
                 "status": "disabled",
                 "reason": "EDGE_CT203_SQLITE_WORKER_API_ENABLED is not enabled.",
-                "stage": "stage-16-e3z-bl",
+                "stage": "stage-16-e3z-bo",
             },
         )
 
@@ -23048,7 +23063,7 @@ def _e3z_bl_require_worker_api(
             detail={
                 "status": "not_configured",
                 "reason": "LAPTOP_QUEUE_INTERNAL_TOKEN is not configured.",
-                "stage": "stage-16-e3z-bl",
+                "stage": "stage-16-e3z-bo",
             },
         )
 
@@ -23060,10 +23075,14 @@ def _e3z_bl_require_worker_api(
         raise _E3ZBL_HTTPException(status_code=403, detail="Invalid internal worker token.")
 
 
+def _e3z_bl_row_to_dict(row) -> dict | None:
+    if row is None:
+        return None
+    return {k: row[k] for k in row.keys()}
+
+
 def _e3z_bl_sqlite_summary() -> dict:
-    path = _e3z_bl_db_path()
-    with _e3z_bl_sqlite3.connect(path) as conn:
-        conn.row_factory = _e3z_bl_sqlite3.Row
+    with _e3z_bl_conn() as conn:
         job_counts = [
             dict(row)
             for row in conn.execute(
@@ -23076,18 +23095,30 @@ def _e3z_bl_sqlite_summary() -> dict:
         tables = {
             row["name"]: True
             for row in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('jobs','job_results','app_workers','app_worker_nodes','worker_registry')"
+                "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('jobs','job_results','worker_events')"
             ).fetchall()
         }
 
     return {
         "ok": True,
-        "db_path": path,
+        "db_path": _e3z_bl_db_path(),
         "job_counts": job_counts,
         "job_results_total": result_count,
         "tables": tables,
-        "stage": "stage-16-e3z-bl",
+        "stage": "stage-16-e3z-bo",
     }
+
+
+def _e3z_bl_insert_worker_event(conn, worker_id: str, event_type: str, message: str | None = None) -> None:
+    exists = conn.execute(
+        "SELECT COUNT(*) AS count FROM sqlite_master WHERE type='table' AND name='worker_events'"
+    ).fetchone()["count"]
+    if not exists:
+        return
+    conn.execute(
+        "INSERT INTO worker_events (worker_id, event_type, message, created_at) VALUES (?, ?, ?, ?)",
+        (worker_id, event_type, message, _e3z_bl_now()),
+    )
 
 
 class _E3ZBLWorkerRegisterRequest(_E3ZBL_BaseModel):
@@ -23150,10 +23181,14 @@ def e3z_bl_edge_worker_register(
     x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
 ):
     _e3z_bl_require_worker_api(x_laptop_queue_token)
-    raise _E3ZBL_HTTPException(
-        status_code=501,
-        detail="CT203-native worker registration is skeleton-only in stage-16-e3z-bl.",
-    )
+    with _e3z_bl_conn() as conn:
+        _e3z_bl_insert_worker_event(
+            conn,
+            payload.worker_id,
+            "edge_worker_register",
+            f"CT203-native worker register status={payload.status} node={payload.worker_node_id or ''}",
+        )
+    return {"ok": True, "worker_id": payload.worker_id, "status": payload.status, "stage": "stage-16-e3z-bo"}
 
 
 @app.post("/internal/edge-worker/workers/heartbeat")
@@ -23162,10 +23197,14 @@ def e3z_bl_edge_worker_heartbeat(
     x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
 ):
     _e3z_bl_require_worker_api(x_laptop_queue_token)
-    raise _E3ZBL_HTTPException(
-        status_code=501,
-        detail="CT203-native worker heartbeat is skeleton-only in stage-16-e3z-bl.",
-    )
+    with _e3z_bl_conn() as conn:
+        _e3z_bl_insert_worker_event(
+            conn,
+            payload.worker_id,
+            "edge_worker_heartbeat",
+            f"CT203-native worker heartbeat status={payload.status} running={payload.current_running_jobs}",
+        )
+    return {"ok": True, "worker_id": payload.worker_id, "status": payload.status, "stage": "stage-16-e3z-bo"}
 
 
 @app.post("/internal/edge-worker/jobs/claim")
@@ -23174,10 +23213,61 @@ def e3z_bl_edge_worker_claim(
     x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
 ):
     _e3z_bl_require_worker_api(x_laptop_queue_token)
-    raise _E3ZBL_HTTPException(
-        status_code=501,
-        detail="CT203-native job claim is skeleton-only in stage-16-e3z-bl.",
-    )
+
+    claim_ids = sorted({int(x) for x in (payload.claim_job_ids or [])})
+    if not claim_ids:
+        raise _E3ZBL_HTTPException(
+            status_code=400,
+            detail="claim_job_ids are required for stage-16-e3z-bo bounded claim.",
+        )
+
+    retired = [jid for jid in claim_ids if jid in _E3Z_BL_RETIRED_PROOF_JOB_IDS]
+    if retired:
+        raise _E3ZBL_HTTPException(status_code=400, detail=f"Refusing retired proof job ids: {retired}")
+
+    allowed_models = {m.strip() for m in (payload.allowed_models or []) if str(m).strip()}
+    now = _e3z_bl_now()
+
+    with _e3z_bl_conn() as conn:
+        conn.isolation_level = None
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            claimed = None
+            for job_id in claim_ids:
+                row = conn.execute(
+                    "SELECT * FROM jobs WHERE id = ? AND status = 'queued'",
+                    (job_id,),
+                ).fetchone()
+                if row is None:
+                    continue
+                job = _e3z_bl_row_to_dict(row)
+                requested_model = (job.get("requested_model") or "").strip()
+                if allowed_models and requested_model not in allowed_models:
+                    continue
+
+                updated = conn.execute(
+                    "UPDATE jobs SET status = 'running', attempts = attempts + 1, updated_at = ? WHERE id = ? AND status = 'queued'",
+                    (now, job_id),
+                ).rowcount
+                if updated != 1:
+                    continue
+
+                row2 = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+                claimed = _e3z_bl_row_to_dict(row2)
+                _e3z_bl_insert_worker_event(
+                    conn,
+                    payload.worker_id,
+                    "edge_worker_job_claim",
+                    f"Claimed job_id={job_id} requested_model={requested_model}",
+                )
+                break
+
+            conn.execute("COMMIT")
+        except Exception:
+            conn.execute("ROLLBACK")
+            raise
+
+    return {"ok": True, "claimed": claimed, "stage": "stage-16-e3z-bo"}
 
 
 @app.post("/internal/edge-worker/jobs/{job_id}/complete")
@@ -23187,10 +23277,51 @@ def e3z_bl_edge_worker_complete(
     x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
 ):
     _e3z_bl_require_worker_api(x_laptop_queue_token)
-    raise _E3ZBL_HTTPException(
-        status_code=501,
-        detail="CT203-native job completion is skeleton-only in stage-16-e3z-bl.",
-    )
+
+    now = _e3z_bl_now()
+    response_json = None
+    if payload.response_json is not None:
+        response_json = _e3z_bl_json.dumps(payload.response_json, sort_keys=True)
+
+    with _e3z_bl_conn() as conn:
+        conn.isolation_level = None
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            row = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+            if row is None:
+                raise _E3ZBL_HTTPException(status_code=404, detail="Job not found.")
+            if row["status"] != "running":
+                raise _E3ZBL_HTTPException(status_code=409, detail=f"Job is not running: {row['status']}")
+
+            existing = conn.execute("SELECT job_id FROM job_results WHERE job_id = ?", (job_id,)).fetchone()
+            if existing is not None:
+                raise _E3ZBL_HTTPException(status_code=409, detail="Job result already exists.")
+
+            conn.execute(
+                """
+                INSERT INTO job_results (job_id, model, response_text, response_json, error, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (job_id, payload.model, payload.response_text, response_json, payload.error, now, now),
+            )
+            conn.execute(
+                "UPDATE jobs SET status = 'completed', updated_at = ? WHERE id = ? AND status = 'running'",
+                (now, job_id),
+            )
+            _e3z_bl_insert_worker_event(
+                conn,
+                payload.worker_id,
+                "edge_worker_job_complete",
+                f"Completed job_id={job_id} model={payload.model or ''}",
+            )
+            row2 = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+            result = _e3z_bl_row_to_dict(row2)
+            conn.execute("COMMIT")
+        except Exception:
+            conn.execute("ROLLBACK")
+            raise
+
+    return {"ok": True, "job": result, "stage": "stage-16-e3z-bo"}
 
 
 @app.post("/internal/edge-worker/jobs/{job_id}/fail")
@@ -23200,10 +23331,36 @@ def e3z_bl_edge_worker_fail(
     x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
 ):
     _e3z_bl_require_worker_api(x_laptop_queue_token)
-    raise _E3ZBL_HTTPException(
-        status_code=501,
-        detail="CT203-native job failure is skeleton-only in stage-16-e3z-bl.",
-    )
+
+    now = _e3z_bl_now()
+    with _e3z_bl_conn() as conn:
+        conn.isolation_level = None
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            row = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+            if row is None:
+                raise _E3ZBL_HTTPException(status_code=404, detail="Job not found.")
+            if row["status"] != "running":
+                raise _E3ZBL_HTTPException(status_code=409, detail=f"Job is not running: {row['status']}")
+
+            conn.execute(
+                "UPDATE jobs SET status = 'failed', last_error = ?, updated_at = ? WHERE id = ? AND status = 'running'",
+                (payload.error, now, job_id),
+            )
+            _e3z_bl_insert_worker_event(
+                conn,
+                payload.worker_id,
+                "edge_worker_job_fail",
+                f"Failed job_id={job_id}: {payload.error[:200]}",
+            )
+            row2 = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+            result = _e3z_bl_row_to_dict(row2)
+            conn.execute("COMMIT")
+        except Exception:
+            conn.execute("ROLLBACK")
+            raise
+
+    return {"ok": True, "job": result, "stage": "stage-16-e3z-bo"}
 
 
 # E3Z_BL_CT203_SQLITE_WORKER_ENDPOINTS_END
