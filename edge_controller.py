@@ -22995,3 +22995,215 @@ async def admin_study_answer_preview(request: Request, payload: dict | None = No
             "no_tool_call": True,
         },
     }
+
+# E3Z_BL_CT203_SQLITE_WORKER_ENDPOINTS_BEGIN
+# Disabled-by-default CT203-native SQLite worker API skeleton.
+# Runtime activation is intentionally blocked unless EDGE_CT203_SQLITE_WORKER_API_ENABLED=1.
+
+import hmac as _e3z_bl_hmac
+import os as _e3z_bl_os
+import sqlite3 as _e3z_bl_sqlite3
+from fastapi import Header as _E3ZBL_Header
+from fastapi import HTTPException as _E3ZBL_HTTPException
+from pydantic import BaseModel as _E3ZBL_BaseModel
+
+
+def _e3z_bl_bool_env(name: str, default: bool = False) -> bool:
+    raw = _e3z_bl_os.getenv(name)
+    if raw is None:
+        return default
+    return str(raw).strip().lower() in {"1", "true", "yes", "on", "enabled"}
+
+
+def _e3z_bl_worker_api_enabled() -> bool:
+    return _e3z_bl_bool_env("EDGE_CT203_SQLITE_WORKER_API_ENABLED", False)
+
+
+def _e3z_bl_db_path() -> str:
+    return (
+        _e3z_bl_os.getenv("EDGE_QUEUE_SQLITE_DB_PATH")
+        or _e3z_bl_os.getenv("EDGE_QUEUE_DB_PATH")
+        or _e3z_bl_os.getenv("EDGE_CONTROLLER_DB_PATH")
+        or "/var/lib/edge-queue-controller/edge_queue.sqlite3"
+    )
+
+
+def _e3z_bl_require_worker_api(
+    x_laptop_queue_token: str | None = None,
+) -> None:
+    if not _e3z_bl_worker_api_enabled():
+        raise _E3ZBL_HTTPException(
+            status_code=503,
+            detail={
+                "status": "disabled",
+                "reason": "EDGE_CT203_SQLITE_WORKER_API_ENABLED is not enabled.",
+                "stage": "stage-16-e3z-bl",
+            },
+        )
+
+    expected = (_e3z_bl_os.getenv("LAPTOP_QUEUE_INTERNAL_TOKEN") or "").strip()
+    if not expected:
+        raise _E3ZBL_HTTPException(
+            status_code=503,
+            detail={
+                "status": "not_configured",
+                "reason": "LAPTOP_QUEUE_INTERNAL_TOKEN is not configured.",
+                "stage": "stage-16-e3z-bl",
+            },
+        )
+
+    supplied = (x_laptop_queue_token or "").strip()
+    if not supplied:
+        raise _E3ZBL_HTTPException(status_code=401, detail="Missing internal worker token.")
+
+    if not _e3z_bl_hmac.compare_digest(supplied, expected):
+        raise _E3ZBL_HTTPException(status_code=403, detail="Invalid internal worker token.")
+
+
+def _e3z_bl_sqlite_summary() -> dict:
+    path = _e3z_bl_db_path()
+    with _e3z_bl_sqlite3.connect(path) as conn:
+        conn.row_factory = _e3z_bl_sqlite3.Row
+        job_counts = [
+            dict(row)
+            for row in conn.execute(
+                "SELECT status, COUNT(*) AS count FROM jobs GROUP BY status ORDER BY status"
+            ).fetchall()
+        ]
+
+        result_count = conn.execute("SELECT COUNT(*) AS count FROM job_results").fetchone()["count"]
+
+        tables = {
+            row["name"]: True
+            for row in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('jobs','job_results','app_workers','app_worker_nodes','worker_registry')"
+            ).fetchall()
+        }
+
+    return {
+        "ok": True,
+        "db_path": path,
+        "job_counts": job_counts,
+        "job_results_total": result_count,
+        "tables": tables,
+        "stage": "stage-16-e3z-bl",
+    }
+
+
+class _E3ZBLWorkerRegisterRequest(_E3ZBL_BaseModel):
+    worker_id: str
+    worker_node_id: str | None = None
+    name: str | None = None
+    node_name: str | None = None
+    status: str = "online"
+    worker_role: str | None = None
+    worker_lane: str | None = None
+    accepts_lane_jobs: bool | None = None
+    capabilities: list[str] | None = None
+    max_concurrent_jobs: int | None = None
+    current_running_jobs: int | None = None
+
+
+class _E3ZBLWorkerHeartbeatRequest(_E3ZBL_BaseModel):
+    worker_id: str
+    worker_node_id: str | None = None
+    status: str = "online"
+    worker_lane: str | None = None
+    accepts_lane_jobs: bool | None = None
+    capabilities: list[str] | None = None
+    current_running_jobs: int | None = None
+
+
+class _E3ZBLJobClaimRequest(_E3ZBL_BaseModel):
+    worker_id: str
+    worker_node_id: str | None = None
+    supported_lanes: list[str] | None = None
+    allowed_models: list[str] | None = None
+    max_jobs: int = 1
+    claim_job_ids: list[int] | None = None
+
+
+class _E3ZBLJobCompleteRequest(_E3ZBL_BaseModel):
+    worker_id: str
+    model: str | None = None
+    response_text: str | None = None
+    response_json: dict | list | str | int | float | bool | None = None
+    error: str | None = None
+
+
+class _E3ZBLJobFailRequest(_E3ZBL_BaseModel):
+    worker_id: str
+    error: str
+
+
+@app.get("/internal/edge-worker/summary")
+def e3z_bl_edge_worker_summary(
+    x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _e3z_bl_require_worker_api(x_laptop_queue_token)
+    return _e3z_bl_sqlite_summary()
+
+
+@app.post("/internal/edge-worker/workers/register")
+def e3z_bl_edge_worker_register(
+    payload: _E3ZBLWorkerRegisterRequest,
+    x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _e3z_bl_require_worker_api(x_laptop_queue_token)
+    raise _E3ZBL_HTTPException(
+        status_code=501,
+        detail="CT203-native worker registration is skeleton-only in stage-16-e3z-bl.",
+    )
+
+
+@app.post("/internal/edge-worker/workers/heartbeat")
+def e3z_bl_edge_worker_heartbeat(
+    payload: _E3ZBLWorkerHeartbeatRequest,
+    x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _e3z_bl_require_worker_api(x_laptop_queue_token)
+    raise _E3ZBL_HTTPException(
+        status_code=501,
+        detail="CT203-native worker heartbeat is skeleton-only in stage-16-e3z-bl.",
+    )
+
+
+@app.post("/internal/edge-worker/jobs/claim")
+def e3z_bl_edge_worker_claim(
+    payload: _E3ZBLJobClaimRequest,
+    x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _e3z_bl_require_worker_api(x_laptop_queue_token)
+    raise _E3ZBL_HTTPException(
+        status_code=501,
+        detail="CT203-native job claim is skeleton-only in stage-16-e3z-bl.",
+    )
+
+
+@app.post("/internal/edge-worker/jobs/{job_id}/complete")
+def e3z_bl_edge_worker_complete(
+    job_id: int,
+    payload: _E3ZBLJobCompleteRequest,
+    x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _e3z_bl_require_worker_api(x_laptop_queue_token)
+    raise _E3ZBL_HTTPException(
+        status_code=501,
+        detail="CT203-native job completion is skeleton-only in stage-16-e3z-bl.",
+    )
+
+
+@app.post("/internal/edge-worker/jobs/{job_id}/fail")
+def e3z_bl_edge_worker_fail(
+    job_id: int,
+    payload: _E3ZBLJobFailRequest,
+    x_laptop_queue_token: str | None = _E3ZBL_Header(default=None, alias="X-Laptop-Queue-Token"),
+):
+    _e3z_bl_require_worker_api(x_laptop_queue_token)
+    raise _E3ZBL_HTTPException(
+        status_code=501,
+        detail="CT203-native job failure is skeleton-only in stage-16-e3z-bl.",
+    )
+
+
+# E3Z_BL_CT203_SQLITE_WORKER_ENDPOINTS_END
