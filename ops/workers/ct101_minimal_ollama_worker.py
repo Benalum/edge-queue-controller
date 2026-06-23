@@ -397,6 +397,44 @@ def extract_expected_marker(job: Dict[str, Any]) -> str:
 
 
 def validate_completion(profile: ModelProfile, job: Dict[str, Any], response_text: str) -> str:
+    # Stage 16 FB-R4: explicit worker mode split.
+    # Default remains exact-marker proof behavior. general_queue skips
+    # marker extraction but still enforces bounded, non-empty model output.
+    _stage16_worker_mode = os.environ.get("EDGE_WORKER_MODE", "exact_marker").strip().lower()
+    if _stage16_worker_mode in ("", "exact", "strict"):
+        _stage16_worker_mode = "exact_marker"
+    if _stage16_worker_mode not in ("exact_marker", "general_queue"):
+        raise WorkerRefusal(f"REFUSE_UNKNOWN_WORKER_MODE:{_stage16_worker_mode}")
+    if _stage16_worker_mode == "general_queue":
+        _stage16_completion_text = None
+        for _stage16_name in (
+            "completion",
+            "completion_text",
+            "response",
+            "response_text",
+            "output",
+            "cleaned_output",
+            "text",
+        ):
+            if _stage16_name in locals():
+                _stage16_completion_text = locals()[_stage16_name]
+                break
+        if _stage16_completion_text is None:
+            _stage16_local_values = list(locals().values())
+            if _stage16_local_values:
+                _stage16_completion_text = _stage16_local_values[-1]
+        _stage16_completion_text = "" if _stage16_completion_text is None else str(_stage16_completion_text)
+        try:
+            _stage16_max_response_chars = int(os.environ.get("EDGE_GENERAL_QUEUE_MAX_RESPONSE_CHARS", "12000"))
+        except ValueError:
+            raise WorkerRefusal("REFUSE_GENERAL_QUEUE_INVALID_MAX_RESPONSE_CHARS")
+        if _stage16_max_response_chars <= 0:
+            raise WorkerRefusal("REFUSE_GENERAL_QUEUE_INVALID_MAX_RESPONSE_CHARS")
+        if not _stage16_completion_text.strip():
+            raise WorkerRefusal("REFUSE_GENERAL_QUEUE_EMPTY_RESPONSE")
+        if len(_stage16_completion_text) > _stage16_max_response_chars:
+            raise WorkerRefusal("REFUSE_GENERAL_QUEUE_RESPONSE_TOO_LARGE")
+        return
     if profile.completion_validation_policy != "exact_marker_only":
         raise WorkerRefusal("REFUSE_UNSUPPORTED_COMPLETION_VALIDATION")
     expected = extract_expected_marker(job)
