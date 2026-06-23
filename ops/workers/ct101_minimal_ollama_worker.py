@@ -12,6 +12,7 @@ It refuses by default unless EDGE_WORKER_ENABLED=1.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -443,6 +444,190 @@ def validate_completion(profile: ModelProfile, job: Dict[str, Any], response_tex
     return expected
 
 
+
+@dataclass(frozen=True)
+class ProductValidationResult:
+    passed: bool
+    visible_output: str
+    refusal_code: str
+    reasons: Tuple[str, ...]
+    raw_output_sha256: str
+    visible_output_sha256: str
+    result_contract: str = "product_visible_output_v1"
+
+
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def extract_visible_output(raw_output: str) -> str:
+    return (raw_output or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+
+
+def detect_visible_thinking(text: str) -> bool:
+    lowered = (text or "").lower()
+    patterns = (
+        r"\bthinking\.\.\.",
+        r"\bthinking process\b",
+        r"\banalyze the request\b",
+        r"\bdetermine constraints\b",
+        r"\bconstraints checklist\b",
+        r"\bstep\s+1\s*:",
+        r"\bstep\s+2\s*:",
+        r"\bi am thinking\b",
+        r"\blet'?s think\b",
+        r"\bwe need answer\b",
+        r"\bthe user wants\b",
+    )
+    return any(re.search(pattern, lowered) for pattern in patterns)
+
+
+def detect_hidden_thinking_markers(text: str) -> bool:
+    lowered = (text or "").lower()
+    return any(marker in lowered for marker in ("<think>", "</think>", "<thinking>", "</thinking>"))
+
+
+def _parse_json_object(text: str) -> Any:
+    try:
+        return json.loads((text or "").strip())
+    except Exception:
+        return None
+
+
+def detect_guard_metadata_output(text: str) -> bool:
+    raw = (text or "").strip()
+    lowered = raw.lower()
+    parsed = _parse_json_object(raw)
+    if isinstance(parsed, dict):
+        if parsed.get("exact_match") is True:
+            return True
+        if parsed.get("stage") == "stage-16-e3z-ec-worker-guards":
+            return True
+        if set(parsed.keys()).issubset({"exact_match", "profile_id", "stage"}):
+            return True
+    return any(term in lowered for term in ("stage-16-e3z-ec-worker-guards", "exact_match", "refuse_worker_exact_marker_mismatch"))
+
+
+def detect_internal_surface_terms(text: str, job_type: str = "") -> bool:
+    lowered = (text or "").lower()
+    parsed = _parse_json_object(text)
+    if job_type == "stage16_fc_flashcards_semantic_probe" and parsed is not None:
+        terms = ("queue", "worker", "system", "instruction", "job_results", "response_json", "response_text", "exact marker")
+    else:
+        terms = ("prompt", "queue", "worker", "system", "instruction", "job id", "job_results", "response_json", "response_text", "exact marker")
+    return any(term in lowered for term in terms)
+
+
+def _fail_product(raw_output: str, visible_output: str, code: str, reasons: Tuple[str, ...]) -> ProductValidationResult:
+    return ProductValidationResult(False, visible_output, code, reasons, _sha256_text(raw_output or ""), _sha256_text(visible_output or ""))
+
+
+def _pass_product(raw_output: str, visible_output: str) -> ProductValidationResult:
+    return ProductValidationResult(True, visible_output, "", (), _sha256_text(raw_output or ""), _sha256_text(visible_output or ""))
+
+
+def validate_product_visible_output(profile: ModelProfile, job: Dict[str, Any], raw_output: str) -> ProductValidationResult:
+    job_type = str(job.get("job_type") or "")
+    prompt = str(job.get("prompt") or "")
+    visible_output = extract_visible_output(raw_output)
+
+    if not visible_output:
+        return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_EMPTY_VISIBLE_OUTPUT", ("empty_visible_output",))
+    if detect_hidden_thinking_markers(visible_output):
+        return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_HIDDEN_THINKING", ("hidden_thinking_markers_present",))
+    if detect_visible_thinking(visible_output):
+        return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_VISIBLE_THINKING", ("visible_thinking_present",))
+    if detect_guard_metadata_output(visible_output):
+        return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_GUARD_JSON", ("guard_metadata_output",))
+
+    if job_type == "stage16_fc_companion_chat_semantic_probe":
+        lowered = visible_output.lower()
+        if _parse_json_object(visible_output) is not None:
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_SHAPE_MISMATCH", ("companion_output_must_not_be_json",))
+        if len(visible_output) < 40:
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_SHAPE_MISMATCH", ("companion_output_too_short",))
+        if not re.search(r"\b(you|your)\b", lowered):
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_SHAPE_MISMATCH", ("companion_direct_address_missing",))
+        if "i am an ai" in lowered or "i'm an ai" in lowered:
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_INTERNAL_TERMS", ("companion_ai_self_reference",))
+        if detect_internal_surface_terms(visible_output, job_type):
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_INTERNAL_TERMS", ("internal_surface_terms_present",))
+        return _pass_product(raw_output, visible_output)
+
+    if job_type == "stage16_fc_study_tutor_semantic_probe":
+        if detect_internal_surface_terms(visible_output, job_type):
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_INTERNAL_TERMS", ("internal_surface_terms_present",))
+        if "bullet" in prompt.lower():
+            lines = [line.strip() for line in visible_output.splitlines() if line.strip()]
+            if not lines or not all(line.startswith("- ") for line in lines):
+                return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_SHAPE_MISMATCH", ("study_bullet_shape_mismatch",))
+        return _pass_product(raw_output, visible_output)
+
+    if job_type == "stage16_fc_flashcards_semantic_probe":
+        parsed = _parse_json_object(visible_output)
+        if parsed is None:
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_SHAPE_MISMATCH", ("flashcards_json_parse_failed",))
+        if not isinstance(parsed, list):
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_SHAPE_MISMATCH", ("flashcards_json_not_list",))
+        for item in parsed:
+            if not isinstance(item, dict) or "prompt" not in item or "answer" not in item:
+                return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_SHAPE_MISMATCH", ("flashcards_prompt_answer_schema_missing",))
+        return _pass_product(raw_output, visible_output)
+
+    if job_type == "stage16_fc_safe_refusal_semantic_probe":
+        lowered = visible_output.lower()
+        if detect_internal_surface_terms(visible_output, job_type):
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_INTERNAL_TERMS", ("internal_surface_terms_present",))
+        if "private credential" not in lowered:
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_SHAPE_MISMATCH", ("safe_refusal_required_term_missing",))
+        if not any(term in lowered for term in ("can't", "cannot", "can’t", "won't", "will not", "unable", "not able")):
+            return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_SHAPE_MISMATCH", ("safe_refusal_refusal_language_missing",))
+        return _pass_product(raw_output, visible_output)
+
+    return _fail_product(raw_output, visible_output, "REFUSE_PRODUCT_UNSUPPORTED_JOB_TYPE", ("unsupported_product_job_type",))
+
+
+def build_product_response_json(profile: ModelProfile, job: Dict[str, Any], result: ProductValidationResult) -> Dict[str, Any]:
+    return {
+        "result_contract": "product_visible_output_v1",
+        "profile_id": profile.profile_id,
+        "model": profile.model_name,
+        "job_type": str(job.get("job_type") or ""),
+        "validation": {
+            "passed": result.passed,
+            "visible_thinking_absent": not detect_visible_thinking(result.visible_output),
+            "hidden_thinking_markers_absent": not detect_hidden_thinking_markers(result.visible_output),
+            "guard_metadata_absent_from_visible_output": not detect_guard_metadata_output(result.visible_output),
+            "shape_valid": result.passed,
+        },
+        "raw_output_sha256": result.raw_output_sha256,
+        "visible_output_sha256": result.visible_output_sha256,
+    }
+
+
+def build_completion_payload(profile: ModelProfile, job: Dict[str, Any], response_text: str) -> Dict[str, Any]:
+    if profile.completion_validation_policy == "product_visible_output_v1":
+        product_validation = validate_product_visible_output(profile, job, response_text)
+        if not product_validation.passed:
+            raise WorkerRefusal(product_validation.refusal_code)
+        return {
+            "model": profile.model_name,
+            "response_text": product_validation.visible_output,
+            "response_json": build_product_response_json(profile, job, product_validation),
+        }
+
+    return {
+        "model": profile.model_name,
+        "response_text": response_text,
+        "response_json": {
+            "stage": "stage-16-e3z-ec-worker-guards",
+            "profile_id": profile.profile_id,
+            "exact_match": True,
+        },
+    }
+
+
+
 def _post_json(config: WorkerConfig, token: str, path: str, payload: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
@@ -523,13 +708,7 @@ def complete_job(config: WorkerConfig, token: str, job_id: int, profile: ModelPr
         f"/internal/edge-worker/jobs/{job_id}/complete",
         {
             "worker_id": config.worker_id,
-            "model": profile.model_name,
-            "response_text": response_text,
-            "response_json": {
-                "stage": "stage-16-e3z-ec-worker-guards",
-                "profile_id": profile.profile_id,
-                "exact_match": True,
-            },
+            **build_completion_payload(profile, job, response_text),
         },
     )
     if status != 200:
