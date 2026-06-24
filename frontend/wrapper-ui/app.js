@@ -13790,15 +13790,9 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   "use strict";
   const MARKER = "APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z";
   const EXPECTED_RESULT_TEXT = 'FC-O45-E-X-R4 repaired mock no-model completion text for Companion job 124.';
-  const JOB_ID = 124;
-  const ENDPOINTS = [
-    "/api/jobs/124",
-    "/api/jobs?id=124",
-    "/jobs/124",
-    "/jobs?id=124"
-  ];
+  const ENDPOINTS = ["/api/companion/jobs/124/result", "/api/jobs/124", "/api/jobs?id=124", "/jobs/124", "/jobs?id=124"];
 
-  function onReady(fn) {
+  function ready(fn) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fn, { once: true });
     } else {
@@ -13806,81 +13800,57 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     }
   }
 
-  function isCompanionRoute() {
-    const href = String(location.href || "").toLowerCase();
-    const path = String(location.pathname || "").toLowerCase();
-    const hash = String(location.hash || "").toLowerCase();
-    return href.includes("companion") || path.includes("companion") || hash.includes("companion");
+  function isCompanion() {
+    const s = (String(location.href || "") + " " + String(location.pathname || "") + " " + String(location.hash || "")).toLowerCase();
+    return s.includes("companion");
   }
 
-  function findMount() {
+  function mount() {
     return document.querySelector("[data-apc-page='companion']") ||
       document.querySelector("#companion") ||
       document.querySelector("main") ||
       document.body;
   }
 
-  function stringifyPayload(payload) {
-    try {
-      return JSON.stringify(payload, null, 2);
-    } catch (_) {
-      return String(payload);
-    }
-  }
-
-  async function fetchText(url) {
-    const res = await fetch(url, {
-      method: "GET",
-      credentials: "same-origin",
-      headers: { "Accept": "application/json,text/plain,*/*" }
-    });
-    const text = await res.text();
-    let parsed = null;
-    try { parsed = JSON.parse(text); } catch (_) {}
-    return { url, status: res.status, ok: res.ok, text, parsed };
-  }
-
-  function containsResult(probe) {
-    const haystack = probe.parsed ? stringifyPayload(probe.parsed) : String(probe.text || "");
-    return haystack.includes(EXPECTED_RESULT_TEXT);
-  }
-
-  async function runProbe(output) {
-    output.textContent = "Checking completed Companion job 124 result visibility...";
+  async function probe(out) {
+    out.textContent = "Checking completed Companion job 124 result visibility...";
     const observations = [];
     for (const endpoint of ENDPOINTS) {
       try {
-        const probe = await fetchText(endpoint);
-        observations.push();
-        if (probe.ok && containsResult(probe)) {
-          output.textContent = [
+        const res = await fetch(endpoint, {
+          method: "GET",
+          credentials: "same-origin",
+          headers: { "Accept": "application/json,text/plain,*/*" }
+        });
+        const body = await res.text();
+        observations.push(endpoint + " -> HTTP " + res.status);
+        if (res.ok && body.includes(EXPECTED_RESULT_TEXT)) {
+          out.dataset.result = "pass";
+          out.textContent = [
             "PASS: completed Companion job 124 result is visible from signed-in UI.",
-            ,
-
-          ].join("
-");
-          output.dataset.result = "pass";
+            "Endpoint: " + endpoint,
+            "Expected result: " + EXPECTED_RESULT_TEXT
+          ].join("\n");
           return;
         }
       } catch (err) {
-        observations.push();
+        const message = err && err.message ? err.message : String(err);
+        observations.push(endpoint + " -> ERROR " + message);
       }
     }
-    output.textContent = [
+    out.dataset.result = "not-visible";
+    out.textContent = [
       "NOT VISIBLE YET: completed job 124 result was not returned by the probed read-only endpoints.",
       "This did not create jobs or mutate data.",
       "",
-      observations.join("
-")
-    ].join("
-");
-    output.dataset.result = "not-visible";
+      observations.join("\n")
+    ].join("\n");
   }
 
-  function installPanel() {
-    if (!isCompanionRoute()) return;
-    const mount = findMount();
-    if (!mount || document.getElementById("apc-companion-result-visibility-panel")) return;
+  function install() {
+    if (!isCompanion()) return;
+    const root = mount();
+    if (!root || document.getElementById("apc-companion-result-visibility-panel")) return;
 
     const panel = document.createElement("section");
     panel.id = "apc-companion-result-visibility-panel";
@@ -13899,26 +13869,26 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     button.textContent = "Check Companion result for job 124";
     button.setAttribute("data-apc-companion-result-check", "job-124");
 
-    const output = document.createElement("pre");
-    output.id = "apc-companion-result-visibility-output";
-    output.textContent = "Click the button while signed in.";
-    output.style.whiteSpace = "pre-wrap";
+    const out = document.createElement("pre");
+    out.id = "apc-companion-result-visibility-output";
+    out.style.whiteSpace = "pre-wrap";
+    out.textContent = "Click the button while signed in.";
 
     button.addEventListener("click", function () {
-      runProbe(output);
+      probe(out);
     });
 
     panel.appendChild(title);
     panel.appendChild(desc);
     panel.appendChild(button);
-    panel.appendChild(output);
-    mount.prepend(panel);
+    panel.appendChild(out);
+    root.prepend(panel);
   }
 
-  onReady(function () {
-    installPanel();
-    window.setTimeout(installPanel, 500);
-    window.setTimeout(installPanel, 1500);
+  ready(function () {
+    install();
+    window.setTimeout(install, 500);
+    window.setTimeout(install, 1500);
   });
 })();
 /* APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z END */

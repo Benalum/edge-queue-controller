@@ -10097,6 +10097,57 @@ async def public_companion_chat(request: Request):
     return await _apc_companion_chat_common_fc_o45_e_q(request, require_public_api_key=True)
 
 
+
+# APC_COMPANION_RESULT_READ_API_FC_O45_E_AA START
+@app.get("/api/companion/jobs/{job_id}/result")
+async def api_companion_job_result_fc_o45_e_aa(request: Request, job_id: int):
+    """Read-only signed-in Companion job result lookup.
+
+    FC-O45-E-AA: owner-scoped result visibility for completed Companion jobs.
+    """
+    user_row = _auth_current_user_from_request(request)
+    user_id = int(user_row["id"])
+
+    if int(job_id) < 1:
+        raise HTTPException(status_code=400, detail="job_id must be positive.")
+
+    with db() as conn:
+        job = conn.execute(
+            """
+            SELECT *
+            FROM jobs
+            WHERE id = ?
+              AND user_id = ?
+              AND job_type = 'companion.chat'
+            """,
+            (int(job_id), user_id),
+        ).fetchone()
+
+        if job is None:
+            raise HTTPException(status_code=404, detail="Companion job not found.")
+
+        result = conn.execute(
+            """
+            SELECT job_id, model, response_text, response_json, error, created_at, updated_at
+            FROM job_results
+            WHERE job_id = ?
+            """,
+            (int(job_id),),
+        ).fetchone()
+
+    job_obj = row_to_dict(job)
+    result_obj = row_to_dict(result) if result is not None else None
+
+    return {
+        "ok": True,
+        "route": "/api/companion/jobs/{job_id}/result",
+        "job": job_obj,
+        "result": result_obj,
+        "has_result": result_obj is not None,
+        "response_text": result_obj.get("response_text") if result_obj else None,
+    }
+# APC_COMPANION_RESULT_READ_API_FC_O45_E_AA END
+
 @app.post("/api/companion/chat")
 async def api_companion_chat(request: Request):
     return await _apc_companion_chat_common_fc_o45_e_q(request, require_public_api_key=False)
