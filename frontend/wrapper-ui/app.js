@@ -11205,3 +11205,326 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   window.addEventListener("popstate", () => setTimeout(runGuard, 0));
 })();
 
+
+/*
+ * APC_STUDY_SIGNED_IN_REPAIR_FC_O45_C_C
+ *
+ * Product-surface repair only:
+ * - Keeps durable Study session/deck selector UI.
+ * - Removes the duplicated legacy Study block when it is embedded under signed-in Study.
+ * - Restores signed-in Decks, Cards, Stats, and Review Queue panels from existing Study APIs.
+ * - Skips signed-out users so public Study remains private-data safe.
+ */
+(() => {
+  const MARKER = "APC_STUDY_SIGNED_IN_REPAIR_FC_O45_C_C";
+  const PANEL_ID = "apc-study-signed-in-tools-fc-o45-c-c";
+  let repairTimer = null;
+  let lastDeckId = null;
+
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#39;",
+    }[ch]));
+  }
+
+  function textOf(el) {
+    return (el && el.textContent ? el.textContent : "").replace(/\s+/g, " ").trim();
+  }
+
+  function isProbablyStudyPage() {
+    const bodyText = textOf(document.body);
+    return bodyText.includes("Study session")
+      || bodyText.includes("Deck selector")
+      || bodyText.includes("No active durable Study session")
+      || bodyText.includes("Create decks, add cards, review by difficulty");
+  }
+
+  async function apiJson(path) {
+    const response = await fetch(path, {
+      credentials: "include",
+      headers: { "Accept": "application/json" },
+    });
+    const text = await response.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch (_) {
+      data = { raw: text };
+    }
+    return { ok: response.ok, status: response.status, data };
+  }
+
+  async function currentUserIsSignedIn() {
+    try {
+      const me = await apiJson("/api/me");
+      return me.ok && !!me.data && (me.data.id || me.data.email || me.data.user);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function removeDuplicatedLegacyStudyBlock() {
+    const candidates = Array.from(document.querySelectorAll("section, article, main > div, .card, .panel, div"));
+    for (const el of candidates) {
+      if (el.id === PANEL_ID) continue;
+      const t = textOf(el);
+      const hasLegacyIntro = t.includes("Create decks, add cards, review by difficulty")
+        || t.includes("track progress from the shared wrapper layout");
+      const hasDurablePanel = t.includes("Study session") || t.includes("Deck selector") || t.includes("No active durable Study session");
+      const isLargePageShell = t.includes("Companion") && t.includes("Profile") && t.includes("System") && t.length > 600;
+
+      if (hasLegacyIntro && !hasDurablePanel && !isLargePageShell) {
+        el.setAttribute("data-apc-study-legacy-hidden", MARKER);
+        el.hidden = true;
+        el.style.display = "none";
+      }
+    }
+  }
+
+  function findStudyMount() {
+    const existing = document.getElementById(PANEL_ID);
+    if (existing) return existing;
+
+    const headings = Array.from(document.querySelectorAll("h1, h2, h3, strong, div, section"));
+    let anchor = headings.find((el) => textOf(el).includes("Deck selector"))
+      || headings.find((el) => textOf(el).includes("Study session"))
+      || headings.find((el) => textOf(el).includes("No active durable Study session"));
+
+    let container = anchor;
+    for (let i = 0; i < 4 && container && container.parentElement; i += 1) {
+      const t = textOf(container);
+      if (t.includes("Study session") || t.includes("Deck selector")) break;
+      container = container.parentElement;
+    }
+
+    const panel = document.createElement("section");
+    panel.id = PANEL_ID;
+    panel.className = "card apc-study-tools";
+    panel.setAttribute("data-apc-marker", MARKER);
+    panel.innerHTML = `
+      <h2>Study tools</h2>
+      <p class="muted">Decks, cards, stats, and review queue are loaded from your signed-in Study account.</p>
+      <div class="grid two">
+        <section class="mini-summary" id="apcStudyDecksPanel"><strong>Decks</strong><p class="muted">Loading decks…</p></section>
+        <section class="mini-summary" id="apcStudyStatsPanel"><strong>Stats</strong><p class="muted">Loading progress…</p></section>
+      </div>
+      <div class="grid two">
+        <section class="mini-summary" id="apcStudyCardsPanel"><strong>Cards</strong><p class="muted">Choose a deck to load cards.</p></section>
+        <section class="mini-summary" id="apcStudyReviewPanel"><strong>Review queue</strong><p class="muted">Choose a deck to load the review queue.</p></section>
+      </div>
+    `;
+
+    if (container && container.parentNode) {
+      container.insertAdjacentElement("afterend", panel);
+    } else {
+      document.body.appendChild(panel);
+    }
+    return panel;
+  }
+
+  function deckIdFromExistingUi() {
+    const bodyText = textOf(document.body);
+    const selected = bodyText.match(/Selected:\s*[^#]+#(\d+)/i);
+    if (selected) return selected[1];
+    const hash = bodyText.match(/deck\s*#(\d+)/i);
+    if (hash) return hash[1];
+    return null;
+  }
+
+  function renderDecks(payload) {
+    const panel = document.getElementById("apcStudyDecksPanel");
+    if (!panel) return null;
+
+    const decks = Array.isArray(payload?.decks) ? payload.decks : [];
+    if (!decks.length) {
+      panel.innerHTML = `<strong>Decks</strong><p class="muted">No decks were returned for this account yet.</p>`;
+      return null;
+    }
+
+    const selectedId = lastDeckId || deckIdFromExistingUi() || String(decks[0].id);
+    lastDeckId = selectedId;
+
+    const items = decks.slice(0, 8).map((deck) => {
+      const active = String(deck.id) === String(selectedId) ? " selected" : "";
+      const title = esc(deck.title || deck.name || `Deck #${deck.id}`);
+      const count = deck.card_count ?? deck.cards_count ?? deck.total_cards ?? "—";
+      return `<li><button type="button" class="secondary apc-study-deck-choice${active}" data-apc-study-deck-id="${esc(deck.id)}">${title}</button> <span class="muted">${esc(count)} cards</span></li>`;
+    }).join("");
+
+    panel.innerHTML = `
+      <strong>Decks</strong>
+      <p class="muted">${esc(payload.count ?? decks.length)} deck(s) available. Selected deck #${esc(selectedId)}.</p>
+      <ul>${items}</ul>
+    `;
+
+    panel.querySelectorAll("[data-apc-study-deck-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        lastDeckId = btn.getAttribute("data-apc-study-deck-id");
+        loadStudyTools(lastDeckId);
+      });
+    });
+
+    return selectedId;
+  }
+
+  function renderStats(payload) {
+    const panel = document.getElementById("apcStudyStatsPanel");
+    if (!panel) return;
+
+    const totals = payload?.totals || payload?.summary || payload || {};
+    const totalDecks = totals.total_decks ?? payload?.deck_count ?? "—";
+    const totalCards = totals.total_cards ?? payload?.card_count ?? "—";
+    const totalReviews = totals.total_reviews ?? payload?.review_count ?? "—";
+    const accuracy = totals.accuracy === null || totals.accuracy === undefined
+      ? "—"
+      : `${Math.round(Number(totals.accuracy) * 100)}%`;
+
+    panel.innerHTML = `
+      <strong>Stats</strong>
+      <dl>
+        <dt>Decks</dt><dd>${esc(totalDecks)}</dd>
+        <dt>Cards</dt><dd>${esc(totalCards)}</dd>
+        <dt>Reviews</dt><dd>${esc(totalReviews)}</dd>
+        <dt>Accuracy</dt><dd>${esc(accuracy)}</dd>
+      </dl>
+    `;
+  }
+
+  function renderCards(payload, deckId) {
+    const panel = document.getElementById("apcStudyCardsPanel");
+    if (!panel) return;
+
+    const cards = Array.isArray(payload?.cards) ? payload.cards : [];
+    if (!cards.length) {
+      panel.innerHTML = `<strong>Cards</strong><p class="muted">No cards returned for deck #${esc(deckId)}.</p>`;
+      return;
+    }
+
+    const items = cards.slice(0, 6).map((card) => {
+      const question = esc(card.question || card.front || card.prompt || `Card #${card.id}`);
+      const answer = esc(card.answer || card.back || "");
+      return `<li><strong>${question}</strong>${answer ? `<br><span class="muted">${answer}</span>` : ""}</li>`;
+    }).join("");
+
+    panel.innerHTML = `
+      <strong>Cards</strong>
+      <p class="muted">${esc(payload.count ?? cards.length)} card(s) in deck #${esc(deckId)}.</p>
+      <ul>${items}</ul>
+    `;
+  }
+
+  function renderReview(payload, deckId) {
+    const panel = document.getElementById("apcStudyReviewPanel");
+    if (!panel) return;
+
+    const queue = Array.isArray(payload?.queue) ? payload.queue
+      : Array.isArray(payload?.cards) ? payload.cards
+      : [];
+    if (!queue.length) {
+      panel.innerHTML = `<strong>Review queue</strong><p class="muted">No review cards returned for deck #${esc(deckId)}.</p>`;
+      return;
+    }
+
+    const card = queue[0];
+    const q = esc(card.question || card.front || card.prompt || `Card #${card.id}`);
+    const bucket = esc(card.performance_bucket || card.bucket || "balanced");
+
+    panel.innerHTML = `
+      <strong>Review queue</strong>
+      <p class="muted">${esc(queue.length)} card(s) queued. First bucket: ${bucket}.</p>
+      <p><strong>${q}</strong></p>
+      <div class="actions">
+        <button type="button" disabled>Read answer</button>
+        <button type="button" disabled>Correct</button>
+        <button type="button" disabled>Wrong</button>
+        <button type="button" disabled>Skip</button>
+      </div>
+      <p class="muted">Review action buttons are visible here; durable session actions above remain the active controls.</p>
+    `;
+  }
+
+  async function loadStudyTools(deckIdOverride) {
+    const panel = findStudyMount();
+    if (!panel) return;
+
+    const decksResult = await apiJson("/api/study/decks");
+    if (!decksResult.ok) {
+      panel.innerHTML = `
+        <h2>Study tools</h2>
+        <p class="muted">Study tools are available after signing in. Deck/card data was not loaded.</p>
+      `;
+      return;
+    }
+
+    const selectedDeckId = renderDecks(decksResult.data) || deckIdOverride;
+    const progress = await apiJson("/api/study/progress");
+    if (progress.ok) {
+      renderStats(progress.data);
+    } else {
+      const statsPanel = document.getElementById("apcStudyStatsPanel");
+      if (statsPanel) statsPanel.innerHTML = `<strong>Stats</strong><p class="muted">Progress endpoint unavailable (${progress.status}).</p>`;
+    }
+
+    const deckId = deckIdOverride || selectedDeckId;
+    if (!deckId) return;
+
+    const cards = await apiJson(`/api/study/decks/${encodeURIComponent(deckId)}/cards`);
+    if (cards.ok) renderCards(cards.data, deckId);
+    else {
+      const cardsPanel = document.getElementById("apcStudyCardsPanel");
+      if (cardsPanel) cardsPanel.innerHTML = `<strong>Cards</strong><p class="muted">Cards endpoint unavailable (${cards.status}).</p>`;
+    }
+
+    const review = await apiJson(`/api/study/decks/${encodeURIComponent(deckId)}/review-queue`);
+    if (review.ok) renderReview(review.data, deckId);
+    else {
+      const reviewPanel = document.getElementById("apcStudyReviewPanel");
+      if (reviewPanel) reviewPanel.innerHTML = `<strong>Review queue</strong><p class="muted">Review queue endpoint unavailable (${review.status}).</p>`;
+    }
+  }
+
+  async function repairStudySurface() {
+    if (!isProbablyStudyPage()) return;
+    removeDuplicatedLegacyStudyBlock();
+
+    const signedIn = await currentUserIsSignedIn();
+    if (!signedIn) return;
+
+    findStudyMount();
+    await loadStudyTools(deckIdFromExistingUi());
+  }
+
+  function scheduleRepair() {
+    clearTimeout(repairTimer);
+    repairTimer = setTimeout(() => {
+      repairStudySurface().catch((error) => {
+        console.warn(`[${MARKER}] Study repair skipped`, error);
+      });
+    }, 80);
+  }
+
+  window.apcStudySignedInRepairFcO45CC = {
+    marker: MARKER,
+    repair: repairStudySurface,
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", scheduleRepair, { once: true });
+  } else {
+    scheduleRepair();
+  }
+
+  window.addEventListener("hashchange", scheduleRepair);
+  window.addEventListener("popstate", scheduleRepair);
+  document.addEventListener("click", () => setTimeout(scheduleRepair, 120), true);
+
+  const observer = new MutationObserver(() => {
+    if (!document.getElementById(PANEL_ID) && isProbablyStudyPage()) scheduleRepair();
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+})();
+
