@@ -717,11 +717,30 @@ def complete_job(config: WorkerConfig, token: str, job_id: int, profile: ModelPr
         raise WorkerRefusal("REFUSE_COMPLETE_HTTP_NOT_200")
 
 
+
+def fail_job(config: WorkerConfig, token: str, job_id: int, error: str) -> None:
+    validate_allowed_job_id(config, job_id)
+    status, _body = _post_json(
+        config,
+        token,
+        f"/internal/edge-worker/jobs/{job_id}/fail",
+        {
+            "worker_id": config.worker_id,
+            "error": error,
+        },
+    )
+    if status // 100 != 2:
+        raise WorkerRefusal(f"REFUSE_WORKER_FAIL_POST_FAILED status={status}")
+
 def run_one_claim_complete(config: WorkerConfig, profiles: Dict[str, ModelProfile], token: str, job_id: int) -> int:
     claimed = claim_one_job(config, token, job_id)
     profile = get_eligible_profile_for_job(claimed, profiles)
     response = run_ollama_call(profile, str(claimed.get("prompt") or ""))
-    validate_completion(profile, claimed, response)
+    try:
+        validate_completion(profile, claimed, response)
+    except WorkerRefusal as exc:
+        fail_job(config, token, job_id, str(exc))
+        return 1
     complete_job(config, token, job_id, profile, claimed, response)
     return 0
 
