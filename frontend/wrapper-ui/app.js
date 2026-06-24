@@ -5068,6 +5068,14 @@ async function queuedChatSubmit(event) {
     }
 
     queuedChatUiState.lastJobId = jobId;
+    // APC_COMPANION_SUBMIT_RESULT_READER_BRIDGE_FC_O45_E_AD_E_R2 BEGIN
+    if (typeof window.apcCompanionResultReaderSetJobId === "function") {
+      window.apcCompanionResultReaderSetJobId(jobId, {
+        source: "queuedChatSubmit",
+        autoRead: false
+      });
+    }
+    // APC_COMPANION_SUBMIT_RESULT_READER_BRIDGE_FC_O45_E_AD_E_R2 END
     queuedChatUiState.messages.push({
       role: "Queue",
       content: "Job created",
@@ -13879,8 +13887,42 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     return lines.join("\n");
   }
 
+  function persistLatestSubmittedJobId(jobId) {
+    try {
+      window.localStorage.setItem("apc_companion_latest_submitted_job_id", String(jobId || ""));
+    } catch (_) {}
+  }
+
+  function readLatestSubmittedJobId() {
+    try {
+      return String(window.localStorage.getItem("apc_companion_latest_submitted_job_id") || "").trim();
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function setReaderJobId(jobId, options) {
+    const value = String(jobId || "").trim();
+    if (!value) return false;
+    persistLatestSubmittedJobId(value);
+    install();
+    const input = document.getElementById("apc-companion-result-reader-job-id");
+    const output = document.getElementById("apc-companion-result-reader-output");
+    if (input) input.value = value;
+    if (output) {
+      output.dataset.result = "job-id-captured";
+      output.textContent =
+        "Latest submitted Companion job id: " + value +
+        "\nClick Read result to check this job without creating another job.";
+    }
+    return true;
+  }
+
+  window.apcCompanionResultReaderSetJobId = setReaderJobId;
+  window.apcCompanionResultReaderLatestJobId = readLatestSubmittedJobId;
+
   async function readResult(button, input, output) {
-    const raw = String(input.value || "").trim();
+    const raw = String(input.value || readLatestSubmittedJobId() || "").trim();
     const jobId = Number.parseInt(raw, 10);
     if (!Number.isInteger(jobId) || jobId < 1) {
       output.dataset.result = "invalid";
@@ -13967,7 +14009,7 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     input.type = "number";
     input.min = "1";
     input.placeholder = "125";
-    input.value = "";
+    input.value = readLatestSubmittedJobId();
     input.style.maxWidth = "120px";
 
     const button = document.createElement("button");
@@ -13977,7 +14019,10 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     const output = document.createElement("pre");
     output.id = "apc-companion-result-reader-output";
     output.style.whiteSpace = "pre-wrap";
-    output.textContent = "Enter a Companion job id, then click Read result.";
+    const latestSubmittedJobId = readLatestSubmittedJobId();
+    output.textContent = latestSubmittedJobId
+      ? "Latest submitted Companion job id: " + latestSubmittedJobId + "\nClick Read result to check this job without creating another job."
+      : "Enter a Companion job id, then click Read result.";
 
     button.addEventListener("click", function () {
       readResult(button, input, output);
