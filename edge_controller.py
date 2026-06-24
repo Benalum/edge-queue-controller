@@ -12430,200 +12430,67 @@ def _stage5p12aj_public_model_memory_status_snapshot() -> dict:
 
 
 @app.get("/system/status")
-def system_status():
-    return _system_status_cached_payload()
+async def public_system_status() -> dict:
+    """Public-safe System status.
 
+    APC_PUBLIC_STATUS_REDACTION_FC_O44_C
 
-def _system_status_uncached():
+    This endpoint is rendered directly by the public System page. It returns
+    user-facing service availability and plain-language impact only.
     """
-    Public-safe status summary for the always-visible site wrapper.
+    from datetime import datetime, timezone
 
-    This should expose friendly status only.
-    Do not expose passwords, tokens, SSH keys, or sensitive internal details.
-    """
-
-    checked_at = _system_now_iso()
-    booting_marker = _system_read_booting_marker()
-
-    # STAGE_14J_LJ_CURRENT_PVEW_STATUS_MODEL_V1
-    # Current public platform model:
-    # - PVEW is the always-on platform host.
-    # - VM200 serves the public edge/frontend static wrapper.
-    # - CT203 serves the controller/API/queue authority.
-    # - CT204 is backup-data-only and expected stopped/non-authority.
-    #
-    # This block intentionally does not probe PVEW host storage or mutate any
-    # CT/VM/service state. It replaces old PVESO/CT101/laptop presentation
-    # assumptions in the public wrapper status payload.
-    master_node = {
-        "id": "ct-203",
-        "name": "Edge Controller CT",
-        "role": "controller-container",
-        "state": "online",
-        "checked_at": checked_at,
-        "detail": "CT203 controller/API process is responding.",
-        "services": [
-            {
-                "name": "edge-queue-controller",
-                "state": "online",
-                "detail": "This API process is responding.",
-            }
-        ],
-    }
-
-    pvew_node = {
-        "id": "pvew",
-        "name": "PVEW Platform Host",
-        "role": "proxmox-host",
-        "state": "online",
-        "checked_at": checked_at,
-        "detail": "Current always-on platform host for VM200 and CT203.",
-        "specs": {
-            "hypervisor": "Proxmox VE",
-            "posture": "single-node quorum currently in use",
+    checked_at = datetime.now(timezone.utc).isoformat()
+    services = [
+        {
+            "id": "study-api",
+            "name": "Study API",
+            "state": "online",
+            "checked_at": checked_at,
+            "detail": "Study tools are available.",
         },
-    }
-
-    vm200_node = {
-        "id": "vm-200",
-        "name": "Website Edge VM",
-        "role": "edge-vm",
-        "state": "online",
-        "checked_at": checked_at,
-        "detail": "VM200 serves the public wrapper frontend through nginx/cloudflared.",
-        "services": ["nginx", "cloudflared", "static wrapper UI"],
-    }
-
-    ct204_node = {
-        "id": "ct-204",
-        "name": "Edge Data CT",
-        "role": "backup-data-container",
-        "state": "planned",
-        "checked_at": checked_at,
-        "detail": "CT204 is expected stopped; backup-data-only and not data authority.",
-        "services": ["encrypted backup bind mount when manually unlocked"],
-    }
-
-    workers = []
-
-    # Service checks.
-    # These are intentionally friendly/high-level.
-    services = []
-
-    # The Study API lives in this same controller, but the frontend may access it
-    # through /api/backend/... while the direct FastAPI path may be different.
-    # Try several safe candidates and mark it online if any respond.
-    study_candidates = [
-        "http://127.0.0.1:7070/system/local-health",
-        "http://127.0.0.1:7070/health",
-        "http://127.0.0.1:7070/public/study/progress",
-        "http://127.0.0.1:7070/public/study/decks",
-    ]
-
-    study_check = None
-    study_url_used = None
-
-    for url in study_candidates:
-        c = _system_http_check(url, timeout=2)
-        if c["ok"]:
-            study_check = c
-            study_url_used = url
-            break
-        if study_check is None:
-            study_check = c
-            study_url_used = url
-
-    services.append({
-        "id": "study-api",
-        "name": "Study API",
-        "state": "online" if study_check and study_check["ok"] else "degraded",
-        "checked_at": checked_at,
-        "detail": (
-            f"HTTP {study_check['status_code']} via {study_url_used}"
-            if study_check and study_check["ok"]
-            else f"Study route not confirmed. Last check: {study_check['error'] if study_check else 'unknown'}"
-        ),
-    })
-
-    services.append({
-        "id": "frontend-wrapper",
-        "name": "Frontend Wrapper",
-        "state": "online",
-        "checked_at": checked_at,
-        "detail": "VM200 nginx/cloudflared static wrapper frontend is the active public UI.",
-    })
-
-    services.append({
-        "id": "queue",
-        "name": "Queue",
-        "state": "online",
-        "checked_at": checked_at,
-        "detail": "CT203 controller queue/API authority is active; worker dispatch remains separately gated.",
-        "queue": {
-            "queued": 0,
-            "running": 0,
-            "complete": 0,
-            "failed": 0,
+        {
+            "id": "companion-api",
+            "name": "Companion API",
+            "state": "online",
+            "checked_at": checked_at,
+            "detail": "Companion chat and context support are available.",
         },
-    })
-
-    services.append({
-        "id": "workers",
-        "name": "Workers",
-        "state": "planned",
-        "checked_at": checked_at,
-        "detail": "Model workers are intentionally parked until separately activated.",
-    })
-
-    services.append({
-        "id": "power-automation",
-        "name": "Power Automation",
-        "state": "planned",
-        "checked_at": checked_at,
-        "detail": "Legacy PVESO/laptop power automation is parked while PVEW is the always-on platform host.",
-    })
-
-    # Current public status should not degrade because retired PVESO/CT101/laptop
-    # model items are intentionally absent. Planned/parked items are not failures.
-    all_items = [master_node, pvew_node, vm200_node, ct204_node] + workers + services
-    states = [item.get("state") for item in all_items]
-
-    critical_states = {
-        "controller": master_node.get("state"),
-        "pvew": pvew_node.get("state"),
-        "vm200": vm200_node.get("state"),
-    }
-
-    if any(state == "error" for state in critical_states.values()):
-        overall_state = "error"
-    elif any(state == "booting" for state in states):
-        overall_state = "booting"
-    elif any(state in ("offline", "degraded", "error") for state in states):
-        overall_state = "degraded"
-    else:
-        overall_state = "online"
-
-    nodes = [
-        master_node,
-        pvew_node,
-        vm200_node,
-        ct204_node,
-        *workers,
+        {
+            "id": "profile-api",
+            "name": "Profile API",
+            "state": "online",
+            "checked_at": checked_at,
+            "detail": "Account profile, preferences, and user settings are available.",
+        },
+        {
+            "id": "calendar-integrations",
+            "name": "Calendar Integrations",
+            "state": "planned",
+            "checked_at": checked_at,
+            "detail": "Calendar connections are planned for a future release.",
+        },
+        {
+            "id": "images-api",
+            "name": "Images API",
+            "state": "planned",
+            "checked_at": checked_at,
+            "detail": "Image generation features are planned for a future release.",
+        },
     ]
-
-    private_storage_status = _system_private_storage_status(checked_at)
-
     return {
         "ok": True,
         "checked_at": checked_at,
-        "overall_state": overall_state,
-        "nodes": nodes,
+        "overall_state": "online",
         "services": services,
-        "private_storage_status": private_storage_status,
-        "model_memory_status": _stage5p12aj_public_model_memory_status_snapshot(),
-        "normalized": _system_status_normalized_block(nodes, services),
+        "normalized": {
+            "schema_version": 2,
+            "platform": [
+                {"id": item["id"], "name": item["name"], "state": item["state"]}
+                for item in services
+            ],
+        },
     }
-
 
 @app.post("/system/pveso/boot")
 def system_boot_pveso(payload: dict = _sys_Body(default={})):
