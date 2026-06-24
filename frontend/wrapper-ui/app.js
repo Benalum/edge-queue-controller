@@ -12759,3 +12759,397 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   schedule();
 })();
 
+
+/*
+ * APC_NATIVE_ADMIN_USERS_INTEGRATION_FC_O45_D_E
+ *
+ * Native Admin users integration.
+ * - Feeds /system/admin/users into the existing Admin Online Users and Latest Users sections.
+ * - Derives online users from the users route until /system/admin/online-users exists.
+ * - Removes the temporary FC-O45-D-C repair panel from the rendered page.
+ * - Frontend-only: no backend, DB, service, nginx, CT/VM, job, worker, runtime, or model mutation.
+ */
+(function () {
+  const MARKER = "APC_NATIVE_ADMIN_USERS_INTEGRATION_FC_O45_D_E";
+  const OLD_PANEL_ID = "apcAdminUsersRouteRepairFcO45DCR2";
+  const STYLE_ID = "apc-native-admin-users-integration-fc-o45-d-e";
+  const USER_PATH = "/system/admin/users";
+
+  let lastSignature = "";
+  let lastUsers = [];
+  let inFlight = false;
+
+  function esc(value) {
+    return String(value === undefined || value === null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function isAdminRoute() {
+    try {
+      const path = window.location.pathname || "";
+      const hash = window.location.hash || "";
+      return path === "/admin" || path.startsWith("/admin/") || hash.toLowerCase().includes("admin");
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function isAdminReady() {
+    try { if (typeof cleanIsAdmin === "function") return !!cleanIsAdmin(); } catch (_) {}
+    try { if (window.authState && window.authState.user && window.authState.user.is_admin) return true; } catch (_) {}
+    try { if (window.currentUser && window.currentUser.is_admin) return true; } catch (_) {}
+    return false;
+  }
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.setAttribute("data-apc-native-admin-users-integration", MARKER);
+    style.textContent = [
+      ".apc-native-admin-users{display:grid;gap:.75rem;margin-top:.75rem;}",
+      ".apc-native-admin-users .apc-admin-user-summary{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;}",
+      ".apc-native-admin-users .apc-admin-pill{display:inline-flex;align-items:center;border-radius:999px;padding:.25rem .55rem;border:1px solid rgba(148,163,184,.28);font-size:.8rem;}",
+      ".apc-native-admin-users .apc-admin-pill.ok{background:rgba(34,197,94,.12);}",
+      ".apc-native-admin-users .apc-admin-pill.warn{background:rgba(234,179,8,.12);}",
+      ".apc-native-admin-users table{width:100%;border-collapse:collapse;font-size:.92rem;}",
+      ".apc-native-admin-users th,.apc-native-admin-users td{padding:.55rem;border-bottom:1px solid rgba(148,163,184,.18);text-align:left;vertical-align:top;}",
+      ".apc-native-admin-users th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;opacity:.75;}",
+      ".apc-native-admin-users ul{margin:.25rem 0 0 1.2rem;padding:0;}",
+      ".apc-native-admin-users .muted{opacity:.78;}",
+      "@media (max-width:720px){.apc-native-admin-users table{display:block;overflow-x:auto;}}"
+    ].join("\n");
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function removeTemporaryRepairPanel() {
+    try {
+      const old = document.getElementById(OLD_PANEL_ID);
+      if (old) old.remove();
+      document.querySelectorAll("[data-apc-admin-users-route-repair]").forEach(function (node) {
+        const parent = node.closest("section, article, .card") || node;
+        if (parent && parent.id === OLD_PANEL_ID) parent.remove();
+      });
+    } catch (_) {}
+  }
+
+  function storageTokenCandidates(value, out) {
+    if (!value || typeof value !== "string") return;
+    if (/^eyJ[A-Za-z0-9_-]+\./.test(value) || (value.length > 40 && /^[A-Za-z0-9._-]+$/.test(value))) out.push(value);
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === "object") {
+        ["token", "access_token", "authToken", "jwt", "bearer", "session_token"].forEach(function (key) {
+          if (typeof parsed[key] === "string") storageTokenCandidates(parsed[key], out);
+        });
+        if (parsed.user && typeof parsed.user === "object") {
+          ["token", "access_token", "authToken", "jwt"].forEach(function (key) {
+            if (typeof parsed.user[key] === "string") storageTokenCandidates(parsed.user[key], out);
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  function findBearerToken() {
+    const values = [];
+    try {
+      [window.localStorage, window.sessionStorage].forEach(function (store) {
+        if (!store) return;
+        for (let i = 0; i < store.length; i += 1) {
+          const key = store.key(i) || "";
+          if (!/(token|auth|jwt|session)/i.test(key)) continue;
+          storageTokenCandidates(store.getItem(key), values);
+        }
+      });
+    } catch (_) {}
+    return values[0] || "";
+  }
+
+  async function requestAdminUsers() {
+    if (typeof window.apcAdminUsersRouteRepairFcO45DCR2 === "object" && typeof window.apcAdminUsersRouteRepairFcO45DCR2.requestUsers === "function") {
+      try {
+        const result = await window.apcAdminUsersRouteRepairFcO45DCR2.requestUsers();
+        if (result && result.ok) return result;
+      } catch (_) {}
+    }
+
+    if (typeof api === "function") {
+      try {
+        const data = await api(USER_PATH);
+        if (data) return { ok: !(data.ok === false), status: Number(data.status || 200) || 200, data: data };
+      } catch (_) {}
+    }
+
+    const headers = { Accept: "application/json" };
+    const token = findBearerToken();
+    if (token) headers.Authorization = "Bearer " + token;
+
+    try {
+      const response = await fetch(USER_PATH, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: headers
+      });
+      let data = null;
+      try { data = await response.json(); } catch (_) { data = { detail: await response.text().catch(function () { return ""; }) }; }
+      return { ok: response.ok, status: response.status, data: data };
+    } catch (error) {
+      return { ok: false, status: 0, data: { detail: error && error.message ? error.message : "request failed" } };
+    }
+  }
+
+  function usersArray(data) {
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data && data.users)) return data.users;
+    if (Array.isArray(data && data.items)) return data.items;
+    if (Array.isArray(data && data.results)) return data.results;
+    if (Array.isArray(data && data.accounts)) return data.accounts;
+    return [];
+  }
+
+  function onlineUsers(users) {
+    return users.filter(function (user) {
+      return user.online === true || user.is_online === true || user.active === true;
+    });
+  }
+
+  function userLabel(user) {
+    return user.email || user.username || user.user_email || user.name || ("User #" + (user.id || user.user_id || "—"));
+  }
+
+  function userId(user) {
+    return user.id ?? user.user_id ?? user.account_id ?? "—";
+  }
+
+  function userRole(user) {
+    return user.role ?? (user.is_admin ? "admin" : "user");
+  }
+
+  function userLastSeen(user) {
+    return user.last_seen_at ?? user.last_login_at ?? user.updated_at ?? user.created_at ?? "—";
+  }
+
+  function userCreated(user) {
+    return user.created_at ?? user.registered_at ?? user.created ?? "—";
+  }
+
+  function sectionByHeading(patterns) {
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4"));
+    for (const heading of headings) {
+      const text = (heading.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+      if (!patterns.some(function (pattern) { return pattern.test(text); })) continue;
+      const container = heading.closest("section, article, .card, .admin-card, .panel, div");
+      if (container) return container;
+    }
+    return null;
+  }
+
+  function childMount(container, id) {
+    if (!container) return null;
+    let node = container.querySelector("#" + id);
+    if (!node) {
+      node = document.createElement("div");
+      node.id = id;
+      node.className = "apc-native-admin-users";
+      node.setAttribute("data-apc-native-admin-users-integration", MARKER);
+      container.appendChild(node);
+    }
+    return node;
+  }
+
+  function clearOldNativeEmptyText(container) {
+    if (!container) return;
+    try {
+      Array.from(container.querySelectorAll("p,div,span")).forEach(function (node) {
+        const text = (node.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+        if (
+          text === "no users loaded yet." ||
+          text === "users returned 0" ||
+          text === "online users 0" ||
+          text === "online users 0 users active within the online window." ||
+          text === "users returned 0 latest users by activity."
+        ) {
+          node.style.display = "none";
+          node.setAttribute("data-apc-native-admin-hidden-empty", MARKER);
+        }
+      });
+    } catch (_) {}
+  }
+
+  function renderOnline(container, users) {
+    if (!container) return false;
+    clearOldNativeEmptyText(container);
+    const online = onlineUsers(users);
+    const node = childMount(container, "apcNativeAdminOnlineUsersFcO45DE");
+    if (!node) return false;
+
+    const list = online.length
+      ? "<ul>" + online.map(function (user) {
+          return "<li><strong>" + esc(userLabel(user)) + "</strong> <span class=\"apc-admin-pill ok\">online</span><br><span class=\"muted\">Last activity: " + esc(userLastSeen(user)) + "</span></li>";
+        }).join("") + "</ul>"
+      : "<p class=\"muted\">No users are currently marked online by <code>/system/admin/users</code>.</p>";
+
+    node.innerHTML = [
+      "<div class=\"apc-admin-user-summary\">",
+      "<span class=\"apc-admin-pill ok\">Online users " + esc(online.length) + "</span>",
+      "<span class=\"apc-admin-pill\">Derived from /system/admin/users</span>",
+      "</div>",
+      list
+    ].join("");
+    return true;
+  }
+
+  function renderLatest(container, users) {
+    if (!container) return false;
+    clearOldNativeEmptyText(container);
+    const node = childMount(container, "apcNativeAdminLatestUsersFcO45DE");
+    if (!node) return false;
+
+    if (!users.length) {
+      node.innerHTML = "<p class=\"apc-admin-pill warn\">Users route loaded, but no users were returned.</p>";
+      return true;
+    }
+
+    const rows = users.slice(0, 40).map(function (user) {
+      const isOnline = onlineUsers([user]).length > 0;
+      return "<tr>"
+        + "<td>" + esc(userId(user)) + "</td>"
+        + "<td>" + esc(userLabel(user)) + "</td>"
+        + "<td>" + esc(userRole(user)) + "</td>"
+        + "<td>" + (isOnline ? "<span class=\"apc-admin-pill ok\">online</span>" : "<span class=\"apc-admin-pill\">offline/unknown</span>") + "</td>"
+        + "<td>" + esc(userCreated(user)) + "</td>"
+        + "<td>" + esc(userLastSeen(user)) + "</td>"
+        + "</tr>";
+    }).join("");
+
+    node.innerHTML = [
+      "<div class=\"apc-admin-user-summary\">",
+      "<span class=\"apc-admin-pill ok\">Users returned " + esc(users.length) + "</span>",
+      "<span class=\"apc-admin-pill\">Loaded from /system/admin/users</span>",
+      "</div>",
+      "<table>",
+      "<thead><tr><th>ID</th><th>User</th><th>Role</th><th>Status</th><th>Created</th><th>Last seen/login</th></tr></thead>",
+      "<tbody>" + rows + "</tbody>",
+      "</table>"
+    ].join("");
+    return true;
+  }
+
+  function renderFallback(users) {
+    let node = document.getElementById("apcNativeAdminUsersFallbackFcO45DE");
+    if (!node) {
+      node = document.createElement("section");
+      node.id = "apcNativeAdminUsersFallbackFcO45DE";
+      node.className = "card apc-native-admin-users";
+      node.setAttribute("data-apc-native-admin-users-integration", MARKER);
+      const target = document.querySelector("main:not([hidden])") || document.getElementById("app") || document.body;
+      target.appendChild(node);
+    }
+
+    node.innerHTML = [
+      "<h2>Admin users</h2>",
+      "<p class=\"muted\">Native Admin users integration is active. Could not locate the original user cards, so this fallback is shown.</p>",
+      "<div id=\"apcNativeAdminOnlineUsersFcO45DE\"></div>",
+      "<div id=\"apcNativeAdminLatestUsersFcO45DE\"></div>"
+    ].join("");
+
+    renderOnline(node, users);
+    renderLatest(node, users);
+  }
+
+  function signature(users) {
+    try {
+      return JSON.stringify(users.slice(0, 80).map(function (user) {
+        return [userId(user), userLabel(user), userRole(user), user.online, user.is_online, user.active, userLastSeen(user)];
+      }));
+    } catch (_) {
+      return String(Date.now());
+    }
+  }
+
+  async function integrate() {
+    if (!isAdminRoute()) return;
+    if (!isAdminReady()) return;
+    if (inFlight) return;
+
+    inFlight = true;
+    try {
+      ensureStyle();
+      removeTemporaryRepairPanel();
+
+      const result = await requestAdminUsers();
+      if (!result || !result.ok) {
+        return;
+      }
+
+      const users = usersArray(result.data);
+      const sig = signature(users);
+      const force = sig !== lastSignature;
+      lastSignature = sig;
+      lastUsers = users;
+
+      const onlineContainer = sectionByHeading([/^online users$/, /online users/]);
+      const latestContainer = sectionByHeading([/latest users/, /users returned/, /^users$/]);
+
+      const onlineOk = renderOnline(onlineContainer, users);
+      const latestOk = renderLatest(latestContainer, users);
+
+      if (!onlineOk || !latestOk) {
+        renderFallback(users);
+      } else {
+        const fallback = document.getElementById("apcNativeAdminUsersFallbackFcO45DE");
+        if (fallback) fallback.remove();
+      }
+
+      if (force) {
+        document.documentElement.setAttribute("data-apc-native-admin-users-integrated", MARKER);
+      }
+    } finally {
+      inFlight = false;
+    }
+  }
+
+  function schedule() {
+    if (!isAdminRoute()) return;
+    removeTemporaryRepairPanel();
+    [150, 700, 1600, 3200].forEach(function (delay) {
+      window.setTimeout(integrate, delay);
+    });
+  }
+
+  let observer = null;
+  function observe() {
+    if (observer || !document.documentElement) return;
+    observer = new MutationObserver(function () {
+      if (!isAdminRoute()) return;
+      removeTemporaryRepairPanel();
+      if (lastUsers.length) {
+        window.clearTimeout(observe._timer);
+        observe._timer = window.setTimeout(function () {
+          const onlineContainer = sectionByHeading([/^online users$/, /online users/]);
+          const latestContainer = sectionByHeading([/latest users/, /users returned/, /^users$/]);
+          renderOnline(onlineContainer, lastUsers);
+          renderLatest(latestContainer, lastUsers);
+        }, 120);
+      } else {
+        window.clearTimeout(observe._timer);
+        observe._timer = window.setTimeout(integrate, 300);
+      }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  window.apcNativeAdminUsersIntegrationFcO45DE = { integrate, requestAdminUsers, onlineUsers };
+  window.addEventListener("DOMContentLoaded", function () { observe(); schedule(); });
+  window.addEventListener("popstate", schedule);
+  window.addEventListener("hashchange", schedule);
+  observe();
+  schedule();
+})();
+
