@@ -10093,9 +10093,20 @@ async def public_companion_context(request: Request):
 
 
 @app.post("/public/companion/chat")
-@app.post("/api/companion/chat")
 async def public_companion_chat(request: Request):
-    await _require_public_api_key(request)
+    return await _apc_companion_chat_common_fc_o45_e_q(request, require_public_api_key=True)
+
+
+@app.post("/api/companion/chat")
+async def api_companion_chat(request: Request):
+    return await _apc_companion_chat_common_fc_o45_e_q(request, require_public_api_key=False)
+
+
+async def _apc_companion_chat_common_fc_o45_e_q(request: Request, *, require_public_api_key: bool):
+    # APC_COMPANION_ROUTE_LOCAL_AUTH_FC_O45_E_Q: route-local public API key requirement.
+    # APC_COMPANION_AUTH_VALIDATE_NO_QUEUE_FC_O45_E_Q: smoke-only no-enqueue auth validation mode.
+    if require_public_api_key:
+        await _require_public_api_key(request)
     user_row = _auth_current_user_from_request(request)
     user_id = int(user_row["id"])
 
@@ -10114,6 +10125,20 @@ async def public_companion_chat(request: Request):
 
     if len(message) > 4000:
         raise HTTPException(status_code=400, detail="message is too long. Max characters: 4000.")
+
+    if (
+        not require_public_api_key
+        and request.headers.get("X-APC-Companion-Auth-Validate-Only") == "FC-O45-E-Q"
+        and str(os.getenv("EDGE_COMPANION_AUTH_VALIDATE_NO_QUEUE_ENABLED", "")).strip().lower() in {"1", "true", "yes", "on"}
+    ):
+        return {
+            "ok": True,
+            "auth_validated": True,
+            "queue_write": False,
+            "user_id": user_id,
+            "route": "/api/companion/chat",
+            "mode": "auth_validate_only",
+        }
 
     context = _companion_build_context(user_id)
     prompt = _companion_prompt_from_context(message, context)
