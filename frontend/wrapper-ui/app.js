@@ -12534,3 +12534,228 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
 
+
+/*
+ * APC_ADMIN_USERS_ROUTE_REPAIR_FC_O45_D_C_R2
+ *
+ * Admin users frontend route repair.
+ * Uses CT203's existing /system/admin/users route and clearly marks
+ * /system/admin/online-users as a backend route still pending.
+ */
+(function () {
+  const MARKER = "APC_ADMIN_USERS_ROUTE_REPAIR_FC_O45_D_C_R2";
+  const PANEL_ID = "apcAdminUsersRouteRepairFcO45DCR2";
+  const STYLE_ID = "apc-admin-users-route-repair-fc-o45-d-c-r2";
+
+  function esc(value) {
+    return String(value === undefined || value === null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function isAdminRoute() {
+    try {
+      const path = window.location.pathname || "";
+      const hash = window.location.hash || "";
+      return path === "/admin" || path.startsWith("/admin/") || hash.toLowerCase().includes("admin");
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function isAdminUserReady() {
+    try { if (typeof cleanIsAdmin === "function") return !!cleanIsAdmin(); } catch (_) {}
+    try { if (window.authState && window.authState.user && window.authState.user.is_admin) return true; } catch (_) {}
+    try { if (window.currentUser && window.currentUser.is_admin) return true; } catch (_) {}
+    return false;
+  }
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.setAttribute("data-apc-admin-users-route-repair", MARKER);
+    style.textContent = [
+      ".admin-users-route-repair{display:grid;gap:1rem;margin-top:1rem;}",
+      ".admin-users-route-repair .admin-repair-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;}",
+      ".admin-users-route-repair .admin-repair-card{border:1px solid rgba(148,163,184,.22);border-radius:14px;padding:1rem;background:rgba(15,23,42,.18);}",
+      ".admin-users-route-repair .admin-repair-table{width:100%;border-collapse:collapse;font-size:.92rem;}",
+      ".admin-users-route-repair .admin-repair-table th,.admin-users-route-repair .admin-repair-table td{padding:.55rem;border-bottom:1px solid rgba(148,163,184,.18);text-align:left;vertical-align:top;}",
+      ".admin-users-route-repair .admin-repair-table th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;opacity:.75;}",
+      ".admin-users-route-repair .admin-repair-pill{display:inline-flex;align-items:center;border-radius:999px;padding:.25rem .55rem;border:1px solid rgba(148,163,184,.25);font-size:.8rem;}",
+      ".admin-users-route-repair .admin-repair-ok{background:rgba(34,197,94,.12);}",
+      ".admin-users-route-repair .admin-repair-warn{background:rgba(234,179,8,.12);}",
+      ".admin-users-route-repair .admin-repair-error{background:rgba(239,68,68,.12);}",
+      ".admin-users-route-repair .muted{opacity:.78;}",
+      "@media (max-width:720px){.admin-users-route-repair .admin-repair-table{display:block;overflow-x:auto;}}"
+    ].join("\n");
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function candidatesFromStorageValue(value, out) {
+    if (!value || typeof value !== "string") return;
+    if (/^eyJ[A-Za-z0-9_-]+\./.test(value) || (value.length > 40 && /^[A-Za-z0-9._-]+$/.test(value))) out.push(value);
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === "object") {
+        ["token", "access_token", "authToken", "jwt", "bearer", "session_token"].forEach(function (key) {
+          if (typeof parsed[key] === "string") candidatesFromStorageValue(parsed[key], out);
+        });
+        if (parsed.user && typeof parsed.user === "object") {
+          ["token", "access_token", "authToken", "jwt"].forEach(function (key) {
+            if (typeof parsed.user[key] === "string") candidatesFromStorageValue(parsed.user[key], out);
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  function findBearerToken() {
+    const values = [];
+    try {
+      [window.localStorage, window.sessionStorage].forEach(function (store) {
+        if (!store) return;
+        for (let i = 0; i < store.length; i += 1) {
+          const key = store.key(i) || "";
+          if (!/(token|auth|jwt|session)/i.test(key)) continue;
+          candidatesFromStorageValue(store.getItem(key), values);
+        }
+      });
+    } catch (_) {}
+    return values[0] || "";
+  }
+
+  async function jsonFetch(path) {
+    const headers = { Accept: "application/json" };
+    const token = findBearerToken();
+    if (token) headers.Authorization = "Bearer " + token;
+
+    try {
+      const response = await fetch(path, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: headers
+      });
+      let data = null;
+      try { data = await response.json(); } catch (_) { data = { detail: await response.text().catch(function () { return ""; }) }; }
+      return { ok: response.ok, status: response.status, data: data };
+    } catch (error) {
+      return { ok: false, status: 0, data: { detail: error && error.message ? error.message : "request failed" } };
+    }
+  }
+
+  async function adminUsersRequest() {
+    if (typeof api === "function") {
+      const candidates = ["/system/admin/users", "/admin/users"];
+      for (const candidate of candidates) {
+        try {
+          const data = await api(candidate);
+          if (data) return { ok: !(data.ok === false), status: Number(data.status || 200) || 200, data: data };
+        } catch (_) {}
+      }
+    }
+    return jsonFetch("/system/admin/users");
+  }
+
+  function usersArray(data) {
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data && data.users)) return data.users;
+    if (Array.isArray(data && data.items)) return data.items;
+    if (Array.isArray(data && data.results)) return data.results;
+    if (Array.isArray(data && data.accounts)) return data.accounts;
+    return [];
+  }
+
+  function ensurePanel() {
+    ensureStyle();
+    let panel = document.getElementById(PANEL_ID);
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = PANEL_ID;
+      panel.className = "card admin-users-route-repair";
+      panel.setAttribute("data-apc-admin-users-route-repair", MARKER);
+      const target = document.querySelector("main:not([hidden])") || document.getElementById("app") || document.body;
+      target.appendChild(panel);
+    }
+    return panel;
+  }
+
+  function renderUsersTable(result) {
+    if (!result.ok) {
+      return "<div class=\"admin-repair-card\"><h3>Users</h3><p class=\"admin-repair-pill admin-repair-error\">/system/admin/users returned HTTP " + esc(result.status) + "</p><p class=\"muted\">The backend users route exists. If this fails while signed in as admin, the remaining issue is the frontend auth token source.</p></div>";
+    }
+
+    const users = usersArray(result.data);
+    if (!users.length) {
+      return "<div class=\"admin-repair-card\"><h3>Users</h3><p class=\"admin-repair-pill admin-repair-warn\">No users returned</p><p class=\"muted\">The route loaded but did not return a user list.</p></div>";
+    }
+
+    const rows = users.slice(0, 80).map(function (user) {
+      const id = user.id ?? user.user_id ?? user.account_id ?? "—";
+      const email = user.email ?? user.username ?? user.user_email ?? "—";
+      const role = user.role ?? (user.is_admin ? "admin" : "user");
+      const created = user.created_at ?? user.registered_at ?? user.created ?? "—";
+      const last = user.last_login_at ?? user.last_seen_at ?? user.updated_at ?? "—";
+      const online = user.online === true || user.is_online === true || user.active === true;
+      return "<tr>"
+        + "<td>" + esc(id) + "</td>"
+        + "<td>" + esc(email) + "</td>"
+        + "<td>" + esc(role) + "</td>"
+        + "<td>" + (online ? "<span class=\"admin-repair-pill admin-repair-ok\">online</span>" : "<span class=\"admin-repair-pill\">offline/unknown</span>") + "</td>"
+        + "<td>" + esc(created) + "</td>"
+        + "<td>" + esc(last) + "</td>"
+        + "</tr>";
+    }).join("");
+
+    return "<div class=\"admin-repair-card\"><h3>Users</h3><p class=\"admin-repair-pill admin-repair-ok\">Loaded from /system/admin/users</p><table class=\"admin-repair-table\"><thead><tr><th>ID</th><th>User</th><th>Role</th><th>Status</th><th>Created</th><th>Last seen/login</th></tr></thead><tbody>" + rows + "</tbody></table></div>";
+  }
+
+  function renderOnlineStatus(usersResult, onlineResult) {
+    const users = usersArray(usersResult && usersResult.data);
+    const derivedOnline = users.filter(function (user) {
+      return user.online === true || user.is_online === true || user.active === true;
+    });
+
+    if (onlineResult && onlineResult.status === 404) {
+      return "<div class=\"admin-repair-card\"><h3>Online Users</h3><p class=\"admin-repair-pill admin-repair-warn\">Backend endpoint not available yet</p><p class=\"muted\">/system/admin/online-users is not implemented yet. This will be activated in the next backend step.</p>"
+        + (derivedOnline.length ? "<ul>" + derivedOnline.map(function (user) { return "<li>" + esc(user.email || user.username || user.id || "user") + "</li>"; }).join("") + "</ul>" : "<p class=\"muted\">No online status fields are available from /system/admin/users yet.</p>")
+        + "</div>";
+    }
+
+    return "<div class=\"admin-repair-card\"><h3>Online Users</h3><p class=\"admin-repair-pill admin-repair-warn\">Waiting for backend online-users route</p><p class=\"muted\">The users table can load independently. Online tracking needs the planned /system/admin/online-users endpoint.</p></div>";
+  }
+
+  async function mount() {
+    if (!isAdminRoute()) return;
+    if (!isAdminUserReady()) return;
+
+    const panel = ensurePanel();
+    panel.innerHTML = "<h2>Admin users</h2><p class=\"muted\">Loading users from <code>/system/admin/users</code>...</p>";
+
+    const usersResult = await adminUsersRequest();
+    const onlineResult = await jsonFetch("/system/admin/online-users");
+
+    panel.innerHTML = "<h2>Admin users</h2><p class=\"muted\">Frontend route repair active. Users route: <code>/system/admin/users</code>.</p><div class=\"admin-repair-grid\">"
+      + renderUsersTable(usersResult)
+      + renderOnlineStatus(usersResult, onlineResult)
+      + "</div>";
+  }
+
+  function schedule() {
+    if (!isAdminRoute()) return;
+    window.setTimeout(mount, 250);
+    window.setTimeout(mount, 1200);
+    window.setTimeout(mount, 3000);
+  }
+
+  window.apcAdminUsersRouteRepairFcO45DCR2 = { mount: mount, requestUsers: adminUsersRequest };
+  window.addEventListener("DOMContentLoaded", schedule);
+  window.addEventListener("popstate", schedule);
+  window.addEventListener("hashchange", schedule);
+  schedule();
+})();
+
