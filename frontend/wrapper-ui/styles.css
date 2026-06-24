@@ -2997,3 +2997,26 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   margin: 0.5rem 0 0;
 }
 
+
+/* Stage 16 FC-O45-E-AT Companion Immersion visible panel CSS wiring. */
+#companionImmersionVisiblePanel {
+  margin: 0 0 1rem;
+}
+
+#companionImmersionVisiblePanel .companion-immersion-panel {
+  position: relative;
+}
+
+#companionImmersionVisiblePanel .companion-immersion-state {
+  text-transform: uppercase;
+  font-size: 0.82rem;
+}
+
+#companionImmersionVisiblePanel .companion-immersion-response {
+  font-size: 1.02rem;
+}
+
+#companionImmersionVisiblePanel .companion-immersion-debug summary {
+  cursor: pointer;
+}
+
