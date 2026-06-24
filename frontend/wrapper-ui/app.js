@@ -13153,3 +13153,415 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   schedule();
 })();
 
+
+/*
+ * APC_RECENT_USERS_TOP50_CREDITS_FC_O45_D_F
+ *
+ * Recent Users Admin card.
+ * - Adds a top-50 scroll window for recent users.
+ * - Includes free/local credits and paid credits columns when the backend user payload provides them.
+ * - Hides the earlier fallback block so Online Users is not duplicated.
+ * - Frontend-only: no backend, DB, service, nginx, CT/VM, job, worker, runtime, or model mutation.
+ */
+(function () {
+  const MARKER = "APC_RECENT_USERS_TOP50_CREDITS_FC_O45_D_F";
+  const CARD_ID = "apcRecentUsersTop50CreditsFcO45DF";
+  const STYLE_ID = "apc-recent-users-top50-credits-fc-o45-d-f";
+  const USER_PATH = "/system/admin/users";
+  const HIDDEN_FALLBACK_ID = "apcNativeAdminUsersFallbackFcO45DE";
+
+  let inFlight = false;
+  let lastSignature = "";
+
+  function esc(value) {
+    return String(value === undefined || value === null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function isAdminRoute() {
+    try {
+      const path = window.location.pathname || "";
+      const hash = window.location.hash || "";
+      return path === "/admin" || path.startsWith("/admin/") || hash.toLowerCase().includes("admin");
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function isAdminReady() {
+    try { if (typeof cleanIsAdmin === "function") return !!cleanIsAdmin(); } catch (_) {}
+    try { if (window.authState && window.authState.user && window.authState.user.is_admin) return true; } catch (_) {}
+    try { if (window.currentUser && window.currentUser.is_admin) return true; } catch (_) {}
+    return false;
+  }
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.setAttribute("data-apc-recent-users-top50-credits", MARKER);
+    style.textContent = [
+      "#" + HIDDEN_FALLBACK_ID + "{display:none!important;}",
+      ".apc-recent-users-card{display:grid;gap:1rem;margin-top:1rem;}",
+      ".apc-recent-users-card .apc-recent-users-summary{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;}",
+      ".apc-recent-users-card .apc-admin-pill{display:inline-flex;align-items:center;border-radius:999px;padding:.25rem .55rem;border:1px solid rgba(148,163,184,.28);font-size:.8rem;}",
+      ".apc-recent-users-card .apc-admin-pill.ok{background:rgba(34,197,94,.12);}",
+      ".apc-recent-users-card .apc-admin-pill.warn{background:rgba(234,179,8,.12);}",
+      ".apc-recent-users-card .apc-recent-users-scroll{max-height:34rem;overflow:auto;border:1px solid rgba(148,163,184,.18);border-radius:14px;}",
+      ".apc-recent-users-card table{width:100%;border-collapse:separate;border-spacing:0;font-size:.9rem;min-width:980px;}",
+      ".apc-recent-users-card th,.apc-recent-users-card td{padding:.55rem;border-bottom:1px solid rgba(148,163,184,.16);text-align:left;vertical-align:top;}",
+      ".apc-recent-users-card th{position:sticky;top:0;z-index:1;background:rgba(15,23,42,.96);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;opacity:.92;}",
+      ".apc-recent-users-card tr:last-child td{border-bottom:0;}",
+      ".apc-recent-users-card .muted{opacity:.78;}",
+      ".apc-recent-users-card .credit-pending{opacity:.7;font-style:italic;}",
+      "@media (max-width:720px){.apc-recent-users-card .apc-recent-users-scroll{max-height:28rem;}}"
+    ].join("\n");
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function hideDuplicateFallback() {
+    try {
+      const fallback = document.getElementById(HIDDEN_FALLBACK_ID);
+      if (fallback) {
+        fallback.style.display = "none";
+        fallback.setAttribute("hidden", "hidden");
+        fallback.setAttribute("aria-hidden", "true");
+        fallback.setAttribute("data-apc-recent-users-hidden-fallback", MARKER);
+      }
+    } catch (_) {}
+  }
+
+  function storageTokenCandidates(value, out) {
+    if (!value || typeof value !== "string") return;
+    if (/^eyJ[A-Za-z0-9_-]+\./.test(value) || (value.length > 40 && /^[A-Za-z0-9._-]+$/.test(value))) out.push(value);
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === "object") {
+        ["token", "access_token", "authToken", "jwt", "bearer", "session_token"].forEach(function (key) {
+          if (typeof parsed[key] === "string") storageTokenCandidates(parsed[key], out);
+        });
+        if (parsed.user && typeof parsed.user === "object") {
+          ["token", "access_token", "authToken", "jwt"].forEach(function (key) {
+            if (typeof parsed.user[key] === "string") storageTokenCandidates(parsed.user[key], out);
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  function findBearerToken() {
+    const values = [];
+    try {
+      [window.localStorage, window.sessionStorage].forEach(function (store) {
+        if (!store) return;
+        for (let i = 0; i < store.length; i += 1) {
+          const key = store.key(i) || "";
+          if (!/(token|auth|jwt|session)/i.test(key)) continue;
+          storageTokenCandidates(store.getItem(key), values);
+        }
+      });
+    } catch (_) {}
+    return values[0] || "";
+  }
+
+  async function requestAdminUsers() {
+    if (typeof window.apcNativeAdminUsersIntegrationFcO45DE === "object" && typeof window.apcNativeAdminUsersIntegrationFcO45DE.requestAdminUsers === "function") {
+      try {
+        const result = await window.apcNativeAdminUsersIntegrationFcO45DE.requestAdminUsers();
+        if (result && result.ok) return result;
+      } catch (_) {}
+    }
+
+    if (typeof window.apcAdminUsersRouteRepairFcO45DCR2 === "object" && typeof window.apcAdminUsersRouteRepairFcO45DCR2.requestUsers === "function") {
+      try {
+        const result = await window.apcAdminUsersRouteRepairFcO45DCR2.requestUsers();
+        if (result && result.ok) return result;
+      } catch (_) {}
+    }
+
+    if (typeof api === "function") {
+      try {
+        const data = await api(USER_PATH);
+        if (data) return { ok: !(data.ok === false), status: Number(data.status || 200) || 200, data: data };
+      } catch (_) {}
+    }
+
+    const headers = { Accept: "application/json" };
+    const token = findBearerToken();
+    if (token) headers.Authorization = "Bearer " + token;
+
+    try {
+      const response = await fetch(USER_PATH, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: headers
+      });
+      let data = null;
+      try { data = await response.json(); } catch (_) { data = { detail: await response.text().catch(function () { return ""; }) }; }
+      return { ok: response.ok, status: response.status, data: data };
+    } catch (error) {
+      return { ok: false, status: 0, data: { detail: error && error.message ? error.message : "request failed" } };
+    }
+  }
+
+  function usersArray(data) {
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data && data.users)) return data.users;
+    if (Array.isArray(data && data.items)) return data.items;
+    if (Array.isArray(data && data.results)) return data.results;
+    if (Array.isArray(data && data.accounts)) return data.accounts;
+    return [];
+  }
+
+  function firstPresent(paths, user) {
+    for (const path of paths) {
+      let cursor = user;
+      let ok = true;
+      for (const part of path.split(".")) {
+        if (cursor && Object.prototype.hasOwnProperty.call(cursor, part)) {
+          cursor = cursor[part];
+        } else {
+          ok = false;
+          break;
+        }
+      }
+      if (ok && cursor !== undefined && cursor !== null && cursor !== "") return cursor;
+    }
+    return undefined;
+  }
+
+  function numberDisplay(value) {
+    if (value === undefined || value === null || value === "") {
+      return "<span class=\"credit-pending\">pending backend field</span>";
+    }
+    const num = Number(value);
+    if (Number.isFinite(num)) return esc(num.toLocaleString(undefined, { maximumFractionDigits: 2 }));
+    return esc(value);
+  }
+
+  function freeLocalCredits(user) {
+    return firstPresent([
+      "free_local_credits",
+      "freeLocalCredits",
+      "free_credits",
+      "freeCredits",
+      "local_credits",
+      "localCredits",
+      "free_credits_balance",
+      "local_credits_balance",
+      "free_local_credits_balance",
+      "credits.free_local",
+      "credits.free",
+      "credits.local",
+      "credits.freeLocal",
+      "credit_pools.free_local",
+      "credit_pools.free",
+      "credit_pools.local",
+      "credit_summary.free_local",
+      "credit_summary.free",
+      "credit_summary.local",
+      "balances.free_local",
+      "balances.free",
+      "balances.local"
+    ], user);
+  }
+
+  function paidCredits(user) {
+    return firstPresent([
+      "paid_credits",
+      "paidCredits",
+      "paid_credits_balance",
+      "paidCreditsBalance",
+      "purchased_credits",
+      "purchasedCredits",
+      "credit_packs_credits",
+      "credits.paid",
+      "credits.purchased",
+      "credit_pools.paid",
+      "credit_pools.purchased",
+      "credit_summary.paid",
+      "credit_summary.purchased",
+      "balances.paid",
+      "balances.purchased"
+    ], user);
+  }
+
+  function userId(user) {
+    return user.id ?? user.user_id ?? user.account_id ?? "—";
+  }
+
+  function userLabel(user) {
+    return user.email || user.username || user.user_email || user.name || ("User #" + (userId(user) || "—"));
+  }
+
+  function userRole(user) {
+    return user.role ?? (user.is_admin ? "admin" : "user");
+  }
+
+  function userCreated(user) {
+    return user.created_at ?? user.registered_at ?? user.created ?? "—";
+  }
+
+  function userLastSeen(user) {
+    return user.last_seen_at ?? user.last_login_at ?? user.updated_at ?? user.created_at ?? "—";
+  }
+
+  function userActivityTime(user) {
+    const value = userLastSeen(user);
+    const time = Date.parse(value);
+    return Number.isFinite(time) ? time : 0;
+  }
+
+  function isOnline(user) {
+    return user.online === true || user.is_online === true || user.active === true;
+  }
+
+  function sortedRecent(users) {
+    return users.slice().sort(function (a, b) {
+      return userActivityTime(b) - userActivityTime(a);
+    });
+  }
+
+  function findInsertTarget() {
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4"));
+    for (const heading of headings) {
+      const text = (heading.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+      if (text === "support inbox" || text.includes("support inbox")) {
+        const section = heading.closest("section, article, .card, div");
+        if (section && section.parentElement) return { mode: "before", node: section };
+      }
+    }
+    for (const heading of headings) {
+      const text = (heading.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+      if (text.includes("online users")) {
+        const section = heading.closest("section, article, .card, div");
+        if (section && section.parentElement) return { mode: "after", node: section };
+      }
+    }
+    return { mode: "append", node: document.querySelector("main:not([hidden])") || document.getElementById("app") || document.body };
+  }
+
+  function ensureCard() {
+    ensureStyle();
+    hideDuplicateFallback();
+
+    let card = document.getElementById(CARD_ID);
+    if (card) return card;
+
+    card = document.createElement("section");
+    card.id = CARD_ID;
+    card.className = "card apc-recent-users-card";
+    card.setAttribute("data-apc-recent-users-top50-credits", MARKER);
+
+    const target = findInsertTarget();
+    if (target.mode === "before") target.node.insertAdjacentElement("beforebegin", card);
+    else if (target.mode === "after") target.node.insertAdjacentElement("afterend", card);
+    else target.node.appendChild(card);
+
+    return card;
+  }
+
+  function renderCard(users) {
+    const recent = sortedRecent(users).slice(0, 50);
+    const onlineCount = users.filter(isOnline).length;
+    const freeKnown = recent.filter(function (user) { return freeLocalCredits(user) !== undefined; }).length;
+    const paidKnown = recent.filter(function (user) { return paidCredits(user) !== undefined; }).length;
+
+    const rows = recent.map(function (user, index) {
+      return "<tr>"
+        + "<td>" + esc(index + 1) + "</td>"
+        + "<td>" + esc(userId(user)) + "</td>"
+        + "<td>" + esc(userLabel(user)) + "</td>"
+        + "<td>" + esc(userRole(user)) + "</td>"
+        + "<td>" + (isOnline(user) ? "<span class=\"apc-admin-pill ok\">online</span>" : "<span class=\"apc-admin-pill\">offline/unknown</span>") + "</td>"
+        + "<td>" + numberDisplay(freeLocalCredits(user)) + "</td>"
+        + "<td>" + numberDisplay(paidCredits(user)) + "</td>"
+        + "<td>" + esc(userLastSeen(user)) + "</td>"
+        + "<td>" + esc(userCreated(user)) + "</td>"
+        + "</tr>";
+    }).join("");
+
+    const creditNote = (freeKnown || paidKnown)
+      ? "<span class=\"apc-admin-pill ok\">Credit fields detected</span>"
+      : "<span class=\"apc-admin-pill warn\">Credit columns ready; backend user payload does not expose balances yet</span>";
+
+    const card = ensureCard();
+    card.innerHTML = [
+      "<h2>Recent Users</h2>",
+      "<p class=\"muted\">Top 50 users by latest activity, loaded from <code>/system/admin/users</code>. Credit balances show when the backend user payload includes free/local and paid credit fields.</p>",
+      "<div class=\"apc-recent-users-summary\">",
+      "<span class=\"apc-admin-pill ok\">Users returned " + esc(users.length) + "</span>",
+      "<span class=\"apc-admin-pill ok\">Online users " + esc(onlineCount) + "</span>",
+      "<span class=\"apc-admin-pill\">Showing " + esc(recent.length) + " of 50 max</span>",
+      creditNote,
+      "</div>",
+      recent.length
+        ? "<div class=\"apc-recent-users-scroll\"><table><thead><tr><th>#</th><th>ID</th><th>User</th><th>Role</th><th>Status</th><th>Free/local credits</th><th>Paid credits</th><th>Last activity</th><th>Created</th></tr></thead><tbody>" + rows + "</tbody></table></div>"
+        : "<p class=\"muted\">No users returned yet.</p>"
+    ].join("");
+  }
+
+  function signature(users) {
+    try {
+      return JSON.stringify(sortedRecent(users).slice(0, 50).map(function (user) {
+        return [userId(user), userLabel(user), userRole(user), isOnline(user), freeLocalCredits(user), paidCredits(user), userLastSeen(user), userCreated(user)];
+      }));
+    } catch (_) {
+      return String(Date.now());
+    }
+  }
+
+  async function refresh() {
+    if (!isAdminRoute()) return;
+    if (!isAdminReady()) return;
+    if (inFlight) return;
+
+    inFlight = true;
+    try {
+      hideDuplicateFallback();
+      const result = await requestAdminUsers();
+      if (!result || !result.ok) return;
+      const users = usersArray(result.data);
+      const sig = signature(users);
+      if (sig === lastSignature && document.getElementById(CARD_ID)) return;
+      lastSignature = sig;
+      renderCard(users);
+      document.documentElement.setAttribute("data-apc-recent-users-top50-credits", MARKER);
+    } finally {
+      inFlight = false;
+    }
+  }
+
+  function schedule() {
+    if (!isAdminRoute()) return;
+    hideDuplicateFallback();
+    [150, 800, 1800, 3500].forEach(function (delay) {
+      window.setTimeout(refresh, delay);
+    });
+  }
+
+  let observer = null;
+  function observe() {
+    if (observer || !document.documentElement) return;
+    observer = new MutationObserver(function () {
+      if (!isAdminRoute()) return;
+      hideDuplicateFallback();
+      window.clearTimeout(observe._timer);
+      observe._timer = window.setTimeout(refresh, 300);
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  window.apcRecentUsersTop50CreditsFcO45DF = { refresh, requestAdminUsers, freeLocalCredits, paidCredits };
+  window.addEventListener("DOMContentLoaded", function () { observe(); schedule(); });
+  window.addEventListener("popstate", schedule);
+  window.addEventListener("hashchange", schedule);
+  observe();
+  schedule();
+})();
+
