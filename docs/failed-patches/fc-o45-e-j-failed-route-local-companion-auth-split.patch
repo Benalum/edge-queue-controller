@@ -1,0 +1,34 @@
+diff --git a/edge_controller.py b/edge_controller.py
+index a8f0e23..a97fec2 100644
+--- a/edge_controller.py
++++ b/edge_controller.py
+@@ -10092,10 +10092,10 @@ async def public_companion_context(request: Request):
+     }
+ 
+ 
+-@app.post("/public/companion/chat")
+-@app.post("/api/companion/chat")
+-async def public_companion_chat(request: Request):
+-    await _require_public_api_key(request)
++# APC_COMPANION_ROUTE_LOCAL_AUTH_FC_O45_E_J: route-local auth split; do not modify _require_public_api_key.
++async def _apc_companion_chat_common_fc_o45_e_j(request: Request, *, require_public_api_key: bool):
++    if require_public_api_key:
++        await _require_public_api_key(request)
+     user_row = _auth_current_user_from_request(request)
+     user_id = int(user_row["id"])
+ 
+@@ -10147,6 +10147,14 @@ async def public_companion_chat(request: Request):
+         "message": "Companion response queued. Poll the job URL for the result.",
+     }
+ 
++@app.post("/public/companion/chat")
++async def public_companion_chat(request: Request):
++    return await _apc_companion_chat_common_fc_o45_e_j(request, require_public_api_key=True)
++
++@app.post("/api/companion/chat")
++async def api_companion_chat(request: Request):
++    return await _apc_companion_chat_common_fc_o45_e_j(request, require_public_api_key=False)
++
+ # ============================================================
+ # System status dashboard endpoints
+ # Added for always-visible alexhartel.com wrapper/header
