@@ -5731,6 +5731,52 @@ function renderLoggedInProfilePage() {
   `;
 }
 
+
+/*
+ * APC_STUDY_ROUTE_CLEANUP_FC_O45_C_J
+ *
+ * Real /study must not mount the old Study wrapper preview mini-app. That
+ * legacy preview includes its own banner/nav shell, causing two Study pages on
+ * one page. Keep the old preview available only at /study-wrapper-preview.
+ */
+function renderCleanStudyRouteFcO45CJ() {
+  const app = document.getElementById("app");
+  if (!app) return;
+
+  app.innerHTML = `
+    <main class="page clean-study-route" data-apc-study-route-cleanup="APC_STUDY_ROUTE_CLEANUP_FC_O45_C_J">
+      <section class="hero-card study-main-hero">
+        <p class="eyebrow">Study</p>
+        <h1>Study</h1>
+        <p>
+          Your Study dashboard uses the durable Study session, selected deck, cards,
+          stats, and review queue from your signed-in account.
+        </p>
+      </section>
+      <section class="card study-main-placeholder" data-apc-study-main-placeholder="true">
+        <h2>Study dashboard</h2>
+        <p class="muted">
+          Loading your durable Study session and signed-in Study tools...
+        </p>
+      </section>
+    </main>
+  `;
+
+  window.setTimeout(() => {
+    try {
+      if (window.apcStudyEarlyRepairFcO45CG && typeof window.apcStudyEarlyRepairFcO45CG.repair === "function") {
+        window.apcStudyEarlyRepairFcO45CG.repair();
+      }
+      if (window.apcStudySignedInRepairFcO45CC && typeof window.apcStudySignedInRepairFcO45CC.repair === "function") {
+        window.apcStudySignedInRepairFcO45CC.repair();
+      }
+    } catch (error) {
+      console.warn("[APC_STUDY_ROUTE_CLEANUP_FC_O45_C_J] Study repair scheduling skipped", error);
+    }
+  }, 0);
+}
+
+
 function renderPage() {
   const path = routePath();
   const page = pages[path];
@@ -5770,7 +5816,7 @@ function renderPage() {
 
   $("adminNavLink")?.classList.toggle("hidden", !authState.user?.is_admin);
 
-  const isStudyWrapperRoute = path === "/study-wrapper-preview" || path === "/study";
+  const isStudyWrapperRoute = path === "/study-wrapper-preview";
 
   
 
@@ -5780,6 +5826,11 @@ function renderPage() {
     // Study content may use its own content stylesheet, but the shared
     // wrapper stylesheet loads after it and owns header/logo/nav styling.
     studyPreviewStyle.disabled = !isStudyWrapperRoute;
+  }
+
+  if (path === "/study") {
+    renderCleanStudyRouteFcO45CJ();
+    return;
   }
 
   if (isStudyWrapperRoute) {
