@@ -13790,23 +13790,44 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   "use strict";
   const MARKER = "APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z";
   const EXPECTED_RESULT_TEXT = 'FC-O45-E-X-R4 repaired mock no-model completion text for Companion job 124.';
-  const TOKEN_KEYS = [
-    "edge_session_token",
-    "edge_auth_token",
-    "auth_token",
-    "access_token",
-    "session_token",
-    "token",
-    "jwt"
-  ];
+  const PANEL_ID = "apc-companion-result-visibility-panel";
 
   function findBearerToken() {
-    for (const storage of [window.localStorage, window.sessionStorage]) {
-      if (!storage) continue;
-      for (const key of TOKEN_KEYS) {
+    const preferredKeys = [
+      "edge_session_token",
+      "edge_auth_token",
+      "auth_token",
+      "access_token",
+      "session_token",
+      "token",
+      "jwt"
+    ];
+
+    function usable(value) {
+      return typeof value === "string" && value.length > 20 && !value.includes(" ");
+    }
+
+    for (const key of preferredKeys) {
+      const value = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (usable(value)) return value;
+      try {
+        const parsed = JSON.parse(value || "null");
+        for (const inner of preferredKeys) {
+          if (parsed && usable(parsed[inner])) return parsed[inner];
+        }
+      } catch (_) {}
+    }
+
+    for (const store of [localStorage, sessionStorage]) {
+      for (let i = 0; i < store.length; i += 1) {
+        const key = store.key(i);
+        const value = store.getItem(key);
+        if (usable(value) && /token|session|auth|jwt/i.test(key)) return value;
         try {
-          const value = storage.getItem(key);
-          if (value && value.length > 12) return value;
+          const parsed = JSON.parse(value || "null");
+          for (const inner of preferredKeys) {
+            if (parsed && usable(parsed[inner])) return parsed[inner];
+          }
         } catch (_) {}
       }
     }
@@ -13815,11 +13836,10 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
 
   function companionHeaders(extra) {
     const headers = Object.assign({
-      "Accept": "application/json,text/plain,*/*",
       "Content-Type": "application/json"
     }, extra || {});
     const token = findBearerToken();
-    if (token) headers.Authorization = "Bearer " + token;
+    if (token) headers.Authorization = `Bearer ${token}`;
     return headers;
   }
 
@@ -13829,11 +13849,15 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
       url: "/api/companion/chat",
       options: {
         method: "POST",
-        credentials: "same-origin",
+        credentials: "include",
         headers: companionHeaders({
           "X-APC-Companion-Result-Read-Only": "FC-O45-E-AA"
         }),
-        body: JSON.stringify({ job_id: 124, message: "FC-O45-E-AA-R9 read completed Companion result only" })
+        body: JSON.stringify({
+          job_id: 124,
+          message: "FC-O45-E-AA-R11 read completed Companion result only",
+          requested_model: "no-model-smoke"
+        })
       }
     },
     {
@@ -13841,7 +13865,7 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
       url: "/api/companion/jobs/124/result",
       options: {
         method: "GET",
-        credentials: "same-origin",
+        credentials: "include",
         headers: companionHeaders()
       }
     },
@@ -13850,70 +13874,75 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
       url: "/jobs?id=124",
       options: {
         method: "GET",
-        credentials: "same-origin",
+        credentials: "include",
         headers: companionHeaders()
       }
     }
   ];
 
-  function ready(fn) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fn, { once: true });
-    } else {
-      fn();
-    }
+  function visibleText(node) {
+    return (node && (node.innerText || node.textContent || "") || "").trim();
   }
 
-  function isCompanion() {
-    const s = (String(location.href || "") + " " + String(location.pathname || "") + " " + String(location.hash || "") + " " + String(document.body && document.body.textContent || "")).toLowerCase();
-    return s.includes("companion");
+  function isCompanionPage() {
+    const bodyText = visibleText(document.body);
+    return bodyText.includes("Companion") &&
+      (bodyText.includes("Supportive chat workspace") ||
+       bodyText.includes("Start a Companion conversation"));
   }
 
   function mount() {
-    return document.querySelector("[data-apc-page='companion']") ||
-      document.querySelector("#companion") ||
-      document.querySelector("main") ||
-      document.body;
+    const anchors = Array.from(document.querySelectorAll("h1,h2,h3"));
+    const companionHeading = anchors.find((h) => visibleText(h).trim() === "Companion");
+    const statusHeading = anchors.find((h) => visibleText(h).includes("Companion status"));
+    const anchor = statusHeading || companionHeading;
+    if (anchor && anchor.parentElement) return { parent: anchor.parentElement, before: anchor.nextSibling };
+    return { parent: document.querySelector("main") || document.body, before: null };
   }
 
-  async function probe(out) {
+  async function probe(button, out) {
+    button.disabled = true;
     out.textContent = "Checking completed Companion job 124 result visibility...";
     const observations = [];
-    for (const probeConfig of PROBES) {
-      try {
-        const res = await fetch(probeConfig.url, probeConfig.options);
-        const body = await res.text();
-        observations.push(probeConfig.label + " -> HTTP " + res.status);
-        if (res.ok && body.includes(EXPECTED_RESULT_TEXT)) {
-          out.dataset.result = "pass";
-          out.textContent = [
-            "PASS: completed Companion job 124 result is visible from signed-in UI.",
-            "Endpoint: " + probeConfig.label,
-            "Expected result: " + EXPECTED_RESULT_TEXT
-          ].join("\n");
-          return;
+    try {
+      for (const probeConfig of PROBES) {
+        try {
+          const res = await fetch(probeConfig.url, probeConfig.options);
+          const body = await res.text();
+          observations.push(probeConfig.label + " -> HTTP " + res.status);
+          if (res.ok && body.includes(EXPECTED_RESULT_TEXT)) {
+            out.dataset.result = "pass";
+            out.textContent = [
+              "PASS: completed Companion job 124 result is visible from signed-in UI.",
+              "Endpoint: " + probeConfig.label,
+              "Expected result: " + EXPECTED_RESULT_TEXT
+            ].join("\n");
+            return;
+          }
+        } catch (err) {
+          const message = err && err.message ? err.message : String(err);
+          observations.push(probeConfig.label + " -> ERROR " + message);
         }
-      } catch (err) {
-        const message = err && err.message ? err.message : String(err);
-        observations.push(probeConfig.label + " -> ERROR " + message);
       }
+      out.dataset.result = "not-visible";
+      out.textContent = [
+        "NOT VISIBLE YET: completed job 124 result was not returned by the probed read-only endpoints.",
+        "This did not create jobs or mutate data.",
+        "",
+        observations.join("\n")
+      ].join("\n");
+    } finally {
+      button.disabled = false;
     }
-    out.dataset.result = "not-visible";
-    out.textContent = [
-      "NOT VISIBLE YET: completed job 124 result was not returned by the probed read-only endpoints.",
-      "This did not create jobs or mutate data.",
-      "",
-      observations.join("\n")
-    ].join("\n");
   }
 
   function install() {
-    if (!isCompanion()) return;
-    const root = mount();
-    if (!root || document.getElementById("apc-companion-result-visibility-panel")) return;
+    if (!isCompanionPage()) return;
+    if (document.getElementById(PANEL_ID)) return;
 
+    const target = mount();
     const panel = document.createElement("section");
-    panel.id = "apc-companion-result-visibility-panel";
+    panel.id = PANEL_ID;
     panel.setAttribute("data-marker", MARKER);
     panel.style.cssText = "border:1px solid rgba(120,120,120,.35);border-radius:12px;padding:12px;margin:12px 0;background:rgba(120,120,120,.08);";
 
@@ -13922,7 +13951,7 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     title.style.marginTop = "0";
 
     const desc = document.createElement("p");
-    desc.textContent = "Reads completed Companion job 124 using the signed-in Companion auth path. It does not create jobs or run models.";
+    desc.textContent = "Reads completed Companion job 124 using the same signed-in auth token behavior as the passing Companion auth test. It does not create jobs or run models.";
 
     const button = document.createElement("button");
     button.type = "button";
@@ -13935,20 +13964,27 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     out.textContent = "Click the button while signed in.";
 
     button.addEventListener("click", function () {
-      probe(out);
+      probe(button, out);
     });
 
     panel.appendChild(title);
     panel.appendChild(desc);
     panel.appendChild(button);
     panel.appendChild(out);
-    root.prepend(panel);
+
+    target.parent.insertBefore(panel, target.before);
   }
 
-  ready(function () {
-    install();
-    window.setTimeout(install, 500);
-    window.setTimeout(install, 1500);
-  });
+  function schedule() {
+    [100, 600, 1500, 3000].forEach((delay) => window.setTimeout(install, delay));
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", schedule, { once: true });
+  } else {
+    schedule();
+  }
+  window.addEventListener("hashchange", schedule);
+  window.addEventListener("popstate", schedule);
 })();
 /* APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z END */
