@@ -40,6 +40,23 @@
   }
 
   async function apiJson(path) {
+    /* APC_STUDY_TOOLS_AUTH_CLEANUP_FC_O45_C_K: prefer wrapper api() so signed-in Study calls carry auth headers. */
+    if (typeof api === "function" && typeof path === "string" && path.startsWith("/api/")) {
+      try {
+        const apiPath = path.slice(4);
+        const data = await api(apiPath, { method: "GET" });
+        const status = Number(data?.status || data?.status_code || 200) || 200;
+        const ok = !(data && data.ok === false) && status < 400;
+        return { ok, status, data };
+      } catch (error) {
+        const status = Number(error?.status || error?.response?.status || error?.data?.status || 0) || 0;
+        return {
+          ok: false,
+          status,
+          data: { detail: error?.message || "Study API unavailable" },
+        };
+      }
+    }
     const response = await fetch(path, {
       credentials: "include",
       headers: { "Accept": "application/json" },
@@ -227,7 +244,8 @@
     if (!panel) return;
     const decksResult = await apiJson("/api/study/decks");
     if (!decksResult.ok) {
-      panel.innerHTML = `<h2>Study tools</h2><p class="muted">Study tools load after sign-in. Deck/card data was not loaded (${decksResult.status}).</p>`;
+      panel.setAttribute("data-apc-study-tools-auth-cleanup", "APC_STUDY_TOOLS_AUTH_CLEANUP_FC_O45_C_K");
+      panel.remove();
       return;
     }
     const selectedDeckId = renderDecks(decksResult.data) || deckIdOverride || deckIdFromPage();
@@ -5744,22 +5762,13 @@ function renderCleanStudyRouteFcO45CJ() {
   if (!app) return;
 
   app.innerHTML = `
-    <main class="page clean-study-route" data-apc-study-route-cleanup="APC_STUDY_ROUTE_CLEANUP_FC_O45_C_J">
-      <section class="hero-card study-main-hero">
-        <p class="eyebrow">Study</p>
-        <h1>Study</h1>
-        <p>
-          Your Study dashboard uses the durable Study session, selected deck, cards,
-          stats, and review queue from your signed-in account.
-        </p>
-      </section>
-      <section class="card study-main-placeholder" data-apc-study-main-placeholder="true">
-        <h2>Study dashboard</h2>
-        <p class="muted">
-          Loading your durable Study session and signed-in Study tools...
-        </p>
-      </section>
-    </main>
+    <main
+      class="page clean-study-route"
+      data-apc-study-route-cleanup="APC_STUDY_ROUTE_CLEANUP_FC_O45_C_J"
+      data-apc-study-tools-auth-cleanup="APC_STUDY_TOOLS_AUTH_CLEANUP_FC_O45_C_K"
+      hidden
+      aria-hidden="true"
+    ></main>
   `;
 
   window.setTimeout(() => {
@@ -11586,6 +11595,23 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   }
 
   async function apiJson(path) {
+    /* APC_STUDY_TOOLS_AUTH_CLEANUP_FC_O45_C_K: prefer wrapper api() so signed-in Study calls carry auth headers. */
+    if (typeof api === "function" && typeof path === "string" && path.startsWith("/api/")) {
+      try {
+        const apiPath = path.slice(4);
+        const data = await api(apiPath, { method: "GET" });
+        const status = Number(data?.status || data?.status_code || 200) || 200;
+        const ok = !(data && data.ok === false) && status < 400;
+        return { ok, status, data };
+      } catch (error) {
+        const status = Number(error?.status || error?.response?.status || error?.data?.status || 0) || 0;
+        return {
+          ok: false,
+          status,
+          data: { detail: error?.message || "Study API unavailable" },
+        };
+      }
+    }
     const response = await fetch(path, {
       credentials: "include",
       headers: { "Accept": "application/json" },
