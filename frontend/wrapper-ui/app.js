@@ -1,3 +1,294 @@
+/*
+ * APC_STUDY_EARLY_REPAIR_BOOTSTRAP_FC_O45_C_G
+ *
+ * Runs before the older wrapper code so Study cleanup is registered even if later
+ * modules fail. Public-safe: API data is requested only from authenticated Study
+ * endpoints, which return 401 when signed out.
+ */
+(() => {
+  const MARKER = "APC_STUDY_EARLY_REPAIR_BOOTSTRAP_FC_O45_C_G";
+  const PANEL_ID = "apc-study-early-tools-fc-o45-c-g";
+  const LEGACY_PHRASE = "Create decks, add cards, review by difficulty, and track progress from the shared wrapper layout.";
+  let timer = null;
+  let lastDeckId = null;
+
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#39;",
+    }[ch]));
+  }
+
+  function textOf(el) {
+    return (el && el.textContent ? el.textContent : "").replace(/\s+/g, " ").trim();
+  }
+
+  function looksLikeStudy() {
+    const t = textOf(document.body);
+    return t.includes("Study session") || t.includes("Deck selector") || t.includes(LEGACY_PHRASE);
+  }
+
+  function deckIdFromPage() {
+    const t = textOf(document.body);
+    const selected = t.match(/Selected:\s*[^#]+#(\d+)/i);
+    if (selected) return selected[1];
+    const hash = t.match(/deck\s*#(\d+)/i);
+    return hash ? hash[1] : null;
+  }
+
+  async function apiJson(path) {
+    const response = await fetch(path, {
+      credentials: "include",
+      headers: { "Accept": "application/json" },
+    });
+    const body = await response.text();
+    let data = null;
+    try {
+      data = body ? JSON.parse(body) : null;
+    } catch (_) {
+      data = { raw: body };
+    }
+    return { ok: response.ok, status: response.status, data };
+  }
+
+  function hideLegacyDuplicate() {
+    const all = Array.from(document.querySelectorAll("section, article, main, main > div, .card, .panel, div"));
+    const candidates = all
+      .filter((el) => el.id !== PANEL_ID && textOf(el).includes(LEGACY_PHRASE))
+      .map((el) => ({ el, text: textOf(el) }))
+      .sort((a, b) => a.text.length - b.text.length);
+
+    for (const item of candidates) {
+      const t = item.text;
+      const isWholeShell = t.includes("Study session") && t.includes("Deck selector") && t.includes(LEGACY_PHRASE);
+      const isLegacyChunk = t.includes(LEGACY_PHRASE)
+        && (t.length < 3500 || (t.includes("Support") && t.includes("Loading")));
+      if (isLegacyChunk && !isWholeShell) {
+        item.el.setAttribute("data-apc-study-legacy-hidden", MARKER);
+        item.el.hidden = true;
+        item.el.style.display = "none";
+      }
+    }
+
+    // Fallback for the nested legacy mini-app: hide the smallest parent containing the
+    // legacy phrase plus its own second nav/loading markers, but not the durable shell.
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    while (walker.nextNode()) {
+      if ((walker.currentNode.nodeValue || "").includes(LEGACY_PHRASE)) {
+        textNodes.push(walker.currentNode);
+      }
+    }
+    for (const node of textNodes) {
+      let el = node.parentElement;
+      for (let depth = 0; el && depth < 8; depth += 1, el = el.parentElement) {
+        const t = textOf(el);
+        if (!t.includes(LEGACY_PHRASE)) continue;
+        if (t.includes("Study session") && t.includes("Deck selector")) break;
+        if (t.length < 3500 || (t.includes("Support") && t.includes("Loading"))) {
+          el.setAttribute("data-apc-study-legacy-hidden", MARKER);
+          el.hidden = true;
+          el.style.display = "none";
+          break;
+        }
+      }
+    }
+  }
+
+  function mountPanel() {
+    let panel = document.getElementById(PANEL_ID);
+    if (panel) return panel;
+
+    const anchors = Array.from(document.querySelectorAll("section, article, .card, .panel, div, h1, h2, h3, strong"));
+    let anchor = anchors.find((el) => textOf(el).includes("Deck selector"))
+      || anchors.find((el) => textOf(el).includes("Study session"));
+
+    let container = anchor;
+    for (let i = 0; i < 6 && container && container.parentElement; i += 1) {
+      const t = textOf(container);
+      if (t.includes("Deck selector") && t.length < 2600) break;
+      if (t.includes("Study session") && t.length < 2600) break;
+      container = container.parentElement;
+    }
+
+    panel = document.createElement("section");
+    panel.id = PANEL_ID;
+    panel.className = "card apc-study-tools";
+    panel.setAttribute("data-apc-marker", MARKER);
+    panel.innerHTML = `
+      <h2>Study tools</h2>
+      <p class="muted">Decks, cards, stats, and review queue are loaded from your signed-in Study account.</p>
+      <div class="grid two">
+        <section class="mini-summary" id="apcStudyEarlyDecks"><strong>Decks</strong><p class="muted">Loading decks…</p></section>
+        <section class="mini-summary" id="apcStudyEarlyStats"><strong>Stats</strong><p class="muted">Loading progress…</p></section>
+      </div>
+      <div class="grid two">
+        <section class="mini-summary" id="apcStudyEarlyCards"><strong>Cards</strong><p class="muted">Choose a deck to load cards.</p></section>
+        <section class="mini-summary" id="apcStudyEarlyReview"><strong>Review queue</strong><p class="muted">Choose a deck to load the review queue.</p></section>
+      </div>
+    `;
+
+    if (container && container.parentNode) {
+      container.insertAdjacentElement("afterend", panel);
+    } else {
+      document.body.appendChild(panel);
+    }
+    return panel;
+  }
+
+  function renderDecks(payload) {
+    const panel = document.getElementById("apcStudyEarlyDecks");
+    if (!panel) return null;
+    const decks = Array.isArray(payload?.decks) ? payload.decks : [];
+    if (!decks.length) {
+      panel.innerHTML = `<strong>Decks</strong><p class="muted">No decks were returned for this account yet.</p>`;
+      return null;
+    }
+    const selected = lastDeckId || deckIdFromPage() || String(decks[0].id);
+    lastDeckId = selected;
+    const list = decks.slice(0, 8).map((deck) => {
+      const id = String(deck.id ?? "");
+      const title = esc(deck.title || deck.name || `Deck #${id}`);
+      const count = deck.card_count ?? deck.cards_count ?? deck.total_cards ?? "—";
+      return `<li><button type="button" class="secondary" data-apc-early-deck-id="${esc(id)}">${title}</button> <span class="muted">${esc(count)} cards</span></li>`;
+    }).join("");
+    panel.innerHTML = `<strong>Decks</strong><p class="muted">${esc(payload.count ?? decks.length)} deck(s) available. Selected deck #${esc(selected)}.</p><ul>${list}</ul>`;
+    panel.querySelectorAll("[data-apc-early-deck-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        lastDeckId = btn.getAttribute("data-apc-early-deck-id");
+        loadTools(lastDeckId);
+      });
+    });
+    return selected;
+  }
+
+  function renderStats(payload) {
+    const panel = document.getElementById("apcStudyEarlyStats");
+    if (!panel) return;
+    const totals = payload?.totals || payload?.summary || payload || {};
+    const accuracy = totals.accuracy === null || totals.accuracy === undefined ? "—" : `${Math.round(Number(totals.accuracy) * 100)}%`;
+    panel.innerHTML = `
+      <strong>Stats</strong>
+      <dl>
+        <dt>Decks</dt><dd>${esc(totals.total_decks ?? payload?.deck_count ?? "—")}</dd>
+        <dt>Cards</dt><dd>${esc(totals.total_cards ?? payload?.card_count ?? "—")}</dd>
+        <dt>Reviews</dt><dd>${esc(totals.total_reviews ?? payload?.review_count ?? "—")}</dd>
+        <dt>Accuracy</dt><dd>${esc(accuracy)}</dd>
+      </dl>
+    `;
+  }
+
+  function renderCards(payload, deckId) {
+    const panel = document.getElementById("apcStudyEarlyCards");
+    if (!panel) return;
+    const cards = Array.isArray(payload?.cards) ? payload.cards : [];
+    if (!cards.length) {
+      panel.innerHTML = `<strong>Cards</strong><p class="muted">No cards returned for deck #${esc(deckId)}.</p>`;
+      return;
+    }
+    const list = cards.slice(0, 6).map((card) => {
+      const q = esc(card.question || card.front || card.prompt || `Card #${card.id}`);
+      const a = esc(card.answer || card.back || "");
+      return `<li><strong>${q}</strong>${a ? `<br><span class="muted">${a}</span>` : ""}</li>`;
+    }).join("");
+    panel.innerHTML = `<strong>Cards</strong><p class="muted">${esc(payload.count ?? cards.length)} card(s) in deck #${esc(deckId)}.</p><ul>${list}</ul>`;
+  }
+
+  function renderReview(payload, deckId) {
+    const panel = document.getElementById("apcStudyEarlyReview");
+    if (!panel) return;
+    const queue = Array.isArray(payload?.queue) ? payload.queue : Array.isArray(payload?.cards) ? payload.cards : [];
+    if (!queue.length) {
+      panel.innerHTML = `<strong>Review queue</strong><p class="muted">No review cards returned for deck #${esc(deckId)}.</p>`;
+      return;
+    }
+    const card = queue[0];
+    const q = esc(card.question || card.front || card.prompt || `Card #${card.id}`);
+    const bucket = esc(card.performance_bucket || card.bucket || "balanced");
+    panel.innerHTML = `
+      <strong>Review queue</strong>
+      <p class="muted">${esc(queue.length)} card(s) queued. First bucket: ${bucket}.</p>
+      <p><strong>${q}</strong></p>
+      <div class="actions">
+        <button type="button" disabled>Read answer</button>
+        <button type="button" disabled>Correct</button>
+        <button type="button" disabled>Wrong</button>
+        <button type="button" disabled>Skip</button>
+      </div>
+      <p class="muted">Durable session controls remain the active review controls.</p>
+    `;
+  }
+
+  async function loadTools(deckIdOverride) {
+    const panel = mountPanel();
+    if (!panel) return;
+    const decksResult = await apiJson("/api/study/decks");
+    if (!decksResult.ok) {
+      panel.innerHTML = `<h2>Study tools</h2><p class="muted">Study tools load after sign-in. Deck/card data was not loaded (${decksResult.status}).</p>`;
+      return;
+    }
+    const selectedDeckId = renderDecks(decksResult.data) || deckIdOverride || deckIdFromPage();
+    const progress = await apiJson("/api/study/progress");
+    if (progress.ok) renderStats(progress.data);
+    else {
+      const stats = document.getElementById("apcStudyEarlyStats");
+      if (stats) stats.innerHTML = `<strong>Stats</strong><p class="muted">Progress endpoint unavailable (${progress.status}).</p>`;
+    }
+    const deckId = deckIdOverride || selectedDeckId;
+    if (!deckId) return;
+    const cards = await apiJson(`/api/study/decks/${encodeURIComponent(deckId)}/cards`);
+    if (cards.ok) renderCards(cards.data, deckId);
+    else {
+      const p = document.getElementById("apcStudyEarlyCards");
+      if (p) p.innerHTML = `<strong>Cards</strong><p class="muted">Cards endpoint unavailable (${cards.status}).</p>`;
+    }
+    const review = await apiJson(`/api/study/decks/${encodeURIComponent(deckId)}/review-queue`);
+    if (review.ok) renderReview(review.data, deckId);
+    else {
+      const p = document.getElementById("apcStudyEarlyReview");
+      if (p) p.innerHTML = `<strong>Review queue</strong><p class="muted">Review queue endpoint unavailable (${review.status}).</p>`;
+    }
+  }
+
+  function runRepair() {
+    if (!document.body || !looksLikeStudy()) return;
+    hideLegacyDuplicate();
+    mountPanel();
+    loadTools(deckIdFromPage()).catch((error) => {
+      const panel = document.getElementById(PANEL_ID);
+      if (panel) panel.innerHTML = `<h2>Study tools</h2><p class="muted">Study tools could not load yet.</p>`;
+      console.warn(`[${MARKER}] Study tools load skipped`, error);
+    });
+  }
+
+  function schedule() {
+    clearTimeout(timer);
+    timer = setTimeout(runRepair, 40);
+  }
+
+  window.apcStudyEarlyRepairFcO45CG = { marker: MARKER, repair: runRepair };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", schedule, { once: true });
+  } else {
+    schedule();
+  }
+
+  window.addEventListener("hashchange", schedule);
+  window.addEventListener("popstate", schedule);
+  document.addEventListener("click", () => setTimeout(schedule, 80), true);
+
+  try {
+    const observer = new MutationObserver(() => {
+      if (document.body && looksLikeStudy()) schedule();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (_) {}
+})();
+
 
 // COMPANION_TRANSIENT_CONTROLLER_WRAPPER_V1
 function isGatewayHtmlErrorText(value) {
