@@ -16067,6 +16067,84 @@ def _admin_support_ticket_public(ticket_row, message_count=None, last_message_at
     }
 
 
+
+# APC_ADMIN_USERS_CREDIT_BALANCES_FC_O45_D_J
+def _apc_admin_users_apply_credit_balances(payload, conn):
+    """Attach read-only credit balances to /system/admin/users payload rows."""
+    try:
+        users = payload.get("users") if isinstance(payload, dict) else None
+        if not isinstance(users, list) or not users:
+            return payload
+
+        user_ids = []
+        for user in users:
+            if not isinstance(user, dict):
+                continue
+            try:
+                user_ids.append(int(user.get("id")))
+            except Exception:
+                continue
+
+        user_ids = sorted(set(user_ids))
+        if not user_ids or conn is None:
+            for user in users:
+                if isinstance(user, dict):
+                    user.setdefault("free_local_credits", 0)
+                    user.setdefault("paid_credits", 0)
+            return payload
+
+        placeholders = ",".join(["?"] * len(user_ids))
+        rows = conn.execute(
+            f"""
+            SELECT
+              user_id,
+              COALESCE(SUM(COALESCE(free_delta, 0)), 0) AS free_local_credits,
+              COALESCE(SUM(COALESCE(paid_delta, 0)), 0) AS paid_credits
+            FROM user_credit_ledger
+            WHERE user_id IN ({placeholders})
+            GROUP BY user_id
+            """,
+            user_ids,
+        ).fetchall()
+
+        balances = {}
+        for row in rows:
+            try:
+                user_id = int(row["user_id"])
+                free_local_credits = int(row["free_local_credits"] or 0)
+                paid_credits = int(row["paid_credits"] or 0)
+            except Exception:
+                user_id = int(row[0])
+                free_local_credits = int(row[1] or 0)
+                paid_credits = int(row[2] or 0)
+            balances[user_id] = {
+                "free_local_credits": free_local_credits,
+                "paid_credits": paid_credits,
+            }
+
+        for user in users:
+            if not isinstance(user, dict):
+                continue
+            try:
+                user_id = int(user.get("id"))
+            except Exception:
+                user_id = None
+            balance = balances.get(user_id, {"free_local_credits": 0, "paid_credits": 0})
+            user["free_local_credits"] = balance["free_local_credits"]
+            user["paid_credits"] = balance["paid_credits"]
+
+        return payload
+    except Exception:
+        try:
+            users = payload.get("users") if isinstance(payload, dict) else []
+            for user in users:
+                if isinstance(user, dict):
+                    user.setdefault("free_local_credits", 0)
+                    user.setdefault("paid_credits", 0)
+        except Exception:
+            pass
+        return payload
+
 @app.get("/system/admin/users")
 async def system_admin_users(request: Request):
     _admin_support_require_admin(request)
@@ -16139,13 +16217,15 @@ async def system_admin_users(request: Request):
             "online": is_online,
         })
 
-    return {
+    __apc_admin_users_payload =  {
         "ok": True,
         "online_window_seconds": online_window_seconds,
         "online_count": online_count,
         "user_count_returned": len(result_users),
         "users": result_users,
     }
+    _apc_admin_users_apply_credit_balances(__apc_admin_users_payload, locals().get('conn'))
+    return __apc_admin_users_payload
 
 
 @app.post("/system/support/tickets")
