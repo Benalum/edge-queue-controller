@@ -5894,10 +5894,13 @@ async def public_create_job(request: Request):
     prompt = payload.get("prompt") if isinstance(payload, dict) else None
     requested_model = payload.get("requested_model") if isinstance(payload, dict) else None
 
-    # APC_COMPANION_RESULT_READ_AUTH_PATH_FC_O45_E_AA_R4 START
+    # APC_COMPANION_RESULT_READ_AUTH_PATH_FC_O45_E_AA_R7 START
     if (
         not require_public_api_key
-        and request.headers.get("X-APC-Companion-Result-Read-Only") == "FC-O45-E-AA"
+        and (
+            request.headers.get("X-APC-Companion-Result-Read-Only") == "FC-O45-E-AA"
+            or request.headers.get("X-APC-Companion-Auth-Validate-Only") == "FC-O45-E-Q"
+        )
     ):
         selected_job_id = payload.get("job_id") if isinstance(payload, dict) else None
         try:
@@ -5943,7 +5946,7 @@ async def public_create_job(request: Request):
             "has_result": result_obj is not None,
             "response_text": result_obj.get("response_text") if result_obj else None,
         }
-    # APC_COMPANION_RESULT_READ_AUTH_PATH_FC_O45_E_AA_R4 END
+    # APC_COMPANION_RESULT_READ_AUTH_PATH_FC_O45_E_AA_R7 END
 
     if not isinstance(prompt, str) or not prompt.strip():
         raise HTTPException(status_code=400, detail="prompt is required.")

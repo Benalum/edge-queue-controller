@@ -13800,9 +13800,10 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
         headers: {
           "Accept": "application/json,text/plain,*/*",
           "Content-Type": "application/json",
-          "X-APC-Companion-Result-Read-Only": "FC-O45-E-AA"
+          "X-APC-Companion-Result-Read-Only": "FC-O45-E-AA",
+          "X-APC-Companion-Auth-Validate-Only": "FC-O45-E-Q"
         },
-        body: JSON.stringify({ job_id: 124 })
+        body: JSON.stringify({ job_id: 124, message: "FC-O45-E-AA-R7 read completed Companion result only" })
       }
     },
     { label: "/api/companion/jobs/124/result", url: "/api/companion/jobs/124/result", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } },
