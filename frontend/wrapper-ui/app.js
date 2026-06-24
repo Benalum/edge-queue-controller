@@ -14059,3 +14059,143 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   window.addEventListener("popstate", schedule);
 })();
 /* APC_COMPANION_RESULT_READER_UI_FC_O45_E_AC END */
+
+
+/**
+ * Stage 16 FC-O45-E-AS Companion Immersion Mode scaffold.
+ *
+ * Source-only helper layer. This does not change backend behavior, does not run
+ * models, and does not create jobs. It gives the Companion UI a small
+ * assistant-like state vocabulary that can be wired into the visible panel:
+ *
+ * - listening
+ * - thinking
+ * - speaking
+ * - needs_attention
+ *
+ * Debug details remain available separately from the primary user experience.
+ */
+const COMPANION_IMMERSION_STATES = Object.freeze({
+  LISTENING: "listening",
+  THINKING: "thinking",
+  SPEAKING: "speaking",
+  NEEDS_ATTENTION: "needs_attention",
+});
+
+function companionImmersionLabel(state) {
+  const normalized = String(state || "").toLowerCase();
+  if (normalized === COMPANION_IMMERSION_STATES.THINKING) return "Thinking";
+  if (normalized === COMPANION_IMMERSION_STATES.SPEAKING) return "Speaking";
+  if (normalized === COMPANION_IMMERSION_STATES.NEEDS_ATTENTION) return "Needs attention";
+  return "Listening";
+}
+
+function companionImmersionStateFromJob(job, resultPayload) {
+  const status = String(job?.status || resultPayload?.status || "").toLowerCase();
+  const hasResult = Boolean(
+    resultPayload?.result ||
+    resultPayload?.response ||
+    resultPayload?.text ||
+    resultPayload?.message ||
+    resultPayload?.content ||
+    resultPayload?.result_text
+  );
+
+  if (status === "failed" || status === "error" || resultPayload?.error) {
+    return COMPANION_IMMERSION_STATES.NEEDS_ATTENTION;
+  }
+
+  if ((status === "completed" || status === "complete") && hasResult) {
+    return COMPANION_IMMERSION_STATES.SPEAKING;
+  }
+
+  if (
+    status === "queued" ||
+    status === "running" ||
+    status === "processing" ||
+    status === "pending" ||
+    status === "claimed"
+  ) {
+    return COMPANION_IMMERSION_STATES.THINKING;
+  }
+
+  return COMPANION_IMMERSION_STATES.LISTENING;
+}
+
+function companionImmersionExtractResultText(resultPayload) {
+  const candidates = [
+    resultPayload?.result,
+    resultPayload?.result_text,
+    resultPayload?.response,
+    resultPayload?.text,
+    resultPayload?.message,
+    resultPayload?.content,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+
+  if (resultPayload?.result && typeof resultPayload.result === "object") {
+    for (const key of ["text", "message", "response", "content", "result_text"]) {
+      const value = resultPayload.result[key];
+      if (typeof value === "string" && value.trim()) return value.trim();
+    }
+  }
+
+  return "";
+}
+
+function companionImmersionDebugDetails(context = {}) {
+  const lines = [];
+  if (context.job_id || context.jobId) lines.push(`job_id: ${context.job_id || context.jobId}`);
+  if (context.status) lines.push(`status: ${context.status}`);
+  if (context.job_type || context.jobType) lines.push(`job_type: ${context.job_type || context.jobType}`);
+  if (context.requested_model || context.requestedModel) {
+    lines.push(`requested_model: ${context.requested_model || context.requestedModel}`);
+  }
+  if (typeof context.queue_write !== "undefined") lines.push(`queue_write: ${String(context.queue_write)}`);
+  if (context.worker) lines.push(`worker: ${context.worker}`);
+  return lines;
+}
+
+function renderCompanionImmersionPanel(context = {}) {
+  const lastUserMessage = String(context.lastUserMessage || context.message || "").trim();
+  const resultText = companionImmersionExtractResultText(context.resultPayload || context);
+  const state = context.state || companionImmersionStateFromJob(context.job || context, context.resultPayload || context);
+  const label = companionImmersionLabel(state);
+  const debugLines = companionImmersionDebugDetails(context);
+
+  const userMessageMarkup = lastUserMessage
+    ? `<p class="companion-immersion-user-message"><strong>You:</strong> ${safeText(lastUserMessage)}</p>`
+    : "";
+
+  const responseMarkup = resultText
+    ? `<p class="companion-immersion-response">${safeText(resultText)}</p>`
+    : "";
+
+  const debugMarkup = debugLines.length
+    ? `<details class="companion-immersion-debug"><summary>Debug details</summary><pre>${safeText(debugLines.join("\n"))}</pre></details>`
+    : "";
+
+  return `
+    <section class="companion-immersion-panel" data-companion-immersion-state="${safeText(state)}">
+      <div class="companion-immersion-state companion-immersion-state-${safeText(state)}">${safeText(label)}</div>
+      ${userMessageMarkup}
+      ${responseMarkup}
+      ${debugMarkup}
+    </section>
+  `;
+}
+
+if (typeof window !== "undefined") {
+  window.apcCompanionImmersion = Object.freeze({
+    states: COMPANION_IMMERSION_STATES,
+    label: companionImmersionLabel,
+    stateFromJob: companionImmersionStateFromJob,
+    extractResultText: companionImmersionExtractResultText,
+    debugDetails: companionImmersionDebugDetails,
+    renderPanel: renderCompanionImmersionPanel,
+  });
+}
+
