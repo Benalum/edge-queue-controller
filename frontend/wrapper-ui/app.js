@@ -116,6 +116,18 @@
   }
 
   function mountPanel() {
+    if (window.__apcStudySingleOwnerDisableEarlyToolsFcO45CL) {
+      let scratch = document.getElementById("apcStudyEarlyToolsScratchFcO45CL");
+      if (!scratch) {
+        scratch = document.createElement("section");
+        scratch.id = "apcStudyEarlyToolsScratchFcO45CL";
+        scratch.hidden = true;
+        scratch.setAttribute("aria-hidden", "true");
+        scratch.setAttribute("data-apc-study-single-owner", "APC_STUDY_SINGLE_OWNER_FC_O45_C_L");
+        (document.body || document.documentElement).appendChild(scratch);
+      }
+      return scratch;
+    }
     let panel = document.getElementById(PANEL_ID);
     if (panel) return panel;
 
@@ -5757,9 +5769,147 @@ function renderLoggedInProfilePage() {
  * legacy preview includes its own banner/nav shell, causing two Study pages on
  * one page. Keep the old preview available only at /study-wrapper-preview.
  */
+
+/*
+ * APC_STUDY_SINGLE_OWNER_FC_O45_C_L
+ *
+ * /study is a single-owner surface:
+ * - signed-out users get exactly one public Study page;
+ * - signed-in users get the durable Study session/deck selector plus one Study tools panel;
+ * - the early emergency tools injector is kept from rendering visible duplicate tools.
+ */
+window.__apcStudySingleOwnerDisableEarlyToolsFcO45CL = true;
+
+function apcStudySingleOwnerIsStudyRouteFcO45CL() {
+  try {
+    const path = window.location.pathname || "/";
+    const hash = window.location.hash || "";
+    return path === "/study" || path.endsWith("/study") || hash.includes("study");
+  } catch (_) {
+    return false;
+  }
+}
+
+function apcStudySingleOwnerHasSessionFcO45CL() {
+  try {
+    if (typeof hasActiveWrapperSession === "function" && hasActiveWrapperSession()) return true;
+  } catch (_) {}
+  try {
+    if (window.authState && (window.authState.token || window.authState.user)) return true;
+  } catch (_) {}
+  try {
+    if (window.localStorage && (localStorage.getItem("edgeStudyToken") || localStorage.getItem("edgeAuthToken"))) return true;
+  } catch (_) {}
+  return false;
+}
+
+function apcStudySingleOwnerStudyToolPanelsFcO45CL() {
+  const panels = new Set();
+
+  [
+    "#apcStudyEarlyToolsPanel",
+    "#apcStudyToolsPanel",
+    "#apcStudyEarlyToolsScratchFcO45CL",
+    "[data-apc-study-tools-panel]",
+    "[data-apc-study-tools-auth-cleanup]"
+  ].forEach((selector) => {
+    try {
+      document.querySelectorAll(selector).forEach((node) => panels.add(node));
+    } catch (_) {}
+  });
+
+  try {
+    document.querySelectorAll("h2").forEach((heading) => {
+      if ((heading.textContent || "").trim() !== "Study tools") return;
+      const panel = heading.closest("section, article, .card, div") || heading.parentElement;
+      if (panel) panels.add(panel);
+    });
+  } catch (_) {}
+
+  return Array.from(panels).filter((panel) => panel && panel.isConnected);
+}
+
+function apcStudySingleOwnerCleanupFcO45CL() {
+  if (!apcStudySingleOwnerIsStudyRouteFcO45CL()) return;
+
+  const panels = apcStudySingleOwnerStudyToolPanelsFcO45CL();
+  const signedIn = apcStudySingleOwnerHasSessionFcO45CL();
+
+  if (!signedIn) {
+    panels.forEach((panel) => panel.remove());
+  } else if (panels.length > 1) {
+    const visiblePanels = panels.filter((panel) => panel.id !== "apcStudyEarlyToolsScratchFcO45CL");
+    const keep = visiblePanels[visiblePanels.length - 1] || panels[panels.length - 1];
+    panels.forEach((panel) => {
+      if (panel !== keep) panel.remove();
+    });
+    if (keep) {
+      keep.setAttribute("data-apc-study-single-owner", "APC_STUDY_SINGLE_OWNER_FC_O45_C_L");
+    }
+  } else if (panels.length === 1) {
+    panels[0].setAttribute("data-apc-study-single-owner", "APC_STUDY_SINGLE_OWNER_FC_O45_C_L");
+  }
+
+  try {
+    document.querySelectorAll("#apcStudyEarlyToolsScratchFcO45CL").forEach((node) => node.remove());
+  } catch (_) {}
+}
+
+function apcStudySingleOwnerScheduleCleanupFcO45CL() {
+  [0, 50, 200, 750, 1500].forEach((delay) => {
+    window.setTimeout(() => {
+      try {
+        apcStudySingleOwnerCleanupFcO45CL();
+      } catch (error) {
+        console.warn("[APC_STUDY_SINGLE_OWNER_FC_O45_C_L] cleanup skipped", error);
+      }
+    }, delay);
+  });
+}
+
+function apcStudySingleOwnerArmObserverFcO45CL() {
+  if (window.__apcStudySingleOwnerObserverFcO45CL) return;
+  try {
+    const observer = new MutationObserver(() => {
+      if (!apcStudySingleOwnerIsStudyRouteFcO45CL()) return;
+      if (window.__apcStudySingleOwnerCleanupQueuedFcO45CL) return;
+      window.__apcStudySingleOwnerCleanupQueuedFcO45CL = true;
+      window.setTimeout(() => {
+        window.__apcStudySingleOwnerCleanupQueuedFcO45CL = false;
+        apcStudySingleOwnerCleanupFcO45CL();
+      }, 25);
+    });
+    observer.observe(document.documentElement || document.body, {
+      childList: true,
+      subtree: true,
+    });
+    window.__apcStudySingleOwnerObserverFcO45CL = observer;
+  } catch (_) {}
+}
+
+apcStudySingleOwnerArmObserverFcO45CL();
+
 function renderCleanStudyRouteFcO45CJ() {
   const app = document.getElementById("app");
   if (!app) return;
+
+  if (!apcStudySingleOwnerHasSessionFcO45CL()) {
+    if (typeof renderPublicFeatureGate === "function") {
+      renderPublicFeatureGate("/study");
+    } else {
+      app.innerHTML = `
+        <main class="page" data-apc-study-single-owner="APC_STUDY_SINGLE_OWNER_FC_O45_C_L">
+          <section class="hero-card">
+            <p class="eyebrow">Study</p>
+            <h1>Study</h1>
+            <p>Sign in to load your Study deck, durable session, cards, stats, and review queue.</p>
+          </section>
+        </main>
+      `;
+    }
+    apcStudySingleOwnerScheduleCleanupFcO45CL();
+    return;
+  }
 
   app.innerHTML = `
     <main
@@ -5779,8 +5929,10 @@ function renderCleanStudyRouteFcO45CJ() {
       if (window.apcStudySignedInRepairFcO45CC && typeof window.apcStudySignedInRepairFcO45CC.repair === "function") {
         window.apcStudySignedInRepairFcO45CC.repair();
       }
+      apcStudySingleOwnerScheduleCleanupFcO45CL();
     } catch (error) {
       console.warn("[APC_STUDY_ROUTE_CLEANUP_FC_O45_C_J] Study repair scheduling skipped", error);
+      apcStudySingleOwnerScheduleCleanupFcO45CL();
     }
   }, 0);
 }
