@@ -436,6 +436,8 @@ def validate_completion(profile: ModelProfile, job: Dict[str, Any], response_tex
         if len(_stage16_completion_text) > _stage16_max_response_chars:
             raise WorkerRefusal("REFUSE_GENERAL_QUEUE_RESPONSE_TOO_LARGE")
         return
+    if profile.completion_validation_policy == "product_visible_output_v1":
+        return extract_visible_output(response_text)
     if profile.completion_validation_policy != "exact_marker_only":
         raise WorkerRefusal("REFUSE_UNSUPPORTED_COMPLETION_VALIDATION")
     expected = extract_expected_marker(job)
