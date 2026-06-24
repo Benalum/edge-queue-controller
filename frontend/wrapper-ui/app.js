@@ -11098,3 +11098,110 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   }
 })();
 // End Stage 9R disabled persistent operator-gated rollout boundary.
+
+
+/* APC_PUBLIC_STUDY_SIGNED_OUT_GUARD_FC_O44_D
+ * Public signed-out Study safety guard.
+ *
+ * Signed-out visitors should see only the public Study overview and sign-in prompt.
+ * Durable Study session state, selected deck identifiers, deck selector state, queue
+ * fields, and review controls are authenticated UI only.
+ */
+(function apcPublicStudySignedOutGuardFcO44D() {
+  "use strict";
+
+  const publicBannerText = "Under Construction: Some features do not work yet.";
+  const signedOutNeedles = [
+    "Sign in from the header",
+    "Log in to view durable Study session status.",
+    "Log in to load your Study decks.",
+    "Statussigned out",
+    "Status signed out"
+  ];
+  const privateStudyNeedles = [
+    "Study session",
+    "Session status",
+    "Selected deck id:",
+    "No decks found",
+    "No decks found yet.",
+    "Deck selector",
+    "Start uses the selected deck id",
+    "Current question",
+    "Last action",
+    "Read answer",
+    "Correct",
+    "Wrong",
+    "Skip"
+  ];
+
+  function isSignedOutStudySurface() {
+    const text = (document.body && document.body.innerText) || "";
+    if (!/Study/i.test(text)) return false;
+    return signedOutNeedles.some((needle) => text.indexOf(needle) !== -1);
+  }
+
+  function closestSafePanel(node) {
+    let cur = node;
+    for (let i = 0; cur && i < 8; i += 1, cur = cur.parentElement) {
+      if (!cur || cur === document.body || cur === document.documentElement) continue;
+      const text = (cur.innerText || cur.textContent || "").trim();
+      if (!text) continue;
+      if (text.length < 2600 && /Study session|Session status|Deck selector|Selected deck id|No decks found|Start uses the selected deck id|Current question|Last action/.test(text)) {
+        return cur;
+      }
+    }
+    return null;
+  }
+
+  function hidePrivateStudyPanels() {
+    if (!isSignedOutStudySurface()) return;
+
+    const candidates = Array.from(document.querySelectorAll("section, article, div, aside, form, ul, p, h1, h2, h3, h4, button, label, span"));
+    for (const el of candidates) {
+      const text = (el.innerText || el.textContent || "").trim();
+      if (!text) continue;
+      if (!privateStudyNeedles.some((needle) => text.indexOf(needle) !== -1)) continue;
+      const panel = closestSafePanel(el);
+      if (panel) {
+        panel.setAttribute("data-apc-public-study-hidden", "true");
+        panel.style.display = "none";
+        panel.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    const selectedDeckNodes = Array.from(document.querySelectorAll("[id], [class], [aria-label]"));
+    for (const el of selectedDeckNodes) {
+      const text = (el.innerText || el.textContent || "").trim();
+      if (/Selected deck id:|No deck selected|No decks found|Start uses the selected deck id/.test(text)) {
+        const panel = closestSafePanel(el) || el;
+        panel.setAttribute("data-apc-public-study-hidden", "true");
+        panel.style.display = "none";
+        panel.setAttribute("aria-hidden", "true");
+      }
+    }
+  }
+
+  function patchBannerCopy() {
+    const banner = document.getElementById("apc-under-construction-banner");
+    if (banner && banner.textContent !== publicBannerText) {
+      banner.textContent = publicBannerText;
+    }
+  }
+
+  function runGuard() {
+    patchBannerCopy();
+    hidePrivateStudyPanels();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runGuard);
+  } else {
+    runGuard();
+  }
+
+  const observer = new MutationObserver(runGuard);
+  observer.observe(document.documentElement || document.body, { childList: true, subtree: true, characterData: true });
+  window.addEventListener("hashchange", () => setTimeout(runGuard, 0));
+  window.addEventListener("popstate", () => setTimeout(runGuard, 0));
+})();
+
