@@ -5,7 +5,7 @@ DOC="docs/stage-16-fc-o45-e-ah-job127-result-reader-quality-contract.md"
 
 test -f "$DOC"
 grep -Fq "Stage 16 FC-O45-E-AH" "$DOC"
-grep -Fq "Target job: `127`" "$DOC"
+grep -Fq 'Target job: `127`' "$DOC"
 grep -Fq "requested_model=qwen2.5:0.5b" "$DOC"
 grep -Fq "result_rows=1" "$DOC"
 grep -Fq "I am Qwen" "$DOC"
