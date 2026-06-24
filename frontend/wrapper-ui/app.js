@@ -1,3 +1,7 @@
+/* APC_STUDY_FULL_WORKSPACE_FC_O45_C_N_R2: disable early duplicate Study tools before route code runs. */
+window.__apcStudySingleOwnerDisableEarlyToolsFcO45CL = true;
+window.__apcStudyCanonicalFullWorkspaceFcO45CNR2 = true;
+
 /*
  * APC_STUDY_EARLY_REPAIR_BOOTSTRAP_FC_O45_C_G
  *
@@ -5839,7 +5843,9 @@ function apcStudySingleOwnerCleanupFcO45CL() {
     panels.forEach((panel) => panel.remove());
   } else if (panels.length > 1) {
     const visiblePanels = panels.filter((panel) => panel.id !== "apcStudyEarlyToolsScratchFcO45CL");
-    const keep = visiblePanels[visiblePanels.length - 1] || panels[panels.length - 1];
+    const keep = visiblePanels.find((panel) => panel.id === "apcStudyFullWorkspacePanelFcO45CNR2")
+      || visiblePanels[visiblePanels.length - 1]
+      || panels[panels.length - 1];
     panels.forEach((panel) => {
       if (panel !== keep) panel.remove();
     });
@@ -5889,6 +5895,426 @@ function apcStudySingleOwnerArmObserverFcO45CL() {
 
 apcStudySingleOwnerArmObserverFcO45CL();
 
+
+/*
+ * APC_STUDY_FULL_WORKSPACE_FC_O45_C_N_R2
+ *
+ * Canonical signed-in Study workspace. This restores deck/card CRUD controls,
+ * overall progress, weekly progress, deck/card statistics, and review queue in
+ * one Study tools panel without reintroducing duplicate Study renderers.
+ */
+window.apcStudyFullWorkspaceFcO45CNR2 = (function () {
+  const MARKER = "APC_STUDY_FULL_WORKSPACE_FC_O45_C_N_R2";
+  const PANEL_ID = "apcStudyFullWorkspacePanelFcO45CNR2";
+
+  function esc(value) {
+    return String(value === undefined || value === null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function arr(value) {
+    if (Array.isArray(value)) return value;
+    if (Array.isArray(value && value.decks)) return value.decks;
+    if (Array.isArray(value && value.cards)) return value.cards;
+    if (Array.isArray(value && value.items)) return value.items;
+    if (Array.isArray(value && value.results)) return value.results;
+    if (Array.isArray(value && value.queue)) return value.queue;
+    if (Array.isArray(value && value.by_deck)) return value.by_deck;
+    if (Array.isArray(value && value.weekly)) return value.weekly;
+    if (Array.isArray(value && value.weeks)) return value.weeks;
+    return [];
+  }
+
+  function pct(value) {
+    if (value === undefined || value === null || value === "") return "—";
+    const n = Number(value);
+    if (!Number.isFinite(n)) return esc(value);
+    return String(Math.round(n <= 1 ? n * 100 : n)) + "%";
+  }
+
+  function signedIn() {
+    try { if (typeof apcStudySingleOwnerHasSessionFcO45CL === "function" && apcStudySingleOwnerHasSessionFcO45CL()) return true; } catch (_) {}
+    try { if (typeof hasActiveWrapperSession === "function" && hasActiveWrapperSession()) return true; } catch (_) {}
+    try { if (window.authState && (window.authState.user || window.authState.token)) return true; } catch (_) {}
+    return false;
+  }
+
+  function isStudyRoute() {
+    try {
+      return window.location.pathname === "/study" || String(window.location.hash || "").includes("study");
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async function request(path, options) {
+    options = options || {};
+    const method = String(options.method || "GET").toUpperCase();
+    const body = options.body;
+
+    try {
+      if (typeof api === "function" && path.indexOf("/api/") === 0) {
+        const payload = { method: method };
+        if (body !== undefined) payload.body = body;
+        const data = await api(path.slice(4), payload);
+        const status = Number((data && (data.status || data.status_code)) || 200) || 200;
+        const ok = !(data && data.ok === false) && status < 400;
+        return { ok: ok, status: status, data: data };
+      }
+    } catch (error) {
+      return { ok: false, status: Number(error && error.status) || 0, data: { detail: (error && error.message) || "Study API unavailable" } };
+    }
+
+    try {
+      const headers = { Accept: "application/json" };
+      const fetchOptions = { method: method, credentials: "include", cache: "no-store", headers: headers };
+      if (body !== undefined) {
+        headers["Content-Type"] = "application/json";
+        fetchOptions.body = JSON.stringify(body);
+      }
+      const response = await fetch(path, fetchOptions);
+      let data = null;
+      try { data = await response.json(); } catch (_) { data = { detail: await response.text().catch(function () { return ""; }) }; }
+      return { ok: response.ok, status: response.status, data: data };
+    } catch (error) {
+      return { ok: false, status: 0, data: { detail: (error && error.message) || "Study API unavailable" } };
+    }
+  }
+
+  function selectedDeckIdFromPage() {
+    try {
+      if (typeof deckIdFromPage === "function") {
+        const id = deckIdFromPage();
+        if (id) return String(id);
+      }
+    } catch (_) {}
+
+    try {
+      const text = (document.body && document.body.innerText) || "";
+      const selected = text.match(/Selected:[\s\S]*?#(\d+)/i);
+      if (selected) return selected[1];
+      const deck = text.match(/deck\s*#\s*(\d+)/i);
+      if (deck) return deck[1];
+    } catch (_) {}
+    return "";
+  }
+
+  function removeOtherStudyTools() {
+    const nodes = new Set();
+    ["#apcStudyEarlyToolsPanel", "#apcStudyToolsPanel", "#apcStudyEarlyToolsScratchFcO45CL", "[data-apc-study-tools-panel]", "[data-apc-study-tools-auth-cleanup]"].forEach(function (selector) {
+      try { document.querySelectorAll(selector).forEach(function (node) { nodes.add(node); }); } catch (_) {}
+    });
+    try {
+      document.querySelectorAll("h2").forEach(function (heading) {
+        if ((heading.textContent || "").trim() !== "Study tools") return;
+        const panel = heading.closest("section, article, .card, div") || heading.parentElement;
+        if (panel) nodes.add(panel);
+      });
+    } catch (_) {}
+    nodes.forEach(function (node) {
+      if (!node || node.id === PANEL_ID) return;
+      node.remove();
+    });
+  }
+
+  function insertTarget() {
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3,strong"));
+    const deckHeading = headings.find(function (node) { return (node.textContent || "").trim() === "Deck selector"; });
+    if (deckHeading) return deckHeading.closest("section, article, .card, div") || deckHeading.parentElement;
+    const sessionHeading = headings.find(function (node) { return (node.textContent || "").trim() === "Study session"; });
+    if (sessionHeading) return sessionHeading.closest("section, article, .card, div") || sessionHeading.parentElement;
+    return document.querySelector("main:not([hidden])") || document.getElementById("app") || document.body;
+  }
+
+  function ensurePanel() {
+    removeOtherStudyTools();
+    let panel = document.getElementById(PANEL_ID);
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = PANEL_ID;
+      panel.className = "card study-tools-card study-workspace-card";
+      panel.setAttribute("data-apc-study-single-owner", MARKER);
+      panel.setAttribute("data-apc-study-tools-panel", "canonical-full-workspace");
+      const target = insertTarget();
+      if (target && target.parentElement && target !== document.body) target.insertAdjacentElement("afterend", panel);
+      else (document.querySelector("main:not([hidden])") || document.body).appendChild(panel);
+    }
+    return panel;
+  }
+
+  function metric(label, value) {
+    return "<dt>" + esc(label) + "</dt><dd>" + esc(value) + "</dd>";
+  }
+
+  function compactItem(title, subtitle, actions) {
+    return "<li><div><strong>" + esc(title) + "</strong><span>" + esc(subtitle) + "</span></div><div class=\"inline-actions\">" + (actions || "") + "</div></li>";
+  }
+
+  function renderShell(panel) {
+    panel.innerHTML = [
+      "<h2>Study tools</h2>",
+      "<p class=\"muted\">Decks, cards, stats, progress, and review queue are loaded from your signed-in Study account.</p>",
+      "<div class=\"study-workspace-actions\">",
+      "<form id=\"apcStudyCreateDeckFormFcO45CNR2\" class=\"inline-form\"><label>New deck <input id=\"apcStudyCreateDeckNameFcO45CNR2\" name=\"name\" placeholder=\"Deck name\" autocomplete=\"off\" /></label><button type=\"submit\">Create deck</button></form>",
+      "<form id=\"apcStudyCreateCardFormFcO45CNR2\" class=\"inline-form\"><label>Front <input id=\"apcStudyCreateCardFrontFcO45CNR2\" name=\"front\" placeholder=\"Question / front\" autocomplete=\"off\" /></label><label>Back <input id=\"apcStudyCreateCardBackFcO45CNR2\" name=\"back\" placeholder=\"Answer / back\" autocomplete=\"off\" /></label><button type=\"submit\">Add card</button></form>",
+      "</div>",
+      "<section class=\"mini-summary\" id=\"apcStudyOverallProgressFcO45CNR2\"><strong>Overall progress</strong><p class=\"muted\">Loading overall progress...</p></section>",
+      "<section class=\"mini-summary\" id=\"apcStudyWeeklyProgressFcO45CNR2\"><strong>Weekly progress</strong><p class=\"muted\">Loading weekly progress...</p></section>",
+      "<section class=\"mini-summary\" id=\"apcStudyDecksPanelFcO45CNR2\"><strong>Decks</strong><p class=\"muted\">Loading decks...</p></section>",
+      "<section class=\"mini-summary\" id=\"apcStudyDeckStatsPanelFcO45CNR2\"><strong>Deck/card statistics</strong><p class=\"muted\">Loading deck and card statistics...</p></section>",
+      "<section class=\"mini-summary\" id=\"apcStudyCardsPanelFcO45CNR2\"><strong>Cards</strong><p class=\"muted\">Loading cards...</p></section>",
+      "<section class=\"mini-summary\" id=\"apcStudyQueuePanelFcO45CNR2\"><strong>Review queue</strong><p class=\"muted\">Loading review queue...</p></section>",
+      "<p class=\"muted\" id=\"apcStudyWorkspaceStatusFcO45CNR2\">Ready.</p>"
+    ].join("");
+  }
+
+  function setStatus(message) {
+    const node = document.getElementById("apcStudyWorkspaceStatusFcO45CNR2");
+    if (node) node.textContent = message;
+  }
+
+  function renderOverall(progress, decks, cards) {
+    const node = document.getElementById("apcStudyOverallProgressFcO45CNR2");
+    if (!node) return;
+    const overall = (progress && (progress.overall || progress.summary)) || progress || {};
+    const deckCount = overall.decks || overall.deck_count || overall.total_decks || decks.length || 0;
+    const cardCount = overall.cards || overall.card_count || overall.total_cards || cards.length || 0;
+    const reviewCount = overall.reviews || overall.review_count || overall.total_reviews || "—";
+    const accuracy = pct(overall.accuracy || overall.correct_rate || overall.success_rate);
+    node.innerHTML = "<strong>Overall progress</strong><dl class=\"metric-grid\">" + metric("Decks", deckCount) + metric("Cards", cardCount) + metric("Reviews", reviewCount) + metric("Accuracy", accuracy) + "</dl>";
+  }
+
+  function renderWeekly(progress) {
+    const node = document.getElementById("apcStudyWeeklyProgressFcO45CNR2");
+    if (!node) return;
+    const weekly = arr(progress && (progress.weekly || progress.weekly_progress || progress.by_week || progress.weeks || progress.review_weeks));
+    if (!weekly.length) {
+      node.innerHTML = "<strong>Weekly progress</strong><p class=\"muted\">No weekly progress data yet.</p>";
+      return;
+    }
+    const items = weekly.slice(0, 8).map(function (week) {
+      const label = week.week || week.label || week.date || week.start || "Week";
+      const reviews = week.reviews || week.review_count || week.total_reviews || "—";
+      const correct = week.correct || week.correct_count || "";
+      const accuracy = week.accuracy !== undefined ? " · " + pct(week.accuracy) : "";
+      return "<li><strong>" + esc(label) + "</strong><span>" + esc(reviews) + " reviews" + (correct !== "" ? " · " + esc(correct) + " correct" : "") + accuracy + "</span></li>";
+    }).join("");
+    node.innerHTML = "<strong>Weekly progress</strong><ul class=\"compact-list\">" + items + "</ul>";
+  }
+
+  function renderDecks(decks, selectedDeckId) {
+    const node = document.getElementById("apcStudyDecksPanelFcO45CNR2");
+    if (!node) return;
+    if (!decks.length) {
+      node.innerHTML = "<strong>Decks</strong><p class=\"muted\">No decks yet. Create one above.</p>";
+      return;
+    }
+    const items = decks.map(function (deck) {
+      const id = deck.id || deck.deck_id || deck.deckId || "";
+      const name = deck.name || deck.title || ("Deck #" + id);
+      const cards = deck.card_count || deck.cards || deck.total_cards || "—";
+      const reviews = deck.review_count || deck.total_reviews || deck.reviews || "—";
+      const subtitle = String(cards) + " cards · " + String(reviews) + " reviews · " + pct(deck.accuracy || deck.correct_rate);
+      const actions = "<button type=\"button\" data-study-action=\"select-deck\" data-deck-id=\"" + esc(id) + "\">Select</button><button type=\"button\" data-study-action=\"edit-deck\" data-deck-id=\"" + esc(id) + "\" data-deck-name=\"" + esc(name) + "\">Edit</button><button type=\"button\" data-study-action=\"delete-deck\" data-deck-id=\"" + esc(id) + "\">Delete</button>";
+      return compactItem(name, subtitle, actions);
+    }).join("");
+    node.innerHTML = "<strong>Decks</strong><p class=\"muted\">" + esc(decks.length) + " deck(s) available. Selected deck #" + esc(selectedDeckId || "—") + ".</p><ul class=\"compact-list\">" + items + "</ul>";
+  }
+
+  function renderDeckStats(stats, selectedDeckId) {
+    const node = document.getElementById("apcStudyDeckStatsPanelFcO45CNR2");
+    if (!node) return;
+    stats = stats || {};
+    node.innerHTML = "<strong>Deck/card statistics</strong><p class=\"muted\">Selected deck #" + esc(selectedDeckId || "—") + ".</p><dl class=\"metric-grid\">"
+      + metric("Cards", stats.card_count || stats.cards || stats.total_cards || "—")
+      + metric("Reviews", stats.review_count || stats.reviews || stats.total_reviews || "—")
+      + metric("Hard bucket", stats.hard || stats.hard_count || (stats.buckets && stats.buckets.hard) || "—")
+      + metric("Due / queued", stats.due || stats.due_count || stats.review_queue_count || "—")
+      + metric("Accuracy", pct(stats.accuracy || stats.correct_rate || stats.success_rate))
+      + "</dl>";
+  }
+
+  function renderCards(cards, selectedDeckId) {
+    const node = document.getElementById("apcStudyCardsPanelFcO45CNR2");
+    if (!node) return;
+    if (!selectedDeckId) {
+      node.innerHTML = "<strong>Cards</strong><p class=\"muted\">Select or create a deck to manage cards.</p>";
+      return;
+    }
+    if (!cards.length) {
+      node.innerHTML = "<strong>Cards</strong><p class=\"muted\">No cards in deck #" + esc(selectedDeckId) + " yet. Add one above.</p>";
+      return;
+    }
+    const items = cards.map(function (card) {
+      const id = card.id || card.card_id || card.cardId || "";
+      const front = card.front || card.question || card.prompt || "";
+      const back = card.back || card.answer || card.response || "";
+      const actions = "<button type=\"button\" data-study-action=\"edit-card\" data-card-id=\"" + esc(id) + "\" data-front=\"" + esc(front) + "\" data-back=\"" + esc(back) + "\">Edit</button><button type=\"button\" data-study-action=\"delete-card\" data-card-id=\"" + esc(id) + "\">Delete</button>";
+      return compactItem(front, back, actions);
+    }).join("");
+    node.innerHTML = "<strong>Cards</strong><p class=\"muted\">" + esc(cards.length) + " card(s) in deck #" + esc(selectedDeckId) + ".</p><ul class=\"compact-list\">" + items + "</ul>";
+  }
+
+  function renderQueue(queue, selectedDeckId) {
+    const node = document.getElementById("apcStudyQueuePanelFcO45CNR2");
+    if (!node) return;
+    if (!selectedDeckId) {
+      node.innerHTML = "<strong>Review queue</strong><p class=\"muted\">Select a deck to load the review queue.</p>";
+      return;
+    }
+    if (!queue.length) {
+      node.innerHTML = "<strong>Review queue</strong><p class=\"muted\">No cards currently queued for deck #" + esc(selectedDeckId) + ".</p>";
+      return;
+    }
+    const first = queue[0] || {};
+    const front = first.front || first.question || first.prompt || "";
+    const bucket = first.bucket || first.difficulty || first.status || "queued";
+    node.innerHTML = "<strong>Review queue</strong><p class=\"muted\">" + esc(queue.length) + " card(s) queued. First bucket: " + esc(bucket) + ".</p><p><strong>" + esc(front) + "</strong></p><p class=\"muted\">Durable session controls above remain the active review controls.</p>";
+  }
+
+  async function loadWorkspace(deckIdOverride) {
+    if (!isStudyRoute() || !signedIn()) return;
+    const panel = ensurePanel();
+    renderShell(panel);
+    setStatus("Loading Study workspace...");
+
+    const decksResult = await request("/api/study/decks");
+    if (!decksResult.ok) {
+      panel.innerHTML = "<h2>Study tools</h2><p class=\"muted\">Study workspace could not load (" + esc(decksResult.status) + "). Try refreshing after sign-in.</p>";
+      return;
+    }
+
+    const decks = arr(decksResult.data);
+    const selectedDeckId = String(deckIdOverride || selectedDeckIdFromPage() || ((decks[0] && (decks[0].id || decks[0].deck_id)) || "") || "");
+    const progressResult = await request("/api/study/progress");
+    const cardsResult = selectedDeckId ? await request("/api/study/decks/" + encodeURIComponent(selectedDeckId) + "/cards") : { ok: true, data: [] };
+    const statsResult = selectedDeckId ? await request("/api/study/decks/" + encodeURIComponent(selectedDeckId) + "/card-stats") : { ok: true, data: {} };
+    const queueResult = selectedDeckId ? await request("/api/study/decks/" + encodeURIComponent(selectedDeckId) + "/review-queue") : { ok: true, data: [] };
+
+    const cards = cardsResult.ok ? arr(cardsResult.data) : [];
+    const progress = progressResult.ok ? progressResult.data : {};
+    const stats = statsResult.ok ? statsResult.data : {};
+    const queue = queueResult.ok ? arr(queueResult.data) : [];
+
+    renderOverall(progress, decks, cards);
+    renderWeekly(progress);
+    renderDecks(decks, selectedDeckId);
+    renderDeckStats(stats, selectedDeckId);
+    renderCards(cards, selectedDeckId);
+    renderQueue(queue, selectedDeckId);
+    attachHandlers(panel, selectedDeckId);
+    setStatus("Study workspace loaded.");
+    try { if (typeof apcStudySingleOwnerScheduleCleanupFcO45CL === "function") apcStudySingleOwnerScheduleCleanupFcO45CL(); } catch (_) {}
+  }
+
+  function attachHandlers(panel, selectedDeckId) {
+    const deckForm = document.getElementById("apcStudyCreateDeckFormFcO45CNR2");
+    if (deckForm && !deckForm.dataset.boundFcO45CNR2) {
+      deckForm.dataset.boundFcO45CNR2 = "1";
+      deckForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const name = (document.getElementById("apcStudyCreateDeckNameFcO45CNR2").value || "").trim();
+        if (!name) return;
+        setStatus("Creating deck...");
+        const result = await request("/api/study/decks", { method: "POST", body: { name: name } });
+        setStatus(result.ok ? "Deck created." : "Deck create failed (" + result.status + ").");
+        if (result.ok) loadWorkspace();
+      });
+    }
+
+    const cardForm = document.getElementById("apcStudyCreateCardFormFcO45CNR2");
+    if (cardForm && !cardForm.dataset.boundFcO45CNR2) {
+      cardForm.dataset.boundFcO45CNR2 = "1";
+      cardForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        if (!selectedDeckId) { setStatus("Select or create a deck before adding a card."); return; }
+        const front = (document.getElementById("apcStudyCreateCardFrontFcO45CNR2").value || "").trim();
+        const back = (document.getElementById("apcStudyCreateCardBackFcO45CNR2").value || "").trim();
+        if (!front || !back) return;
+        setStatus("Adding card...");
+        const result = await request("/api/study/decks/" + encodeURIComponent(selectedDeckId) + "/cards", { method: "POST", body: { front: front, back: back } });
+        setStatus(result.ok ? "Card added." : "Card add failed (" + result.status + ").");
+        if (result.ok) loadWorkspace(selectedDeckId);
+      });
+    }
+
+    if (!panel.dataset.boundActionsFcO45CNR2) {
+      panel.dataset.boundActionsFcO45CNR2 = "1";
+      panel.addEventListener("click", async function (event) {
+        const button = event.target.closest("button[data-study-action]");
+        if (!button) return;
+        const action = button.dataset.studyAction;
+
+        if (action === "select-deck") { loadWorkspace(button.dataset.deckId || ""); return; }
+
+        if (action === "edit-deck") {
+          const deckId = button.dataset.deckId || "";
+          const oldName = button.dataset.deckName || "";
+          const name = window.prompt("Deck name", oldName);
+          if (!deckId || !name || name === oldName) return;
+          setStatus("Updating deck...");
+          let result = await request("/api/study/decks/" + encodeURIComponent(deckId), { method: "PUT", body: { name: name } });
+          if (!result.ok) result = await request("/api/study/decks/" + encodeURIComponent(deckId), { method: "PATCH", body: { name: name } });
+          setStatus(result.ok ? "Deck updated." : "Deck update failed (" + result.status + ").");
+          if (result.ok) loadWorkspace(deckId);
+          return;
+        }
+
+        if (action === "delete-deck") {
+          const deckId = button.dataset.deckId || "";
+          if (!deckId || !window.confirm("Delete deck #" + deckId + "?")) return;
+          setStatus("Deleting deck...");
+          const result = await request("/api/study/decks/" + encodeURIComponent(deckId), { method: "DELETE" });
+          setStatus(result.ok ? "Deck deleted." : "Deck delete failed (" + result.status + ").");
+          if (result.ok) loadWorkspace();
+          return;
+        }
+
+        if (action === "edit-card") {
+          const cardId = button.dataset.cardId || "";
+          const oldFront = button.dataset.front || "";
+          const oldBack = button.dataset.back || "";
+          const front = window.prompt("Card front", oldFront);
+          if (front === null) return;
+          const back = window.prompt("Card back", oldBack);
+          if (back === null) return;
+          if (!cardId || (!front.trim() && !back.trim())) return;
+          setStatus("Updating card...");
+          let result = await request("/api/study/cards/" + encodeURIComponent(cardId), { method: "PUT", body: { front: front.trim(), back: back.trim() } });
+          if (!result.ok) result = await request("/api/study/cards/" + encodeURIComponent(cardId), { method: "PATCH", body: { front: front.trim(), back: back.trim() } });
+          setStatus(result.ok ? "Card updated." : "Card update failed (" + result.status + ").");
+          if (result.ok) loadWorkspace(selectedDeckId);
+          return;
+        }
+
+        if (action === "delete-card") {
+          const cardId = button.dataset.cardId || "";
+          if (!cardId || !window.confirm("Delete card #" + cardId + "?")) return;
+          setStatus("Deleting card...");
+          const result = await request("/api/study/cards/" + encodeURIComponent(cardId), { method: "DELETE" });
+          setStatus(result.ok ? "Card deleted." : "Card delete failed (" + result.status + ").");
+          if (result.ok) loadWorkspace(selectedDeckId);
+        }
+      });
+    }
+  }
+
+  function mount() {
+    if (!isStudyRoute()) return;
+    if (!signedIn()) {
+      removeOtherStudyTools();
+      return;
+    }
+    loadWorkspace();
+  }
+
+  return { mount: mount, loadWorkspace: loadWorkspace, request: request };
+})();
+
 function renderCleanStudyRouteFcO45CJ() {
   const app = document.getElementById("app");
   if (!app) return;
@@ -5923,15 +6349,12 @@ function renderCleanStudyRouteFcO45CJ() {
 
   window.setTimeout(() => {
     try {
-      if (window.apcStudyEarlyRepairFcO45CG && typeof window.apcStudyEarlyRepairFcO45CG.repair === "function") {
-        window.apcStudyEarlyRepairFcO45CG.repair();
-      }
-      if (window.apcStudySignedInRepairFcO45CC && typeof window.apcStudySignedInRepairFcO45CC.repair === "function") {
-        window.apcStudySignedInRepairFcO45CC.repair();
+      if (window.apcStudyFullWorkspaceFcO45CNR2 && typeof window.apcStudyFullWorkspaceFcO45CNR2.mount === "function") {
+        window.apcStudyFullWorkspaceFcO45CNR2.mount();
       }
       apcStudySingleOwnerScheduleCleanupFcO45CL();
     } catch (error) {
-      console.warn("[APC_STUDY_ROUTE_CLEANUP_FC_O45_C_J] Study repair scheduling skipped", error);
+      console.warn("[APC_STUDY_FULL_WORKSPACE_FC_O45_C_N_R2] Study workspace mount skipped", error);
       apcStudySingleOwnerScheduleCleanupFcO45CL();
     }
   }, 0);
