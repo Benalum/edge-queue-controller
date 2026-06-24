@@ -6465,7 +6465,7 @@ function renderPage() {
 
   const isStudyWrapperRoute = path === "/study-wrapper-preview";
 
-  
+
 
   const studyPreviewStyle = document.getElementById("studyPreviewStyles");
   if (studyPreviewStyle) {
@@ -13785,3 +13785,140 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   setInterval(refresh, 2500);
 })();
 
+/* APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z START */
+(function () {
+  "use strict";
+  const MARKER = "APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z";
+  const EXPECTED_RESULT_TEXT = 'FC-O45-E-X-R4 repaired mock no-model completion text for Companion job 124.';
+  const JOB_ID = 124;
+  const ENDPOINTS = [
+    "/api/jobs/124",
+    "/api/jobs?id=124",
+    "/jobs/124",
+    "/jobs?id=124"
+  ];
+
+  function onReady(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
+  }
+
+  function isCompanionRoute() {
+    const href = String(location.href || "").toLowerCase();
+    const path = String(location.pathname || "").toLowerCase();
+    const hash = String(location.hash || "").toLowerCase();
+    return href.includes("companion") || path.includes("companion") || hash.includes("companion");
+  }
+
+  function findMount() {
+    return document.querySelector("[data-apc-page='companion']") ||
+      document.querySelector("#companion") ||
+      document.querySelector("main") ||
+      document.body;
+  }
+
+  function stringifyPayload(payload) {
+    try {
+      return JSON.stringify(payload, null, 2);
+    } catch (_) {
+      return String(payload);
+    }
+  }
+
+  async function fetchText(url) {
+    const res = await fetch(url, {
+      method: "GET",
+      credentials: "same-origin",
+      headers: { "Accept": "application/json,text/plain,*/*" }
+    });
+    const text = await res.text();
+    let parsed = null;
+    try { parsed = JSON.parse(text); } catch (_) {}
+    return { url, status: res.status, ok: res.ok, text, parsed };
+  }
+
+  function containsResult(probe) {
+    const haystack = probe.parsed ? stringifyPayload(probe.parsed) : String(probe.text || "");
+    return haystack.includes(EXPECTED_RESULT_TEXT);
+  }
+
+  async function runProbe(output) {
+    output.textContent = "Checking completed Companion job 124 result visibility...";
+    const observations = [];
+    for (const endpoint of ENDPOINTS) {
+      try {
+        const probe = await fetchText(endpoint);
+        observations.push();
+        if (probe.ok && containsResult(probe)) {
+          output.textContent = [
+            "PASS: completed Companion job 124 result is visible from signed-in UI.",
+            ,
+
+          ].join("
+");
+          output.dataset.result = "pass";
+          return;
+        }
+      } catch (err) {
+        observations.push();
+      }
+    }
+    output.textContent = [
+      "NOT VISIBLE YET: completed job 124 result was not returned by the probed read-only endpoints.",
+      "This did not create jobs or mutate data.",
+      "",
+      observations.join("
+")
+    ].join("
+");
+    output.dataset.result = "not-visible";
+  }
+
+  function installPanel() {
+    if (!isCompanionRoute()) return;
+    const mount = findMount();
+    if (!mount || document.getElementById("apc-companion-result-visibility-panel")) return;
+
+    const panel = document.createElement("section");
+    panel.id = "apc-companion-result-visibility-panel";
+    panel.setAttribute("data-marker", MARKER);
+    panel.style.cssText = "border:1px solid rgba(120,120,120,.35);border-radius:12px;padding:12px;margin:12px 0;background:rgba(120,120,120,.08);";
+
+    const title = document.createElement("h3");
+    title.textContent = "Companion result visibility test";
+    title.style.marginTop = "0";
+
+    const desc = document.createElement("p");
+    desc.textContent = "Reads completed Companion job 124 using signed-in GET-only job/result endpoints. It does not create jobs or run models.";
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Check Companion result for job 124";
+    button.setAttribute("data-apc-companion-result-check", "job-124");
+
+    const output = document.createElement("pre");
+    output.id = "apc-companion-result-visibility-output";
+    output.textContent = "Click the button while signed in.";
+    output.style.whiteSpace = "pre-wrap";
+
+    button.addEventListener("click", function () {
+      runProbe(output);
+    });
+
+    panel.appendChild(title);
+    panel.appendChild(desc);
+    panel.appendChild(button);
+    panel.appendChild(output);
+    mount.prepend(panel);
+  }
+
+  onReady(function () {
+    installPanel();
+    window.setTimeout(installPanel, 500);
+    window.setTimeout(installPanel, 1500);
+  });
+})();
+/* APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z END */
