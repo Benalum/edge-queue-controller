@@ -13565,3 +13565,223 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   schedule();
 })();
 
+
+/* APC_COMPANION_AUTH_VALIDATE_UI_FC_O45_E_S
+ * Signed-in Companion auth validation test path.
+ * This is a UI-only smoke helper: it calls /api/companion/chat with the
+ * FC-O45-E-Q no-enqueue validation header and displays queue_write=false.
+ * It also removes the direct Study tools box from the Companion page; the
+ * Companion should use Study tools internally, not expose setup controls here.
+ */
+(function apcCompanionAuthValidateFcO45ES() {
+  const MARKER = "APC_COMPANION_AUTH_VALIDATE_UI_FC_O45_E_S";
+  if (window[MARKER]) return;
+  window[MARKER] = true;
+
+  const HEADER_NAME = "X-APC-Companion-Auth-Validate-Only";
+  const HEADER_VALUE = "FC-O45-E-Q";
+  const PANEL_ID = "apc-companion-auth-validate-panel-fc-o45-e-s";
+
+  function visibleText(node) {
+    return (node && (node.innerText || node.textContent || "") || "").trim();
+  }
+
+  function isCompanionPage() {
+    const bodyText = visibleText(document.body);
+    return bodyText.includes("Companion") &&
+      (bodyText.includes("Supportive chat workspace") ||
+       bodyText.includes("Start a Companion conversation"));
+  }
+
+  function removeStudyToolsBox() {
+    if (!isCompanionPage()) return;
+
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,strong,b,legend"));
+    for (const heading of headings) {
+      if (visibleText(heading).trim() !== "Study tools") continue;
+
+      let candidate = heading;
+      for (let i = 0; i < 7 && candidate && candidate.parentElement; i += 1) {
+        const parent = candidate.parentElement;
+        const text = visibleText(parent);
+        const looksLikeStudyBox =
+          text.includes("Study tools") &&
+          text.includes("Decks") &&
+          text.includes("Review queue");
+        const tooBroad =
+          text.includes("Companion status") ||
+          text.includes("Start a Companion conversation") ||
+          text.includes("How this works");
+        if (looksLikeStudyBox && !tooBroad) {
+          parent.remove();
+          return;
+        }
+        candidate = parent;
+      }
+
+      const fallback = heading.closest("section, article, aside, .card, .panel, .box");
+      if (fallback) fallback.remove();
+    }
+  }
+
+  function findBearerToken() {
+    const preferredKeys = [
+      "edge_session_token",
+      "edge_auth_token",
+      "auth_token",
+      "access_token",
+      "session_token",
+      "token",
+      "jwt"
+    ];
+
+    function usable(value) {
+      return typeof value === "string" && value.length > 20 && !value.includes(" ");
+    }
+
+    for (const key of preferredKeys) {
+      const value = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (usable(value)) return value;
+      try {
+        const parsed = JSON.parse(value || "null");
+        for (const inner of preferredKeys) {
+          if (parsed && usable(parsed[inner])) return parsed[inner];
+        }
+      } catch (_) {}
+    }
+
+    for (const store of [localStorage, sessionStorage]) {
+      for (let i = 0; i < store.length; i += 1) {
+        const key = store.key(i);
+        const value = store.getItem(key);
+        if (usable(value) && /token|session|auth|jwt/i.test(key)) return value;
+        try {
+          const parsed = JSON.parse(value || "null");
+          for (const inner of preferredKeys) {
+            if (parsed && usable(parsed[inner])) return parsed[inner];
+          }
+        } catch (_) {}
+      }
+    }
+    return "";
+  }
+
+  function statusTarget() {
+    let existing = document.getElementById("apc-companion-auth-validate-result");
+    if (existing) return existing;
+    return null;
+  }
+
+  async function runValidation(button) {
+    const result = statusTarget();
+    const token = findBearerToken();
+    const headers = {
+      "Content-Type": "application/json",
+      [HEADER_NAME]: HEADER_VALUE
+    };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    button.disabled = true;
+    if (result) {
+      result.textContent = "Checking signed-in Companion auth without queue write...";
+    }
+
+    try {
+      const response = await fetch("/api/companion/chat", {
+        method: "POST",
+        credentials: "include",
+        headers,
+        body: JSON.stringify({
+          message: "FC-O45-E-S UI auth validation only. Do not enqueue.",
+          requested_model: "no-model-smoke"
+        })
+      });
+      const text = await response.text();
+      let data = {};
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        data = { raw: text };
+      }
+
+      const ok = response.ok && data.auth_validated === true && data.queue_write === false;
+      if (result) {
+        result.textContent = ok
+          ? "PASS: signed-in Companion auth validated; queue_write=false."
+          : `Check failed: HTTP ${response.status}. ${text.slice(0, 180)}`;
+      }
+    } catch (err) {
+      if (result) {
+        result.textContent = `Check failed: ${err && err.message ? err.message : err}`;
+      }
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  function insertValidationPanel() {
+    if (!isCompanionPage()) return;
+    if (document.getElementById(PANEL_ID)) return;
+
+    const main = document.querySelector("main") || document.body;
+    const panel = document.createElement("section");
+    panel.id = PANEL_ID;
+    panel.setAttribute("data-apc-marker", MARKER);
+    panel.style.border = "1px solid rgba(148, 163, 184, 0.35)";
+    panel.style.borderRadius = "12px";
+    panel.style.padding = "14px";
+    panel.style.margin = "14px 0";
+    panel.style.background = "rgba(15, 23, 42, 0.03)";
+
+    const title = document.createElement("h3");
+    title.textContent = "Companion auth test";
+    title.style.marginTop = "0";
+
+    const text = document.createElement("p");
+    text.textContent = "Checks your signed-in Companion connection without creating a queue job.";
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Run Companion auth test";
+    button.addEventListener("click", () => runValidation(button));
+
+    const result = document.createElement("p");
+    result.id = "apc-companion-auth-validate-result";
+    result.textContent = "Not run yet.";
+    result.style.fontSize = "0.95rem";
+
+    panel.appendChild(title);
+    panel.appendChild(text);
+    panel.appendChild(button);
+    panel.appendChild(result);
+
+    const anchors = Array.from(document.querySelectorAll("h1,h2,h3"));
+    const companionHeading = anchors.find((h) => visibleText(h).trim() === "Companion");
+    const statusHeading = anchors.find((h) => visibleText(h).includes("Companion status"));
+    const anchor = statusHeading || companionHeading;
+
+    if (anchor && anchor.parentElement) {
+      anchor.parentElement.insertBefore(panel, anchor.nextSibling);
+    } else {
+      main.insertBefore(panel, main.firstChild);
+    }
+  }
+
+  function refresh() {
+    try {
+      removeStudyToolsBox();
+      insertValidationPanel();
+    } catch (_) {}
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", refresh);
+  } else {
+    refresh();
+  }
+
+  const observer = new MutationObserver(() => refresh());
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  setInterval(refresh, 2500);
+})();
+
