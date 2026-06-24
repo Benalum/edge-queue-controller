@@ -13790,6 +13790,39 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   "use strict";
   const MARKER = "APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z";
   const EXPECTED_RESULT_TEXT = 'FC-O45-E-X-R4 repaired mock no-model completion text for Companion job 124.';
+  const TOKEN_KEYS = [
+    "edge_session_token",
+    "edge_auth_token",
+    "auth_token",
+    "access_token",
+    "session_token",
+    "token",
+    "jwt"
+  ];
+
+  function findBearerToken() {
+    for (const storage of [window.localStorage, window.sessionStorage]) {
+      if (!storage) continue;
+      for (const key of TOKEN_KEYS) {
+        try {
+          const value = storage.getItem(key);
+          if (value && value.length > 12) return value;
+        } catch (_) {}
+      }
+    }
+    return "";
+  }
+
+  function companionHeaders(extra) {
+    const headers = Object.assign({
+      "Accept": "application/json,text/plain,*/*",
+      "Content-Type": "application/json"
+    }, extra || {});
+    const token = findBearerToken();
+    if (token) headers.Authorization = "Bearer " + token;
+    return headers;
+  }
+
   const PROBES = [
     {
       label: "/api/companion/chat result_read_only",
@@ -13797,20 +13830,30 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
       options: {
         method: "POST",
         credentials: "same-origin",
-        headers: {
-          "Accept": "application/json,text/plain,*/*",
-          "Content-Type": "application/json",
-          "X-APC-Companion-Result-Read-Only": "FC-O45-E-AA",
-          "X-APC-Companion-Auth-Validate-Only": "FC-O45-E-Q"
-        },
-        body: JSON.stringify({ job_id: 124, message: "FC-O45-E-AA-R7 read completed Companion result only" })
+        headers: companionHeaders({
+          "X-APC-Companion-Result-Read-Only": "FC-O45-E-AA"
+        }),
+        body: JSON.stringify({ job_id: 124, message: "FC-O45-E-AA-R9 read completed Companion result only" })
       }
     },
-    { label: "/api/companion/jobs/124/result", url: "/api/companion/jobs/124/result", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } },
-    { label: "/api/jobs/124", url: "/api/jobs/124", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } },
-    { label: "/api/jobs?id=124", url: "/api/jobs?id=124", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } },
-    { label: "/jobs/124", url: "/jobs/124", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } },
-    { label: "/jobs?id=124", url: "/jobs?id=124", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } }
+    {
+      label: "/api/companion/jobs/124/result",
+      url: "/api/companion/jobs/124/result",
+      options: {
+        method: "GET",
+        credentials: "same-origin",
+        headers: companionHeaders()
+      }
+    },
+    {
+      label: "/jobs?id=124",
+      url: "/jobs?id=124",
+      options: {
+        method: "GET",
+        credentials: "same-origin",
+        headers: companionHeaders()
+      }
+    }
   ];
 
   function ready(fn) {
@@ -13822,7 +13865,7 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   }
 
   function isCompanion() {
-    const s = (String(location.href || "") + " " + String(location.pathname || "") + " " + String(location.hash || "")).toLowerCase();
+    const s = (String(location.href || "") + " " + String(location.pathname || "") + " " + String(location.hash || "") + " " + String(document.body && document.body.textContent || "")).toLowerCase();
     return s.includes("companion");
   }
 

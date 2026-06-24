@@ -5894,59 +5894,6 @@ async def public_create_job(request: Request):
     prompt = payload.get("prompt") if isinstance(payload, dict) else None
     requested_model = payload.get("requested_model") if isinstance(payload, dict) else None
 
-    # APC_COMPANION_RESULT_READ_AUTH_PATH_FC_O45_E_AA_R7 START
-    if (
-        not require_public_api_key
-        and (
-            request.headers.get("X-APC-Companion-Result-Read-Only") == "FC-O45-E-AA"
-            or request.headers.get("X-APC-Companion-Auth-Validate-Only") == "FC-O45-E-Q"
-        )
-    ):
-        selected_job_id = payload.get("job_id") if isinstance(payload, dict) else None
-        try:
-            selected_job_id = int(selected_job_id)
-        except Exception:
-            raise HTTPException(status_code=400, detail="job_id is required.")
-
-        if selected_job_id < 1:
-            raise HTTPException(status_code=400, detail="job_id must be positive.")
-
-        with db() as conn:
-            job = conn.execute(
-                """
-                SELECT *
-                FROM jobs
-                WHERE id = ?
-                  AND user_id = ?
-                  AND job_type = 'companion.chat'
-                """,
-                (selected_job_id, user_id),
-            ).fetchone()
-
-            if job is None:
-                raise HTTPException(status_code=404, detail="Companion job not found.")
-
-            result = conn.execute(
-                """
-                SELECT job_id, model, response_text, response_json, error, created_at, updated_at
-                FROM job_results
-                WHERE job_id = ?
-                """,
-                (selected_job_id,),
-            ).fetchone()
-
-        result_obj = row_to_dict(result) if result is not None else None
-        return {
-            "ok": True,
-            "route": "/api/companion/chat",
-            "mode": "result_read_only",
-            "queue_write": False,
-            "job": row_to_dict(job),
-            "result": result_obj,
-            "has_result": result_obj is not None,
-            "response_text": result_obj.get("response_text") if result_obj else None,
-        }
-    # APC_COMPANION_RESULT_READ_AUTH_PATH_FC_O45_E_AA_R7 END
 
     if not isinstance(prompt, str) or not prompt.strip():
         raise HTTPException(status_code=400, detail="prompt is required.")
@@ -10230,6 +10177,57 @@ async def _apc_companion_chat_common_fc_o45_e_q(request: Request, *, require_pub
 
     if len(message) > 4000:
         raise HTTPException(status_code=400, detail="message is too long. Max characters: 4000.")
+
+    # APC_COMPANION_RESULT_READ_AUTH_PATH_FC_O45_E_AA_R9 START
+    if (
+        not require_public_api_key
+        and request.headers.get("X-APC-Companion-Result-Read-Only") == "FC-O45-E-AA"
+    ):
+        selected_job_id = payload.get("job_id") if isinstance(payload, dict) else None
+        try:
+            selected_job_id = int(selected_job_id)
+        except Exception:
+            raise HTTPException(status_code=400, detail="job_id is required.")
+
+        if selected_job_id < 1:
+            raise HTTPException(status_code=400, detail="job_id must be positive.")
+
+        with db() as conn:
+            job = conn.execute(
+                """
+                SELECT *
+                FROM jobs
+                WHERE id = ?
+                  AND user_id = ?
+                  AND job_type = 'companion.chat'
+                """,
+                (selected_job_id, user_id),
+            ).fetchone()
+
+            if job is None:
+                raise HTTPException(status_code=404, detail="Companion job not found.")
+
+            result = conn.execute(
+                """
+                SELECT job_id, model, response_text, response_json, error, created_at, updated_at
+                FROM job_results
+                WHERE job_id = ?
+                """,
+                (selected_job_id,),
+            ).fetchone()
+
+        result_obj = row_to_dict(result) if result is not None else None
+        return {
+            "ok": True,
+            "route": "/api/companion/chat",
+            "mode": "result_read_only",
+            "queue_write": False,
+            "job": row_to_dict(job),
+            "result": result_obj,
+            "has_result": result_obj is not None,
+            "response_text": result_obj.get("response_text") if result_obj else None,
+        }
+    # APC_COMPANION_RESULT_READ_AUTH_PATH_FC_O45_E_AA_R9 END
 
     if (
         not require_public_api_key
