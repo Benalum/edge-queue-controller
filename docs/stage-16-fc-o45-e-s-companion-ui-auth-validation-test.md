@@ -61,3 +61,10 @@ Last observed live/public state before this repo checkpoint:
 - No backend deploy, CT203 restart, DB write, worker/model/helper/runtime call, scheduler/timer activation, CT/VM restart, or nginx/cloudflared mutation is performed by this repo checkpoint.
 
 Next live step should deploy the already-committed wrapper UI assets to `/var/www/apc-wrapper-local` once PVEW access is healthy.
+
+
+## R20 cache-bust alignment
+
+VM200 accepted the FC-O45-E-S inline Companion UI helper, but the public edge had already cached `/app.js?v=20260624fc045es` before the marker was present. R20 advances the wrapper UI cache-bust to `/app.js?v=20260624fc045esr20` and verifies the marker through the fresh public URL.
+
+No backend deploy, CT203 restart, DB write, worker/model/helper/runtime call, scheduler/timer activation, CT/VM restart, or nginx/cloudflared mutation is performed.

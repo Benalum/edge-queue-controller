@@ -27,7 +27,7 @@ grep -q "FC-O45-E-Q" "$APP_JS"
 grep -q "queue_write=false" "$APP_JS"
 grep -q "removeStudyToolsBox" "$APP_JS"
 
-grep -q "app.js?v=20260624fc045es" "$APP_HTML"
+grep -q "app.js?v=20260624fc045esr20" "$APP_HTML"
 
 # Do not allow accidental cache-bust commits from cleanup archives or Study UI.
 if git status --short -- .cleanup-archive frontend/study-ui/index.html | grep -q .; then
