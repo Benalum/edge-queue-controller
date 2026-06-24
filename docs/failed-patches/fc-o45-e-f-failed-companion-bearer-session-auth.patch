@@ -1,0 +1,94 @@
+diff --git a/edge_controller.py b/edge_controller.py
+index a8f0e23..16d8cd9 100644
+--- a/edge_controller.py
++++ b/edge_controller.py
+@@ -5423,7 +5423,89 @@ def _public_default_model() -> str:
+     return os.getenv("EDGE_PUBLIC_DEFAULT_MODEL", os.getenv("EDGE_OLLAMA_DEFAULT_MODEL", "gemma4:e4b"))
+ 
+ 
++
++# APC_COMPANION_BEARER_SESSION_AUTH_FC_O45_E_F
++def _apc_companion_bearer_session_exempts_public_api_key(request):
++    """
++    Allow logged-in browser users to call /api/companion/chat with their
++    normal bearer session. This does not exempt /public/companion/chat and
++    does not allow signed-out requests.
++    """
++    try:
++        path = getattr(getattr(request, "url", None), "path", "") or ""
++        if path != "/api/companion/chat":
++            return False
++
++        auth_header = ""
++        try:
++            auth_header = request.headers.get("authorization") or request.headers.get("Authorization") or ""
++        except Exception:
++            auth_header = ""
++
++        if not str(auth_header).lower().startswith("bearer "):
++            return False
++
++        raw_token = str(auth_header).split(None, 1)[1].strip()
++        if not raw_token:
++            return False
++
++        import datetime as _apc_dt
++        import hashlib as _apc_hashlib
++
++        token_candidates = [
++            _apc_hashlib.sha256(raw_token.encode("utf-8")).hexdigest(),
++            raw_token,
++        ]
++
++        now = _apc_dt.datetime.now(_apc_dt.timezone.utc)
++
++        with sqlite3.connect(DB_PATH) as conn:
++            conn.row_factory = sqlite3.Row
++            rows = conn.execute(
++                """
++                SELECT
++                  s.id AS session_id,
++                  s.expires_at AS expires_at,
++                  s.revoked_at AS revoked_at,
++                  u.id AS user_id,
++                  u.status AS user_status
++                FROM user_sessions s
++                JOIN app_users u ON u.id = s.user_id
++                WHERE s.token_hash IN (?, ?)
++                  AND s.revoked_at IS NULL
++                ORDER BY s.id DESC
++                LIMIT 4
++                """,
++                token_candidates,
++            ).fetchall()
++
++        for row in rows:
++            try:
++                user_status = str(row["user_status"] or "active").strip().lower()
++                if user_status and user_status != "active":
++                    continue
++
++                expires_at = str(row["expires_at"] or "").strip()
++                if expires_at:
++                    normalized = expires_at.replace("Z", "+00:00")
++                    expires_dt = _apc_dt.datetime.fromisoformat(normalized)
++                    if expires_dt.tzinfo is None:
++                        expires_dt = expires_dt.replace(tzinfo=_apc_dt.timezone.utc)
++                    if expires_dt <= now:
++                        continue
++
++                return True
++            except Exception:
++                continue
++
++        return False
++    except Exception:
++        return False
++
+ async def _require_public_api_key(request: Request):
++    # APC_COMPANION_BEARER_SESSION_AUTH_FC_O45_E_F: bearer-session users may call /api/companion/chat without the public API key.
++    if _apc_companion_bearer_session_exempts_public_api_key(request):
++        return True
+     expected = os.getenv("EDGE_PUBLIC_API_KEY", "").strip()
+ 
+     if not expected:
