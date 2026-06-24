@@ -13785,12 +13785,23 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   setInterval(refresh, 2500);
 })();
 
-/* APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z START */
+
+/* APC_COMPANION_RESULT_READER_UI_FC_O45_E_AC START */
 (function () {
   "use strict";
-  const MARKER = "APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z";
-  const EXPECTED_RESULT_TEXT = 'FC-O45-E-X-R4 repaired mock no-model completion text for Companion job 124.';
-  const PANEL_ID = "apc-companion-result-visibility-panel";
+  const MARKER = "APC_COMPANION_RESULT_READER_UI_FC_O45_E_AC";
+  const PANEL_ID = "apc-companion-result-reader-panel-fc-o45-e-ac";
+
+  function visibleText(node) {
+    return (node && (node.innerText || node.textContent || "") || "").trim();
+  }
+
+  function isCompanionPage() {
+    const bodyText = visibleText(document.body);
+    return bodyText.includes("Companion") &&
+      (bodyText.includes("Supportive chat workspace") ||
+       bodyText.includes("Start a Companion conversation"));
+  }
 
   function findBearerToken() {
     const preferredKeys = [
@@ -13836,62 +13847,15 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
 
   function companionHeaders(extra) {
     const headers = Object.assign({
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Accept": "application/json,text/plain,*/*"
     }, extra || {});
     const token = findBearerToken();
     if (token) headers.Authorization = `Bearer ${token}`;
     return headers;
   }
 
-  const PROBES = [
-    {
-      label: "/api/companion/chat result_read_only",
-      url: "/api/companion/chat",
-      options: {
-        method: "POST",
-        credentials: "include",
-        headers: companionHeaders({
-          "X-APC-Companion-Result-Read-Only": "FC-O45-E-AA"
-        }),
-        body: JSON.stringify({
-          job_id: 124,
-          message: "FC-O45-E-AA-R11 read completed Companion result only",
-          requested_model: "no-model-smoke"
-        })
-      }
-    },
-    {
-      label: "/api/companion/jobs/124/result",
-      url: "/api/companion/jobs/124/result",
-      options: {
-        method: "GET",
-        credentials: "include",
-        headers: companionHeaders()
-      }
-    },
-    {
-      label: "/jobs?id=124",
-      url: "/jobs?id=124",
-      options: {
-        method: "GET",
-        credentials: "include",
-        headers: companionHeaders()
-      }
-    }
-  ];
-
-  function visibleText(node) {
-    return (node && (node.innerText || node.textContent || "") || "").trim();
-  }
-
-  function isCompanionPage() {
-    const bodyText = visibleText(document.body);
-    return bodyText.includes("Companion") &&
-      (bodyText.includes("Supportive chat workspace") ||
-       bodyText.includes("Start a Companion conversation"));
-  }
-
-  function mount() {
+  function mountTarget() {
     const anchors = Array.from(document.querySelectorAll("h1,h2,h3"));
     const companionHeading = anchors.find((h) => visibleText(h).trim() === "Companion");
     const statusHeading = anchors.find((h) => visibleText(h).includes("Companion status"));
@@ -13900,37 +13864,72 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     return { parent: document.querySelector("main") || document.body, before: null };
   }
 
-  async function probe(button, out) {
+  function resultSummary(data) {
+    const job = data && data.job ? data.job : {};
+    const result = data && data.result ? data.result : {};
+    const lines = [];
+    lines.push("PASS: Companion result read path returned a result.");
+    lines.push("job_id: " + String(job.id || result.job_id || ""));
+    lines.push("status: " + String(job.status || ""));
+    lines.push("job_type: " + String(job.job_type || ""));
+    lines.push("requested_model: " + String(job.requested_model || ""));
+    lines.push("queue_write: " + String(data.queue_write));
+    lines.push("");
+    lines.push(String(data.response_text || result.response_text || ""));
+    return lines.join("\n");
+  }
+
+  async function readResult(button, input, output) {
+    const raw = String(input.value || "").trim();
+    const jobId = Number.parseInt(raw, 10);
+    if (!Number.isInteger(jobId) || jobId < 1) {
+      output.dataset.result = "invalid";
+      output.textContent = "Enter a positive Companion job id.";
+      return;
+    }
+
     button.disabled = true;
-    out.textContent = "Checking completed Companion job 124 result visibility...";
-    const observations = [];
+    output.dataset.result = "checking";
+    output.textContent = "Reading Companion result for job " + jobId + "...";
+
     try {
-      for (const probeConfig of PROBES) {
-        try {
-          const res = await fetch(probeConfig.url, probeConfig.options);
-          const body = await res.text();
-          observations.push(probeConfig.label + " -> HTTP " + res.status);
-          if (res.ok && body.includes(EXPECTED_RESULT_TEXT)) {
-            out.dataset.result = "pass";
-            out.textContent = [
-              "PASS: completed Companion job 124 result is visible from signed-in UI.",
-              "Endpoint: " + probeConfig.label,
-              "Expected result: " + EXPECTED_RESULT_TEXT
-            ].join("\n");
-            return;
-          }
-        } catch (err) {
-          const message = err && err.message ? err.message : String(err);
-          observations.push(probeConfig.label + " -> ERROR " + message);
-        }
+      const response = await fetch("/api/companion/chat", {
+        method: "POST",
+        credentials: "include",
+        headers: companionHeaders({
+          "X-APC-Companion-Result-Read-Only": "FC-O45-E-AA"
+        }),
+        body: JSON.stringify({
+          job_id: jobId,
+          message: "FC-O45-E-AC read Companion job result by job id.",
+          requested_model: "no-model-smoke"
+        })
+      });
+
+      const text = await response.text();
+      let data = {};
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        data = { raw: text };
       }
-      out.dataset.result = "not-visible";
-      out.textContent = [
-        "NOT VISIBLE YET: completed job 124 result was not returned by the probed read-only endpoints.",
-        "This did not create jobs or mutate data.",
-        "",
-        observations.join("\n")
-      ].join("\n");
+
+      if (!response.ok) {
+        output.dataset.result = "failed";
+        output.textContent = "Read failed: HTTP " + response.status + ". " + text.slice(0, 500);
+        return;
+      }
+
+      if (data && data.has_result === true && data.response_text) {
+        output.dataset.result = "pass";
+        output.textContent = resultSummary(data);
+      } else {
+        output.dataset.result = "no-result";
+        output.textContent = "The job was found, but no result is available yet. HTTP " + response.status + ".";
+      }
+    } catch (err) {
+      output.dataset.result = "error";
+      output.textContent = "Read failed: " + (err && err.message ? err.message : String(err));
     } finally {
       button.disabled = false;
     }
@@ -13940,37 +13939,64 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     if (!isCompanionPage()) return;
     if (document.getElementById(PANEL_ID)) return;
 
-    const target = mount();
+    const target = mountTarget();
     const panel = document.createElement("section");
     panel.id = PANEL_ID;
     panel.setAttribute("data-marker", MARKER);
     panel.style.cssText = "border:1px solid rgba(120,120,120,.35);border-radius:12px;padding:12px;margin:12px 0;background:rgba(120,120,120,.08);";
 
     const title = document.createElement("h3");
-    title.textContent = "Companion result visibility test";
+    title.textContent = "Companion result reader";
     title.style.marginTop = "0";
 
     const desc = document.createElement("p");
-    desc.textContent = "Reads completed Companion job 124 using the same signed-in auth token behavior as the passing Companion auth test. It does not create jobs or run models.";
+    desc.textContent = "Read a completed Companion job result by job id. This is signed-in, owner-scoped, read-only, and does not create jobs or run models.";
+
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.style.flexWrap = "wrap";
+    row.style.alignItems = "center";
+
+    const label = document.createElement("label");
+    label.textContent = "Job id";
+    label.setAttribute("for", "apc-companion-result-reader-job-id");
+
+    const input = document.createElement("input");
+    input.id = "apc-companion-result-reader-job-id";
+    input.type = "number";
+    input.min = "1";
+    input.placeholder = "125";
+    input.value = "";
+    input.style.maxWidth = "120px";
 
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = "Check Companion result for job 124";
-    button.setAttribute("data-apc-companion-result-check", "job-124");
+    button.textContent = "Read result";
 
-    const out = document.createElement("pre");
-    out.id = "apc-companion-result-visibility-output";
-    out.style.whiteSpace = "pre-wrap";
-    out.textContent = "Click the button while signed in.";
+    const output = document.createElement("pre");
+    output.id = "apc-companion-result-reader-output";
+    output.style.whiteSpace = "pre-wrap";
+    output.textContent = "Enter a Companion job id, then click Read result.";
 
     button.addEventListener("click", function () {
-      probe(button, out);
+      readResult(button, input, output);
     });
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        readResult(button, input, output);
+      }
+    });
+
+    row.appendChild(label);
+    row.appendChild(input);
+    row.appendChild(button);
 
     panel.appendChild(title);
     panel.appendChild(desc);
-    panel.appendChild(button);
-    panel.appendChild(out);
+    panel.appendChild(row);
+    panel.appendChild(output);
 
     target.parent.insertBefore(panel, target.before);
   }
@@ -13987,4 +14013,4 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   window.addEventListener("hashchange", schedule);
   window.addEventListener("popstate", schedule);
 })();
-/* APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z END */
+/* APC_COMPANION_RESULT_READER_UI_FC_O45_E_AC END */
