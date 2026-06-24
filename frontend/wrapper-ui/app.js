@@ -5916,6 +5916,64 @@ window.apcStudyFullWorkspaceFcO45CNR2 = (function () {
       .replace(/'/g, "&#39;");
   }
 
+  function displayValue(value) {
+    if (Array.isArray(value)) return value.length;
+    if (value && typeof value === "object") {
+      if (Array.isArray(value.cards)) return value.cards.length;
+      if (Array.isArray(value.items)) return value.items.length;
+      if (Array.isArray(value.results)) return value.results.length;
+      if (Array.isArray(value.queue)) return value.queue.length;
+      if (value.count !== undefined) return value.count;
+      if (value.total !== undefined) return value.total;
+      if (value.card_count !== undefined) return value.card_count;
+      return "—";
+    }
+    if (value === undefined || value === null || value === "") return "—";
+    return value;
+  }
+
+  function firstValue() {
+    for (let i = 0; i < arguments.length; i += 1) {
+      const value = arguments[i];
+      if (value === undefined || value === null || value === "") continue;
+      if (Array.isArray(value)) return value.length;
+      if (value && typeof value === "object") return displayValue(value);
+      return value;
+    }
+    return "—";
+  }
+
+  function ensureWorkspaceStyles() {
+    const styleId = "apc-study-workspace-polish-fc-o45-c-o";
+    if (document.getElementById(styleId)) return;
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.setAttribute("data-apc-study-workspace-polish", "APC_STUDY_WORKSPACE_POLISH_FC_O45_C_O");
+    style.textContent = [
+      ".study-workspace-card{display:grid;gap:1rem;margin-top:1.25rem;}",
+      ".study-workspace-card h2{margin:0;font-size:1.35rem;}",
+      ".study-workspace-card>.muted{margin-top:-.5rem;}",
+      ".study-workspace-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;align-items:start;}",
+      ".study-workspace-actions .inline-form{display:grid;gap:.65rem;padding:1rem;border:1px solid rgba(148,163,184,.28);border-radius:14px;background:rgba(15,23,42,.28);}",
+      ".study-workspace-actions label{display:grid;gap:.35rem;font-weight:700;}",
+      ".study-workspace-actions input{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid rgba(148,163,184,.35);padding:.7rem .8rem;background:rgba(15,23,42,.32);color:inherit;}",
+      ".study-workspace-actions button,.study-workspace-card .inline-actions button{border:1px solid rgba(148,163,184,.35);border-radius:999px;padding:.55rem .85rem;font-weight:700;cursor:pointer;background:rgba(59,130,246,.16);color:inherit;}",
+      ".study-workspace-card .mini-summary{display:grid;gap:.7rem;padding:1rem;border:1px solid rgba(148,163,184,.22);border-radius:14px;background:rgba(15,23,42,.18);}",
+      ".study-workspace-card .mini-summary>strong{font-size:1rem;letter-spacing:.01em;}",
+      ".study-workspace-card .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.75rem;margin:0;}",
+      ".study-workspace-card .metric-grid dt{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;opacity:.75;}",
+      ".study-workspace-card .metric-grid dd{margin:0;font-size:1.25rem;font-weight:800;}",
+      ".study-workspace-card .compact-list{display:grid;gap:.65rem;list-style:none;padding:0;margin:0;}",
+      ".study-workspace-card .compact-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.75rem;align-items:center;padding:.8rem;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(2,6,23,.16);}",
+      ".study-workspace-card .compact-list strong{display:block;line-height:1.25;}",
+      ".study-workspace-card .compact-list span{display:block;margin-top:.2rem;opacity:.78;line-height:1.35;}",
+      ".study-workspace-card .inline-actions{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:flex-end;}",
+      "#apcStudyWorkspaceStatusFcO45CNR2{padding:.7rem .9rem;border-radius:12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.22);}",
+      "@media (max-width:720px){.study-workspace-card .compact-list li{grid-template-columns:1fr;}.study-workspace-card .inline-actions{justify-content:flex-start;}}"
+    ].join("\n");
+    (document.head || document.documentElement).appendChild(style);
+  }
+
   function arr(value) {
     if (Array.isArray(value)) return value;
     if (Array.isArray(value && value.decks)) return value.decks;
@@ -6031,6 +6089,7 @@ window.apcStudyFullWorkspaceFcO45CNR2 = (function () {
   }
 
   function ensurePanel() {
+    ensureWorkspaceStyles();
     removeOtherStudyTools();
     let panel = document.getElementById(PANEL_ID);
     if (!panel) {
@@ -6047,7 +6106,7 @@ window.apcStudyFullWorkspaceFcO45CNR2 = (function () {
   }
 
   function metric(label, value) {
-    return "<dt>" + esc(label) + "</dt><dd>" + esc(value) + "</dd>";
+    return "<dt>" + esc(label) + "</dt><dd>" + esc(displayValue(value)) + "</dd>";
   }
 
   function compactItem(title, subtitle, actions) {
@@ -6059,8 +6118,8 @@ window.apcStudyFullWorkspaceFcO45CNR2 = (function () {
       "<h2>Study tools</h2>",
       "<p class=\"muted\">Decks, cards, stats, progress, and review queue are loaded from your signed-in Study account.</p>",
       "<div class=\"study-workspace-actions\">",
-      "<form id=\"apcStudyCreateDeckFormFcO45CNR2\" class=\"inline-form\"><label>New deck <input id=\"apcStudyCreateDeckNameFcO45CNR2\" name=\"name\" placeholder=\"Deck name\" autocomplete=\"off\" /></label><button type=\"submit\">Create deck</button></form>",
-      "<form id=\"apcStudyCreateCardFormFcO45CNR2\" class=\"inline-form\"><label>Front <input id=\"apcStudyCreateCardFrontFcO45CNR2\" name=\"front\" placeholder=\"Question / front\" autocomplete=\"off\" /></label><label>Back <input id=\"apcStudyCreateCardBackFcO45CNR2\" name=\"back\" placeholder=\"Answer / back\" autocomplete=\"off\" /></label><button type=\"submit\">Add card</button></form>",
+      "<form id=\"apcStudyCreateDeckFormFcO45CNR2\" class=\"inline-form\"><label>New deck name <input id=\"apcStudyCreateDeckNameFcO45CNR2\" name=\"name\" placeholder=\"Example: Math 316 Review\" autocomplete=\"off\" /></label><button type=\"submit\">Create deck</button></form>",
+      "<form id=\"apcStudyCreateCardFormFcO45CNR2\" class=\"inline-form\"><label>Card front <input id=\"apcStudyCreateCardFrontFcO45CNR2\" name=\"front\" placeholder=\"Question or prompt\" autocomplete=\"off\" /></label><label>Card back <input id=\"apcStudyCreateCardBackFcO45CNR2\" name=\"back\" placeholder=\"Answer\" autocomplete=\"off\" /></label><button type=\"submit\">Add card</button></form>",
       "</div>",
       "<section class=\"mini-summary\" id=\"apcStudyOverallProgressFcO45CNR2\"><strong>Overall progress</strong><p class=\"muted\">Loading overall progress...</p></section>",
       "<section class=\"mini-summary\" id=\"apcStudyWeeklyProgressFcO45CNR2\"><strong>Weekly progress</strong><p class=\"muted\">Loading weekly progress...</p></section>",
@@ -6081,9 +6140,9 @@ window.apcStudyFullWorkspaceFcO45CNR2 = (function () {
     const node = document.getElementById("apcStudyOverallProgressFcO45CNR2");
     if (!node) return;
     const overall = (progress && (progress.overall || progress.summary)) || progress || {};
-    const deckCount = overall.decks || overall.deck_count || overall.total_decks || decks.length || 0;
-    const cardCount = overall.cards || overall.card_count || overall.total_cards || cards.length || 0;
-    const reviewCount = overall.reviews || overall.review_count || overall.total_reviews || "—";
+    const deckCount = firstValue(overall.deck_count, overall.total_decks, overall.decks, decks.length, 0);
+    const cardCount = firstValue(overall.card_count, overall.total_cards, overall.cards, cards.length, 0);
+    const reviewCount = firstValue(overall.review_count, overall.total_reviews, overall.reviews);
     const accuracy = pct(overall.accuracy || overall.correct_rate || overall.success_rate);
     node.innerHTML = "<strong>Overall progress</strong><dl class=\"metric-grid\">" + metric("Decks", deckCount) + metric("Cards", cardCount) + metric("Reviews", reviewCount) + metric("Accuracy", accuracy) + "</dl>";
   }
@@ -6116,8 +6175,8 @@ window.apcStudyFullWorkspaceFcO45CNR2 = (function () {
     const items = decks.map(function (deck) {
       const id = deck.id || deck.deck_id || deck.deckId || "";
       const name = deck.name || deck.title || ("Deck #" + id);
-      const cards = deck.card_count || deck.cards || deck.total_cards || "—";
-      const reviews = deck.review_count || deck.total_reviews || deck.reviews || "—";
+      const cards = firstValue(deck.card_count, deck.total_cards, deck.cards);
+      const reviews = firstValue(deck.review_count, deck.total_reviews, deck.reviews);
       const subtitle = String(cards) + " cards · " + String(reviews) + " reviews · " + pct(deck.accuracy || deck.correct_rate);
       const actions = "<button type=\"button\" data-study-action=\"select-deck\" data-deck-id=\"" + esc(id) + "\">Select</button><button type=\"button\" data-study-action=\"edit-deck\" data-deck-id=\"" + esc(id) + "\" data-deck-name=\"" + esc(name) + "\">Edit</button><button type=\"button\" data-study-action=\"delete-deck\" data-deck-id=\"" + esc(id) + "\">Delete</button>";
       return compactItem(name, subtitle, actions);
@@ -6129,12 +6188,16 @@ window.apcStudyFullWorkspaceFcO45CNR2 = (function () {
     const node = document.getElementById("apcStudyDeckStatsPanelFcO45CNR2");
     if (!node) return;
     stats = stats || {};
+    const cardMetric = firstValue(stats.card_count, stats.total_cards, stats.cards, stats.items, stats.results);
+    const reviewMetric = firstValue(stats.review_count, stats.total_reviews, stats.reviews);
+    const hardMetric = firstValue(stats.hard, stats.hard_count, stats.buckets && stats.buckets.hard);
+    const dueMetric = firstValue(stats.due, stats.due_count, stats.review_queue_count, stats.queue);
     node.innerHTML = "<strong>Deck/card statistics</strong><p class=\"muted\">Selected deck #" + esc(selectedDeckId || "—") + ".</p><dl class=\"metric-grid\">"
-      + metric("Cards", stats.card_count || stats.cards || stats.total_cards || "—")
-      + metric("Reviews", stats.review_count || stats.reviews || stats.total_reviews || "—")
-      + metric("Hard bucket", stats.hard || stats.hard_count || (stats.buckets && stats.buckets.hard) || "—")
-      + metric("Due / queued", stats.due || stats.due_count || stats.review_queue_count || "—")
-      + metric("Accuracy", pct(stats.accuracy || stats.correct_rate || stats.success_rate))
+      + metric("Cards", cardMetric)
+      + metric("Reviews", reviewMetric)
+      + metric("Hard bucket", hardMetric)
+      + metric("Due / queued", dueMetric)
+      + metric("Accuracy", pct(firstValue(stats.accuracy, stats.correct_rate, stats.success_rate)))
       + "</dl>";
   }
 
