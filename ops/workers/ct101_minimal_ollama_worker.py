@@ -702,7 +702,7 @@ def run_ollama_call(profile: ModelProfile, prompt: str) -> str:
     return response
 
 
-def complete_job(config: WorkerConfig, token: str, job_id: int, profile: ModelProfile, response_text: str) -> None:
+def complete_job(config: WorkerConfig, token: str, job_id: int, profile: ModelProfile, job: Dict[str, Any], response_text: str) -> None:
     validate_allowed_job_id(config, job_id)
     status, _body = _post_json(
         config,
@@ -722,7 +722,7 @@ def run_one_claim_complete(config: WorkerConfig, profiles: Dict[str, ModelProfil
     profile = get_eligible_profile_for_job(claimed, profiles)
     response = run_ollama_call(profile, str(claimed.get("prompt") or ""))
     validate_completion(profile, claimed, response)
-    complete_job(config, token, job_id, profile, response)
+    complete_job(config, token, job_id, profile, job, response)
     return 0
 
 
