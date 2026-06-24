@@ -13790,7 +13790,27 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   "use strict";
   const MARKER = "APC_COMPANION_RESULT_VISIBILITY_UI_FC_O45_E_Z";
   const EXPECTED_RESULT_TEXT = 'FC-O45-E-X-R4 repaired mock no-model completion text for Companion job 124.';
-  const ENDPOINTS = ["/api/companion/jobs/124/result", "/api/jobs/124", "/api/jobs?id=124", "/jobs/124", "/jobs?id=124"];
+  const PROBES = [
+    {
+      label: "/api/companion/chat result_read_only",
+      url: "/api/companion/chat",
+      options: {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Accept": "application/json,text/plain,*/*",
+          "Content-Type": "application/json",
+          "X-APC-Companion-Result-Read-Only": "FC-O45-E-AA"
+        },
+        body: JSON.stringify({ job_id: 124 })
+      }
+    },
+    { label: "/api/companion/jobs/124/result", url: "/api/companion/jobs/124/result", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } },
+    { label: "/api/jobs/124", url: "/api/jobs/124", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } },
+    { label: "/api/jobs?id=124", url: "/api/jobs?id=124", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } },
+    { label: "/jobs/124", url: "/jobs/124", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } },
+    { label: "/jobs?id=124", url: "/jobs?id=124", options: { method: "GET", credentials: "same-origin", headers: { "Accept": "application/json,text/plain,*/*" } } }
+  ];
 
   function ready(fn) {
     if (document.readyState === "loading") {
@@ -13815,27 +13835,23 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
   async function probe(out) {
     out.textContent = "Checking completed Companion job 124 result visibility...";
     const observations = [];
-    for (const endpoint of ENDPOINTS) {
+    for (const probeConfig of PROBES) {
       try {
-        const res = await fetch(endpoint, {
-          method: "GET",
-          credentials: "same-origin",
-          headers: { "Accept": "application/json,text/plain,*/*" }
-        });
+        const res = await fetch(probeConfig.url, probeConfig.options);
         const body = await res.text();
-        observations.push(endpoint + " -> HTTP " + res.status);
+        observations.push(probeConfig.label + " -> HTTP " + res.status);
         if (res.ok && body.includes(EXPECTED_RESULT_TEXT)) {
           out.dataset.result = "pass";
           out.textContent = [
             "PASS: completed Companion job 124 result is visible from signed-in UI.",
-            "Endpoint: " + endpoint,
+            "Endpoint: " + probeConfig.label,
             "Expected result: " + EXPECTED_RESULT_TEXT
           ].join("\n");
           return;
         }
       } catch (err) {
         const message = err && err.message ? err.message : String(err);
-        observations.push(endpoint + " -> ERROR " + message);
+        observations.push(probeConfig.label + " -> ERROR " + message);
       }
     }
     out.dataset.result = "not-visible";
@@ -13862,7 +13878,7 @@ function stage8lObserveRouterShadowReadDisabled(payload) {
     title.style.marginTop = "0";
 
     const desc = document.createElement("p");
-    desc.textContent = "Reads completed Companion job 124 using signed-in GET-only job/result endpoints. It does not create jobs or run models.";
+    desc.textContent = "Reads completed Companion job 124 using the signed-in Companion auth path. It does not create jobs or run models.";
 
     const button = document.createElement("button");
     button.type = "button";
