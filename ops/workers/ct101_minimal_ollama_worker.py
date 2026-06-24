@@ -722,7 +722,7 @@ def run_one_claim_complete(config: WorkerConfig, profiles: Dict[str, ModelProfil
     profile = get_eligible_profile_for_job(claimed, profiles)
     response = run_ollama_call(profile, str(claimed.get("prompt") or ""))
     validate_completion(profile, claimed, response)
-    complete_job(config, token, job_id, profile, job, response)
+    complete_job(config, token, job_id, profile, claimed, response)
     return 0
 
 
