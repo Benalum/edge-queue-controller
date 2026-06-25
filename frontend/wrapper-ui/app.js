@@ -15496,6 +15496,13 @@ if (typeof window !== "undefined") {
   };
 
   let pollGeneration = 0;
+  let activePollJobId = "";
+  let lastRenderSignature = "";
+  let restoreScheduled = false;
+  root.stage16FcO45EBvCompanionStableResultPoller = {
+    installed: true,
+    behavior: "single-flight poll until completed/failed, then stop and keep rendered result"
+  };
   const originalFetch = typeof root.fetch === "function" ? root.fetch.bind(root) : null;
 
   function delay(ms) {
@@ -15656,6 +15663,13 @@ if (typeof window !== "undefined") {
 
     if (!rows.length) return false;
 
+    const signature = JSON.stringify(rows);
+    if (signature === lastRenderSignature && messagesEl.innerHTML.trim()) {
+      if (view.status) setStatus(view.status === "completed" ? "Complete" : view.status);
+      return true;
+    }
+    lastRenderSignature = signature;
+
     messagesEl.innerHTML = rows.map((msg) => `
       <article class="summary-card queued-chat-message">
         <span>${escapeHtml(msg.role)}</span>
@@ -15711,40 +15725,73 @@ if (typeof window !== "undefined") {
 
   async function pollQueuedJob(jobId, options) {
     if (!originalFetch || !jobId) return;
+    const normalizedJobId = safeString(jobId).trim();
+    if (!normalizedJobId) return;
+
+    const force = Boolean(options && options.force);
+    const cachedStatus = getLast(storage.status);
+    const cachedReply = getLast(storage.reply);
+    const cachedJobId = getLast(storage.jobId);
+
+    if (!force && cachedJobId === normalizedJobId && cachedStatus === "completed" && cachedReply) {
+      renderCachedConversation();
+      return;
+    }
+
+    if (!force && activePollJobId === normalizedJobId) {
+      return;
+    }
+
+    activePollJobId = normalizedJobId;
     const generation = ++pollGeneration;
-    const maxPolls = Math.max(1, Number((options && options.maxPolls) || 20));
-    const intervalMs = Math.max(500, Number((options && options.intervalMs) || 1500));
+    const maxPolls = Math.max(1, Number((options && options.maxPolls) || 120));
+    const intervalMs = Math.max(1000, Number((options && options.intervalMs) || 2000));
 
-    for (let i = 0; i < maxPolls; i += 1) {
-      if (generation !== pollGeneration) return;
-      if (!companionElementsReady()) {
-        await delay(intervalMs);
-        continue;
-      }
+    try {
+      for (let i = 0; i < maxPolls; i += 1) {
+        if (generation !== pollGeneration) return;
+        if (!companionElementsReady()) {
+          await delay(intervalMs);
+          continue;
+        }
 
-      try {
-        setStatus(i === 0 ? "Loading last reply..." : `Waiting for worker... poll ${i + 1}`);
-        const payload = await fetchQueuedJob(jobId);
-        const view = normalizeQueuedJobPayload(payload);
-        if (!view.jobId) view.jobId = jobId;
-        persistView(view);
-        renderConversation(view);
+        try {
+          setStatus(i === 0 ? "Waiting for worker..." : `Waiting for worker... poll ${i + 1}`);
+          const payload = await fetchQueuedJob(normalizedJobId);
+          const view = normalizeQueuedJobPayload(payload);
+          if (!view.jobId) view.jobId = normalizedJobId;
+          persistView(view);
+          renderConversation(view);
 
-        if (view.status === "completed" || view.status === "failed") {
+          if (view.status === "completed" || view.status === "failed") {
+            activePollJobId = "";
+            return;
+          }
+        } catch (err) {
+          setStatus("Result reader error");
+          renderConversation({
+            jobId: normalizedJobId,
+            prompt: getLast(storage.prompt),
+            status: "error",
+            error: err && err.message ? err.message : String(err)
+          });
+          activePollJobId = "";
           return;
         }
-      } catch (err) {
-        setStatus("Result reader error");
-        renderConversation({
-          jobId,
-          prompt: getLast(storage.prompt),
-          status: "error",
-          error: err && err.message ? err.message : String(err)
-        });
-        return;
+
+        await delay(intervalMs);
       }
 
-      await delay(intervalMs);
+      activePollJobId = "";
+      setStatus("Queued job is still waiting.");
+      renderConversation({
+        jobId: normalizedJobId,
+        prompt: getLast(storage.prompt),
+        status: "queued",
+        error: "Still queued. The worker may not be running yet."
+      });
+    } finally {
+      if (activePollJobId === normalizedJobId) activePollJobId = "";
     }
   }
 
@@ -15752,9 +15799,27 @@ if (typeof window !== "undefined") {
     if (!companionElementsReady()) return false;
     const jobId = getLast(storage.jobId);
     if (!jobId) return false;
+
+    const status = getLast(storage.status);
+    const reply = getLast(storage.reply);
+
     renderCachedConversation();
-    pollQueuedJob(jobId, { maxPolls: 8, intervalMs: 1200 });
+
+    if ((status === "completed" && reply) || status === "failed") {
+      return true;
+    }
+
+    pollQueuedJob(jobId, { maxPolls: 120, intervalMs: 2000 });
     return true;
+  }
+
+  function scheduleRestoreLastQueuedJob(delayMs) {
+    if (restoreScheduled) return;
+    restoreScheduled = true;
+    setTimeout(() => {
+      restoreScheduled = false;
+      restoreLastQueuedJob();
+    }, Math.max(0, Number(delayMs) || 0));
   }
 
   function capturePromptFromForm() {
@@ -15800,7 +15865,7 @@ if (typeof window !== "undefined") {
               setLast(storage.jobId, jobId);
               setLast(storage.status, "queued");
               setLast(storage.updatedAt, new Date().toISOString());
-              pollQueuedJob(jobId, { maxPolls: 40, intervalMs: 1500 });
+              pollQueuedJob(jobId, { maxPolls: 120, intervalMs: 2000, force: true });
             } else if (method === "GET") {
               const view = normalizeQueuedJobPayload(payload);
               if (view.jobId || view.status || view.responseText) {
@@ -15833,35 +15898,43 @@ if (typeof window !== "undefined") {
       clearStoredConversation();
       return;
     }
-    setTimeout(restoreLastQueuedJob, 80);
-    setTimeout(restoreLastQueuedJob, 500);
+    scheduleRestoreLastQueuedJob(120);
   }, true);
 
   window.addEventListener("DOMContentLoaded", () => {
-    setTimeout(restoreLastQueuedJob, 0);
-    setTimeout(restoreLastQueuedJob, 500);
-    setTimeout(restoreLastQueuedJob, 1500);
+    scheduleRestoreLastQueuedJob(0);
   });
 
   window.addEventListener("hashchange", () => {
-    setTimeout(restoreLastQueuedJob, 80);
-    setTimeout(restoreLastQueuedJob, 500);
+    scheduleRestoreLastQueuedJob(120);
   });
 
   window.addEventListener("popstate", () => {
-    setTimeout(restoreLastQueuedJob, 80);
-    setTimeout(restoreLastQueuedJob, 500);
+    scheduleRestoreLastQueuedJob(120);
   });
 
   let bootTicks = 0;
   const bootTimer = window.setInterval(() => {
     bootTicks += 1;
-    restoreLastQueuedJob();
-    if (bootTicks >= 20) window.clearInterval(bootTimer);
+    const restored = restoreLastQueuedJob();
+    if (restored || bootTicks >= 8) window.clearInterval(bootTimer);
   }, 500);
 
-  setTimeout(restoreLastQueuedJob, 0);
-  setTimeout(restoreLastQueuedJob, 500);
-  setTimeout(restoreLastQueuedJob, 1500);
+  try {
+    const observerRoot = document.getElementById("app") || document.body;
+    if (observerRoot && root.MutationObserver) {
+      const observer = new MutationObserver(() => {
+        if (document.getElementById("queuedChatForm")) {
+          scheduleRestoreLastQueuedJob(120);
+        }
+      });
+      observer.observe(observerRoot, { childList: true, subtree: true });
+      root.stage16FcO45EBvCompanionStableResultPoller.observer = true;
+    }
+  } catch (_err) {
+    root.stage16FcO45EBvCompanionStableResultPoller.observer = false;
+  }
+
+  scheduleRestoreLastQueuedJob(0);
 })();
 
