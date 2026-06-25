@@ -3052,3 +3052,28 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   font-size: 0.85em;
 }
 
+
+
+/* Stage 16 FC-O45-E-BB Companion clean chat workspace CSS. */
+.companion-clean-hidden {
+  display: none !important;
+}
+
+[data-stage16-fc-o45-e-bb-renamed="chat-title"] {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+[data-stage16-fc-o45-e-bb-renamed="message-helper"] {
+  opacity: 0.82;
+}
+
+#companionImmersionPrimaryWorkspace {
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+#companionImmersionPrimaryWorkspace .companion-immersion-debug:not([open]) {
+  opacity: 0.8;
+}
+
