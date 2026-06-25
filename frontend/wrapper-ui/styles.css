@@ -3077,3 +3077,21 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   opacity: 0.8;
 }
 
+
+
+/* Stage 16 FC-O45-E-BD Companion hard-clean visible workspace CSS. */
+.companion-hard-clean-hidden,
+[data-stage16-fc-o45-e-bd-hidden],
+[hidden][data-stage16-fc-o45-e-bd-hidden] {
+  display: none !important;
+}
+
+[data-stage16-fc-o45-e-bd-renamed="chat-title"] {
+  font-size: 1.25rem;
+  font-weight: 750;
+}
+
+[data-stage16-fc-o45-e-bd-renamed="message-helper"] {
+  opacity: 0.86;
+}
+
