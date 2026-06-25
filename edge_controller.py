@@ -23443,3 +23443,224 @@ def e3z_bl_edge_worker_fail(
 
 
 # E3Z_BL_CT203_SQLITE_WORKER_ENDPOINTS_END
+
+# APC_STAGE16_FC_O45_E_CH_C_COMPANION_STUDY_ACTION_START
+def _stage16_chc_companion_study_action_normalize(value):
+    return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+
+
+def _stage16_chc_companion_study_action_reply(action, study_payload, mutated=False, message=None):
+    return {
+        "ok": True,
+        "feature": "companion_study_action",
+        "stage": "stage16-fc-o45-e-ch-c",
+        "action": action,
+        "mutated": bool(mutated),
+        "message": message or "Study action completed.",
+        "study": study_payload,
+    }
+
+
+async def _stage16_chc_companion_study_action_dispatch(request: Request):
+    payload = await request.json()
+    if not isinstance(payload, dict):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "ok": False,
+                "error": "companion_study_action_payload_must_be_object",
+                "stage": "stage16-fc-o45-e-ch-c",
+            },
+        )
+
+    action = _stage16_chc_companion_study_action_normalize(
+        payload.get("action") or payload.get("command") or payload.get("intent")
+    )
+
+    if action in ("status", "study_status", "session_status"):
+        result = await public_study_session_status(request)
+        return _stage16_chc_companion_study_action_reply(
+            action="study_status",
+            study_payload=result,
+            mutated=False,
+            message="Study session status retrieved.",
+        )
+
+    if action in ("list_decks", "decks", "show_decks"):
+        result = await public_study_list_decks(request)
+        return _stage16_chc_companion_study_action_reply(
+            action="list_decks",
+            study_payload=result,
+            mutated=False,
+            message="Study decks retrieved.",
+        )
+
+    if action in ("list_cards", "cards", "deck_cards"):
+        deck_id = payload.get("deck_id") or payload.get("deckId")
+        if deck_id is None:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "ok": False,
+                    "error": "companion_study_action_deck_id_required",
+                    "stage": "stage16-fc-o45-e-ch-c",
+                    "action": action,
+                },
+            )
+        result = await public_study_list_cards(int(deck_id), request)
+        return _stage16_chc_companion_study_action_reply(
+            action="list_cards",
+            study_payload=result,
+            mutated=False,
+            message=f"Study cards retrieved for deck {deck_id}.",
+        )
+
+    if action in ("start", "start_study", "study_start", "start_session"):
+        result = await public_study_session_start(request)
+        return _stage16_chc_companion_study_action_reply(
+            action="start_study",
+            study_payload=result,
+            mutated=True,
+            message="Study session started.",
+        )
+
+    if action in ("pause", "pause_study", "study_pause", "pause_session"):
+        result = await public_study_session_pause(request)
+        return _stage16_chc_companion_study_action_reply(
+            action="pause_study",
+            study_payload=result,
+            mutated=True,
+            message="Study session paused.",
+        )
+
+    if action in ("resume", "resume_study", "study_resume", "resume_session"):
+        result = await public_study_session_resume(request)
+        return _stage16_chc_companion_study_action_reply(
+            action="resume_study",
+            study_payload=result,
+            mutated=True,
+            message="Study session resumed.",
+        )
+
+    if action in ("stop", "stop_study", "study_stop", "stop_session"):
+        result = await public_study_session_stop(request)
+        return _stage16_chc_companion_study_action_reply(
+            action="stop_study",
+            study_payload=result,
+            mutated=True,
+            message="Study session stopped.",
+        )
+
+    if action in ("command", "study_command", "session_command", "answer", "read_answer", "correct", "wrong", "skip"):
+        result = await public_study_session_command(request)
+        return _stage16_chc_companion_study_action_reply(
+            action="study_command",
+            study_payload=result,
+            mutated=True,
+            message="Study command routed.",
+        )
+
+    if action in ("add_card", "create_card", "save_flashcard"):
+        deck_id = payload.get("deck_id") or payload.get("deckId")
+        if deck_id is None:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "ok": False,
+                    "error": "companion_study_action_deck_id_required",
+                    "stage": "stage16-fc-o45-e-ch-c",
+                    "action": action,
+                },
+            )
+        result = await public_study_create_card(int(deck_id), request)
+        return _stage16_chc_companion_study_action_reply(
+            action="add_card",
+            study_payload=result,
+            mutated=True,
+            message=f"Study card added to deck {deck_id}.",
+        )
+
+    if action in ("make_flashcards", "flashcards"):
+        text = str(payload.get("message") or payload.get("text") or payload.get("content") or "").strip()
+        if not text:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "ok": False,
+                    "error": "companion_study_action_message_required",
+                    "stage": "stage16-fc-o45-e-ch-c",
+                    "action": action,
+                },
+            )
+
+        # Conservative backend-only first step: produce deterministic card candidates
+        # without writing cards. Saving cards uses the explicit add_card action.
+        candidates = []
+        for raw_line in text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            if "=>" in line:
+                front, back = line.split("=>", 1)
+            elif "::" in line:
+                front, back = line.split("::", 1)
+            elif " - " in line:
+                front, back = line.split(" - ", 1)
+            else:
+                continue
+            front = front.strip()
+            back = back.strip()
+            if front and back:
+                candidates.append({"front": front, "back": back})
+
+        if not candidates:
+            candidates = [
+                {
+                    "front": "Summarize this study note.",
+                    "back": text[:800],
+                }
+            ]
+
+        return _stage16_chc_companion_study_action_reply(
+            action="make_flashcards",
+            study_payload={
+                "ok": True,
+                "cards": candidates[:12],
+                "save_action": "add_card",
+                "mutated": False,
+            },
+            mutated=False,
+            message="Flashcard candidates created. Use add_card to save selected cards.",
+        )
+
+    raise HTTPException(
+        status_code=400,
+        detail={
+            "ok": False,
+            "error": "unsupported_companion_study_action",
+            "stage": "stage16-fc-o45-e-ch-c",
+            "supported_actions": [
+                "study_status",
+                "list_decks",
+                "list_cards",
+                "start_study",
+                "pause_study",
+                "resume_study",
+                "stop_study",
+                "study_command",
+                "add_card",
+                "make_flashcards",
+            ],
+        },
+    )
+
+
+@app.post("/api/companion/study/action")
+async def api_companion_study_action(request: Request):
+    return await _stage16_chc_companion_study_action_dispatch(request)
+
+
+@app.post("/public/companion/study/action")
+async def public_companion_study_action(request: Request):
+    return await _stage16_chc_companion_study_action_dispatch(request)
+# APC_STAGE16_FC_O45_E_CH_C_COMPANION_STUDY_ACTION_END
