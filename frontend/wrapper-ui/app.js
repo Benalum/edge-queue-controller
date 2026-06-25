@@ -3737,12 +3737,12 @@ function queuedChatRenderMessages() {
 }
 
 function renderQueuedChatPage() {
-  const signedIn = Boolean(authState?.token);
-
-  // STAGE_5P8H_COMPANION_CANONICAL_RENDERER_BEGIN
-  // Canonical Companion renderer. This directly renders the polished UI while preserving
-  // the existing queued chat IDs used by bindQueuedChatPage / queuedChatSubmit.
-  if (!signedIn) {
+  /* Stage 16 FC-O45-E-BJ-R4 Companion structural minimal source.
+   * Signed-in Companion renders the minimal chat DOM directly.
+   * Existing queued-chat IDs/classes are preserved so current submit, polling,
+   * result, and clear handlers keep working.
+   */
+  if (!authState || !authState.token) {
     return `
       <section class="page-card stage5p8h-companion-page stage5p8h-companion-public" data-stage5p8h-canonical-companion="true">
         <p class="eyebrow">Companion</p>
@@ -3755,92 +3755,26 @@ function renderQueuedChatPage() {
   }
 
   return `
-    <section class="stage5p8h-companion-page" data-stage5p8h-canonical-companion="true" aria-label="Companion workspace">
-      <div class="stage5p8h-companion-hero">
-        <div>
-          <p class="stage5p8h-eyebrow">Companion</p>
-          <h1>Supportive chat workspace</h1>
-          <p>Talk with your local Companion while the queue handles work safely behind the scenes.</p>
-        </div>
-        <div class="stage5p8h-hero-badge">Queue-aware UI</div>
-      </div>
-
-      <div class="stage5p8h-companion-grid">
-        <section class="stage5p8h-conversation-card" aria-label="Companion conversation">
-          <div class="stage5p8h-empty-state">
-            <!-- Stage 16 FC-O45-E-BH removed companion empty icon -->
-            <div>
-              <!-- Stage 16 FC-O45-E-BF removed extra chat heading -->
-              <!-- Stage 16 FC-O45-E-BF removed queued-endpoint explanation -->
-            </div>
-          </div>
-
-          <section class="stage5p8h-message-stream">
-            <h2>Conversation</h2>
-            <div id="queuedChatMessages" class="stage5p8h-message-list"></div>
-          </section>
-
-          <form id="queuedChatForm" class="stage5p8h-message-form">
-            <label for="queuedChatInput">Message</label>
-            <textarea id="queuedChatInput" rows="5" placeholder="Message Companion..."></textarea>
-
-            <div class="stage5p8h-actions">
-              <button class="stage5p8h-send-button" type="submit" id="queuedChatSendBtn">Send message</button>
-              <button class="stage5p8h-clear-button" type="button" id="queuedChatClearBtn">Clear</button>
-            </div>
-          </form>
+    <section class="stage5p8h-companion-page stage16-fc-o45-e-bj-companion-minimal" data-stage5p8h-canonical-companion="true" data-stage16-fc-o45-e-bj="structural-minimal" aria-label="Companion workspace">
+      <section class="stage5p8h-conversation-card" aria-label="Companion conversation">
+        <section class="stage5p8h-message-stream">
+          <h2>Conversation</h2>
+          <p class="stage16-fc-o45-e-bj-helper">Type a message and press Enter to send.</p>
+          <div id="queuedChatMessages" class="stage5p8h-message-list"></div>
         </section>
 
-        <aside class="stage5p8h-status-rail" aria-label="Companion status">
-          <section class="stage5p8h-status-card">
-            <p class="stage5p8h-eyebrow">Companion status</p>
-            <div class="stage5p8h-status-row">
-              <span>Status</span>
-              <strong id="queuedChatStatus">Ready</strong>
-            </div>
-            <!-- STAGE_5P10G_SIMPLIFIED_QUEUE_DISPLAY_BEGIN -->
-            <div class="stage5p8h-status-row stage5p10g-queue-row">
-              <span>Queue</span>
-              <strong id="queuedChatQueueSummary">—</strong>
-            </div>
-            <!-- STAGE_5P10G_SIMPLIFIED_QUEUE_DISPLAY_END -->
-            <div class="stage5p8h-status-row">
-              <span>Worker</span>
-              <strong>Companion queue worker</strong>
-            </div>
-            <div class="stage5p8h-status-row">
-              <span>Model</span>
-              <strong>fallback: qwen2.5:0.5b</strong>
-            </div>
-          </section>
+        <form id="queuedChatForm" class="stage5p8h-message-form">
+          <label for="queuedChatInput">Message</label>
+          <textarea id="queuedChatInput" rows="5" placeholder="Message Companion..."></textarea>
 
-          <section class="stage5p8h-status-card">
-            <p class="stage5p8h-eyebrow">How this works</p>
-            <p>
-              Messages continue through /api/chat/queued. The page polls the existing job status endpoint and displays the final assistant reply without changing backend behavior.
-            </p>
-          </section>
-
-          <section class="stage5p8h-status-card stage5p11a-study-phrase-guide">
-            <!-- STAGE_5P11A_COMPANION_STUDY_PHRASE_GUIDE_BEGIN -->
-            <p class="stage5p8h-eyebrow">Study phrases</p>
-            <p>Use natural phrases with Companion to control Study sessions.</p>
-
-            <div class="stage5p11a-phrase-list">
-              <div><strong>Start:</strong> “Study session start” or “Start a study session.”</div>
-              <div><strong>Pause:</strong> “Study session pause.”</div>
-              <div><strong>Resume:</strong> “Study session resume.”</div>
-              <div><strong>Stop:</strong> “Study session stop.”</div>
-              <div><strong>Answer:</strong> “Read the answer.”</div>
-              <div><strong>Mark:</strong> “Correct,” “wrong,” or “skip.”</div>
-            </div>
-            <!-- STAGE_5P11A_COMPANION_STUDY_PHRASE_GUIDE_END -->
-          </section>
-        </aside>
-      </div>
+          <div class="stage5p8h-actions">
+            <button class="stage5p8h-send-button" type="submit" id="queuedChatSendBtn">Send message</button>
+            <button class="stage5p8h-clear-button" type="button" id="queuedChatClearBtn">Clear</button>
+          </div>
+        </form>
+      </section>
     </section>
   `;
-  // STAGE_5P8H_COMPANION_CANONICAL_RENDERER_END
 }
 
 
@@ -14216,7 +14150,19 @@ if (typeof window !== "undefined") {
  * - speaking
  * - needs_attention
  */
+/* Stage 16 FC-O45-E-BJ-R4 Companion structural minimal early flag.
+ * Must be defined before old Companion runtime IIFEs so they skip before mutating the DOM.
+ */
+if (typeof window !== "undefined") {
+  window.__apcCompanionStructuralMinimalMode = true;
+}
+
 (function stage16FcO45EAtWireCompanionImmersionPanel() {
+  if (window.__apcCompanionStructuralMinimalMode) {
+    window.__stage16FcO45EAtWireCompanionImmersionPanelSkippedForStructuralMinimalMode = true;
+    return;
+  }
+
   if (typeof window === "undefined" || window.__apcCompanionImmersionVisiblePanelInstalled) return;
   window.__apcCompanionImmersionVisiblePanelInstalled = true;
 
@@ -14488,6 +14434,11 @@ if (typeof window !== "undefined") {
  * - Keep the model label aligned with the proven qwen2.5:0.5b queue-worker path when the old fallback text is rendered.
  */
 (function stage16FcO45EAzCompanionImmersionPrimaryWorkspace() {
+  if (window.__apcCompanionStructuralMinimalMode) {
+    window.__stage16FcO45EAzCompanionImmersionPrimaryWorkspaceSkippedForStructuralMinimalMode = true;
+    return;
+  }
+
   if (window.__stage16FcO45EAzCompanionImmersionPrimaryWorkspaceInstalled) {
     return;
   }
@@ -14640,6 +14591,7 @@ if (typeof window !== "undefined") {
 })();
 
 
+
 /*
  * Stage 16 FC-O45-E-BB Companion clean chat workspace.
  *
@@ -14651,6 +14603,11 @@ if (typeof window !== "undefined") {
  * - Preserve existing queued chat endpoint, polling flow, result reader code, and backend behavior.
  */
 (function stage16FcO45EBbCompanionCleanChatWorkspace() {
+  if (window.__apcCompanionStructuralMinimalMode) {
+    window.__stage16FcO45EBbCompanionCleanChatWorkspaceSkippedForStructuralMinimalMode = true;
+    return;
+  }
+
   if (window.__stage16FcO45EBbCompanionCleanChatWorkspaceInstalled) {
     return;
   }
@@ -14842,6 +14799,11 @@ if (typeof window !== "undefined") {
  * - Companion result reader
  */
 (function stage16FcO45EBdCompanionHardCleanVisibleWorkspace() {
+  if (window.__apcCompanionStructuralMinimalMode) {
+    window.__stage16FcO45EBdCompanionHardCleanVisibleWorkspaceSkippedForStructuralMinimalMode = true;
+    return;
+  }
+
   if (window.__stage16FcO45EBdCompanionHardCleanVisibleWorkspaceInstalled) {
     return;
   }
@@ -15065,6 +15027,11 @@ if (typeof window !== "undefined") {
  * - Clear
  */
 (function stage16FcO45EBfCompanionMinimalChatSource() {
+  if (window.__apcCompanionStructuralMinimalMode) {
+    window.__stage16FcO45EBfCompanionMinimalChatSourceSkippedForStructuralMinimalMode = true;
+    return;
+  }
+
   if (window.__stage16FcO45EBfCompanionMinimalChatSourceInstalled) {
     return;
   }
@@ -15215,6 +15182,11 @@ if (typeof window !== "undefined") {
  * - Clear
  */
 (function stage16FcO45EBhCompanionDedupeMinimalVisibleSource() {
+  if (window.__apcCompanionStructuralMinimalMode) {
+    window.__stage16FcO45EBhCompanionDedupeMinimalVisibleSourceSkippedForStructuralMinimalMode = true;
+    return;
+  }
+
   if (window.__stage16FcO45EBhCompanionDedupeMinimalVisibleSourceInstalled) {
     return;
   }
@@ -15393,3 +15365,55 @@ if (typeof window !== "undefined") {
 
   runBoundedCleanup();
 })();
+
+
+/*
+ * Stage 16 FC-O45-E-BJ-R4 Companion structural minimal runtime.
+ *
+ * The Companion route renders minimal chat DOM directly. This runtime only installs
+ * Enter-to-send. It does not hide legacy panels after render and does not install a MutationObserver.
+ */
+(function stage16FcO45EBjR4CompanionStructuralMinimalRuntime() {
+  if (window.__stage16FcO45EBjR4CompanionStructuralMinimalRuntimeInstalled) {
+    return;
+  }
+  window.__stage16FcO45EBjR4CompanionStructuralMinimalRuntimeInstalled = true;
+
+  function installEnterToSend() {
+    const form = document.getElementById("queuedChatForm");
+    const textarea = document.getElementById("queuedChatInput");
+    if (!form || !textarea || textarea.dataset.stage16FcO45EBjR4EnterInstalled === "true") {
+      return;
+    }
+    textarea.dataset.stage16FcO45EBjR4EnterInstalled = "true";
+    textarea.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey || event.isComposing) {
+        return;
+      }
+      event.preventDefault();
+      if (typeof form.requestSubmit === "function") {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      }
+    });
+  }
+
+  function installMinimalHelpers() {
+    installEnterToSend();
+  }
+
+  document.addEventListener("DOMContentLoaded", installMinimalHelpers);
+  window.addEventListener("load", installMinimalHelpers);
+  window.addEventListener("hashchange", () => window.setTimeout(installMinimalHelpers, 0));
+  window.addEventListener("popstate", () => window.setTimeout(installMinimalHelpers, 0));
+
+  window.apcCompanionStructuralMinimalWorkspace = Object.freeze({
+    marker: "stage16FcO45EBjR4CompanionStructuralMinimalRuntime",
+    apply: installMinimalHelpers,
+    installEnterToSend,
+  });
+
+  installMinimalHelpers();
+})();
+

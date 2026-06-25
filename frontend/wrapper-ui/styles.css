@@ -3121,3 +3121,87 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   display: block;
 }
 
+
+
+/* Stage 16 FC-O45-E-BJ Companion structural minimal CSS. */
+.stage16-fc-o45-e-bj-companion-minimal {
+  display: grid;
+  gap: 1rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-conversation-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-conversation-header h2 {
+  margin-bottom: 0.25rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-message-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+
+
+/* Stage 16 FC-O45-E-BJ-R3 Companion structural minimal CSS. */
+.stage16-fc-o45-e-bj-companion-minimal {
+  display: grid;
+  gap: 1rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-conversation-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-message-stream {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage16-fc-o45-e-bj-helper {
+  margin-top: 0;
+  opacity: 0.9;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-message-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+
+
+/* Stage 16 FC-O45-E-BJ-R4 Companion structural minimal CSS. */
+.stage16-fc-o45-e-bj-companion-minimal {
+  display: grid;
+  gap: 1rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-conversation-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-message-stream {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage16-fc-o45-e-bj-helper {
+  margin-top: 0;
+  opacity: 0.9;
+}
+
+.stage16-fc-o45-e-bj-companion-minimal .stage5p8h-message-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
