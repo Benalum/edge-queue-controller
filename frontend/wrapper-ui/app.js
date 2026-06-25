@@ -15417,3 +15417,53 @@ if (typeof window !== "undefined") {
   installMinimalHelpers();
 })();
 
+
+
+/*
+ * Stage 16 FC-O45-E-BL Companion delegated Enter-to-send source.
+ *
+ * Fixes route-timing where the Companion tab can render after helper setup.
+ * This is delegated on document, so it works for future #queuedChatInput nodes.
+ * It does not install a MutationObserver and does not hide or rewrite DOM after render.
+ */
+(function stage16FcO45EBlCompanionDelegatedEnterToSend() {
+  if (window.__stage16FcO45EBlCompanionDelegatedEnterToSendInstalled) {
+    return;
+  }
+  window.__stage16FcO45EBlCompanionDelegatedEnterToSendInstalled = true;
+
+  document.addEventListener("keydown", (event) => {
+    const target = event.target;
+    if (!target || target.id !== "queuedChatInput") {
+      return;
+    }
+    if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey || event.isComposing) {
+      return;
+    }
+
+    const form = document.getElementById("queuedChatForm");
+    if (!form) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (typeof form.requestSubmit === "function") {
+      form.requestSubmit();
+    } else {
+      const submit = document.getElementById("queuedChatSendBtn");
+      if (submit && typeof submit.click === "function") {
+        submit.click();
+      } else {
+        form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      }
+    }
+  }, true);
+
+  window.apcCompanionDelegatedEnterToSend = Object.freeze({
+    marker: "stage16FcO45EBlCompanionDelegatedEnterToSend",
+    inputId: "queuedChatInput",
+    formId: "queuedChatForm",
+    sendButtonId: "queuedChatSendBtn",
+  });
+})();
