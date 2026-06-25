@@ -3108,3 +3108,16 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   opacity: 0.9;
 }
 
+
+
+/* Stage 16 FC-O45-E-BH Companion dedupe minimal visible CSS. */
+.companion-dedupe-minimal-hidden,
+[data-stage16-fc-o45-e-bh-hidden],
+[hidden][data-stage16-fc-o45-e-bh-hidden] {
+  display: none !important;
+}
+
+[data-stage16-fc-o45-e-bh-message-kept="true"] {
+  display: block;
+}
+

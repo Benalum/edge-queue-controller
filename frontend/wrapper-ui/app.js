@@ -3768,7 +3768,7 @@ function renderQueuedChatPage() {
       <div class="stage5p8h-companion-grid">
         <section class="stage5p8h-conversation-card" aria-label="Companion conversation">
           <div class="stage5p8h-empty-state">
-            <div class="stage5p8h-empty-icon">💬</div>
+            <!-- Stage 16 FC-O45-E-BH removed companion empty icon -->
             <div>
               <!-- Stage 16 FC-O45-E-BF removed extra chat heading -->
               <!-- Stage 16 FC-O45-E-BF removed queued-endpoint explanation -->
@@ -10699,7 +10699,7 @@ async function handleResetPasswordRoute() {
     const empty = document.createElement("div");
     empty.className = "stage5o35-empty-state";
     empty.innerHTML = [
-      '<div class="stage5o35-empty-icon">💬</div>',
+      '',
       '<div>',
       '',
       '',
@@ -15194,4 +15194,202 @@ if (typeof window !== "undefined") {
   });
 
   scheduleApply();
+})();
+
+
+/*
+ * Stage 16 FC-O45-E-BH Companion dedupe minimal visible source.
+ *
+ * Corrective source patch after BG browser observation:
+ * - Hide remaining Thinking / Debug details / Immersion chrome.
+ * - Hide remaining Study phrases helper block.
+ * - Hide the decorative chat icon.
+ * - Deduplicate repeated visible "You ..." and "Assistant ..." message rows.
+ * - Avoid another continuous MutationObserver loop; use a bounded cleanup pass.
+ *
+ * Target visible primary flow:
+ * - Conversation
+ * - Type a message and press Enter to send.
+ * - Message
+ * - Send message
+ * - Clear
+ */
+(function stage16FcO45EBhCompanionDedupeMinimalVisibleSource() {
+  if (window.__stage16FcO45EBhCompanionDedupeMinimalVisibleSourceInstalled) {
+    return;
+  }
+  window.__stage16FcO45EBhCompanionDedupeMinimalVisibleSourceInstalled = true;
+
+  const BH_MARKER = "stage16FcO45EBhCompanionDedupeMinimalVisibleSource";
+
+  function safeText(node) {
+    return (node && node.textContent ? node.textContent : "").replace(/\s+/g, " ").trim();
+  }
+
+  function hideNode(node, reason) {
+    if (!node) return false;
+    const tag = String(node.tagName || "").toLowerCase();
+    if (tag === "html" || tag === "body" || tag === "main") return false;
+    node.classList.add("companion-dedupe-minimal-hidden");
+    node.classList.add("companion-minimal-chat-hidden");
+    node.classList.add("companion-hard-clean-hidden");
+    node.classList.add("companion-clean-hidden");
+    node.setAttribute("hidden", "");
+    node.setAttribute("aria-hidden", "true");
+    node.setAttribute("data-stage16-fc-o45-e-bh-hidden", reason);
+    return true;
+  }
+
+  function isHidden(node) {
+    return !node || node.hidden || node.getAttribute("aria-hidden") === "true" ||
+      node.classList.contains("companion-dedupe-minimal-hidden") ||
+      node.classList.contains("companion-minimal-chat-hidden") ||
+      node.classList.contains("companion-hard-clean-hidden") ||
+      node.classList.contains("companion-clean-hidden");
+  }
+
+  function leafishElements(root) {
+    return Array.from(root.querySelectorAll("h1,h2,h3,h4,p,span,strong,small,li,div"))
+      .filter((node) => !isHidden(node))
+      .filter((node) => node.querySelectorAll("h1,h2,h3,h4,p,span,strong,small,li,button,input,textarea").length <= 2);
+  }
+
+  function hideExactLooseText(root, text, reason) {
+    const wanted = String(text || "").toLowerCase();
+    leafishElements(root).forEach((node) => {
+      if (safeText(node).toLowerCase() === wanted) {
+        hideNode(node, reason);
+      }
+    });
+  }
+
+  function smallestPanelContaining(root, text) {
+    const wanted = String(text || "").toLowerCase();
+    const candidates = Array.from(root.querySelectorAll("section, article, fieldset, .card, .panel, .summary-box, div"))
+      .filter((node) => {
+        if (isHidden(node)) return false;
+        const tag = String(node.tagName || "").toLowerCase();
+        if (tag === "main" || node.id === "app" || node.id === "root") return false;
+        return safeText(node).toLowerCase().includes(wanted);
+      });
+
+    candidates.sort((a, b) => {
+      return (safeText(a).length - safeText(b).length) ||
+        (a.querySelectorAll("*").length - b.querySelectorAll("*").length);
+    });
+
+    return candidates[0] || null;
+  }
+
+  function hideRemainingChrome(root) {
+    [
+      "Thinking",
+      "Listening",
+      "Speaking",
+      "Debug details",
+      "Companion",
+      "Study phrases",
+      "Use natural phrases with Companion to control Study sessions.",
+      "Start: “Study session start” or “Start a study session.”",
+      "Pause: “Study session pause.”",
+      "Resume: “Study session resume.”",
+      "Stop: “Study session stop.”",
+      "Answer: “Read the answer.”",
+      "Mark: “Correct,” “wrong,” or “skip.”",
+      "💬"
+    ].forEach((text) => hideExactLooseText(root, text, "remaining-chrome"));
+
+    [
+      "Use natural phrases with Companion to control Study sessions.",
+      "Start: “Study session start” or “Start a study session.”",
+      "Study phrases"
+    ].forEach((text) => {
+      const panel = smallestPanelContaining(root, text);
+      if (panel) hideNode(panel, "study-phrases-panel");
+    });
+
+    [
+      document.getElementById("companionImmersionPrimaryWorkspace"),
+      document.getElementById("companionImmersionVisiblePanel")
+    ].filter(Boolean).forEach((node) => hideNode(node, "immersion-chrome-panel"));
+  }
+
+  function normalizeMessageText(text) {
+    return String(text || "")
+      .replace(/\s+/g, " ")
+      .replace(/^You\s*:\s*/i, "You ")
+      .replace(/^Assistant\s*:\s*/i, "Assistant ")
+      .trim();
+  }
+
+  function messageKeyFor(text) {
+    const normalized = normalizeMessageText(text);
+    if (/^You\s+\S.+/i.test(normalized)) {
+      return normalized.replace(/^You\s+/i, "you:");
+    }
+    if (/^Assistant\s+\S.+/i.test(normalized)) {
+      return normalized.replace(/^Assistant\s+/i, "assistant:");
+    }
+    return "";
+  }
+
+  function dedupeVisibleMessages(root) {
+    const seen = new Set();
+    const candidates = leafishElements(root)
+      .filter((node) => {
+        const text = normalizeMessageText(safeText(node));
+        if (text.length < 6 || text.length > 420) return false;
+        return /^You\s+\S.+/i.test(text) || /^Assistant\s+\S.+/i.test(text);
+      });
+
+    candidates.forEach((node) => {
+      const key = messageKeyFor(safeText(node));
+      if (!key) return;
+      if (seen.has(key)) {
+        hideNode(node, "duplicate-visible-message");
+      } else {
+        seen.add(key);
+        node.setAttribute("data-stage16-fc-o45-e-bh-message-kept", "true");
+      }
+    });
+  }
+
+  function ensureEnterToSendStillInstalled() {
+    if (window.apcCompanionCleanChatWorkspace && typeof window.apcCompanionCleanChatWorkspace.installEnterToSend === "function") {
+      window.apcCompanionCleanChatWorkspace.installEnterToSend();
+    }
+  }
+
+  function applyDedupeMinimalVisible() {
+    const root = document.querySelector("main") || document.body;
+    hideRemainingChrome(root);
+    dedupeVisibleMessages(root);
+    ensureEnterToSendStillInstalled();
+  }
+
+  function runBoundedCleanup() {
+    let remaining = 12;
+    function tick() {
+      applyDedupeMinimalVisible();
+      remaining -= 1;
+      if (remaining > 0) {
+        window.setTimeout(tick, 250);
+      }
+    }
+    tick();
+  }
+
+  document.addEventListener("DOMContentLoaded", runBoundedCleanup);
+  window.addEventListener("load", runBoundedCleanup);
+  window.addEventListener("hashchange", runBoundedCleanup);
+  window.addEventListener("popstate", runBoundedCleanup);
+
+  window.apcCompanionDedupeMinimalVisible = Object.freeze({
+    marker: BH_MARKER,
+    apply: applyDedupeMinimalVisible,
+    dedupeVisibleMessages,
+    hideRemainingChrome,
+  });
+
+  runBoundedCleanup();
 })();
