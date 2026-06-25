@@ -15503,6 +15503,10 @@ if (typeof window !== "undefined") {
     installed: true,
     behavior: "single-flight poll until completed/failed, then stop and keep rendered result"
   };
+  root.stage16FcO45EBxCompanionFinalRenderWins = {
+    installed: true,
+    behavior: "completed conversation render must win over later blank placeholder rerenders"
+  };
   const originalFetch = typeof root.fetch === "function" ? root.fetch.bind(root) : null;
 
   function delay(ms) {
@@ -15561,6 +15565,11 @@ if (typeof window !== "undefined") {
     setLast(storage.reply, "");
     setLast(storage.status, "");
     setLast(storage.updatedAt, "");
+    lastRenderSignature = "";
+    const messagesEl = document.getElementById("queuedChatMessages");
+    if (messagesEl) {
+      messagesEl.removeAttribute("data-stage16-fc-o45-e-bx-render-signature");
+    }
   }
 
   function findDeep(value, keys, depth) {
@@ -15664,11 +15673,16 @@ if (typeof window !== "undefined") {
     if (!rows.length) return false;
 
     const signature = JSON.stringify(rows);
-    if (signature === lastRenderSignature && messagesEl.innerHTML.trim()) {
+    const domSignature = messagesEl.getAttribute("data-stage16-fc-o45-e-bx-render-signature") || "";
+    const hasRenderedConversationRows = Boolean(
+      messagesEl.querySelector && messagesEl.querySelector(".queued-chat-message")
+    );
+    if (signature === lastRenderSignature && signature === domSignature && hasRenderedConversationRows) {
       if (view.status) setStatus(view.status === "completed" ? "Complete" : view.status);
       return true;
     }
     lastRenderSignature = signature;
+    messagesEl.setAttribute("data-stage16-fc-o45-e-bx-render-signature", signature);
 
     messagesEl.innerHTML = rows.map((msg) => `
       <article class="summary-card queued-chat-message">
