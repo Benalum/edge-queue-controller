@@ -15952,3 +15952,372 @@ if (typeof window !== "undefined") {
   scheduleRestoreLastQueuedJob(0);
 })();
 
+/* APC_STAGE16_FC_O45_E_CA_STUDY_COMPANION_MVP_START */
+;(() => {
+  "use strict";
+
+  const VERSION = "stage16-fc-o45-e-ca-r3";
+  const ROOT_ID = "apc-study-companion-mvp";
+  const STYLE_ID = "apc-study-companion-mvp-style";
+  const KEYS = {
+    answer: "apc.studyCompanion.lastAnswer",
+    prompt: "apc.studyCompanion.lastPrompt",
+    jobId: "apc.studyCompanion.lastJobId",
+    status: "apc.studyCompanion.status",
+    updatedAt: "apc.studyCompanion.updatedAt",
+    note: "apc.studyCompanion.note"
+  };
+
+  if (window.__APC_STUDY_COMPANION_MVP_VERSION === VERSION) return;
+  window.__APC_STUDY_COMPANION_MVP_VERSION = VERSION;
+  window.__APC_COMPANION_ROUTE_RESTORE_DISABLED = true;
+  window.__APC_COMPANION_LONG_POLLER_DISABLED = true;
+
+  const get = (key) => localStorage.getItem(key) || "";
+  const set = (key, value) => localStorage.setItem(key, String(value || ""));
+  const del = (key) => localStorage.removeItem(key);
+  const now = () => new Date().toLocaleString();
+
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>'"]/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      "\"": "&quot;"
+    }[char]));
+  }
+
+  function firstString(...values) {
+    for (const value of values) {
+      if (typeof value === "string" && value.trim()) return value.trim();
+    }
+    return "";
+  }
+
+  function extractAnswer(payload, depth = 0) {
+    if (!payload || depth > 5) return "";
+    if (typeof payload === "string") return payload.trim();
+    if (Array.isArray(payload)) {
+      for (const item of payload) {
+        const value = extractAnswer(item, depth + 1);
+        if (value) return value;
+      }
+      return "";
+    }
+    if (typeof payload !== "object") return "";
+
+    const direct = firstString(
+      payload.answer,
+      payload.completion,
+      payload.response,
+      payload.output,
+      payload.content,
+      payload.text,
+      payload.result_text,
+      payload.resultText,
+      payload.message && payload.message.content
+    );
+    if (direct) return direct;
+
+    for (const key of ["result", "results", "job_result", "job_results", "data", "rows"]) {
+      const value = extractAnswer(payload[key], depth + 1);
+      if (value) return value;
+    }
+    return "";
+  }
+
+  function extractJobId(payload) {
+    if (!payload || typeof payload !== "object") return "";
+    return firstString(
+      payload.job_id,
+      payload.id,
+      payload.job && payload.job.job_id,
+      payload.job && payload.job.id,
+      payload.data && payload.data.job_id,
+      payload.data && payload.data.id
+    );
+  }
+
+  function extractStatus(payload) {
+    if (!payload || typeof payload !== "object") return "";
+    return firstString(
+      payload.status,
+      payload.job && payload.job.status,
+      payload.data && payload.data.status,
+      Array.isArray(payload.jobs) && payload.jobs[0] && payload.jobs[0].status
+    );
+  }
+
+  async function safeJson(response) {
+    const body = await response.text();
+    if (!body.trim()) return {};
+    try {
+      return JSON.parse(body);
+    } catch (_err) {
+      return { text: body };
+    }
+  }
+
+  function shouldShowPanel() {
+    const routeText = `${location.pathname} ${location.hash} ${document.title}`;
+    if (/companion|study/i.test(routeText)) return true;
+    const active = document.querySelector('[aria-current="page"], .active, [data-active="true"]');
+    return !!(active && /companion|study/i.test(active.textContent || ""));
+  }
+
+  function findHost() {
+    return document.querySelector("main") || document.querySelector("#app") || document.body;
+  }
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = `
+      #${ROOT_ID} { box-sizing: border-box; max-width: 920px; margin: 1.25rem auto; padding: 1rem; border: 1px solid rgba(127,127,127,.35); border-radius: 16px; background: rgba(127,127,127,.08); }
+      #${ROOT_ID} * { box-sizing: border-box; }
+      #${ROOT_ID} h1, #${ROOT_ID} h2 { margin: 0 0 .5rem; }
+      #${ROOT_ID} p { margin: .35rem 0; }
+      #${ROOT_ID} textarea { width: 100%; min-height: 7rem; padding: .75rem; border-radius: 12px; border: 1px solid rgba(127,127,127,.45); font: inherit; }
+      #${ROOT_ID} button { margin: .35rem .35rem .35rem 0; padding: .55rem .8rem; border-radius: 999px; border: 1px solid rgba(127,127,127,.45); cursor: pointer; }
+      #${ROOT_ID} .apc-ca-status { display: inline-block; margin: .35rem 0 .75rem; padding: .25rem .55rem; border-radius: 999px; border: 1px solid rgba(127,127,127,.35); font-size: .95rem; }
+      #${ROOT_ID} .apc-ca-answer { white-space: pre-wrap; padding: .85rem; border-radius: 12px; border: 1px solid rgba(127,127,127,.3); background: rgba(255,255,255,.05); min-height: 4rem; }
+      #${ROOT_ID} .apc-ca-muted { opacity: .76; }
+      #${ROOT_ID} .apc-ca-actions { margin-top: .75rem; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function readLegacyAnswer() {
+    const names = [];
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index) || "";
+      if (/companion|study|answer|result/i.test(key)) names.push(key);
+    }
+    for (const key of names.slice(-20).reverse()) {
+      const raw = localStorage.getItem(key) || "";
+      if (!raw || raw.length > 20000) continue;
+      try {
+        const parsed = JSON.parse(raw);
+        const answer = extractAnswer(parsed);
+        if (answer) return answer;
+      } catch (_err) {
+        if (/\s/.test(raw) && raw.length > 12) return raw;
+      }
+    }
+    return "";
+  }
+
+  function readState() {
+    const adopted = get(KEYS.answer) || readLegacyAnswer();
+    if (adopted && !get(KEYS.answer)) set(KEYS.answer, adopted);
+    return {
+      answer: get(KEYS.answer),
+      prompt: get(KEYS.prompt),
+      jobId: get(KEYS.jobId),
+      status: get(KEYS.status) || "idle",
+      updatedAt: get(KEYS.updatedAt),
+      note: get(KEYS.note)
+    };
+  }
+
+  function writeStatus(status, note = "") {
+    set(KEYS.status, status);
+    set(KEYS.updatedAt, now());
+    if (note) set(KEYS.note, note);
+  }
+
+  function clearState() {
+    Object.values(KEYS).forEach(del);
+  }
+
+  function render() {
+    if (!shouldShowPanel()) return;
+    ensureStyle();
+
+    const host = findHost();
+    let root = document.getElementById(ROOT_ID);
+    if (!root) {
+      root = document.createElement("section");
+      root.id = ROOT_ID;
+      host.replaceChildren(root);
+    }
+
+    const state = readState();
+    const answer = state.answer || "No completed answer saved yet. Submit a message, then use Check status once after the worker completes.";
+    const status = state.status || "idle";
+    const prompt = state.prompt || "";
+    const jobLine = state.jobId ? `Job ${escapeHtml(state.jobId)}` : "No active job saved";
+    const updatedLine = state.updatedAt ? `Updated ${escapeHtml(state.updatedAt)}` : "Not updated yet";
+
+    root.innerHTML = `
+      <h1>Study Companion</h1>
+      <p class="apc-ca-muted">Stable last-message MVP. This panel does not reload the page or background-poll.</p>
+      <div class="apc-ca-status">Status: <strong>${escapeHtml(status)}</strong> · ${jobLine} · ${updatedLine}</div>
+      <form data-apc-ca="send">
+        <label for="apc-ca-prompt"><strong>Message</strong></label>
+        <textarea id="apc-ca-prompt" name="prompt" placeholder="Ask the Study Companion a question...">${escapeHtml(prompt)}</textarea>
+        <div>
+          <button type="submit">Send message</button>
+          <button type="button" data-apc-ca-action="check">Check status once</button>
+          <button type="button" data-apc-ca-action="clear">Clear</button>
+        </div>
+      </form>
+      <h2>Last AI answer</h2>
+      <div class="apc-ca-answer">${escapeHtml(answer)}</div>
+      <div class="apc-ca-actions" aria-label="Study actions">
+        <button type="button" data-apc-ca-action="copy">Copy answer</button>
+        <button type="button" data-apc-ca-action="study">Use in Study</button>
+        <button type="button" data-apc-ca-action="flashcards">Make flashcards</button>
+        <button type="button" data-apc-ca-action="quiz">Quiz me</button>
+      </div>
+      <p class="apc-ca-muted" data-apc-ca="note">${escapeHtml(state.note || "Study actions are placeholders except Copy answer.")}</p>
+    `;
+
+    root.querySelector('form[data-apc-ca="send"]').addEventListener("submit", onSubmit);
+    root.addEventListener("click", onClick);
+  }
+
+  async function onSubmit(event) {
+    event.preventDefault();
+
+    const prompt = String(new FormData(event.currentTarget).get("prompt") || "").trim();
+    if (!prompt) {
+      writeStatus("idle", "Type a message first.");
+      render();
+      return;
+    }
+
+    set(KEYS.prompt, prompt);
+    writeStatus("submitting", "Submitting one Companion job...");
+    render();
+
+    try {
+      const payload = {
+        job_type: "companion.chat",
+        prompt,
+        message: prompt,
+        input: { message: prompt, source: VERSION }
+      };
+
+      const endpoints = ["/api/jobs", "/jobs", "/api/companion/chat", "/public/companion/chat"];
+      let accepted = null;
+
+      for (const endpoint of endpoints) {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) continue;
+        accepted = await safeJson(response);
+        break;
+      }
+
+      if (!accepted) throw new Error("No Companion submit endpoint accepted the message.");
+
+      const jobId = extractJobId(accepted);
+      if (jobId) set(KEYS.jobId, jobId);
+      writeStatus(extractStatus(accepted) || "queued", jobId ? `Submitted as job ${jobId}.` : "Submitted; job id was not returned.");
+    } catch (err) {
+      writeStatus("submit_failed", err && err.message ? err.message : "Submit failed.");
+    }
+
+    render();
+  }
+
+  async function checkStatusOnce() {
+    const jobId = get(KEYS.jobId);
+    if (!jobId) {
+      writeStatus("idle", "No saved job id to check.");
+      render();
+      return;
+    }
+
+    writeStatus("checking", `Checking job ${jobId} once...`);
+    render();
+
+    const encoded = encodeURIComponent(jobId);
+    const endpoints = [`/api/jobs/${encoded}`, `/jobs/${encoded}`, `/api/jobs?job_id=${encoded}`, `/jobs?job_id=${encoded}`];
+
+    try {
+      let payload = null;
+
+      for (const endpoint of endpoints) {
+        const response = await fetch(endpoint, { method: "GET", credentials: "same-origin" });
+        if (!response.ok) continue;
+        payload = await safeJson(response);
+        break;
+      }
+
+      if (!payload) throw new Error("No job-status endpoint returned this job.");
+
+      const status = extractStatus(payload) || "unknown";
+      const answer = extractAnswer(payload);
+      if (status === "completed" && answer) set(KEYS.answer, answer);
+      writeStatus(status, answer ? "Completed answer saved." : "Status checked; no completed answer returned yet.");
+    } catch (err) {
+      writeStatus("status_check_failed", err && err.message ? err.message : "Status check failed.");
+    }
+
+    render();
+  }
+
+  async function onClick(event) {
+    const action = event.target && event.target.getAttribute("data-apc-ca-action");
+    if (!action) return;
+
+    if (action === "clear") {
+      clearState();
+      render();
+      return;
+    }
+
+    if (action === "check") {
+      await checkStatusOnce();
+      return;
+    }
+
+    if (action === "copy") {
+      const answer = get(KEYS.answer);
+      if (!answer) {
+        writeStatus(get(KEYS.status) || "idle", "No answer to copy yet.");
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(answer);
+        writeStatus(get(KEYS.status) || "idle", "Answer copied.");
+      } else {
+        writeStatus(get(KEYS.status) || "idle", "Copy is unavailable in this browser context.");
+      }
+      render();
+      return;
+    }
+
+    const labels = {
+      study: "Use in Study is a placeholder for the next Study integration patch.",
+      flashcards: "Make flashcards is a placeholder for the later flashcard job path.",
+      quiz: "Quiz me is a placeholder for the later quiz job path."
+    };
+
+    writeStatus(get(KEYS.status) || "idle", labels[action] || "Placeholder action.");
+    render();
+  }
+
+  function scheduleRenderFromNavigation(event) {
+    const target = event.target && event.target.closest && event.target.closest("a,button");
+    if (!target || target.closest(`#${ROOT_ID}`)) return;
+    if (/companion|study/i.test(target.textContent || target.href || "")) queueMicrotask(render);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", render, { once: true });
+  } else {
+    render();
+  }
+
+  window.addEventListener("hashchange", () => queueMicrotask(render));
+  window.addEventListener("popstate", () => queueMicrotask(render));
+  document.addEventListener("click", scheduleRenderFromNavigation, true);
+})();
+/* APC_STAGE16_FC_O45_E_CA_STUDY_COMPANION_MVP_END */
