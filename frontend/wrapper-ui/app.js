@@ -3810,7 +3810,7 @@ function renderQueuedChatPage() {
             </div>
             <div class="stage5p8h-status-row">
               <span>Model</span>
-              <strong>fallback: gemma4:e4b</strong>
+              <strong>fallback: qwen2.5:0.5b</strong>
             </div>
           </section>
 
@@ -14475,3 +14475,166 @@ if (typeof window !== "undefined") {
   companionImmersionScheduleRender();
 })();
 
+
+
+/*
+ * Stage 16 FC-O45-E-AZ Companion Immersion primary workspace placement.
+ *
+ * Source-only UI refinement:
+ * - Move the visible Immersion panel into the main Companion workspace instead of leaving it above the page.
+ * - Keep the existing queue/message flow intact.
+ * - Collapse debug-like details by default.
+ * - Preserve result-reader and queued chat behavior.
+ * - Keep the model label aligned with the proven qwen2.5:0.5b queue-worker path when the old fallback text is rendered.
+ */
+(function stage16FcO45EAzCompanionImmersionPrimaryWorkspace() {
+  if (window.__stage16FcO45EAzCompanionImmersionPrimaryWorkspaceInstalled) {
+    return;
+  }
+  window.__stage16FcO45EAzCompanionImmersionPrimaryWorkspaceInstalled = true;
+
+  const AZ_MARKER = "stage16FcO45EAzCompanionImmersionPrimaryWorkspace";
+
+  function safeText(node) {
+    return (node && node.textContent ? node.textContent : "").replace(/\s+/g, " ").trim();
+  }
+
+  function findHeadingByText(root, text) {
+    const expected = String(text || "").toLowerCase();
+    return Array.from(root.querySelectorAll("h1,h2,h3,h4,h5,h6,strong,legend"))
+      .find((node) => safeText(node).toLowerCase() === expected) || null;
+  }
+
+  function candidateContainerFor(node) {
+    if (!node) return null;
+    return node.closest("section, article, main, .card, .panel, .view, .page, .workspace, div") || null;
+  }
+
+  function findCompanionWorkspace() {
+    const root = document.querySelector("main") || document.body;
+    const headings = Array.from(root.querySelectorAll("h1,h2,h3,h4"));
+    const companionHeading = headings.find((heading) => {
+      const text = safeText(heading).toLowerCase();
+      if (text !== "companion") return false;
+      const container = candidateContainerFor(heading);
+      return container && /supportive chat workspace|talk with your local companion|start a companion conversation/i.test(safeText(container));
+    });
+    if (companionHeading) {
+      const section = companionHeading.closest("section, article, .card, .panel, .view, .page, main, div");
+      if (section) return section;
+    }
+    return root;
+  }
+
+  function findConversationAnchor(workspace) {
+    const conversationHeading = findHeadingByText(workspace, "Conversation");
+    if (conversationHeading) {
+      return candidateContainerFor(conversationHeading) || conversationHeading;
+    }
+
+    const startHeading = Array.from(workspace.querySelectorAll("h1,h2,h3,h4,h5,h6,strong"))
+      .find((node) => /start a companion conversation/i.test(safeText(node)));
+    if (startHeading) {
+      return candidateContainerFor(startHeading) || startHeading;
+    }
+
+    return workspace.firstElementChild || workspace;
+  }
+
+  function moveImmersionPanelIntoWorkspace() {
+    const panelHost = document.getElementById("companionImmersionVisiblePanel");
+    if (!panelHost) return false;
+
+    const workspace = findCompanionWorkspace();
+    if (!workspace || panelHost.closest("#companionImmersionPrimaryWorkspace")) {
+      return false;
+    }
+
+    let primaryHost = document.getElementById("companionImmersionPrimaryWorkspace");
+    if (!primaryHost) {
+      primaryHost = document.createElement("section");
+      primaryHost.id = "companionImmersionPrimaryWorkspace";
+      primaryHost.className = "companion-immersion-primary-workspace";
+      primaryHost.setAttribute("data-stage16-fc-o45-e-az", AZ_MARKER);
+      primaryHost.setAttribute("aria-label", "Companion Immersion");
+    }
+
+    if (panelHost.parentElement !== primaryHost) {
+      primaryHost.appendChild(panelHost);
+    }
+
+    const anchor = findConversationAnchor(workspace);
+    if (anchor && primaryHost.parentElement !== workspace) {
+      workspace.insertBefore(primaryHost, anchor);
+    } else if (!primaryHost.parentElement) {
+      workspace.insertBefore(primaryHost, workspace.firstChild);
+    }
+
+    return true;
+  }
+
+  function collapseImmersionDebugByDefault() {
+    const details = document.querySelectorAll(
+      "#companionImmersionPrimaryWorkspace details, #companionImmersionVisiblePanel details, .companion-immersion-debug"
+    );
+    details.forEach((node) => {
+      if (node.tagName && node.tagName.toLowerCase() === "details") {
+        node.open = false;
+      }
+    });
+  }
+
+  function softenLegacyConversationDebug() {
+    const workspace = findCompanionWorkspace();
+
+    Array.from(workspace.querySelectorAll("*")).forEach((node) => {
+      if (node.children && node.children.length > 3) return;
+      const text = safeText(node);
+      if (text === "Companion status" || text === "How this works" || text === "Study phrases") {
+        const block = candidateContainerFor(node);
+        if (block && block !== workspace && !block.closest("#companionImmersionPrimaryWorkspace")) {
+          block.classList.add("companion-legacy-debug-secondary");
+        }
+      }
+    });
+
+    Array.from(workspace.querySelectorAll("*")).forEach((node) => {
+      if (node.childNodes.length !== 1 || node.children.length) return;
+      if (safeText(node) === "fallback: gemma4:e4b") {
+        node.textContent = "fallback: qwen2.5:0.5b";
+        node.setAttribute("data-stage16-fc-o45-e-az-model-label", "qwen2.5:0.5b");
+      }
+    });
+  }
+
+  function applyCompanionImmersionPrimaryWorkspace() {
+    moveImmersionPanelIntoWorkspace();
+    collapseImmersionDebugByDefault();
+    softenLegacyConversationDebug();
+  }
+
+  let scheduled = false;
+  function scheduleApply() {
+    if (scheduled) return;
+    scheduled = true;
+    window.requestAnimationFrame(() => {
+      scheduled = false;
+      applyCompanionImmersionPrimaryWorkspace();
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", scheduleApply);
+  window.addEventListener("load", scheduleApply);
+  window.addEventListener("hashchange", scheduleApply);
+  window.addEventListener("popstate", scheduleApply);
+
+  const observer = new MutationObserver(scheduleApply);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+
+  window.apcCompanionImmersionPrimaryWorkspace = Object.freeze({
+    marker: AZ_MARKER,
+    apply: applyCompanionImmersionPrimaryWorkspace,
+  });
+
+  scheduleApply();
+})();

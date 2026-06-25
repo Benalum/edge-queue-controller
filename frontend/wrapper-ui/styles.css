@@ -3020,3 +3020,35 @@ body[data-current-route="/support"] .public-feature-gate .summary-box {
   cursor: pointer;
 }
 
+
+
+/* Stage 16 FC-O45-E-AZ Companion Immersion primary workspace CSS. */
+#companionImmersionPrimaryWorkspace {
+  margin: 1rem 0;
+}
+
+#companionImmersionPrimaryWorkspace #companionImmersionVisiblePanel {
+  margin: 0;
+}
+
+#companionImmersionPrimaryWorkspace .companion-immersion-panel {
+  border-width: 1px;
+}
+
+#companionImmersionPrimaryWorkspace .companion-immersion-state {
+  font-size: 1.05rem;
+}
+
+#companionImmersionPrimaryWorkspace .companion-immersion-debug:not([open]) pre {
+  display: none;
+}
+
+.companion-legacy-debug-secondary {
+  opacity: 0.78;
+}
+
+.companion-legacy-debug-secondary pre,
+.companion-legacy-debug-secondary code {
+  font-size: 0.85em;
+}
+
