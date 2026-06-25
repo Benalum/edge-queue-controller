@@ -16321,3 +16321,552 @@ if (typeof window !== "undefined") {
   document.addEventListener("click", scheduleRenderFromNavigation, true);
 })();
 /* APC_STAGE16_FC_O45_E_CA_STUDY_COMPANION_MVP_END */
+
+/* APC_STAGE16_FC_O45_E_CG_B_SURFACE_OWNER_START */
+;(() => {
+  "use strict";
+
+  const VERSION = "stage16-fc-o45-e-cg-b-r2";
+  const ROOT_ID = "apc-study-companion-mvp";
+  const STYLE_ID = "apc-study-companion-mvp-style";
+  const FORCE_KEY = "apc.studyCompanion.forceSurface";
+  const KEYS = {
+    answer: "apc.studyCompanion.lastAnswer",
+    prompt: "apc.studyCompanion.lastPrompt",
+    jobId: "apc.studyCompanion.lastJobId",
+    status: "apc.studyCompanion.status",
+    updatedAt: "apc.studyCompanion.updatedAt",
+    note: "apc.studyCompanion.note"
+  };
+
+  if (window.__APC_STUDY_COMPANION_SURFACE_OWNER_VERSION === VERSION) return;
+  window.__APC_STUDY_COMPANION_SURFACE_OWNER_VERSION = VERSION;
+  window.__APC_COMPANION_ROUTE_RESTORE_DISABLED = true;
+  window.__APC_COMPANION_LONG_POLLER_DISABLED = true;
+
+  let rendering = false;
+  let observerInstalled = false;
+
+  const get = (key) => localStorage.getItem(key) || "";
+  const set = (key, value) => localStorage.setItem(key, String(value || ""));
+  const del = (key) => localStorage.removeItem(key);
+  const now = () => new Date().toLocaleString();
+
+  function esc(value) {
+    return String(value || "").replace(/[&<>'"]/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      "\"": "&quot;"
+    }[char]));
+  }
+
+  function firstString(...values) {
+    for (const value of values) {
+      if (typeof value === "string" && value.trim()) return value.trim();
+      if (typeof value === "number" && Number.isFinite(value)) return String(value);
+    }
+    return "";
+  }
+
+  function parseJsonMaybe(text) {
+    if (!text || !String(text).trim()) return {};
+    try {
+      return JSON.parse(text);
+    } catch (_err) {
+      return { text: String(text) };
+    }
+  }
+
+  async function safeJson(response) {
+    return parseJsonMaybe(await response.text());
+  }
+
+  function extractAnswer(payload, depth = 0) {
+    if (!payload || depth > 7) return "";
+    if (typeof payload === "string") return payload.trim();
+    if (Array.isArray(payload)) {
+      for (const item of payload) {
+        const found = extractAnswer(item, depth + 1);
+        if (found) return found;
+      }
+      return "";
+    }
+    if (typeof payload !== "object") return "";
+
+    const direct = firstString(
+      payload.answer,
+      payload.completion,
+      payload.response,
+      payload.output,
+      payload.content,
+      payload.text,
+      payload.result_text,
+      payload.resultText,
+      payload.assistant,
+      payload.assistant_message,
+      payload.message && payload.message.content
+    );
+    if (direct) return direct;
+
+    for (const key of ["result", "results", "job_result", "job_results", "data", "row", "rows", "items"]) {
+      const found = extractAnswer(payload[key], depth + 1);
+      if (found) return found;
+    }
+    return "";
+  }
+
+  function extractJobId(payload, depth = 0) {
+    if (!payload || typeof payload !== "object" || depth > 6) return "";
+    if (Array.isArray(payload)) {
+      for (const item of payload) {
+        const found = extractJobId(item, depth + 1);
+        if (found) return found;
+      }
+      return "";
+    }
+
+    const direct = firstString(
+      payload.job_id,
+      payload.jobId,
+      payload.id,
+      payload.job && payload.job.job_id,
+      payload.job && payload.job.jobId,
+      payload.job && payload.job.id,
+      payload.data && payload.data.job_id,
+      payload.data && payload.data.jobId,
+      payload.data && payload.data.id
+    );
+    if (direct) return direct;
+
+    for (const key of ["job", "data", "result", "results", "row", "rows", "items"]) {
+      const found = extractJobId(payload[key], depth + 1);
+      if (found) return found;
+    }
+    return "";
+  }
+
+  function extractStatus(payload, depth = 0) {
+    if (!payload || typeof payload !== "object" || depth > 6) return "";
+    if (Array.isArray(payload)) {
+      for (const item of payload) {
+        const found = extractStatus(item, depth + 1);
+        if (found) return found;
+      }
+      return "";
+    }
+
+    const direct = firstString(
+      payload.status,
+      payload.state,
+      payload.job && payload.job.status,
+      payload.data && payload.data.status,
+      Array.isArray(payload.jobs) && payload.jobs[0] && payload.jobs[0].status
+    );
+    if (direct) return direct;
+
+    for (const key of ["job", "data", "result", "results", "row", "rows", "items"]) {
+      const found = extractStatus(payload[key], depth + 1);
+      if (found) return found;
+    }
+    return "";
+  }
+
+  function requestPrompt(body) {
+    if (!body || typeof body !== "string") return "";
+    try {
+      const parsed = JSON.parse(body);
+      return firstString(
+        parsed.prompt,
+        parsed.message,
+        parsed.input && parsed.input.message,
+        Array.isArray(parsed.messages) && parsed.messages.length && parsed.messages[parsed.messages.length - 1].content
+      );
+    } catch (_err) {
+      return "";
+    }
+  }
+
+  function writeStatus(status, note = "") {
+    set(KEYS.status, status);
+    set(KEYS.updatedAt, now());
+    if (note) set(KEYS.note, note);
+  }
+
+  function syncPayload(payload, meta = {}) {
+    const jobId = extractJobId(payload);
+    const answer = extractAnswer(payload);
+    const status = extractStatus(payload);
+
+    if (meta.prompt) set(KEYS.prompt, meta.prompt);
+    if (jobId) set(KEYS.jobId, jobId);
+
+    if (answer) {
+      set(KEYS.answer, answer);
+      writeStatus(/^queued$/i.test(status) ? "completed" : (status || "completed"), meta.note || "Assistant answer saved.");
+    } else if (status) {
+      writeStatus(status, meta.note || "Status updated.");
+    }
+
+    queueMicrotask(render);
+  }
+
+  window.apcStudyCompanionMvpSync = syncPayload;
+
+  function installFetchSync() {
+    if (!window.fetch || window.fetch.__apcStudyCompanionOwnerWrapped) return;
+
+    const originalFetch = window.fetch.bind(window);
+
+    async function wrappedFetch(input, init = {}) {
+      const url = String(typeof input === "string" ? input : (input && input.url) || "");
+      const method = String((init && init.method) || (input && input.method) || "GET").toUpperCase();
+      const interested = /\/api\/chat\/queued|\/api\/jobs|\/jobs|\/api\/companion|\/public\/companion/i.test(url);
+
+      if (interested && method === "POST") {
+        const prompt = requestPrompt(init && init.body);
+        if (prompt) set(KEYS.prompt, prompt);
+        writeStatus("submitting", "Submitting one Companion job...");
+      }
+
+      const response = await originalFetch(input, init);
+
+      if (interested) {
+        response.clone().text().then((body) => {
+          syncPayload(parseJsonMaybe(body), {
+            prompt: method === "POST" ? requestPrompt(init && init.body) : "",
+            note: method === "POST" ? "Submit response observed." : "Status/result response observed."
+          });
+        }).catch(() => {});
+      }
+
+      return response;
+    }
+
+    wrappedFetch.__apcStudyCompanionOwnerWrapped = true;
+    wrappedFetch.__apcOriginalFetch = originalFetch;
+    window.fetch = wrappedFetch;
+  }
+
+  function surfaceFrom(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    if (/^study$/i.test(raw)) return "/study";
+    if (/^companion$/i.test(raw)) return "/companion";
+    try {
+      const url = new URL(raw, location.origin);
+      const path = (url.pathname || "").replace(/\/+$/, "") || "/";
+      if (path === "/study" || path === "/companion") return path;
+      return "";
+    } catch (_err) {
+      return "";
+    }
+  }
+
+  function shouldOwnSurface() {
+    const path = (location.pathname || "").replace(/\/+$/, "") || "/";
+    const forced = sessionStorage.getItem(FORCE_KEY) || "";
+    if (path === "/study" || path === "/companion") return true;
+    if (forced === "/study" || forced === "/companion") return true;
+    if (/^#\/?(study|companion)\b/i.test(String(location.hash || ""))) return true;
+
+    const active = document.querySelector('[aria-current="page"], a.active, [data-active="true"]');
+    return !!(active && /study|companion/i.test(active.textContent || ""));
+  }
+
+  function host() {
+    return document.querySelector("#app") || document.querySelector("main");
+  }
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = `
+      #${ROOT_ID} { box-sizing: border-box; max-width: 920px; margin: 1.25rem auto; padding: 1rem; border: 1px solid rgba(127,127,127,.35); border-radius: 16px; background: rgba(127,127,127,.08); }
+      #${ROOT_ID} * { box-sizing: border-box; }
+      #${ROOT_ID} h1, #${ROOT_ID} h2 { margin: 0 0 .5rem; }
+      #${ROOT_ID} p { margin: .35rem 0; }
+      #${ROOT_ID} textarea { width: 100%; min-height: 7rem; padding: .75rem; border-radius: 12px; border: 1px solid rgba(127,127,127,.45); font: inherit; }
+      #${ROOT_ID} button { margin: .35rem .35rem .35rem 0; padding: .55rem .8rem; border-radius: 999px; border: 1px solid rgba(127,127,127,.45); cursor: pointer; }
+      #${ROOT_ID} .apc-ca-status { display: inline-block; margin: .35rem 0 .75rem; padding: .25rem .55rem; border-radius: 999px; border: 1px solid rgba(127,127,127,.35); font-size: .95rem; }
+      #${ROOT_ID} .apc-ca-answer { white-space: pre-wrap; padding: .85rem; border-radius: 12px; border: 1px solid rgba(127,127,127,.3); background: rgba(255,255,255,.05); min-height: 4rem; }
+      #${ROOT_ID} .apc-ca-muted { opacity: .76; }
+      #${ROOT_ID} .apc-ca-actions { margin-top: .75rem; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function adoptVisibleLegacyState() {
+    const target = host();
+    const text = String((target && target.innerText) || "");
+    if (!text) return;
+
+    const jobMatch = text.match(/\bJob\s+(\d+)\b/i);
+    if (jobMatch && jobMatch[1]) set(KEYS.jobId, jobMatch[1]);
+
+    const statusMatch = text.match(/\bStatus:\s*([A-Za-z0-9_-]+)/i);
+    const assistantMatch = text.match(/\bAssistant\s+([\s\S]*?)(?:\n\s*Status:|\n\s*Message\b|$)/i);
+    const visibleAnswer = assistantMatch && assistantMatch[1] ? assistantMatch[1].trim() : "";
+
+    if (visibleAnswer) {
+      set(KEYS.answer, visibleAnswer);
+      writeStatus("completed", "Adopted visible assistant answer from legacy Conversation UI.");
+    } else if (statusMatch && statusMatch[1]) {
+      writeStatus(statusMatch[1], "Adopted visible legacy status.");
+    }
+  }
+
+  function readState() {
+    return {
+      answer: get(KEYS.answer),
+      prompt: get(KEYS.prompt),
+      jobId: get(KEYS.jobId),
+      status: get(KEYS.status) || "idle",
+      updatedAt: get(KEYS.updatedAt),
+      note: get(KEYS.note)
+    };
+  }
+
+  function clearState() {
+    Object.values(KEYS).forEach(del);
+  }
+
+  function render() {
+    if (!shouldOwnSurface()) return;
+    const target = host();
+    if (!target || rendering) return;
+
+    rendering = true;
+    try {
+      installFetchSync();
+      ensureStyle();
+      adoptVisibleLegacyState();
+
+      let root = document.getElementById(ROOT_ID);
+      if (!root || root.parentElement !== target || target.children.length !== 1) {
+        root = document.createElement("section");
+        root.id = ROOT_ID;
+        target.replaceChildren(root);
+      }
+
+      const state = readState();
+      const hasAnswer = !!String(state.answer || "").trim();
+      const status = hasAnswer && state.status === "queued" ? "completed" : (state.status || "idle");
+      const jobLine = state.jobId ? `Job ${esc(state.jobId)}` : "No active job saved";
+      const updatedLine = state.updatedAt ? `Updated ${esc(state.updatedAt)}` : "Not updated yet";
+      const answer = hasAnswer ? state.answer : "No completed answer saved yet. Submit a message, then use Check status once after the worker completes.";
+
+      root.innerHTML = `
+        <h1>Study Companion</h1>
+        <p class="apc-ca-muted">Stable last-message MVP. This panel owns the Companion/Study surface and does not reload the page or background-poll.</p>
+        <div class="apc-ca-status">Status: <strong>${esc(status)}</strong> · ${jobLine} · ${updatedLine}</div>
+        <form data-apc-ca="send">
+          <label for="apc-ca-prompt"><strong>Message</strong></label>
+          <textarea id="apc-ca-prompt" name="prompt" placeholder="Ask the Study Companion a question...">${esc(state.prompt || "")}</textarea>
+          <div>
+            <button type="submit">Send message</button>
+            <button type="button" data-apc-ca-action="check">Check status once</button>
+            <button type="button" data-apc-ca-action="clear">Clear</button>
+          </div>
+        </form>
+        <h2>Last AI answer</h2>
+        <div class="apc-ca-answer">${esc(answer)}</div>
+        <div class="apc-ca-actions" aria-label="Study actions">
+          <button type="button" data-apc-ca-action="copy">Copy answer</button>
+          <button type="button" data-apc-ca-action="study">Use in Study</button>
+          <button type="button" data-apc-ca-action="flashcards">Make flashcards</button>
+          <button type="button" data-apc-ca-action="quiz">Quiz me</button>
+        </div>
+        <p class="apc-ca-muted" data-apc-ca="note">${esc(state.note || "Study actions are placeholders except Copy answer.")}</p>
+      `;
+
+      const form = root.querySelector('form[data-apc-ca="send"]');
+      if (form) form.onsubmit = onSubmit;
+      root.onclick = onClick;
+    } finally {
+      rendering = false;
+    }
+  }
+
+  async function onSubmit(event) {
+    event.preventDefault();
+
+    const prompt = String(new FormData(event.currentTarget).get("prompt") || "").trim();
+    if (!prompt) {
+      writeStatus("idle", "Type a message first.");
+      render();
+      return;
+    }
+
+    set(KEYS.prompt, prompt);
+    writeStatus("submitting", "Submitting one Companion job...");
+    render();
+
+    const payload = {
+      job_type: "companion.chat",
+      prompt,
+      message: prompt,
+      input: { message: prompt, source: VERSION },
+      messages: [{ role: "user", content: prompt }]
+    };
+
+    try {
+      const endpoints = ["/api/chat/queued", "/api/jobs", "/jobs", "/api/companion/chat", "/public/companion/chat"];
+      let accepted = null;
+
+      for (const endpoint of endpoints) {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) continue;
+        accepted = await safeJson(response);
+        syncPayload(accepted, { prompt, note: `Submitted through ${endpoint}.` });
+        break;
+      }
+
+      if (!accepted) throw new Error("No Companion submit endpoint accepted the message.");
+
+      const jobId = extractJobId(accepted);
+      if (jobId) set(KEYS.jobId, jobId);
+      writeStatus(extractStatus(accepted) || "queued", jobId ? `Submitted as job ${jobId}.` : "Submitted; job id was not returned.");
+    } catch (err) {
+      writeStatus("submit_failed", err && err.message ? err.message : "Submit failed.");
+    }
+
+    render();
+  }
+
+  async function checkStatusOnce() {
+    const jobId = get(KEYS.jobId);
+    if (!jobId) {
+      writeStatus("idle", "No saved job id to check.");
+      render();
+      return;
+    }
+
+    writeStatus("checking", `Checking job ${jobId} once...`);
+    render();
+
+    const encoded = encodeURIComponent(jobId);
+    const endpoints = [
+      `/api/chat/queued/${encoded}`,
+      `/api/jobs/${encoded}`,
+      `/jobs/${encoded}`,
+      `/api/jobs?job_id=${encoded}`,
+      `/jobs?job_id=${encoded}`
+    ];
+
+    try {
+      let payload = null;
+
+      for (const endpoint of endpoints) {
+        const response = await fetch(endpoint, { method: "GET", credentials: "same-origin" });
+        if (!response.ok) continue;
+        payload = await safeJson(response);
+        syncPayload(payload, { note: `Checked status through ${endpoint}.` });
+        break;
+      }
+
+      if (!payload) throw new Error("No job-status endpoint returned this job.");
+
+      const answer = extractAnswer(payload);
+      const status = extractStatus(payload) || "unknown";
+      if (answer) set(KEYS.answer, answer);
+      writeStatus(answer ? "completed" : status, answer ? "Completed answer saved." : "Status checked; no completed answer returned yet.");
+    } catch (err) {
+      writeStatus("status_check_failed", err && err.message ? err.message : "Status check failed.");
+    }
+
+    render();
+  }
+
+  async function onClick(event) {
+    const action = event.target && event.target.getAttribute("data-apc-ca-action");
+    if (!action) return;
+
+    if (action === "clear") {
+      clearState();
+      render();
+      return;
+    }
+
+    if (action === "check") {
+      await checkStatusOnce();
+      return;
+    }
+
+    if (action === "copy") {
+      const answer = get(KEYS.answer);
+      if (!answer) {
+        writeStatus(get(KEYS.status) || "idle", "No answer to copy yet.");
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(answer);
+        writeStatus(get(KEYS.status) || "idle", "Answer copied.");
+      } else {
+        writeStatus(get(KEYS.status) || "idle", "Copy is unavailable in this browser context.");
+      }
+      render();
+      return;
+    }
+
+    const labels = {
+      study: "Use in Study is a placeholder for the next Study integration patch.",
+      flashcards: "Make flashcards is a placeholder for the later flashcard job path.",
+      quiz: "Quiz me is a placeholder for the later quiz job path."
+    };
+    writeStatus(get(KEYS.status) || "idle", labels[action] || "Placeholder action.");
+    render();
+  }
+
+  function handleNavigationClick(event) {
+    const target = event.target && event.target.closest && event.target.closest("a,button,[data-route]");
+    if (!target || target.closest(`#${ROOT_ID}`)) return;
+
+    const route = surfaceFrom(target.getAttribute("data-route") || target.getAttribute("href") || target.textContent || "");
+    if (route === "/study" || route === "/companion") {
+      sessionStorage.setItem(FORCE_KEY, route);
+      queueMicrotask(render);
+      return;
+    }
+
+    if (route) sessionStorage.removeItem(FORCE_KEY);
+  }
+
+  function installObserver() {
+    if (observerInstalled || !document.body || !window.MutationObserver) return;
+    observerInstalled = true;
+
+    const observer = new MutationObserver(() => {
+      if (rendering || !shouldOwnSurface()) return;
+      if (!document.getElementById(ROOT_ID)) {
+        adoptVisibleLegacyState();
+        render();
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  function boot() {
+    installFetchSync();
+    installObserver();
+    render();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+
+  window.addEventListener("hashchange", () => queueMicrotask(render));
+  window.addEventListener("popstate", () => queueMicrotask(render));
+  window.addEventListener("pageshow", () => queueMicrotask(render));
+  document.addEventListener("click", handleNavigationClick, true);
+})();
+/* APC_STAGE16_FC_O45_E_CG_B_SURFACE_OWNER_END */
