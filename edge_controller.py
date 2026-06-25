@@ -5744,7 +5744,7 @@ def _chat_queued_create_mock_job(user_id, prompt, decision):
             (
                 _CHAT_QUEUED_JOB_TYPE,
                 prompt,
-                _CHAT_QUEUED_MOCK_MODEL,
+                _CHAT_QUEUED_REAL_MODEL,
                 "queued",
                 0,
                 now,
