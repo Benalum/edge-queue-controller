@@ -5654,6 +5654,10 @@ def _public_create_ollama_job(prompt: str, requested_model: str | None = None, u
 
 # STAGE_15_D_MOCK_QUEUED_CHAT_COMPAT_BEGIN
 _CHAT_QUEUED_MOCK_MODEL = "mock/no-model"
+_CHAT_QUEUED_REAL_MODEL = (
+    os.environ.get("EDGE_COMPANION_CHAT_REQUESTED_MODEL", "qwen2.5:0.5b").strip()
+    or "qwen2.5:0.5b"
+)
 _CHAT_QUEUED_JOB_TYPE = "companion.chat"
 
 
@@ -5707,7 +5711,7 @@ def _chat_queued_decision(user_id, prompt, metadata=None):
         "route_type": "queue_job",
         "job_type": _CHAT_QUEUED_JOB_TYPE,
         "model_tier": "medium",
-        "requested_model": _CHAT_QUEUED_MOCK_MODEL,
+        "requested_model": _CHAT_QUEUED_REAL_MODEL,
         "requires_confirmation": False,
         "reason": "mock queued companion compatibility; no model call",
         "model_call": "not_started",
