@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+DOC="docs/stage-16-fc-o45-e-ck-s-guarded-mock-companion-cleanup-dry-run-proof.md"
+
+test -f "$DOC"
+
+check() {
+  local needle="$1"
+  grep -Fq "$needle" "$DOC"
+}
+
+check "Guarded Mock Companion Cleanup Dry-Run Proof"
+check "/opt/edge-queue-controller/ops/db/plan-companion-mock-backlog-cleanup-read-only.py"
+check "16d5e145ee3fc917ff8474f82dac4c91ce4d6397c4cea54c0f1b4f3bc560af6f"
+check "stage-16-fc-o45-e-ck-s-install-run-cleanup-dry-run-20260626T051424Z"
+check "CK_S_DB_INTEGRITY=ok"
+check "CK_S_BEFORE_JOBS_TOTAL=575"
+check "CK_S_BEFORE_RESULTS_TOTAL=82"
+check "CK_S_BEFORE_CANDIDATE_COUNT=440"
+check "job_type=companion.chat"
+check "status=queued"
+check "attempts=0"
+check "result_rows=0"
+check "requested_model=mock/no-model"
+check "mock_companion_cleanup_plan_read_only=yes"
+check "candidate_count=440"
+check "candidate_min_id=24"
+check "candidate_max_id=570"
+check "candidate_id_sha256=2e7c58cb426b69406432c14aa1b6269cf85e6752ca2a63edecec91d08500a8d2"
+check "requires_future_approval=yes"
+check "mutated=no"
+check "candidate_day_count day=2026-06-20 count=1"
+check "candidate_day_count day=2026-06-24 count=1"
+check "candidate_day_count day=2026-06-25 count=438"
+check "candidate_prompt_bucket bucket=other_prompt count=2"
+check "candidate_prompt_bucket bucket=say_hello_one_sentence count=437"
+check "candidate_prompt_bucket bucket=stage15e_mock_validation count=1"
+check "CK_S_JSON_MODE=read_only"
+check "CK_S_JSON_CANDIDATE_COUNT=440"
+check "CK_S_JSON_MUTATED=False"
+check "CK_S_AFTER_JOBS_TOTAL=575"
+check "CK_S_AFTER_RESULTS_TOTAL=82"
+check "CK_S_AFTER_CANDIDATE_COUNT=440"
+check "CK_S_DB_COUNTS_UNCHANGED=yes"
+check "edge-queue-scheduler-one-shot.timer=inactive"
+check "edge-queue-scheduler-one-shot.service=inactive"
+check "edge-deterministic-companion-worker-once@999999.service=inactive"
+check "no DB write"
+check "no job mutation"
+check "no result insert"
+check "no selector/manual-wrapper/helper invocation"
+check "future mutation phase should still require separate approval"
+
+echo "PASS stage-16-fc-o45-e-ck-t cleanup dry-run proof record smoke"
