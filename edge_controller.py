@@ -23566,24 +23566,11 @@ async def _stage16_chc_companion_study_action_dispatch(request: Request):
         payload.get("action") or payload.get("command") or payload.get("intent")
     )
 
-    # Stage 16 FC-O45-E-CL-F-R2: authenticated deterministic last_message branch after JSON body parse.
-    # This is direct deterministic/no-model and intentionally avoids job insertion,
-    # result insertion, model calls, Ollama/PVESO calls, scheduler/timer activation,
-    # and worker activation. It is limited to the authenticated /api route; the
-    # public mirror falls through to the existing unsupported-action handling.
-    if action in ("last_message", "last_message_mvp", "study_last_message"):
-        _stage16_cl_f_request_path = str(getattr(getattr(request, "url", None), "path", "") or "")
-        if _stage16_cl_f_request_path == "/api/companion/study/action":
-            _stage16_cl_f_state = getattr(request, "state", None)
-            _stage16_cl_f_user_id = (
-                getattr(_stage16_cl_f_state, "user_id", None)
-                or getattr(_stage16_cl_f_state, "current_user_id", None)
-                or getattr(_stage16_cl_f_state, "authenticated_user_id", None)
-            )
-            return _stage16_fc_o45_e_cl_f_companion_study_last_message_mvp(
-                payload,
-                user_id=_stage16_cl_f_user_id,
-            )
+    # Stage 16 FC-O45-E-CL-H-R1: CL-F-R2 direct last_message branch is intentionally disabled.
+    # CL-G proved that returning the deterministic response here bypasses the
+    # route's existing bearer-auth behavior. Keep last_message unsupported until
+    # a later source patch wires it through the same explicit auth dependency as
+    # the other protected Companion routes.
 
     if action in ("status", "study_status", "session_status"):
         result = await public_study_session_status(request)
