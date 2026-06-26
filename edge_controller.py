@@ -23333,6 +23333,29 @@ def e3z_bl_edge_worker_claim(
 
                 row2 = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
                 claimed = _e3z_bl_row_to_dict(row2)
+                # APC_STAGE16_FC_O45_E_CJ_O_CLAIM_SHORT_CIRCUIT_RESPONSE_START
+                if str(claimed.get("job_type") or "") == "companion.chat":
+                    exact_result = _stage16_cj_j_companion_exact_answer_result(str(claimed.get("prompt") or ""))
+                    if (
+                        isinstance(exact_result, dict)
+                        and exact_result.get("ok") is True
+                        and exact_result.get("kind") == "deterministic_exact_answer"
+                        and exact_result.get("model_call_allowed") is False
+                        and exact_result.get("response_text")
+                    ):
+                        claimed["companion_execution"] = {
+                            "mode": "deterministic_exact_answer_short_circuit",
+                            "complete_without_model": True,
+                            "model": exact_result.get("model"),
+                            "response_text": exact_result.get("response_text"),
+                            "response_json": exact_result.get("response_json"),
+                            "model_required": False,
+                            "model_call_allowed": False,
+                            "semantic_exact_marker_pass": True,
+                            "result_source": "backend_deterministic_exact_answer_short_circuit",
+                            "stage": "stage16-fc-o45-e-cj-o",
+                        }
+                # APC_STAGE16_FC_O45_E_CJ_O_CLAIM_SHORT_CIRCUIT_RESPONSE_END
                 _e3z_bl_insert_worker_event(
                     conn,
                     payload.worker_id,
