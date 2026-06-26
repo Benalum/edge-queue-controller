@@ -23956,3 +23956,87 @@ def _stage16_cj_e_companion_prompt_wrapper_contract():
         ],
     }
 # APC_STAGE16_FC_O45_E_CJ_E_COMPANION_PROMPT_WRAPPER_END
+
+# APC_STAGE16_FC_O45_E_CJ_J_DETERMINISTIC_EXACT_ANSWER_START
+def _stage16_cj_j_should_short_circuit_exact_answer(prompt: str) -> dict:
+    """Return a deterministic no-model exact-answer decision when safe.
+
+    This helper is intentionally narrow. It only short-circuits explicit
+    exact-answer prompts that the CJ-E extractor can parse into a bounded
+    single-line marker.
+    """
+    marker = _stage16_cj_e_extract_exact_answer_marker(prompt)
+
+    if not marker:
+        return {
+            "ok": True,
+            "short_circuit": False,
+            "kind": "model_required",
+            "reason": "no_explicit_exact_answer_marker",
+        }
+
+    return {
+        "ok": True,
+        "short_circuit": True,
+        "kind": "deterministic_exact_answer",
+        "marker": marker,
+        "response_text": marker,
+        "model_required": False,
+        "model_call_allowed": False,
+        "result_source": "backend_deterministic_exact_answer_short_circuit",
+        "semantic_guard": "exact_marker_returned_without_model",
+    }
+
+
+def _stage16_cj_j_companion_exact_answer_result(prompt: str) -> dict:
+    decision = _stage16_cj_j_should_short_circuit_exact_answer(prompt)
+
+    if not decision.get("short_circuit"):
+        return decision
+
+    marker = decision["marker"]
+    return {
+        "ok": True,
+        "feature": "companion_exact_answer_short_circuit",
+        "stage": "stage16-fc-o45-e-cj-j",
+        "kind": "deterministic_exact_answer",
+        "response_text": marker,
+        "response_json": {
+            "ok": True,
+            "stage": "stage16-fc-o45-e-cj-j",
+            "kind": "deterministic_exact_answer",
+            "marker": marker,
+            "model_required": False,
+            "model_call_allowed": False,
+            "result_source": "backend_deterministic_exact_answer_short_circuit",
+        },
+        "model": "backend-deterministic/no-model",
+        "model_required": False,
+        "model_call_allowed": False,
+        "semantic_exact_marker_pass": True,
+        "mutated_study_state": False,
+        "mutated_voice_state": False,
+    }
+
+
+def _stage16_cj_j_companion_short_circuit_contract() -> dict:
+    return {
+        "ok": True,
+        "feature": "companion_exact_answer_short_circuit",
+        "stage": "stage16-fc-o45-e-cj-j",
+        "source_only": True,
+        "deterministic_exact_answer_enabled_by_helper": True,
+        "model_call_enabled_by_this_helper": False,
+        "persistent_worker_enabled": False,
+        "scheduler_timer_enabled": False,
+        "safe_scope": [
+            "explicit exact-answer prompts only",
+            "single-line bounded marker only",
+            "no model call",
+            "no frontend change",
+            "no Study mutation",
+            "no Voice mutation",
+        ],
+        "fallback": "non-exact prompts continue to require normal Companion model or Study action handling",
+    }
+# APC_STAGE16_FC_O45_E_CJ_J_DETERMINISTIC_EXACT_ANSWER_END
