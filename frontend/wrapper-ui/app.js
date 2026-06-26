@@ -255,9 +255,136 @@ window.__apcStudyCanonicalFullWorkspaceFcO45CNR2 = true;
     `;
   }
 
+
+  const COMPANION_LAST_MESSAGE_MARKER_CL_U = "APC_COMPANION_LAST_MESSAGE_CL_U";
+  const COMPANION_LAST_MESSAGE_PANEL_ID_CL_U = "apcCompanionLastMessageClU";
+
+  function companionLastMessageHeadersClU() {
+    const headers = { "Content-Type": "application/json" };
+    const candidateKeys = [
+      "access_token",
+      "apc_access_token",
+      "apcAccessToken",
+      "auth_token",
+      "authToken",
+      "session_token",
+      "sessionToken",
+    ];
+
+    for (const store of [window.localStorage, window.sessionStorage]) {
+      if (!store) continue;
+      for (const key of candidateKeys) {
+        let value = "";
+        try {
+          value = store.getItem(key) || "";
+        } catch (_) {
+          value = "";
+        }
+        value = String(value || "").trim();
+        if (!value) continue;
+        headers.Authorization = value.toLowerCase().startsWith("bearer ") ? value : `Bearer ${value}`;
+        return headers;
+      }
+    }
+
+    return headers;
+  }
+
+  async function companionLastMessagePostClU(inputText) {
+    const response = await fetch("/api/companion/study/action", {
+      method: "POST",
+      credentials: "include",
+      headers: companionLastMessageHeadersClU(),
+      body: JSON.stringify({
+        action: "last_message",
+        input_text: inputText,
+      }),
+    });
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch (_) {
+      data = {};
+    }
+
+    return { ok: response.ok && data && data.ok !== false, status: response.status, data };
+  }
+
+  function mountCompanionLastMessageControl(panel) {
+    if (!panel || document.getElementById(COMPANION_LAST_MESSAGE_PANEL_ID_CL_U)) return;
+
+    const section = document.createElement("section");
+    section.id = COMPANION_LAST_MESSAGE_PANEL_ID_CL_U;
+    section.className = "mini-summary apc-companion-last-message";
+    section.setAttribute("data-apc-marker", COMPANION_LAST_MESSAGE_MARKER_CL_U);
+    section.innerHTML = `
+      <strong>Study Companion</strong>
+      <p class="muted">Ask the signed-in Companion for a stable last-message study response.</p>
+      <label class="sr-only" for="apcCompanionLastMessageInputClU">Study Companion message</label>
+      <textarea id="apcCompanionLastMessageInputClU" rows="3" placeholder="Ask for a short study explanation or review prompt."></textarea>
+      <div class="companion-actions">
+        <button type="button" id="apcCompanionLastMessageButtonClU">Get last-message response</button>
+      </div>
+      <p class="muted" id="apcCompanionLastMessageStatusClU">Signed-in Study account required.</p>
+      <pre id="apcCompanionLastMessageOutputClU" hidden></pre>
+    `;
+
+    const host = panel.querySelector(".grid.two") || panel;
+    host.appendChild(section);
+
+    const input = section.querySelector("#apcCompanionLastMessageInputClU");
+    const button = section.querySelector("#apcCompanionLastMessageButtonClU");
+    const status = section.querySelector("#apcCompanionLastMessageStatusClU");
+    const output = section.querySelector("#apcCompanionLastMessageOutputClU");
+
+    async function runLastMessage() {
+      const inputText = String(input?.value || "").trim() || "Give me a short study response from my last message.";
+      if (button) button.disabled = true;
+      if (status) status.textContent = "Requesting Companion response…";
+      if (output) {
+        output.hidden = true;
+        output.textContent = "";
+      }
+
+      try {
+        const result = await companionLastMessagePostClU(inputText);
+        if (result.status === 401) {
+          if (status) status.textContent = "Please sign in to use the Study Companion.";
+          return;
+        }
+        if (!result.ok) {
+          if (status) status.textContent = `Companion request unavailable (${result.status}).`;
+          return;
+        }
+
+        const data = result.data || {};
+        const message = data.last_message || data.message || data.text || data.response_text || data.summary || "Companion response received.";
+        if (status) status.textContent = "Companion response ready.";
+        if (output) {
+          output.hidden = false;
+          output.textContent = [
+            `Mode: ${data.mode || "deterministic"}`,
+            `Action: ${data.action || "last_message"}`,
+            "",
+            message,
+          ].join("\n");
+        }
+      } catch (_) {
+        if (status) status.textContent = "Companion request failed. Try again after signing in.";
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    if (button) button.addEventListener("click", runLastMessage);
+  }
+
+
   async function loadTools(deckIdOverride) {
     const panel = mountPanel();
     if (!panel) return;
+    mountCompanionLastMessageControl(panel);
     const decksResult = await apiJson("/api/study/decks");
     if (!decksResult.ok) {
       panel.setAttribute("data-apc-study-tools-auth-cleanup", "APC_STUDY_TOOLS_AUTH_CLEANUP_FC_O45_C_K");
