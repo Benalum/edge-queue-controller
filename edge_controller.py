@@ -23664,3 +23664,168 @@ async def api_companion_study_action(request: Request):
 async def public_companion_study_action(request: Request):
     return await _stage16_chc_companion_study_action_dispatch(request)
 # APC_STAGE16_FC_O45_E_CH_C_COMPANION_STUDY_ACTION_END
+
+# APC_STAGE16_FC_O45_E_CI_B_VOICE_SPEECH_CONTRACT_START
+def _stage16_cib_voice_speech_default_contract():
+    return {
+        "ok": True,
+        "feature": "companion_voice_speech",
+        "stage": "stage16-fc-o45-e-ci-b",
+        "enabled": False,
+        "listen": {
+            "enabled": False,
+            "available": False,
+            "current_audio_capture_enabled": False,
+            "current_audio_upload_enabled": False,
+            "current_stt_job_enabled": False,
+            "future_job_type": "stt",
+            "future_worker_capability": "stt",
+            "future_service_label": "whisper_asr",
+            "requires_explicit_user_action": True,
+            "no_background_listening": True,
+            "no_auto_capture_on_page_load": True,
+        },
+        "speak": {
+            "enabled": False,
+            "available": False,
+            "current_audio_playback_enabled": False,
+            "current_tts_job_enabled": False,
+            "future_job_type": "tts",
+            "future_worker_capability": "tts",
+            "future_service_label": "kokoro_tts",
+            "fallback_to_text_output": True,
+        },
+        "defaults": {
+            "voice_enabled": False,
+            "listen_enabled": False,
+            "speak_enabled": False,
+            "auto_listen_enabled": False,
+            "auto_speak_enabled": False,
+            "push_to_talk_enabled": True,
+            "confirm_before_voice_capture": True,
+            "typed_input_must_remain_available": True,
+        },
+        "supported_actions": [
+            "status",
+            "listen_status",
+            "speak_status",
+            "stt_plan",
+            "tts_plan",
+        ],
+        "refused_actions": [
+            "capture_audio",
+            "upload_audio",
+            "transcribe",
+            "synthesize",
+            "play_audio",
+            "start_background_listening",
+        ],
+    }
+
+
+def _stage16_cib_voice_speech_reply(action="status"):
+    payload = _stage16_cib_voice_speech_default_contract()
+    payload["action"] = action
+    payload["message"] = (
+        "Voice/speech backend contract is present, but live audio capture, "
+        "STT, TTS, and playback are disabled until a later approved phase."
+    )
+    return payload
+
+
+def _stage16_cib_voice_speech_refusal(action):
+    return {
+        "ok": False,
+        "feature": "companion_voice_speech",
+        "stage": "stage16-fc-o45-e-ci-b",
+        "action": action,
+        "error": "voice_speech_runtime_disabled",
+        "message": (
+            "This action is intentionally disabled. The current backend phase "
+            "does not capture audio, upload audio, enqueue STT/TTS jobs, "
+            "generate speech, or play audio."
+        ),
+        "requires_later_phase": True,
+        "typed_input_fallback": True,
+        "no_background_listening": True,
+    }
+
+
+async def _stage16_cib_voice_speech_action_dispatch(request: Request):
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    if not isinstance(payload, dict):
+        payload = {}
+
+    action = str(
+        payload.get("action")
+        or payload.get("intent")
+        or payload.get("command")
+        or "status"
+    ).strip().lower().replace("-", "_").replace(" ", "_")
+
+    if action in ("", "status", "voice_status", "listen_status", "speak_status", "stt_plan", "tts_plan"):
+        return _stage16_cib_voice_speech_reply(action=action or "status")
+
+    if action in (
+        "capture_audio",
+        "upload_audio",
+        "transcribe",
+        "stt",
+        "synthesize",
+        "tts",
+        "play_audio",
+        "start_listening",
+        "start_background_listening",
+        "auto_listen",
+        "auto_speak",
+    ):
+        return _stage16_cib_voice_speech_refusal(action=action)
+
+    raise HTTPException(
+        status_code=400,
+        detail={
+            "ok": False,
+            "error": "unsupported_voice_speech_action",
+            "stage": "stage16-fc-o45-e-ci-b",
+            "supported_actions": [
+                "status",
+                "listen_status",
+                "speak_status",
+                "stt_plan",
+                "tts_plan",
+            ],
+            "refused_runtime_actions": [
+                "capture_audio",
+                "upload_audio",
+                "transcribe",
+                "synthesize",
+                "play_audio",
+                "start_background_listening",
+            ],
+        },
+    )
+
+
+@app.get("/api/companion/voice/status")
+async def api_companion_voice_status(request: Request):
+    return _stage16_cib_voice_speech_reply(action="status")
+
+
+@app.get("/public/companion/voice/status")
+async def public_companion_voice_status(request: Request):
+    return _stage16_cib_voice_speech_reply(action="status")
+
+
+@app.post("/api/companion/voice/action")
+async def api_companion_voice_action(request: Request):
+    return await _stage16_cib_voice_speech_action_dispatch(request)
+
+
+@app.post("/public/companion/voice/action")
+async def public_companion_voice_action(request: Request):
+    return await _stage16_cib_voice_speech_action_dispatch(request)
+# APC_STAGE16_FC_O45_E_CI_B_VOICE_SPEECH_CONTRACT_END
