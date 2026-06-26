@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+DOC="docs/stage-16-fc-o45-e-ck-w-guarded-mock-companion-backlog-cleanup.md"
+
+test -f "$DOC"
+
+check() {
+  local needle="$1"
+  grep -Fq "$needle" "$DOC"
+}
+
+check "Guarded Mock Companion Backlog Cleanup"
+check "APPROVE_CK_W_MARK_440_OLD_MOCK_COMPANION_JOBS_FAILED"
+check "16d5e145ee3fc917ff8474f82dac4c91ce4d6397c4cea54c0f1b4f3bc560af6f"
+check "CK_W_DRY_RUN_MODE=read_only"
+check "CK_W_DRY_RUN_COUNT=440"
+check "CK_W_DRY_RUN_MIN_ID=24"
+check "CK_W_DRY_RUN_MAX_ID=570"
+check "CK_W_DRY_RUN_ID_SHA256=2e7c58cb426b69406432c14aa1b6269cf85e6752ca2a63edecec91d08500a8d2"
+check "CK_W_DRY_RUN_MUTATED=False"
+check "CK_W_BACKUP_INTEGRITY=ok"
+check "CK_W_BACKUP_JOBS_TOTAL=575"
+check "CK_W_BACKUP_RESULTS_TOTAL=82"
+check "CK_W_BACKUP_SHA256=2d62696dfc5d4f8365f434c6888b39e29f6b1c2861dfe9dff43207a56302b625"
+check "old_mock_companion_backlog_mark_failed"
+check "updated_rows=440"
+check "cleanup_status=failed"
+check "cleanup_last_error=stage16_ck_cleanup_old_mock_no_model_backlog"
+check "candidate_count_before=440"
+check "candidate_min_id=24"
+check "candidate_max_id=570"
+check "candidate_id_sha256=2e7c58cb426b69406432c14aa1b6269cf85e6752ca2a63edecec91d08500a8d2"
+check "jobs_total_before=575"
+check "jobs_total_after=575"
+check "job_results_total_before=82"
+check "job_results_total_after=82"
+check "remaining_candidates=0"
+check "failed_cleanup_count=440"
+check "updated_at=2026-06-26T05:22:19.724702Z"
+check "CK_W_POST_DB_INTEGRITY=ok"
+check "CK_W_POST_QUEUED_COMPANION=0"
+check "CK_W_POST_REMAINING_CANDIDATES=0"
+check "CK_W_POST_CLEANUP_ROWS=440"
+check "CK_W_POST_CLEANUP_ID_SHA256=2e7c58cb426b69406432c14aa1b6269cf85e6752ca2a63edecec91d08500a8d2"
+check "CK_W_POST_DRYRUN_RC=3"
+check "REFUSE_EXPECTED_COUNT_MISMATCH expected=440 actual=0"
+check "queued_companion_count_after=0"
+check "remaining_mock_no_model_candidates_after=0"
+check "job_results_unchanged=yes"
+check "no service start"
+check "no timer install"
+check "no selector/manual-wrapper/helper invocation"
+check "no model/helper/Ollama call"
+
+echo "PASS stage-16-fc-o45-e-ck-x backlog cleanup record smoke"
