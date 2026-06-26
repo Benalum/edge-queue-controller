@@ -23566,11 +23566,16 @@ async def _stage16_chc_companion_study_action_dispatch(request: Request):
         payload.get("action") or payload.get("command") or payload.get("intent")
     )
 
-    # Stage 16 FC-O45-E-CL-H-R1: CL-F-R2 direct last_message branch is intentionally disabled.
-    # CL-G proved that returning the deterministic response here bypasses the
-    # route's existing bearer-auth behavior. Keep last_message unsupported until
-    # a later source patch wires it through the same explicit auth dependency as
-    # the other protected Companion routes.
+    # Stage 16 FC-O45-E-CL-M: auth-gated deterministic last_message branch.
+    # The auth call must happen before any deterministic response is returned.
+    # _study_current_user_id(request) calls _auth_current_user_from_request(request),
+    # which raises HTTP 401 Missing bearer token when no bearer token is present.
+    if action in ("last_message", "last_message_mvp", "study_last_message"):
+        _stage16_cl_m_user_id = _study_current_user_id(request)
+        return _stage16_fc_o45_e_cl_f_companion_study_last_message_mvp(
+            payload,
+            user_id=_stage16_cl_m_user_id,
+        )
 
     if action in ("status", "study_status", "session_status"):
         result = await public_study_session_status(request)
