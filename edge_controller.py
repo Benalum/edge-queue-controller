@@ -23468,6 +23468,72 @@ def e3z_bl_edge_worker_fail(
 # E3Z_BL_CT203_SQLITE_WORKER_ENDPOINTS_END
 
 # APC_STAGE16_FC_O45_E_CH_C_COMPANION_STUDY_ACTION_START
+
+def _stage16_fc_o45_e_cl_f_study_last_message_text(raw_text: str) -> str:
+    """Stage 16 CL-F deterministic Study Companion last-message response.
+
+    This intentionally does not call a model. It gives the authenticated
+    Study Companion path a stable product contract before live model routing.
+    """
+
+    text = str(raw_text or "").strip()
+    if not text:
+        return "I am ready to help. Send one study message and I will respond with a clear next step."
+
+    compact = " ".join(text.split())
+    if len(compact) > 240:
+        compact = compact[:237].rstrip() + "..."
+
+    return f"I heard: {compact}. Next, tell me whether you want an explanation, flashcards, or a quick quiz."
+
+
+def _stage16_fc_o45_e_cl_f_companion_study_last_message_mvp(payload: dict, user_id: object = None) -> dict:
+    """Stage 16 CL-F authenticated Companion/Study last-message MVP contract."""
+
+    body = payload if isinstance(payload, dict) else {}
+    raw_text = (
+        body.get("input_text")
+        or body.get("message")
+        or body.get("text")
+        or body.get("prompt")
+        or body.get("last_message")
+        or ""
+    )
+
+    response_text = _stage16_fc_o45_e_cl_f_study_last_message_text(str(raw_text or ""))
+
+    return {
+        "ok": True,
+        "feature": "stage16_fc_o45_e_cl_f_last_message_contract",
+        "surface": "companion_study",
+        "action": "last_message",
+        "authenticated": True,
+        "mode": "deterministic_no_model",
+        "model": "backend-deterministic/no-model",
+        "source": "stage16_fc_o45_e_cl_f_direct_deterministic_response",
+        "job_id": None,
+        "input": {
+            "text_present": bool(str(raw_text or "").strip()),
+            "text_length": len(str(raw_text or "")),
+        },
+        "response": {
+            "message": response_text,
+            "text": response_text,
+        },
+        "guardrails": {
+            "no_model_call": True,
+            "no_ollama_call": True,
+            "no_pveso_call": True,
+            "no_job_insert": True,
+            "no_result_insert": True,
+            "no_scheduler_activation": True,
+            "no_timer_activation": True,
+            "no_persistent_worker_activation": True,
+        },
+        "user_id": user_id,
+    }
+
+
 def _stage16_chc_companion_study_action_normalize(value):
     return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
 
@@ -23499,6 +23565,25 @@ async def _stage16_chc_companion_study_action_dispatch(request: Request):
     action = _stage16_chc_companion_study_action_normalize(
         payload.get("action") or payload.get("command") or payload.get("intent")
     )
+
+    # Stage 16 FC-O45-E-CL-F-R2: authenticated deterministic last_message branch after JSON body parse.
+    # This is direct deterministic/no-model and intentionally avoids job insertion,
+    # result insertion, model calls, Ollama/PVESO calls, scheduler/timer activation,
+    # and worker activation. It is limited to the authenticated /api route; the
+    # public mirror falls through to the existing unsupported-action handling.
+    if action in ("last_message", "last_message_mvp", "study_last_message"):
+        _stage16_cl_f_request_path = str(getattr(getattr(request, "url", None), "path", "") or "")
+        if _stage16_cl_f_request_path == "/api/companion/study/action":
+            _stage16_cl_f_state = getattr(request, "state", None)
+            _stage16_cl_f_user_id = (
+                getattr(_stage16_cl_f_state, "user_id", None)
+                or getattr(_stage16_cl_f_state, "current_user_id", None)
+                or getattr(_stage16_cl_f_state, "authenticated_user_id", None)
+            )
+            return _stage16_fc_o45_e_cl_f_companion_study_last_message_mvp(
+                payload,
+                user_id=_stage16_cl_f_user_id,
+            )
 
     if action in ("status", "study_status", "session_status"):
         result = await public_study_session_status(request)
