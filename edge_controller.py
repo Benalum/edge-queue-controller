@@ -23829,3 +23829,130 @@ async def api_companion_voice_action(request: Request):
 async def public_companion_voice_action(request: Request):
     return await _stage16_cib_voice_speech_action_dispatch(request)
 # APC_STAGE16_FC_O45_E_CI_B_VOICE_SPEECH_CONTRACT_END
+
+# APC_STAGE16_FC_O45_E_CJ_E_COMPANION_PROMPT_WRAPPER_START
+def _stage16_cj_e_extract_exact_answer_marker(prompt: str) -> str:
+    """Extract exact-answer marker from plain Companion prompt text.
+
+    This is intentionally conservative. It supports only explicit exact-answer
+    language and returns an empty string when the request is ambiguous.
+    """
+    import re
+
+    raw = str(prompt or "").strip()
+    if not raw:
+        return ""
+
+    patterns = [
+        r"answer\s+exactly\s*:\s*([^\r\n]+)",
+        r"reply\s+exactly\s*:\s*([^\r\n]+)",
+        r"respond\s+exactly\s*:\s*([^\r\n]+)",
+        r"say\s+exactly\s*:\s*([^\r\n]+)",
+        r"return\s+exactly\s*:\s*([^\r\n]+)",
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, raw, flags=re.IGNORECASE)
+        if not match:
+            continue
+
+        marker = match.group(1).strip()
+        marker = marker.strip("`'\" ")
+        marker = re.split(r"\s+(?:and|with|then)\s+", marker, maxsplit=1, flags=re.IGNORECASE)[0].strip()
+        marker = marker.strip("`'\" .")
+
+        if not marker:
+            continue
+        if len(marker) > 160:
+            continue
+        if "\n" in marker or "\r" in marker:
+            continue
+
+        return marker
+
+    return ""
+
+
+def _stage16_cj_e_build_exact_answer_prompt(marker: str) -> str:
+    marker = str(marker or "").strip()
+    return (
+        "You are the AI Platform Control Companion exact-answer executor.\n"
+        "This task is an exact-output test.\n"
+        "Return exactly and only the requested marker.\n"
+        "Do not add explanations, bullets, markdown, quotes, prefixes, suffixes, or extra whitespace.\n"
+        f"Requested marker:\n{marker}\n"
+        "Final answer must be exactly the marker above."
+    )
+
+
+def _stage16_cj_e_classify_companion_model_prompt(prompt: str) -> dict:
+    raw = str(prompt or "")
+    marker = _stage16_cj_e_extract_exact_answer_marker(raw)
+
+    if marker:
+        return {
+            "ok": True,
+            "kind": "exact_answer",
+            "marker": marker,
+            "wrapped_prompt": _stage16_cj_e_build_exact_answer_prompt(marker),
+            "semantic_guard": "exact_output_only",
+            "temperature": 0,
+            "num_predict": min(max(len(marker) + 8, 12), 80),
+        }
+
+    lowered = raw.lower()
+    if any(term in lowered for term in ("flashcard", "flash card", "quiz me", "study", "read the answer", "correct", "wrong", "skip")):
+        return {
+            "ok": True,
+            "kind": "study_companion",
+            "marker": "",
+            "wrapped_prompt": (
+                "You are the AI Platform Control Study Companion.\n"
+                "Help with Study tasks clearly and briefly.\n"
+                "When the user asks for flashcards, produce concise front/back candidates.\n"
+                "When the user asks for review help, coach without inventing stored deck data.\n"
+                "Do not claim that Study state changed unless a backend Study action performed that change.\n"
+                "User prompt:\n"
+                f"{raw.strip()}"
+            ),
+            "semantic_guard": "study_tool_aware",
+            "temperature": 0,
+            "num_predict": 180,
+        }
+
+    return {
+        "ok": True,
+        "kind": "general_companion",
+        "marker": "",
+        "wrapped_prompt": (
+            "You are the AI Platform Control Companion.\n"
+            "Answer the user directly and briefly.\n"
+            "Do not claim tool, Study, calendar, voice, or system actions happened unless the backend already performed them.\n"
+            "User prompt:\n"
+            f"{raw.strip()}"
+        ),
+        "semantic_guard": "plain_direct_answer",
+        "temperature": 0,
+        "num_predict": 180,
+    }
+
+
+def _stage16_cj_e_companion_prompt_wrapper_contract():
+    return {
+        "ok": True,
+        "feature": "companion_prompt_wrapper",
+        "stage": "stage16-fc-o45-e-cj-e",
+        "source_only": True,
+        "exact_answer_supported": True,
+        "study_companion_supported": True,
+        "general_companion_supported": True,
+        "runtime_worker_enabled": False,
+        "persistent_worker_enabled": False,
+        "model_call_enabled_by_this_helper": False,
+        "notes": [
+            "Exact-answer prompts must be wrapped to return only the requested marker.",
+            "Study prompts must not claim state mutation unless a backend Study action already did it.",
+            "General Companion prompts should be brief and direct.",
+        ],
+    }
+# APC_STAGE16_FC_O45_E_CJ_E_COMPANION_PROMPT_WRAPPER_END
