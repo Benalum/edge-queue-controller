@@ -1,0 +1,32 @@
+[Unit]
+Description=Edge deterministic Companion exact-answer worker once for job %i
+Documentation=internal-source-only-stage-16-fc-o45-e-cj-v
+After=network-online.target edge-queue-controller.service
+Wants=network-online.target
+Requires=edge-queue-controller.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/opt/edge-queue-controller
+EnvironmentFile=/etc/edge-queue-controller/edge-queue-controller.env
+EnvironmentFile=/run/edge-queue-controller/deterministic-companion-worker/%i.env
+Environment=EDGE_WORKER_BASE_URL=http://127.0.0.1:7070
+Environment=EDGE_ALLOWED_MODEL=qwen2.5:0.5b
+Environment=EDGE_RESULT_MODEL=backend-deterministic/no-model
+ExecStart=/usr/bin/python3 /opt/edge-queue-controller/ops/workers/run-deterministic-companion-exact-once.py --base-url ${EDGE_WORKER_BASE_URL} --job-id %i --worker-id deterministic-companion-worker-once-%i --allowed-model ${EDGE_ALLOWED_MODEL} --expected-marker ${EDGE_EXPECTED_MARKER} --expected-result-model ${EDGE_RESULT_MODEL} --timeout 10 --token-env LAPTOP_QUEUE_INTERNAL_TOKEN
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/edge-queue-controller /run/edge-queue-controller
+CapabilityBoundingSet=
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictRealtime=true
+SystemCallArchitectures=native
+TimeoutStartSec=30
+
+[Install]
+# Intentionally no WantedBy. This template is disabled-by-default and must be started explicitly for one approved job id.
