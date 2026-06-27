@@ -78,6 +78,8 @@
 
   function defaultSettings() {
     return {
+      voiceEnabled: false,
+      voiceProvider: "browser",
       kokoroEnabled: false,
       voiceName: "kokoro:af_sarah",
       volume: 0.85,
@@ -97,6 +99,107 @@
   function saveSettings(settings) {
     localStorage.setItem(settingsKey(), JSON.stringify(settings));
   }
+
+
+  /* Companion Browser Voice R3C */
+  function browserSpeechSupported() {
+    return Boolean(
+      window &&
+      "speechSynthesis" in window &&
+      "SpeechSynthesisUtterance" in window
+    );
+  }
+
+  function normalizeVoiceSettings(settings) {
+    const next = { ...defaultSettings(), ...(settings || {}) };
+    next.voiceProvider = browserSpeechSupported() ? "browser" : "kokoro";
+    if (next.voiceProvider === "browser") next.kokoroEnabled = false;
+    return next;
+  }
+
+  function voiceProviderLabel(settings) {
+    if (!settings || !settings.voiceEnabled) return "Voice is off.";
+    if (browserSpeechSupported()) return "Voice is on using your browser.";
+    return "Browser voice is not supported here. Kokoro fallback is selected, but it needs the backend endpoint before it can speak.";
+  }
+
+  function speakWithBrowser(text, settings) {
+    return new Promise(function (resolve, reject) {
+      if (!browserSpeechSupported()) {
+        reject(new Error("Browser speechSynthesis is not supported."));
+        return;
+      }
+
+      const clean = String(text || "").trim();
+      if (!clean) {
+        resolve();
+        return;
+      }
+
+      try {
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(clean);
+        utterance.volume = Math.max(0, Math.min(1, Number(settings.volume || 0.85)));
+        utterance.rate = Math.max(0.6, Math.min(1.4, Number(settings.speed || 1.0)));
+        utterance.pitch = 1.0;
+
+        utterance.onend = function () {
+          resolve();
+        };
+
+        utterance.onerror = function (event) {
+          reject(new Error(event && event.error ? event.error : "Browser speech failed."));
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  function companionVoiceNotice(message) {
+    loadMessages();
+    addMessage("assistant", message);
+    setSolState("talking");
+    render();
+  }
+
+  function enableVoice() {
+    const settings = normalizeVoiceSettings(loadSettings());
+    settings.voiceEnabled = true;
+
+    if (browserSpeechSupported()) {
+      settings.voiceProvider = "browser";
+      settings.kokoroEnabled = false;
+      saveSettings(settings);
+      companionVoiceNotice("Voice enabled using your browser.");
+      speakWithBrowser("Voice enabled.", settings).catch(function (error) {
+        console.warn("[companion] browser voice unlock failed", error);
+      });
+      return;
+    }
+
+    settings.voiceProvider = "kokoro";
+    settings.kokoroEnabled = true;
+    saveSettings(settings);
+    companionVoiceNotice("Browser voice is not supported here. Kokoro fallback is selected, but the Kokoro endpoint is not connected yet.");
+  }
+
+  function disableVoice() {
+    const settings = normalizeVoiceSettings(loadSettings());
+    settings.voiceEnabled = false;
+    settings.kokoroEnabled = false;
+    saveSettings(settings);
+
+    try {
+      if (browserSpeechSupported()) window.speechSynthesis.cancel();
+    } catch (_) {}
+
+    companionVoiceNotice("Voice disabled.");
+  }
+
 
   function setSolState(nextState) {
     if (!CLIPS[nextState]) nextState = "listening";
@@ -276,43 +379,55 @@
     `;
   }
 
+
   function renderVoiceBox(settings) {
+    settings = normalizeVoiceSettings(settings);
+
+    const browserOk = browserSpeechSupported();
+    const providerText = voiceProviderLabel(settings);
+    const enableDisabled = settings.voiceEnabled ? "disabled" : "";
+    const disableDisabled = settings.voiceEnabled ? "" : "disabled";
+
     return `
       <section class="sol-voice-box">
         <h2>Voice</h2>
+        <p class="study-muted">${escapeHtml(providerText)}</p>
+
+        <div class="sol-voice-actions">
+          <button class="sol-button" type="button" data-companion-action="enable-voice" ${enableDisabled}>Enable Voice</button>
+          <button class="sol-button secondary" type="button" data-companion-action="disable-voice" ${disableDisabled}>Disable Voice</button>
+          <button class="sol-button secondary" type="button" data-companion-action="listen">Start listening</button>
+        </div>
 
         <div class="sol-voice-grid">
           <label class="sol-toggle">
-            <input id="companionKokoroEnabled" type="checkbox" ${settings.kokoroEnabled ? "checked" : ""}>
-            Enable Kokoro
-          </label>
-
-          <label class="sol-toggle">
-            <input id="companionAutoListen" type="checkbox" ${settings.autoListen ? "checked" : ""}>
+            <input id="companionAutoListen" type="checkbox" ${settings.autoListen ? "checked" : ""} />
             Auto-listen after Sol speaks
           </label>
 
-          <label class="sol-control full-width">
-            Kokoro voice
-            <select id="companionVoiceSelect">${renderVoiceOptions(settings)}</select>
+          <label class="sol-control">
+            Kokoro fallback voice
+            <select id="companionVoiceSelect">
+              ${renderVoiceOptions(settings)}
+            </select>
           </label>
 
           <label class="sol-control">
-            Volume: <span id="companionVolumeValue">${Math.round(Number(settings.volume) * 100)}%</span>
-            <input id="companionVolume" type="range" min="0" max="1" step="0.05" value="${escapeHtml(settings.volume)}">
+            Volume
+            <input id="companionVoiceVolume" type="range" min="0" max="1" step="0.05" value="${escapeHtml(settings.volume)}" />
           </label>
 
           <label class="sol-control">
-            Speed: <span id="companionSpeedValue">${Number(settings.speed).toFixed(2)}x</span>
-            <input id="companionSpeed" type="range" min="0.6" max="1.6" step="0.05" value="${escapeHtml(settings.speed)}">
+            Speed
+            <input id="companionVoiceSpeed" type="range" min="0.6" max="1.4" step="0.05" value="${escapeHtml(settings.speed)}" />
           </label>
         </div>
 
-        <div class="sol-voice-actions">
-          <button class="sol-button secondary" type="button" data-companion-action="listen">Start listening</button>
-          <button class="sol-button secondary" type="button" data-companion-action="stop-speaking">Stop speaking</button>
-          <button class="sol-button secondary" type="button" data-companion-action="clear-chat">Clear</button>
-        </div>
+        <p class="study-muted">
+          ${browserOk
+            ? "Sol will speak with your browser first. Kokoro is not used unless browser voice is unavailable."
+            : "This browser does not expose speechSynthesis. Kokoro fallback can be connected in a later backend step."}
+        </p>
       </section>
     `;
   }
@@ -931,16 +1046,41 @@
     });
   }
 
+
   async function speakText(text) {
-    const settings = loadSettings();
-    if (!settings.kokoroEnabled) {
-      setSolState("talking");
-      return;
-    }
+    const clean = String(text || "").trim();
+    if (!clean) return;
+
+    const settings = normalizeVoiceSettings(loadSettings());
+    if (!settings.voiceEnabled) return;
+
+    setSolState("talking");
+
     try {
-      await speakWithKokoro(text, settings);
+      if (browserSpeechSupported()) {
+        settings.voiceProvider = "browser";
+        settings.kokoroEnabled = false;
+        saveSettings(settings);
+        await speakWithBrowser(clean, settings);
+      } else {
+        settings.voiceProvider = "kokoro";
+        settings.kokoroEnabled = true;
+        saveSettings(settings);
+        await speakWithKokoro(clean, settings);
+      }
     } catch (error) {
-      console.warn("[sol] Kokoro TTS failed", error);
+      console.warn("[companion] voice failed", error);
+      loadMessages();
+      addMessage("assistant", browserSpeechSupported()
+        ? "Browser voice failed. Click Enable Voice and try again."
+        : "Browser voice is not supported and Kokoro fallback is not available yet.");
+    } finally {
+      const latestSettings = normalizeVoiceSettings(loadSettings());
+      if (latestSettings.autoListen) {
+        startListening();
+      } else {
+        setSolState("listening");
+      }
     }
   }
 
@@ -996,6 +1136,8 @@
     if (action === "resume-session") return resumeStudySession();
     if (action === "stop-session") return stopStudySession();
 
+    if (action === "enable-voice") return enableVoice();
+    if (action === "disable-voice") return disableVoice();
     if (action === "listen") return startListening();
     if (action === "stop-speaking") return stopSpeaking();
     if (action === "clear-chat") return clearChat();
