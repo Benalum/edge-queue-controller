@@ -401,69 +401,408 @@
     return "balanced";
   }
 
-  function normalReply(prompt) {
-    const lower = String(prompt || "").toLowerCase();
 
-    if (!store()) return "Study tools are still loading. Try again in a moment.";
+  /* Companion Study Command Router R2 */
+  let studyCommandFlow = null;
 
-    const state = store().load();
-
-    // Important: stop/pause/resume must be checked before generic "study session".
-    if (
-      lower.includes("stop study") ||
-      lower.includes("stop session") ||
-      lower.includes("stop study session") ||
-      lower.includes("end study") ||
-      lower.includes("end session") ||
-      lower.includes("finish study") ||
-      lower.includes("quit study")
-    ) {
-      return store().stopSession().message;
-    }
-
-    if (
-      lower.includes("pause study") ||
-      lower.includes("pause session") ||
-      lower.includes("pause study session")
-    ) {
-      return store().pauseSession().message;
-    }
-
-    if (
-      lower.includes("resume study") ||
-      lower.includes("resume session") ||
-      lower.includes("resume study session") ||
-      lower.includes("continue study") ||
-      lower.includes("continue session")
-    ) {
-      const result = store().resumeSession();
-      const next = store().load();
-      let reply = result.message;
-      if (next.runtime && next.runtime.status === "active") reply += "\n\n" + store().questionText(next);
-      return reply;
-    }
-
-    if (
-      lower.includes("start study") ||
-      lower.includes("start session") ||
-      lower.includes("start study session") ||
-      lower.includes("begin study") ||
-      lower.includes("begin session")
-    ) {
-      const style = selectedStyleFromText(lower);
-      const deckIds = state.activeDeckId ? [state.activeDeckId] : (state.decks[0] ? [state.decks[0].id] : []);
-      const result = store().startSession(style, deckIds);
-      const next = store().load();
-
-      if (!result.ok) return result.message || "I could not start a study session yet.";
-
-      return "Study session started. Style: " + style + "\n\n" + store().questionText(next);
-    }
-
-    if (lower.includes("hello") || lower.includes("hi")) return "Hi, I’m Sol. What would you like to work on?";
-
-    return "I’m here with you. To study, say something like: start study, start hard study, pause study, resume study, or stop study.";
+  function commandNormalize(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^\w\s+-]/g, " ")
+      .replace(/\s+/g, " ");
   }
+
+  function commandTitle(value) {
+    return String(value || "").trim();
+  }
+
+  function commandState() {
+    const apcStore = store();
+    if (!apcStore) return null;
+    return apcStore.load();
+  }
+
+  function commandActiveDeck(state) {
+    const decks = (state && state.decks) || [];
+    return decks.find((deck) => String(deck.id) === String(state.activeDeckId)) || decks[0] || null;
+  }
+
+  function commandCardsForDeck(state, deckId) {
+    return ((state && state.cards) || []).filter((card) => String(card.deckId) === String(deckId));
+  }
+
+  function commandFindDeck(state, text) {
+    const query = commandNormalize(text);
+    if (!query) return null;
+
+    const decks = (state && state.decks) || [];
+    return decks.find((deck) => commandNormalize(deck.title) === query)
+      || decks.find((deck) => commandNormalize(deck.title).includes(query))
+      || decks.find((deck) => query.includes(commandNormalize(deck.title)));
+  }
+
+  function commandFindCard(state, text) {
+    const query = commandNormalize(text);
+    if (!query) return null;
+
+    const cards = (state && state.cards) || [];
+    const activeDeck = commandActiveDeck(state);
+    const scoped = activeDeck
+      ? cards.filter((card) => String(card.deckId) === String(activeDeck.id))
+      : cards;
+
+    return scoped.find((card) => String(card.id) === String(text))
+      || scoped.find((card) => commandNormalize(card.front) === query)
+      || scoped.find((card) => commandNormalize(card.back) === query)
+      || scoped.find((card) => commandNormalize(card.front).includes(query))
+      || cards.find((card) => commandNormalize(card.front).includes(query))
+      || cards.find((card) => query.includes(commandNormalize(card.front)));
+  }
+
+  function commandCurrentCard(state) {
+    const apcStore = store();
+    const current = apcStore && apcStore.currentCard ? apcStore.currentCard(state) : null;
+    if (current) return current;
+
+    const activeDeck = commandActiveDeck(state);
+    const cards = activeDeck ? commandCardsForDeck(state, activeDeck.id) : ((state && state.cards) || []);
+    return cards[0] || null;
+  }
+
+  function commandListDecks(state) {
+    const decks = (state && state.decks) || [];
+    if (!decks.length) return "You do not have any active decks yet. Say “create deck” to make one.";
+    return "Your active decks are:\n\n" + decks.map((deck) => `- ${deck.title}`).join("\n");
+  }
+
+  function commandListCards(state) {
+    const activeDeck = commandActiveDeck(state);
+    if (!activeDeck) return "Select or create a deck first.";
+
+    const cards = commandCardsForDeck(state, activeDeck.id);
+    if (!cards.length) return `The deck “${activeDeck.title}” does not have cards yet. Say “create card” to add one.`;
+
+    return `Cards in “${activeDeck.title}”:\n\n` + cards.map((card) => `- ${card.front} → ${card.back}`).join("\n");
+  }
+
+  function commandSelectDeck(deckText) {
+    const state = commandState();
+    if (!state) return "Study is not ready yet.";
+
+    const deck = commandFindDeck(state, deckText);
+    if (!deck) return `I could not find a deck named “${commandTitle(deckText)}”. Say “list decks” to see your decks.`;
+
+    store().setActiveDeck(String(deck.id));
+    return `Selected deck “${deck.title}”.`;
+  }
+
+  function commandStartStudy(prompt) {
+    const state = commandState();
+    if (!state) return "Study is not ready yet.";
+
+    const rt = state.runtime;
+    if (rt && rt.status === "active") return "A study session is already active. Answer the current card, or say “pause study” or “stop study”.";
+    if (rt && rt.status === "paused") return "A study session is paused. Say “resume study” to continue it, or “stop study” to end it.";
+
+    const lower = commandNormalize(prompt);
+    let style = "balanced";
+    if (lower.includes("hard")) style = "hard";
+    if (lower.includes("new")) style = "new";
+    if (lower.includes("all")) style = "all";
+
+    let deck = commandActiveDeck(state);
+    const deckMatch = lower.match(/(?:deck|with|using|from)\s+(.+)$/);
+    if (deckMatch && deckMatch[1]) {
+      const found = commandFindDeck(state, deckMatch[1]);
+      if (found) deck = found;
+    }
+
+    if (!deck) return "Create or select a deck first. You can say “list decks” or “select deck mathmatic”.";
+
+    store().setActiveDeck(String(deck.id));
+    const result = store().startSession(style, [String(deck.id)]);
+    if (!result.ok) return result.message || "I could not start a study session yet.";
+
+    const nextState = store().load();
+    const card = commandCurrentCard(nextState);
+    return `Started a ${style} study session with “${deck.title}”.\n\n${card ? `Question:\n\n${card.front}` : "No card is ready yet."}`;
+  }
+
+  function commandPauseStudy() {
+    const state = commandState();
+    const rt = state && state.runtime;
+    if (!rt || rt.status !== "active") return "There is no active study session to pause.";
+    return store().pauseSession().message;
+  }
+
+  function commandResumeStudy() {
+    const state = commandState();
+    const rt = state && state.runtime;
+    if (!rt || rt.status !== "paused") return "There is no paused study session to resume.";
+    const result = store().resumeSession();
+    const nextState = store().load();
+    const card = commandCurrentCard(nextState);
+    return `${result.message}\n\n${card ? `Question:\n\n${card.front}` : ""}`.trim();
+  }
+
+  function commandStopStudy() {
+    const state = commandState();
+    const rt = state && state.runtime;
+    if (!rt) return "There is no active study session to stop.";
+    return store().stopSession().message;
+  }
+
+  function commandCreateDeckStart(text) {
+    const title = commandTitle(text.replace(/^create\s+deck/i, ""));
+    if (title) {
+      studyCommandFlow = { type: "create_deck_description", title };
+      return `What description should I use for the deck “${title}”? Say “skip” for no description.`;
+    }
+
+    studyCommandFlow = { type: "create_deck_title" };
+    return "What should I name the new deck?";
+  }
+
+  function commandCreateCardStart(prompt) {
+    const state = commandState();
+    if (!state) return "Study is not ready yet.";
+
+    const lower = commandNormalize(prompt);
+    let deck = null;
+
+    const inMatch = lower.match(/(?:in|deck|to)\s+(.+)$/);
+    if (inMatch && inMatch[1] && lower !== "create card" && lower !== "add card") {
+      deck = commandFindDeck(state, inMatch[1]);
+    }
+
+    if (!deck) {
+      studyCommandFlow = { type: "create_card_deck" };
+      return "Which deck should I put the new card in?";
+    }
+
+    studyCommandFlow = { type: "create_card_question", deckId: String(deck.id), deckTitle: deck.title };
+    return `I will add the card to “${deck.title}”. What is the question/front of the card?`;
+  }
+
+  function commandDeleteCardStart(prompt) {
+    const state = commandState();
+    if (!state) return "Study is not ready yet.";
+
+    const raw = commandTitle(prompt)
+      .replace(/^delete\s+card/i, "")
+      .replace(/^remove\s+card/i, "")
+      .trim();
+
+    const card = raw ? commandFindCard(state, raw) : commandCurrentCard(state);
+    if (!card) return "Which card should I delete? Say “delete card” followed by the card question.";
+
+    studyCommandFlow = {
+      type: "delete_card_confirm",
+      cardId: String(card.id),
+      front: card.front,
+      back: card.back
+    };
+
+    return `I found this card:\n\n${card.front} → ${card.back}\n\nTo archive it, say “delete”. To keep it, say “cancel”.`;
+  }
+
+  function commandFlagCard(prompt, flagged) {
+    const state = commandState();
+    if (!state) return "Study is not ready yet.";
+
+    const raw = commandTitle(prompt)
+      .replace(/^(flag|unflag)\s+card/i, "")
+      .replace(/^(flag|unflag)\s+current\s+card/i, "")
+      .trim();
+
+    const card = raw ? commandFindCard(state, raw) : commandCurrentCard(state);
+    if (!card) return "Which card should I flag or unflag?";
+
+    if (Boolean(card.flagged) !== Boolean(flagged)) {
+      store().toggleFlagCard(String(card.id));
+    }
+
+    return `${flagged ? "Flagged" : "Unflagged"} card: ${card.front}`;
+  }
+
+  function commandEditCardStart(prompt) {
+    const state = commandState();
+    if (!state) return "Study is not ready yet.";
+
+    const raw = commandTitle(prompt)
+      .replace(/^edit\s+card/i, "")
+      .trim();
+
+    const card = raw ? commandFindCard(state, raw) : commandCurrentCard(state);
+    if (!card) return "Which card should I edit? Say “edit card” followed by the card question.";
+
+    studyCommandFlow = {
+      type: "edit_card_field",
+      cardId: String(card.id),
+      front: card.front,
+      back: card.back,
+      difficulty: card.difficulty || "new"
+    };
+
+    return `Editing card:\n\n${card.front} → ${card.back}\n\nWhat do you want to edit: question, answer, or difficulty?`;
+  }
+
+  function continueStudyCommandFlow(prompt) {
+    if (!studyCommandFlow) return null;
+
+    const clean = commandTitle(prompt);
+    const lower = commandNormalize(clean);
+
+    if (["cancel", "never mind", "nevermind", "stop"].includes(lower)) {
+      studyCommandFlow = null;
+      return "Canceled.";
+    }
+
+    if (studyCommandFlow.type === "create_deck_title") {
+      studyCommandFlow = { type: "create_deck_description", title: clean || "Untitled deck" };
+      return `What description should I use for “${studyCommandFlow.title}”? Say “skip” for no description.`;
+    }
+
+    if (studyCommandFlow.type === "create_deck_description") {
+      const description = ["skip", "none", "no description"].includes(lower) ? "" : clean;
+      store().createDeck(studyCommandFlow.title, description);
+      const title = studyCommandFlow.title;
+      studyCommandFlow = null;
+      return `Created deck “${title}”.`;
+    }
+
+    if (studyCommandFlow.type === "create_card_deck") {
+      const state = commandState();
+      const deck = commandFindDeck(state, clean);
+      if (!deck) return `I could not find “${clean}”. Say another deck name, or say “cancel”.`;
+
+      studyCommandFlow = { type: "create_card_question", deckId: String(deck.id), deckTitle: deck.title };
+      return `I will add the card to “${deck.title}”. What is the question/front of the card?`;
+    }
+
+    if (studyCommandFlow.type === "create_card_question") {
+      studyCommandFlow.front = clean;
+      studyCommandFlow.type = "create_card_answer";
+      return "What is the answer/back of the card?";
+    }
+
+    if (studyCommandFlow.type === "create_card_answer") {
+      const deckId = studyCommandFlow.deckId;
+      const deckTitle = studyCommandFlow.deckTitle;
+      const front = studyCommandFlow.front;
+      const back = clean;
+
+      store().createCard(deckId, front, back, "new");
+      studyCommandFlow = null;
+
+      return `Created a new card in “${deckTitle}”:\n\n${front} → ${back}`;
+    }
+
+    if (studyCommandFlow.type === "delete_card_confirm") {
+      if (lower !== "delete") return "I did not delete it. Say “delete” to confirm, or “cancel” to keep it.";
+
+      const front = studyCommandFlow.front;
+      store().deleteCard(studyCommandFlow.cardId);
+      studyCommandFlow = null;
+
+      return `Archived card: ${front}`;
+    }
+
+    if (studyCommandFlow.type === "edit_card_field") {
+      if (!["question", "front", "answer", "back", "difficulty"].includes(lower)) {
+        return "Please say question, answer, difficulty, or cancel.";
+      }
+
+      studyCommandFlow.field = lower;
+      studyCommandFlow.type = "edit_card_value";
+      return `What should the new ${lower === "front" ? "question" : lower === "back" ? "answer" : lower} be?`;
+    }
+
+    if (studyCommandFlow.type === "edit_card_value") {
+      const cardId = studyCommandFlow.cardId;
+      const state = commandState();
+      const card = ((state && state.cards) || []).find((item) => String(item.id) === String(cardId));
+
+      if (!card) {
+        studyCommandFlow = null;
+        return "I could not find that card anymore.";
+      }
+
+      const patch = {
+        front: card.front,
+        back: card.back,
+        difficulty: card.difficulty || "new"
+      };
+
+      if (studyCommandFlow.field === "question" || studyCommandFlow.field === "front") patch.front = clean;
+      if (studyCommandFlow.field === "answer" || studyCommandFlow.field === "back") patch.back = clean;
+      if (studyCommandFlow.field === "difficulty") patch.difficulty = lower || "new";
+
+      store().editCard(cardId, patch);
+      studyCommandFlow = null;
+
+      return `Updated card:\n\n${patch.front} → ${patch.back}`;
+    }
+
+    studyCommandFlow = null;
+    return null;
+  }
+
+  function routeStudyCommand(prompt) {
+    const flowReply = continueStudyCommandFlow(prompt);
+    if (flowReply) return flowReply;
+
+    const clean = commandTitle(prompt);
+    const lower = commandNormalize(clean);
+
+    if (!lower) return null;
+
+    if (lower === "list decks" || lower === "show decks") return commandListDecks(commandState());
+    if (lower === "list cards" || lower === "show cards") return commandListCards(commandState());
+
+    if (lower === "show current card" || lower === "current card") {
+      const card = commandCurrentCard(commandState());
+      return card ? `Current card:\n\n${card.front} → ${card.back}` : "No current card is selected.";
+    }
+
+    if (lower.startsWith("select deck ") || lower.startsWith("use deck ")) {
+      return commandSelectDeck(clean.replace(/^(select|use)\s+deck\s+/i, ""));
+    }
+
+    if (lower === "start study" || lower.includes("start study session") || lower.includes("begin study")) return commandStartStudy(clean);
+    if (lower.includes("start hard study")) return commandStartStudy(clean);
+    if (lower.includes("start new study")) return commandStartStudy(clean);
+    if (lower.includes("start all study")) return commandStartStudy(clean);
+
+    if (lower === "pause study" || lower.includes("pause study session")) return commandPauseStudy();
+    if (lower === "resume study" || lower.includes("resume study session") || lower.includes("continue study")) return commandResumeStudy();
+    if (lower === "stop study" || lower.includes("stop study session") || lower.includes("end study") || lower.includes("finish study") || lower.includes("quit study")) return commandStopStudy();
+
+    if (lower === "create deck" || lower.startsWith("create deck ")) return commandCreateDeckStart(clean);
+    if (lower === "create card" || lower === "add card" || lower.startsWith("create card ") || lower.startsWith("add card ")) return commandCreateCardStart(clean);
+
+    if (lower === "delete card" || lower.startsWith("delete card ") || lower === "remove card" || lower.startsWith("remove card ")) return commandDeleteCardStart(clean);
+
+    if (lower === "flag card" || lower.startsWith("flag card ") || lower === "flag current card") return commandFlagCard(clean, true);
+    if (lower === "unflag card" || lower.startsWith("unflag card ") || lower === "unflag current card") return commandFlagCard(clean, false);
+
+    if (lower === "edit card" || lower.startsWith("edit card ")) return commandEditCardStart(clean);
+
+    return null;
+  }
+
+  function normalReply(prompt) {
+    const routed = routeStudyCommand(prompt);
+    if (routed) return routed;
+
+    if (commandNormalize(prompt).includes("hello") || commandNormalize(prompt).includes("hi")) {
+      return "Hi, I’m Sol. What would you like to work on?";
+    }
+
+    return "I’m here with you. To study, say things like: list decks, select deck mathmatic, start study, create card, edit card, delete card, flag card, pause study, resume study, or stop study.";
+  }
+
 
   function submitPrompt(prompt) {
     const clean = String(prompt || "").trim();
@@ -478,10 +817,14 @@
       const rt = state.runtime;
       let reply = "";
 
-      if (rt && rt.status === "active" && store().currentCard(state)) {
+      const routed = routeStudyCommand(clean);
+
+      if (routed) {
+        reply = routed;
+      } else if (rt && rt.status === "active" && store().currentCard(state)) {
         reply = store().answerCurrent(clean).reply;
       } else if (rt && rt.status === "paused") {
-        reply = "The study session is paused. Resume it when you are ready.";
+        reply = "The study session is paused. Say “resume study” to continue it, or “stop study” to end it.";
       } else {
         reply = normalReply(clean);
       }
