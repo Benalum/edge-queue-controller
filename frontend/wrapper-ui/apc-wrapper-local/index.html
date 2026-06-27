@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AlexHartel AI Platform</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link id="studyPreviewStyles" rel="stylesheet" href="/study/styles.css?v=20260612000409" disabled />
+  <link rel="stylesheet" href="./styles.css?v=20260614214f" />
+  <link rel="stylesheet" href="/header/header.css?v=spa-active-tabs-20260626" />
+<link rel="stylesheet" href="/auth/auth.css?v=reset-password-page-20260626" />
+  <link rel="stylesheet" href="/publicpages/publicpages.css?v=lavender-deep-green-20260626" />
+  <link rel="stylesheet" href="/privatepages/sol.css?v=hide-companion-study-box-20260627" />
+  <link rel="stylesheet" href="/privatepages/study-session.css?v=study-session-v2-20260626" />
+</head>
+<body>
+  <!-- APC_HEADER_COMPONENT_MOUNT -->
+  <div id="apcHeaderMount" data-apc-header-mount="true"></div>
+  <script src="/header/header.js?v=spa-active-tabs-20260626"></script>
+  <!-- /APC_HEADER_COMPONENT_MOUNT -->
+  <main id="app" class="app-shell">
+  <p>loading..</p>
+  </main>
+  <aside id="systemDrawer" class="system-drawer hidden" aria-label="System status drawer">
+    <div class="drawer-head">
+      <div>
+        <h2>System Status</h2>
+        <p id="drawerSummary">Checking system...</p>
+      </div>
+
+      <button id="drawerCloseBtn" class="ghost-btn" type="button">
+        Close
+      </button>
+    </div>
+
+    <div class="status-grid">
+      <section>
+        <h3>Infrastructure</h3>
+        <div id="drawerNodes" class="status-list"></div>
+      </section>
+
+      <section>
+        <h3>APIs</h3>
+        <div id="drawerServices" class="status-list"></div>
+      </section>
+    </div>
+  </aside>
+
+  <section id="authModal" class="auth-modal hidden" aria-label="Login and register dialog">
+    <div class="auth-card">
+      <div class="drawer-head">
+        <div>
+          <h2 id="authTitle">Login</h2>
+          <p id="authSubtitle">Sign in to access your dashboard and future live services.</p>
+        </div>
+
+        <button id="authCloseBtn" class="ghost-btn" type="button">
+          Close
+        </button>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="loginTabBtn" class="ghost-btn active" type="button">Login</button>
+        <button id="registerTabBtn" class="ghost-btn" type="button">Register</button>
+      </div>
+
+      <form id="authForm" class="auth-form">
+        <label>
+          Email
+          <input id="authEmail" type="email" autocomplete="email" required />
+        </label>
+
+        <label>
+          Password
+          <input id="authPassword" type="password" autocomplete="current-password" required />
+        </label>
+
+        <button id="authSubmitBtn" class="primary-btn" type="submit">
+          Login
+        </button>
+      </form>
+
+      <div id="authMessage" class="notice hidden"></div>
+    </div>
+  </section>
+
+  <script src="/queued_chat_config.js"></script>
+  <script src="/router_shadow_read_stub.js?v=2026061208k"></script>
+  <script src="/auth/auth.js?v=force-hard-logout-reload-20260626"></script>
+  <script src="/auth/recover.js?v=recover-click-fix-20260626"></script>
+  <script src="/auth/reset.js?v=reset-new-password-payload-fix-20260626"></script>
+  <!-- <script src="/app.js?v=auth-aware-publicpages-20260626"></script> -->
+  <script src="/publicpages/publicpages.js?v=auth-standalone-20260626"></script>
+  <script src="/privatepages/privatepages.js?v=compact-companion-voice-20260626"></script>
+  <script src="/privatepages/study-store.js?v=crud-writeback-r2-ui-args-20260627"></script>
+  <script src="/privatepages/study.js?v=session-label-polish-20260627"></script>
+  <script src="/privatepages/companion.js?v=stop-study-session-command-fix-20260627"></script>
+
+<script>
+(function loadQueuedChatStatusAfterInitialPageLoad() {
+  const scriptId = "stage10hDeferredQueuedChatStatusScript";
+  const scriptSrc = "/queued_chat_status.js";
+
+  function injectQueuedChatStatusScript() {
+    if (document.getElementById(scriptId)) return;
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = scriptSrc;
+    script.dataset.stage10hDeferredQueuedStatus = "true";
+    document.head.appendChild(script);
+  }
+
+  if (document.readyState === "complete") {
+    window.setTimeout(injectQueuedChatStatusScript, 0);
+  } else {
+    window.addEventListener("load", function onStage10hWindowLoad() {
+      window.setTimeout(injectQueuedChatStatusScript, 0);
+    }, { once: true });
+  }
+})();
+</script>
+</body>
+</html>

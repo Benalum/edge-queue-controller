@@ -7046,12 +7046,24 @@ async def public_auth_login(request: Request):
 @app.get("/public/me")
 async def public_me(request: Request):
     await _require_public_api_key(request)
+    _account_init_tables()
 
-    row = _auth_current_user_from_request(request)
+    user_row = _auth_current_user_from_request(request)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT *
+            FROM app_users
+            WHERE id = ?
+            """,
+            (user_row["id"],),
+        ).fetchone()
 
     return {
         "ok": True,
-        "user": _auth_public_user(row),
+        "user": _account_enriched_public_user(row),
     }
 
 
@@ -24140,3 +24152,1255 @@ def _stage16_cj_j_companion_short_circuit_contract() -> dict:
         "fallback": "non-exact prompts continue to require normal Companion model or Study action handling",
     }
 # APC_STAGE16_FC_O45_E_CJ_J_DETERMINISTIC_EXACT_ANSWER_END
+
+
+
+def _apc_kokoro_float(value, default, low, high):
+    try:
+        out = float(value)
+    except Exception:
+        out = default
+    return max(low, min(high, out))
+
+
+async def _apc_kokoro_tts_proxy(request: Request):
+    import json as _apc_json
+    import os as _apc_os
+    import urllib.error as _apc_urlerror
+    import urllib.request as _apc_urlrequest
+    from fastapi.responses import Response as _ApcFastAPIResponse
+
+    _auth_current_user_from_request(request)
+
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+
+    text = str(payload.get("text") or payload.get("input") or "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Missing text.")
+    if len(text) > 2000:
+        text = text[:2000]
+
+    voice = str(payload.get("voice") or "af_heart").strip()[:80]
+    speed = _apc_kokoro_float(payload.get("speed", 1.0), 1.0, 0.6, 1.6)
+
+    response_format = str(payload.get("format") or payload.get("response_format") or "wav").strip().lower()
+    if response_format not in ("wav", "mp3", "opus", "flac", "m4a", "pcm"):
+        response_format = "wav"
+
+    upstream = _apc_os.getenv("KOKORO_TTS_BASE_URL", "http://127.0.0.1:8880").rstrip("/")
+
+    body = _apc_json.dumps({
+        "model": "kokoro",
+        "input": text,
+        "voice": voice,
+        "response_format": response_format,
+        "speed": speed,
+    }).encode("utf-8")
+
+    req = _apc_urlrequest.Request(
+        upstream + "/v1/audio/speech",
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "audio/" + response_format + ",audio/*",
+        },
+        method="POST",
+    )
+
+    try:
+        with _apc_urlrequest.urlopen(req, timeout=90) as resp:
+            audio = resp.read()
+            content_type = resp.headers.get("content-type") or ("audio/" + response_format)
+    except _apc_urlerror.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:300]
+        raise HTTPException(status_code=502, detail="Kokoro upstream HTTP %s: %s" % (exc.code, detail))
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Kokoro upstream unavailable: %s" % exc)
+
+    return _ApcFastAPIResponse(
+        content=audio,
+        media_type=content_type,
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@app.post("/system/tts/kokoro")
+async def system_tts_kokoro(request: Request):
+    return await _apc_kokoro_tts_proxy(request)
+
+
+@app.post("/api/tts/kokoro")
+async def api_tts_kokoro(request: Request):
+    return await _apc_kokoro_tts_proxy(request)
+
+
+
+@app.get("/api/study/cards")
+async def api_study_cards(request: Request, deck_id: int | None = None):
+    user = _auth_current_user_from_request(request)
+    user_id = int(user["id"])
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        params = [user_id]
+        where = "user_id = ? AND deleted_at IS NULL"
+
+        if deck_id is not None:
+            where += " AND deck_id = ?"
+            params.append(int(deck_id))
+
+        rows = conn.execute(
+            f"""
+            SELECT
+                id,
+                user_id,
+                deck_id,
+                front,
+                back,
+                hint,
+                explanation,
+                tags_json,
+                created_at,
+                updated_at,
+                deleted_at
+            FROM study_cards
+            WHERE {where}
+            ORDER BY id ASC
+            """,
+            params,
+        ).fetchall()
+
+    cards = []
+    for row in rows:
+        cards.append({
+            "id": row["id"],
+            "user_id": row["user_id"],
+            "deck_id": row["deck_id"],
+            "front": row["front"],
+            "back": row["back"],
+            "hint": row["hint"],
+            "explanation": row["explanation"],
+            "tags_json": row["tags_json"],
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"],
+        })
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "deck_id": deck_id,
+        "count": len(cards),
+        "cards": cards,
+    }
+
+
+@app.get("/api/study/decks/{deck_id}/cards")
+async def api_study_deck_cards(request: Request, deck_id: int):
+    return await api_study_cards(request, deck_id=deck_id)
+
+
+
+@app.get("/api/study/cards-lite")
+async def api_study_cards_lite(request: Request, deck_id: int | None = None):
+    user = _auth_current_user_from_request(request)
+    user_id = int(user["id"])
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        columns = [
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(study_cards)").fetchall()
+        ]
+
+        params = [user_id]
+        where = "user_id = ?"
+
+        if "deleted_at" in columns:
+            where += " AND (deleted_at IS NULL OR deleted_at = '')"
+
+        if deck_id is not None:
+            where += " AND deck_id = ?"
+            params.append(int(deck_id))
+
+        rows = conn.execute(
+            f"""
+            SELECT *
+            FROM study_cards
+            WHERE {where}
+            ORDER BY id ASC
+            """,
+            params,
+        ).fetchall()
+
+    cards = []
+    for row in rows:
+        item = dict(row)
+        cards.append({
+            "id": item.get("id"),
+            "user_id": item.get("user_id"),
+            "deck_id": item.get("deck_id"),
+            "front": item.get("front") or item.get("question") or "",
+            "back": item.get("back") or item.get("answer") or "",
+            "hint": item.get("hint") or "",
+            "explanation": item.get("explanation") or "",
+            "tags_json": item.get("tags_json") or "[]",
+            "created_at": item.get("created_at") or "",
+            "updated_at": item.get("updated_at") or "",
+        })
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "deck_id": deck_id,
+        "count": len(cards),
+        "cards": cards,
+    }
+
+
+
+@app.get("/api/study/review-summary-lite")
+async def api_study_review_summary_lite(request: Request):
+    user = _auth_current_user_from_request(request)
+    user_id = int(user["id"])
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM study_reviews
+            WHERE user_id = ?
+            ORDER BY reviewed_at DESC, id DESC
+            LIMIT 2000
+            """,
+            [user_id],
+        ).fetchall()
+
+    by_card = {}
+    recent_reviews = []
+    total = correct = wrong = skipped = 0
+
+    for row in rows:
+        item = dict(row)
+        card_id = item.get("card_id")
+        deck_id = item.get("deck_id")
+        was_correct = item.get("was_correct")
+        result = "reviewed"
+
+        if was_correct is not None:
+            result = "correct" if int(was_correct) == 1 else "wrong"
+
+        notes = str(item.get("notes") or "").lower()
+        if "skip" in notes:
+            result = "skipped"
+
+        total += 1
+        if result == "correct":
+            correct += 1
+        elif result == "wrong":
+            wrong += 1
+        elif result == "skipped":
+            skipped += 1
+
+        if card_id is not None:
+            key = str(card_id)
+            if key not in by_card:
+                by_card[key] = {
+                    "card_id": key,
+                    "deck_id": str(deck_id) if deck_id is not None else "",
+                    "seen": 0,
+                    "correct": 0,
+                    "wrong": 0,
+                    "skipped": 0,
+                    "last_result": "",
+                    "last_seen_at": "",
+                }
+
+            by_card[key]["seen"] += 1
+            if result == "correct":
+                by_card[key]["correct"] += 1
+            elif result == "wrong":
+                by_card[key]["wrong"] += 1
+            elif result == "skipped":
+                by_card[key]["skipped"] += 1
+
+            if not by_card[key]["last_seen_at"]:
+                by_card[key]["last_seen_at"] = item.get("reviewed_at") or ""
+                by_card[key]["last_result"] = result
+
+        recent_reviews.append({
+            "id": item.get("id"),
+            "deck_id": deck_id,
+            "card_id": card_id,
+            "result": result,
+            "was_correct": was_correct,
+            "confidence": item.get("confidence"),
+            "response_time_ms": item.get("response_time_ms"),
+            "reviewed_at": item.get("reviewed_at") or "",
+            "notes": item.get("notes") or "",
+        })
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "overall": {
+            "total_reviews": total,
+            "correct": correct,
+            "wrong": wrong,
+            "skipped": skipped,
+        },
+        "by_card": by_card,
+        "recent_reviews": recent_reviews[:50],
+    }
+
+@app.get("/api/study/sessions-lite")
+async def api_study_sessions_lite(request: Request):
+    user = _auth_current_user_from_request(request)
+    user_id = int(user["id"])
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+
+        sessions = conn.execute(
+            """
+            SELECT *
+            FROM study_sessions
+            WHERE user_id = ?
+            ORDER BY COALESCE(ended_at, updated_at, started_at, created_at) DESC, id DESC
+            LIMIT 100
+            """,
+            [user_id],
+        ).fetchall()
+
+        events = conn.execute(
+            """
+            SELECT *
+            FROM study_session_events
+            WHERE user_id = ?
+            ORDER BY created_at ASC, id ASC
+            """,
+            [user_id],
+        ).fetchall()
+
+    by_session = {}
+    for event in events:
+        item = dict(event)
+        sid = str(item.get("session_id"))
+        if sid not in by_session:
+            by_session[sid] = {
+                "cards_seen": 0,
+                "correct": 0,
+                "wrong": 0,
+                "skipped": 0,
+                "events": [],
+            }
+
+        event_type = str(item.get("event_type") or "").lower()
+        was_correct = item.get("was_correct")
+
+        if event_type in {"mark_correct", "mark_incorrect", "mark_wrong", "mark_skipped", "skip"} or was_correct is not None:
+            by_session[sid]["cards_seen"] += 1
+
+            if was_correct is not None:
+                if int(was_correct) == 1:
+                    by_session[sid]["correct"] += 1
+                else:
+                    by_session[sid]["wrong"] += 1
+            elif "correct" in event_type and "incorrect" not in event_type:
+                by_session[sid]["correct"] += 1
+            elif "incorrect" in event_type or "wrong" in event_type:
+                by_session[sid]["wrong"] += 1
+            elif "skip" in event_type:
+                by_session[sid]["skipped"] += 1
+
+        by_session[sid]["events"].append({
+            "id": item.get("id"),
+            "event_type": item.get("event_type"),
+            "card_id": item.get("card_id"),
+            "was_correct": item.get("was_correct"),
+            "created_at": item.get("created_at"),
+        })
+
+    out = []
+    for session in sessions:
+        item = dict(session)
+        sid = str(item.get("id"))
+        counts = by_session.get(sid, {
+            "cards_seen": 0,
+            "correct": 0,
+            "wrong": 0,
+            "skipped": 0,
+            "events": [],
+        })
+
+        # Only show sessions that actually reviewed at least one card.
+        if int(counts["cards_seen"]) <= 0:
+            continue
+
+        out.append({
+            "id": sid,
+            "deck_id": str(item.get("deck_id") or ""),
+            "status": item.get("status") or "",
+            "started_at": item.get("started_at") or item.get("created_at") or "",
+            "ended_at": item.get("ended_at") or item.get("updated_at") or "",
+            "updated_at": item.get("updated_at") or "",
+            "cards_seen": counts["cards_seen"],
+            "correct": counts["correct"],
+            "wrong": counts["wrong"],
+            "skipped": counts["skipped"],
+            "last_action": item.get("last_action") or "",
+            "last_intent": item.get("last_intent") or "",
+        })
+
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "count": len(out),
+        "sessions": out,
+    }
+
+@app.post("/api/study/session-writeback-lite")
+async def api_study_session_writeback_lite(request: Request):
+    import datetime as _dt
+    import json as _json
+
+    user = _auth_current_user_from_request(request)
+    user_id = int(user["id"])
+    payload = await request.json()
+    action = str(payload.get("action") or "").strip().lower()
+    now = _dt.datetime.now(_dt.timezone.utc).isoformat()
+
+    def _int_or_none(value):
+        if value is None or value == "":
+            return None
+        try:
+            return int(value)
+        except Exception:
+            return None
+
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA busy_timeout=5000")
+
+            card_cols = {
+                row["name"]
+                for row in conn.execute("PRAGMA table_info(study_cards)").fetchall()
+            }
+
+            card_not_deleted = ""
+            if "deleted_at" in card_cols:
+                card_not_deleted = " AND (deleted_at IS NULL OR deleted_at = '')"
+
+            def _load_card(card_id):
+                row = conn.execute(
+                    f"""
+                    SELECT *
+                    FROM study_cards
+                    WHERE id = ? AND user_id = ? {card_not_deleted}
+                    """,
+                    [int(card_id), user_id],
+                ).fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Study card not found.")
+                return row
+
+            def _queue_for_deck(deck_id):
+                rows = conn.execute(
+                    f"""
+                    SELECT id
+                    FROM study_cards
+                    WHERE user_id = ? AND deck_id = ? {card_not_deleted}
+                    ORDER BY id ASC
+                    """,
+                    [user_id, int(deck_id)],
+                ).fetchall()
+                return [int(row["id"]) for row in rows]
+
+            if action == "start":
+                deck_id = _int_or_none(payload.get("deck_id"))
+                current_card_id = _int_or_none(payload.get("current_card_id"))
+
+                if current_card_id is not None:
+                    card = _load_card(current_card_id)
+                    deck_id = int(card["deck_id"])
+
+                if deck_id is None:
+                    raise HTTPException(status_code=400, detail="deck_id or current_card_id is required.")
+
+                queue = []
+                for item in payload.get("queue") or []:
+                    item_int = _int_or_none(item)
+                    if item_int is not None:
+                        queue.append(item_int)
+
+                if not queue:
+                    queue = _queue_for_deck(deck_id)
+
+                if not queue:
+                    raise HTTPException(status_code=400, detail="No study cards available for this deck.")
+
+                if current_card_id is None:
+                    current_card_id = queue[0]
+
+                if current_card_id not in queue:
+                    queue.insert(0, current_card_id)
+
+                queue_position = max(0, queue.index(current_card_id))
+
+                cur = conn.execute(
+                    """
+                    INSERT INTO study_sessions (
+                        user_id, deck_id, status, current_card_id, queue_json,
+                        queue_position, started_at, paused_at, ended_at,
+                        last_action, last_intent, created_at, updated_at
+                    )
+                    VALUES (?, ?, 'active', ?, ?, ?, ?, NULL, NULL,
+                            'start', 'study_session_start', ?, ?)
+                    """,
+                    [
+                        user_id,
+                        deck_id,
+                        current_card_id,
+                        _json.dumps(queue),
+                        queue_position,
+                        now,
+                        now,
+                        now,
+                    ],
+                )
+                session_id = int(cur.lastrowid)
+
+                conn.execute(
+                    """
+                    INSERT INTO study_session_events (
+                        session_id, user_id, deck_id, card_id, event_type,
+                        was_correct, created_at, metadata_json
+                    )
+                    VALUES (?, ?, ?, ?, 'start', NULL, ?, ?)
+                    """,
+                    [
+                        session_id,
+                        user_id,
+                        deck_id,
+                        current_card_id,
+                        now,
+                        _json.dumps({
+                            "source": "sol_companion",
+                            "style": payload.get("style") or "",
+                            "queue_count": len(queue),
+                        }),
+                    ],
+                )
+
+                conn.commit()
+
+                return {
+                    "ok": True,
+                    "action": "start",
+                    "session_id": session_id,
+                    "deck_id": deck_id,
+                    "current_card_id": current_card_id,
+                    "queue": queue,
+                }
+
+            if action == "review":
+                session_id = _int_or_none(payload.get("session_id"))
+                card_id = _int_or_none(payload.get("card_id"))
+
+                if card_id is None:
+                    raise HTTPException(status_code=400, detail="card_id is required.")
+
+                card = _load_card(card_id)
+                deck_id = int(card["deck_id"])
+
+                result = str(payload.get("result") or "").strip().lower()
+                if result not in {"correct", "wrong", "skipped"}:
+                    raise HTTPException(status_code=400, detail="result must be correct, wrong, or skipped.")
+
+                was_correct = 1 if result == "correct" else 0
+                notes = "mark_correct" if result == "correct" else "mark_incorrect"
+                event_type = "mark_correct" if result == "correct" else "mark_incorrect"
+
+                if result == "skipped":
+                    notes = "mark_skipped"
+                    event_type = "mark_skipped"
+
+                if session_id is None:
+                    queue = _queue_for_deck(deck_id)
+                    if card_id not in queue:
+                        queue.insert(0, card_id)
+
+                    cur = conn.execute(
+                        """
+                        INSERT INTO study_sessions (
+                            user_id, deck_id, status, current_card_id, queue_json,
+                            queue_position, started_at, paused_at, ended_at,
+                            last_action, last_intent, created_at, updated_at
+                        )
+                        VALUES (?, ?, 'active', ?, ?, 0, ?, NULL, NULL,
+                                'start', 'study_session_start', ?, ?)
+                        """,
+                        [
+                            user_id,
+                            deck_id,
+                            card_id,
+                            _json.dumps(queue),
+                            now,
+                            now,
+                            now,
+                        ],
+                    )
+                    session_id = int(cur.lastrowid)
+
+                    conn.execute(
+                        """
+                        INSERT INTO study_session_events (
+                            session_id, user_id, deck_id, card_id, event_type,
+                            was_correct, created_at, metadata_json
+                        )
+                        VALUES (?, ?, ?, ?, 'start', NULL, ?, ?)
+                        """,
+                        [
+                            session_id,
+                            user_id,
+                            deck_id,
+                            card_id,
+                            now,
+                            _json.dumps({"source": "sol_companion", "queue_count": len(queue)}),
+                        ],
+                    )
+
+                session = conn.execute(
+                    """
+                    SELECT *
+                    FROM study_sessions
+                    WHERE id = ? AND user_id = ?
+                    """,
+                    [session_id, user_id],
+                ).fetchone()
+
+                if not session:
+                    raise HTTPException(status_code=404, detail="Study session not found.")
+
+                try:
+                    queue = _json.loads(session["queue_json"] or "[]")
+                except Exception:
+                    queue = []
+
+                queue = [int(x) for x in queue if _int_or_none(x) is not None]
+
+                if card_id not in queue:
+                    queue.append(card_id)
+
+                current_pos = queue.index(card_id)
+                next_pos = min(current_pos + 1, max(len(queue) - 1, 0))
+                next_card_id = queue[next_pos] if queue else card_id
+
+                conn.execute(
+                    """
+                    INSERT INTO study_reviews (
+                        user_id, deck_id, card_id, was_correct, confidence,
+                        response_time_ms, reviewed_at, notes
+                    )
+                    VALUES (?, ?, ?, ?, NULL, NULL, ?, ?)
+                    """,
+                    [
+                        user_id,
+                        deck_id,
+                        card_id,
+                        was_correct,
+                        now,
+                        notes,
+                    ],
+                )
+
+                conn.execute(
+                    """
+                    INSERT INTO study_session_events (
+                        session_id, user_id, deck_id, card_id, event_type,
+                        was_correct, created_at, metadata_json
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    [
+                        session_id,
+                        user_id,
+                        deck_id,
+                        card_id,
+                        event_type,
+                        was_correct,
+                        now,
+                        _json.dumps({
+                            "source": "sol_companion",
+                            "next_card_id": next_card_id,
+                            "next_status": "active",
+                        }),
+                    ],
+                )
+
+                conn.execute(
+                    """
+                    UPDATE study_sessions
+                    SET current_card_id = ?,
+                        queue_position = ?,
+                        last_action = ?,
+                        last_intent = ?,
+                        updated_at = ?
+                    WHERE id = ? AND user_id = ?
+                    """,
+                    [
+                        next_card_id,
+                        next_pos,
+                        event_type,
+                        "study_" + event_type,
+                        now,
+                        session_id,
+                        user_id,
+                    ],
+                )
+
+                conn.commit()
+
+                return {
+                    "ok": True,
+                    "action": "review",
+                    "session_id": session_id,
+                    "deck_id": deck_id,
+                    "card_id": card_id,
+                    "result": result,
+                    "next_card_id": next_card_id,
+                }
+
+            if action == "stop":
+                session_id = _int_or_none(payload.get("session_id"))
+                if session_id is None:
+                    raise HTTPException(status_code=400, detail="session_id is required.")
+
+                session = conn.execute(
+                    """
+                    SELECT *
+                    FROM study_sessions
+                    WHERE id = ? AND user_id = ?
+                    """,
+                    [session_id, user_id],
+                ).fetchone()
+
+                if not session:
+                    raise HTTPException(status_code=404, detail="Study session not found.")
+
+                conn.execute(
+                    """
+                    UPDATE study_sessions
+                    SET status = 'stopped',
+                        ended_at = ?,
+                        last_action = 'stop',
+                        last_intent = 'study_session_stop',
+                        updated_at = ?
+                    WHERE id = ? AND user_id = ?
+                    """,
+                    [now, now, session_id, user_id],
+                )
+
+                conn.execute(
+                    """
+                    INSERT INTO study_session_events (
+                        session_id, user_id, deck_id, card_id, event_type,
+                        was_correct, created_at, metadata_json
+                    )
+                    VALUES (?, ?, ?, ?, 'stop', NULL, ?, ?)
+                    """,
+                    [
+                        session_id,
+                        user_id,
+                        session["deck_id"],
+                        session["current_card_id"],
+                        now,
+                        _json.dumps({"source": "sol_companion", "status": "stopped"}),
+                    ],
+                )
+
+                conn.commit()
+
+                return {
+                    "ok": True,
+                    "action": "stop",
+                    "session_id": session_id,
+                }
+
+        raise HTTPException(status_code=400, detail="Unsupported study writeback action.")
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Study writeback failed: {type(exc).__name__}: {exc}",
+        )
+
+@app.post("/api/study/deck-writeback-lite")
+async def api_study_deck_writeback_lite(request: Request):
+    import datetime as _dt
+
+    user = _auth_current_user_from_request(request)
+    user_id = int(user["id"])
+    payload = await request.json()
+    action = str(payload.get("action") or "").strip().lower()
+    now = _dt.datetime.now(_dt.timezone.utc).isoformat()
+
+    def _int_or_none(value):
+        if value is None or value == "":
+            return None
+        try:
+            return int(value)
+        except Exception:
+            return None
+
+    def _insert_dynamic(conn, table, values):
+        cols = [col for col, val in values.items() if val is not None]
+        placeholders = ", ".join(["?"] * len(cols))
+        sql = f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({placeholders})"
+        cur = conn.execute(sql, [values[col] for col in cols])
+        return int(cur.lastrowid)
+
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA busy_timeout=5000")
+
+            deck_cols = {row["name"] for row in conn.execute("PRAGMA table_info(study_decks)").fetchall()}
+            card_cols = {row["name"] for row in conn.execute("PRAGMA table_info(study_cards)").fetchall()}
+
+            deck_not_deleted = ""
+            if "deleted_at" in deck_cols:
+                deck_not_deleted = " AND (deleted_at IS NULL OR deleted_at = '')"
+
+            def _load_deck(deck_id):
+                row = conn.execute(
+                    f"SELECT * FROM study_decks WHERE id = ? AND user_id = ? {deck_not_deleted}",
+                    [int(deck_id), user_id],
+                ).fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Study deck not found.")
+                return row
+
+            if action == "create":
+                title = str(payload.get("title") or payload.get("name") or "").strip()
+                description = str(payload.get("description") or "").strip()
+
+                if not title:
+                    raise HTTPException(status_code=400, detail="Deck title is required.")
+
+                values = {}
+                for col, val in {
+                    "user_id": user_id,
+                    "title": title,
+                    "name": title,
+                    "description": description,
+                    "created_at": now,
+                    "updated_at": now,
+                    "deleted_at": None,
+                }.items():
+                    if col in deck_cols:
+                        values[col] = val
+
+                deck_id = _insert_dynamic(conn, "study_decks", values)
+                row = conn.execute("SELECT * FROM study_decks WHERE id = ? AND user_id = ?", [deck_id, user_id]).fetchone()
+                item = dict(row)
+
+                conn.commit()
+
+                return {
+                    "ok": True,
+                    "action": "create",
+                    "deck": {
+                        "id": item.get("id"),
+                        "user_id": item.get("user_id"),
+                        "title": item.get("title") or item.get("name") or title,
+                        "description": item.get("description") or "",
+                        "created_at": item.get("created_at") or now,
+                        "updated_at": item.get("updated_at") or now,
+                    },
+                }
+
+            if action == "update":
+                deck_id = _int_or_none(payload.get("deck_id") or payload.get("id"))
+                if deck_id is None:
+                    raise HTTPException(status_code=400, detail="deck_id is required.")
+
+                _load_deck(deck_id)
+
+                title = str(payload.get("title") or payload.get("name") or "").strip()
+                description = str(payload.get("description") or "").strip()
+
+                if not title:
+                    raise HTTPException(status_code=400, detail="Deck title is required.")
+
+                sets = []
+                vals = []
+
+                if "title" in deck_cols:
+                    sets.append("title = ?")
+                    vals.append(title)
+                elif "name" in deck_cols:
+                    sets.append("name = ?")
+                    vals.append(title)
+
+                if "description" in deck_cols:
+                    sets.append("description = ?")
+                    vals.append(description)
+
+                if "updated_at" in deck_cols:
+                    sets.append("updated_at = ?")
+                    vals.append(now)
+
+                vals.extend([deck_id, user_id])
+
+                conn.execute(
+                    f"UPDATE study_decks SET {', '.join(sets)} WHERE id = ? AND user_id = ?",
+                    vals,
+                )
+                conn.commit()
+
+                return {"ok": True, "action": "update", "deck_id": deck_id}
+
+            if action == "delete":
+                deck_id = _int_or_none(payload.get("deck_id") or payload.get("id"))
+                if deck_id is None:
+                    raise HTTPException(status_code=400, detail="deck_id is required.")
+
+                _load_deck(deck_id)
+
+                if "archived_at" in deck_cols:
+                    vals = [now]
+                    set_sql = "archived_at = ?"
+                    if "updated_at" in deck_cols:
+                        set_sql += ", updated_at = ?"
+                        vals.append(now)
+                    vals.extend([deck_id, user_id])
+                    conn.execute(f"UPDATE study_decks SET {set_sql} WHERE id = ? AND user_id = ?", vals)
+                elif "deleted_at" in deck_cols:
+                    vals = [now]
+                    set_sql = "deleted_at = ?"
+                    if "updated_at" in deck_cols:
+                        set_sql += ", updated_at = ?"
+                        vals.append(now)
+                    vals.extend([deck_id, user_id])
+                    conn.execute(f"UPDATE study_decks SET {set_sql} WHERE id = ? AND user_id = ?", vals)
+                else:
+                    raise HTTPException(status_code=500, detail="Deck schema has no archived_at/deleted_at soft-delete column.")
+
+                if "archived_at" in card_cols:
+                    vals = [now]
+                    set_sql = "archived_at = ?"
+                    if "updated_at" in card_cols:
+                        set_sql += ", updated_at = ?"
+                        vals.append(now)
+                    vals.extend([deck_id, user_id])
+                    conn.execute(f"UPDATE study_cards SET {set_sql} WHERE deck_id = ? AND user_id = ?", vals)
+                elif "deleted_at" in card_cols:
+                    vals = [now]
+                    set_sql = "deleted_at = ?"
+                    if "updated_at" in card_cols:
+                        set_sql += ", updated_at = ?"
+                        vals.append(now)
+                    vals.extend([deck_id, user_id])
+                    conn.execute(f"UPDATE study_cards SET {set_sql} WHERE deck_id = ? AND user_id = ?", vals)
+
+                conn.commit()
+
+                return {"ok": True, "action": "delete", "deck_id": deck_id}
+
+        raise HTTPException(status_code=400, detail="Unsupported deck writeback action.")
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Deck writeback failed: {type(exc).__name__}: {exc}",
+        )
+
+
+@app.post("/api/study/card-writeback-lite")
+async def api_study_card_writeback_lite(request: Request):
+    import datetime as _dt
+    import json as _json
+
+    user = _auth_current_user_from_request(request)
+    user_id = int(user["id"])
+    payload = await request.json()
+    action = str(payload.get("action") or "").strip().lower()
+    now = _dt.datetime.now(_dt.timezone.utc).isoformat()
+
+    def _int_or_none(value):
+        if value is None or value == "":
+            return None
+        try:
+            return int(value)
+        except Exception:
+            return None
+
+    def _first_col(cols, choices):
+        for col in choices:
+            if col in cols:
+                return col
+        return None
+
+    def _tags_from_value(value):
+        if value is None or value == "":
+            return []
+        if isinstance(value, list):
+            return [str(item) for item in value if str(item).strip()]
+        try:
+            parsed = _json.loads(value)
+            if isinstance(parsed, list):
+                return [str(item) for item in parsed if str(item).strip()]
+        except Exception:
+            pass
+        return []
+
+    def _apply_meta_tags(tags, flagged=None, difficulty=None):
+        clean = []
+        for tag in tags:
+            text = str(tag).strip()
+            if not text:
+                continue
+            if text == "apc:flagged":
+                continue
+            if text.startswith("apc:difficulty:"):
+                continue
+            clean.append(text)
+
+        if flagged is True:
+            clean.append("apc:flagged")
+
+        if difficulty:
+            diff = str(difficulty).strip().lower()
+            if diff:
+                clean.append("apc:difficulty:" + diff)
+
+        return clean
+
+    def _insert_dynamic(conn, table, values):
+        cols = [col for col, val in values.items() if val is not None]
+        placeholders = ", ".join(["?"] * len(cols))
+        sql = f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({placeholders})"
+        cur = conn.execute(sql, [values[col] for col in cols])
+        return int(cur.lastrowid)
+
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA busy_timeout=5000")
+
+            deck_cols = {row["name"] for row in conn.execute("PRAGMA table_info(study_decks)").fetchall()}
+            card_cols = {row["name"] for row in conn.execute("PRAGMA table_info(study_cards)").fetchall()}
+
+            front_col = _first_col(card_cols, ["front", "question", "prompt", "term"])
+            back_col = _first_col(card_cols, ["back", "answer", "definition", "response"])
+            hint_col = _first_col(card_cols, ["hint"])
+            explanation_col = _first_col(card_cols, ["explanation", "notes"])
+            tags_col = _first_col(card_cols, ["tags_json", "tags"])
+
+            if not front_col or not back_col:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Card schema unsupported. columns={sorted(card_cols)}",
+                )
+
+            deck_not_deleted = ""
+            if "deleted_at" in deck_cols:
+                deck_not_deleted = " AND (deleted_at IS NULL OR deleted_at = '')"
+
+            card_not_deleted = ""
+            if "deleted_at" in card_cols:
+                card_not_deleted = " AND (deleted_at IS NULL OR deleted_at = '')"
+
+            def _load_deck(deck_id):
+                row = conn.execute(
+                    f"SELECT * FROM study_decks WHERE id = ? AND user_id = ? {deck_not_deleted}",
+                    [int(deck_id), user_id],
+                ).fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Study deck not found.")
+                return row
+
+            def _load_card(card_id):
+                row = conn.execute(
+                    f"SELECT * FROM study_cards WHERE id = ? AND user_id = ? {card_not_deleted}",
+                    [int(card_id), user_id],
+                ).fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Study card not found.")
+                return row
+
+            def _card_payload(row):
+                item = dict(row)
+                tags = _tags_from_value(item.get(tags_col) if tags_col else "[]")
+                flagged = "apc:flagged" in tags
+                difficulty = "new"
+                for tag in tags:
+                    if str(tag).startswith("apc:difficulty:"):
+                        difficulty = str(tag).split(":", 2)[2] or "new"
+
+                return {
+                    "id": item.get("id"),
+                    "user_id": item.get("user_id"),
+                    "deck_id": item.get("deck_id"),
+                    "front": item.get(front_col) or "",
+                    "back": item.get(back_col) or "",
+                    "hint": item.get(hint_col) if hint_col else "",
+                    "explanation": item.get(explanation_col) if explanation_col else "",
+                    "tags_json": item.get(tags_col) if tags_col else "[]",
+                    "flagged": flagged,
+                    "difficulty": difficulty,
+                    "created_at": item.get("created_at") or "",
+                    "updated_at": item.get("updated_at") or "",
+                }
+
+            if action == "create":
+                deck_id = _int_or_none(payload.get("deck_id") or payload.get("deckId"))
+                if deck_id is None:
+                    raise HTTPException(status_code=400, detail="deck_id is required.")
+
+                _load_deck(deck_id)
+
+                front = str(payload.get("front") or payload.get("question") or "").strip()
+                back = str(payload.get("back") or payload.get("answer") or "").strip()
+                hint = str(payload.get("hint") or "").strip()
+                explanation = str(payload.get("explanation") or "").strip()
+
+                if not front or not back:
+                    raise HTTPException(status_code=400, detail="Card front and back are required.")
+
+                tags = _tags_from_value(payload.get("tags") or payload.get("tags_json") or "[]")
+                tags = _apply_meta_tags(tags, flagged=bool(payload.get("flagged")), difficulty=payload.get("difficulty") or "new")
+
+                values = {}
+                for col, val in {
+                    "user_id": user_id,
+                    "deck_id": deck_id,
+                    front_col: front,
+                    back_col: back,
+                    hint_col: hint if hint_col else None,
+                    explanation_col: explanation if explanation_col else None,
+                    tags_col: _json.dumps(tags) if tags_col else None,
+                    "created_at": now,
+                    "updated_at": now,
+                    "deleted_at": None,
+                }.items():
+                    if col and col in card_cols:
+                        values[col] = val
+
+                card_id = _insert_dynamic(conn, "study_cards", values)
+                row = conn.execute("SELECT * FROM study_cards WHERE id = ? AND user_id = ?", [card_id, user_id]).fetchone()
+                conn.commit()
+
+                return {"ok": True, "action": "create", "card": _card_payload(row)}
+
+            if action == "update":
+                card_id = _int_or_none(payload.get("card_id") or payload.get("id"))
+                if card_id is None:
+                    raise HTTPException(status_code=400, detail="card_id is required.")
+
+                current = _load_card(card_id)
+                current_item = dict(current)
+
+                deck_id = _int_or_none(payload.get("deck_id") or payload.get("deckId") or current_item.get("deck_id"))
+                if deck_id is None:
+                    raise HTTPException(status_code=400, detail="deck_id is required.")
+
+                _load_deck(deck_id)
+
+                front = str(payload.get("front") if payload.get("front") is not None else current_item.get(front_col) or "").strip()
+                back = str(payload.get("back") if payload.get("back") is not None else current_item.get(back_col) or "").strip()
+                hint = str(payload.get("hint") if payload.get("hint") is not None else (current_item.get(hint_col) if hint_col else "") or "").strip()
+                explanation = str(payload.get("explanation") if payload.get("explanation") is not None else (current_item.get(explanation_col) if explanation_col else "") or "").strip()
+
+                if not front or not back:
+                    raise HTTPException(status_code=400, detail="Card front and back are required.")
+
+                existing_tags = _tags_from_value(current_item.get(tags_col) if tags_col else "[]")
+                flagged = bool(payload.get("flagged")) if "flagged" in payload else ("apc:flagged" in existing_tags)
+                difficulty = payload.get("difficulty")
+                if difficulty is None:
+                    difficulty = "new"
+                    for tag in existing_tags:
+                        if str(tag).startswith("apc:difficulty:"):
+                            difficulty = str(tag).split(":", 2)[2] or "new"
+
+                tags = _apply_meta_tags(existing_tags, flagged=flagged, difficulty=difficulty)
+
+                sets = []
+                vals = []
+
+                for col, val in {
+                    "deck_id": deck_id,
+                    front_col: front,
+                    back_col: back,
+                    hint_col: hint if hint_col else None,
+                    explanation_col: explanation if explanation_col else None,
+                    tags_col: _json.dumps(tags) if tags_col else None,
+                    "updated_at": now,
+                }.items():
+                    if col and col in card_cols:
+                        sets.append(f"{col} = ?")
+                        vals.append(val)
+
+                vals.extend([card_id, user_id])
+
+                conn.execute(
+                    f"UPDATE study_cards SET {', '.join(sets)} WHERE id = ? AND user_id = ?",
+                    vals,
+                )
+
+                row = conn.execute("SELECT * FROM study_cards WHERE id = ? AND user_id = ?", [card_id, user_id]).fetchone()
+                conn.commit()
+
+                return {"ok": True, "action": "update", "card": _card_payload(row)}
+
+            if action == "delete":
+                card_id = _int_or_none(payload.get("card_id") or payload.get("id"))
+                if card_id is None:
+                    raise HTTPException(status_code=400, detail="card_id is required.")
+
+                _load_card(card_id)
+
+                if "archived_at" in card_cols:
+                    vals = [now]
+                    set_sql = "archived_at = ?"
+                    if "updated_at" in card_cols:
+                        set_sql += ", updated_at = ?"
+                        vals.append(now)
+                    vals.extend([card_id, user_id])
+                    conn.execute(f"UPDATE study_cards SET {set_sql} WHERE id = ? AND user_id = ?", vals)
+                elif "deleted_at" in card_cols:
+                    vals = [now]
+                    set_sql = "deleted_at = ?"
+                    if "updated_at" in card_cols:
+                        set_sql += ", updated_at = ?"
+                        vals.append(now)
+                    vals.extend([card_id, user_id])
+                    conn.execute(f"UPDATE study_cards SET {set_sql} WHERE id = ? AND user_id = ?", vals)
+                else:
+                    raise HTTPException(status_code=500, detail="Card schema has no archived_at/deleted_at soft-delete column.")
+
+                conn.commit()
+
+                return {"ok": True, "action": "delete", "card_id": card_id}
+
+        raise HTTPException(status_code=400, detail="Unsupported card writeback action.")
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Card writeback failed: {type(exc).__name__}: {exc}",
+        )
