@@ -226,7 +226,7 @@
 
     return ''
       + '<details class="apc-anki-manifest-details apc-anki-file-picker-details">'
-      + '  <summary>Find and choose your Anki file</summary>'
+      + '  <summary>Choose Anki file</summary>'
       + '  <p class="muted">Choose a file yourself. APC can only read what you explicitly select, and Stage 17J only stores a browser-local proof.</p>'
       + '  <div class="profile-preference-list apc-anki-location-list">'
       + '    <div class="profile-preference-row"><span>Windows desktop</span><strong>%APPDATA%\\Anki2\\&lt;Profile&gt;\\collection.anki2</strong></div>'
@@ -254,33 +254,14 @@
   }
 
   function renderPanelHtml(manifest, message) {
-    const summary = manifestSummary(manifest);
-    const loaded = Boolean(manifest);
     const safeMessage = message ? '<p class="profile-preference-save-message">' + escapeHtml(message) + '</p>' : '';
     return ''
       + '<section class="summary-card profile-preferences-card apc-anki-manifest-card" id="' + PANEL_ID + '">'
       + '  <span class="eyebrow">Anki file picker</span>'
-      + '  <strong>Profile Anki discovery manifest</strong>'
-      + '  <p>Paste an APC Anki discovery manifest here to save deck availability with your profile. This is browser-local and read-only for now.</p>'
+      + '  <strong>Choose your Anki file</strong>'
+      + '  <p>Select your Anki collection or export file. APC reads only a browser-local proof for now; deck extraction comes next.</p>'
       + renderFilePickerHtml(readSavedFileProof())
-      + '  <div class="profile-preference-list apc-anki-summary-list">'
-      + '    <div class="profile-preference-row"><span>Status</span><strong>' + escapeHtml(summary.status) + '</strong></div>'
-      + '    <div class="profile-preference-row"><span>Profiles</span><strong>' + summary.profileCount + '</strong></div>'
-      + '    <div class="profile-preference-row"><span>Decks</span><strong>' + summary.deckCount + '</strong></div>'
-      + '    <div class="profile-preference-row"><span>Cards / notes</span><strong>' + summary.cardCount + ' / ' + summary.noteCount + '</strong></div>'
-      + '    <div class="profile-preference-row"><span>Media files</span><strong>' + summary.mediaFileCount + '</strong></div>'
-      + '  </div>'
-      + '  <div class="apc-anki-profile-list">' + renderProfiles(manifest) + '</div>'
-      + '  <details class="apc-anki-manifest-details"' + (loaded ? '' : ' open') + '>'
-      + '    <summary>Paste/update discovery manifest</summary>'
-      + '    <p class="muted">Generate with ops/anki/anki_readonly_discovery.py and ops/anki/anki_discovery_manifest.py, then paste the JSON here.</p>'
-      + '    <textarea id="' + TEXTAREA_ID + '" rows="8" spellcheck="false" placeholder="Paste /tmp/apc-anki-manifest.json here"></textarea>'
-      + '    <div class="profile-preference-actions">'
-      + '      <button class="primary-btn" type="button" data-anki-manifest-action="load">Save manifest to profile</button>'
-      + '      <button class="ghost-btn" type="button" data-anki-manifest-action="clear">Clear saved manifest</button>'
-      + '    </div>'
-      +      safeMessage
-      + '  </details>'
+      + safeMessage
       + '  <p class="muted">Safety: browser-local only, no Anki writes, no card import, no media copy, no backend save, no DB migration, no full-file storage.</p>'
       + '</section>';
   }
