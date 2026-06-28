@@ -11,6 +11,7 @@
 
   var mountTimer = null;
   var sqlJsPromise = null;
+  var selectedAnkiFile = null;
 
   var memoryState = freshState("idle", "Ready for a browser-local Anki session.");
 
@@ -80,6 +81,7 @@
 
   async function inspectFileHeaderOnly(file) {
     if (!file) throw new Error("No file selected.");
+    selectedAnkiFile = file;
 
     var headerBlob = file.slice(0, Math.min(file.size, 128));
     var buffer = await headerBlob.arrayBuffer();
@@ -216,6 +218,7 @@
 
     var SQL = await loadSqlJs();
     var buffer = await file.arrayBuffer();
+    selectedAnkiFile = null;
     var db = new SQL.Database(new Uint8Array(buffer));
 
     try {
@@ -314,6 +317,7 @@
   }
 
   function stopSession() {
+    selectedAnkiFile = null;
     memoryState.cards = [];
     memoryState.card_count_in_memory = 0;
     memoryState.current_index = 0;
@@ -327,6 +331,7 @@
   }
 
   function clearMemory() {
+    selectedAnkiFile = null;
     memoryState = freshState("idle", "In-memory Anki session state cleared.");
     renderPanel();
     return snapshot();
@@ -452,7 +457,7 @@
         try {
           if (action === "start") {
             var fileInput = document.getElementById(FILE_INPUT_ID);
-            var file = fileInput && fileInput.files && fileInput.files[0];
+            var file = selectedAnkiFile || (fileInput && fileInput.files && fileInput.files[0]);
             await extractBasicCardsIntoMemory(file);
           }
           if (action === "reveal") revealAnswer();
