@@ -1,6 +1,17 @@
 (function () {
   "use strict";
 
+  /* Stage 16 R3R stable owner fallback */
+  function apcStableOwnerFallbackR3R() {
+    try {
+      const gate = window.APC_AUTH_GATE_STATUS || '';
+      const last = window.localStorage ? window.localStorage.getItem('apcLastKnownSignedInEmail') : '';
+      if ((gate === 'checking' || gate === 'signed_in') && last) return last;
+    } catch (_) {}
+    return 'local-user';
+  }
+
+
   if (window.__APC_SOL_STUDY_SESSION_V2__) return;
   window.__APC_SOL_STUDY_SESSION_V2__ = true;
 
@@ -36,9 +47,9 @@
   function getUserEmail() {
     try {
       const user = window.APC_PRIVATEPAGES && window.APC_PRIVATEPAGES.me ? window.APC_PRIVATEPAGES.me() : null;
-      return user && user.email ? user.email : "local-user";
+      return user && user.email ? user.email : apcStableOwnerFallbackR3R();
     } catch (_) {
-      return "local-user";
+      return apcStableOwnerFallbackR3R();
     }
   }
 

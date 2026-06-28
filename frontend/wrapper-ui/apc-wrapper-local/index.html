@@ -1,6 +1,94 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Stage 16 R3R signed-in auth gate -->
+  <script>
+    (function stage16R3RSignedInAuthGate() {
+      try { document.documentElement.classList.add('apc-auth-checking'); } catch (_) {}
+      window.APC_AUTH_GATE_STATUS = 'checking';
+      window.APC_AUTH_GATE_R3R = { installed: true, status: 'checking' };
+      function setGateStatus(status) {
+        window.APC_AUTH_GATE_STATUS = status;
+        window.APC_AUTH_GATE_R3R.status = status;
+        document.documentElement.setAttribute('data-apc-auth-status', status);
+      }
+      function releaseGate(status) {
+        setGateStatus(status);
+        document.documentElement.classList.remove('apc-auth-checking');
+      }
+      function rememberUser(data) {
+        try {
+          var email = '';
+          if (data && data.email) email = data.email;
+          if (!email && data && data.user && data.user.email) email = data.user.email;
+          if (!email && data && data.account && data.account.email) email = data.account.email;
+          if (email && window.localStorage) window.localStorage.setItem('apcLastKnownSignedInEmail', String(email));
+        } catch (_) {}
+      }
+      function looksSignedIn(data) {
+        if (!data) return false;
+        if (data.authenticated === true || data.signed_in === true || data.ok === true) return true;
+        if (data.email || data.id || data.user_id) return true;
+        if (data.user && (data.user.email || data.user.id || data.user.user_id)) return true;
+        if (data.account && (data.account.email || data.account.id || data.account.user_id)) return true;
+        return false;
+      }
+      document.addEventListener('apc-private-page-rendered', function () {
+        releaseGate('signed_in');
+      }, false);
+      if (typeof fetch === 'function') {
+        fetch('/api/me', { credentials: 'include', cache: 'no-store', headers: { 'Accept': 'application/json' } })
+          .then(function (response) {
+            if (!response || !response.ok) return null;
+            return response.json().catch(function () { return null; });
+          })
+          .then(function (data) {
+            if (looksSignedIn(data)) {
+              rememberUser(data);
+              setGateStatus('signed_in');
+              setTimeout(function () { releaseGate('signed_in'); }, 1400);
+            } else {
+              releaseGate('signed_out');
+            }
+          })
+          .catch(function () { releaseGate('signed_out'); });
+      } else {
+        releaseGate('signed_out');
+      }
+      setTimeout(function () {
+        if (document.documentElement.classList.contains('apc-auth-checking')) {
+          releaseGate(window.APC_AUTH_GATE_STATUS === 'signed_in' ? 'signed_in' : 'signed_out');
+        }
+      }, 3800);
+      document.addEventListener('click', function (event) {
+        if (window.APC_AUTH_GATE_STATUS !== 'signed_in') return;
+        var target = event.target && event.target.closest ? event.target.closest('a,button,[role="tab"],[data-tab],[data-page],[data-route]') : null;
+        if (!target) return;
+        var marker = String(target.textContent || '') + ' ' + String(target.getAttribute('href') || '') + ' ' + String(target.getAttribute('data-tab') || '') + ' ' + String(target.getAttribute('data-page') || '') + ' ' + String(target.getAttribute('data-route') || '');
+        if (!/(study|companion|profile|calendar|account|dashboard|private)/i.test(marker)) return;
+        document.documentElement.classList.add('apc-auth-checking');
+        setGateStatus('checking');
+        setTimeout(function () { releaseGate('signed_in'); }, 1200);
+      }, true);
+    })();
+  </script>
+  <style>
+    html.apc-auth-checking body > * { visibility: hidden !important; }
+    html.apc-auth-checking body::before {
+      content: 'Checking session...';
+      position: fixed;
+      z-index: 2147483647;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+      color: #0f172a;
+      font: 600 1rem system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      visibility: visible !important;
+    }
+  </style>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AlexHartel AI Platform</title>
@@ -121,7 +209,7 @@
   <script src="/privatepages/privatepages.js?v=compact-companion-voice-20260626"></script>
   <script src="/privatepages/study-store.js?v=crud-writeback-r2-ui-args-20260627"></script>
   <script src="/privatepages/study.js?v=session-label-polish-20260627"></script>
-  <script src="/privatepages/companion.js?v=global-drive-banner-r3p-20260627"></script>
+  <script src="/privatepages/companion.js?v=auth-gate-r3r-20260628"></script>
 
 <script>
 (function loadQueuedChatStatusAfterInitialPageLoad() {
