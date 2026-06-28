@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "stage17kq-companion-local-anki-current-card-shape-command-20260628";
+  var VERSION = "stage17ks-companion-local-anki-session-mount-20260628";
   var PANEL_ID = "apc-companion-local-anki-bridge";
   var mountTimer = null;
 
@@ -140,6 +140,97 @@
     };
   }
 
+  function ankiSessionStatusShape(raw) {
+    raw = raw || {};
+    return {
+      source_type: raw.source_type || "anki_browser_local",
+      status: raw.status || "unavailable",
+      active: Boolean(raw.active),
+      selected_deck_name: raw.selected_deck_name || "",
+      selected_deck_id: raw.selected_deck_id || "",
+      card_count_in_memory: Number(raw.card_count_in_memory || 0),
+      reviewed_count: Number(raw.reviewed_count || 0),
+      correct_count: Number(raw.correct_count || 0),
+      wrong_count: Number(raw.wrong_count || 0),
+      current_index: Number(raw.current_index || 0)
+    };
+  }
+
+  function ankiSessionMountCommand() {
+    var api = window.APC_ANKI_READONLY_SESSION;
+    var raw = null;
+    var mounted = false;
+    var renderError = "";
+
+    if (api && typeof api.snapshot === "function") {
+      try {
+        raw = api.snapshot();
+      } catch (error) {
+        raw = null;
+      }
+    }
+
+    if (api && typeof api.renderPanel === "function") {
+      try {
+        api.renderPanel();
+        mounted = true;
+      } catch (error) {
+        renderError = String(error && error.message ? error.message : error);
+      }
+    }
+
+    var state = ankiSessionStatusShape(raw);
+    var lines = [];
+
+    lines.push("Local Anki session mount:");
+    lines.push("- adapter present: " + (api ? "yes" : "no"));
+    lines.push("- adapter rendered: " + (mounted ? "yes" : "no"));
+    lines.push("- source: " + (state.source_type || "anki_browser_local"));
+    lines.push("- status: " + (state.status || "unknown"));
+    lines.push("- active: " + (state.active ? "yes" : "no"));
+    lines.push("- deck: " + (state.selected_deck_name || "none"));
+    lines.push("- cards in memory: " + String(state.card_count_in_memory || 0));
+    lines.push("- reviewed: " + String(state.reviewed_count || 0));
+    lines.push("- correct / wrong: " + String(state.correct_count || 0) + " / " + String(state.wrong_count || 0));
+    if (renderError) lines.push("- render note: " + renderError);
+    lines.push("");
+    lines.push("Use the local Anki session controls to load, reveal, and mark cards. Companion bridge only reports status, counters, and shape.");
+
+    return {
+      version: VERSION,
+      ok: Boolean(api),
+      command: "mount_anki_session_adapter",
+      mounted: mounted,
+      message: lines.join("\n"),
+      session: state,
+      privacy: {
+        browser_memory_only: true,
+        card_text_returned_by_mount_command: false,
+        backend_calls_allowed: false,
+        model_calls_allowed: false,
+        anki_write_allowed: false,
+        mydecks_writeback_allowed: false
+      }
+    };
+  }
+
+  function bindAnkiSessionMountAction() {
+    if (window.__APC_COMPANION_LOCAL_ANKI_SESSION_MOUNT_BOUND) return;
+    window.__APC_COMPANION_LOCAL_ANKI_SESSION_MOUNT_BOUND = true;
+
+    document.addEventListener("click", function (event) {
+      var target = event.target && event.target.closest
+        ? event.target.closest("[data-local-anki-bridge-action='mount-anki-session']")
+        : null;
+      if (!target) return;
+
+      var result = ankiSessionMountCommand();
+      var panel = document.getElementById(PANEL_ID);
+      var output = panel ? panel.querySelector(".apc-companion-local-anki-session-mount-output") : null;
+      if (output) output.textContent = result.message;
+    });
+  }
+
   function isCompanionRoute() {
     var routeText = String(window.location.pathname + " " + window.location.hash).toLowerCase();
     if (routeText.indexOf("companion") !== -1) return true;
@@ -175,6 +266,7 @@
       + '  <div class="profile-preference-row"><span>Reviewed</span><strong>' + escapeHtml(state.reviewed_count) + '</strong></div>'
       + '  <button type="button" class="study-button secondary" data-local-anki-bridge-action="refresh">Refresh local bridge</button>'
       + '  <button type="button" class="study-button secondary" data-local-anki-bridge-action="describe-shape">Describe current local Anki card shape</button>'
+      + '  <button type="button" class="study-button secondary" data-local-anki-bridge-action="mount-anki-session">Mount local Anki session controls</button>'
       + '  <pre class="study-muted apc-companion-local-anki-command-output" aria-live="polite">' + escapeHtml(currentCardShapeCommand().message) + '</pre>'
       + '  <details class="apc-anki-manifest-details">'
       + '    <summary>Privacy boundary</summary>'
@@ -221,11 +313,13 @@
     mountTimer = window.setTimeout(renderPanel, 50);
   }
 
+  bindAnkiSessionMountAction();
   window.APC_COMPANION_LOCAL_ANKI_BRIDGE = {
     version: VERSION,
     snapshot: snapshot,
     currentCardShape: currentCardShape,
     currentCardShapeCommand: currentCardShapeCommand,
+    ankiSessionMountCommand: ankiSessionMountCommand,
     renderPanel: renderPanel,
     privacy: {
       browser_memory_only: true,
