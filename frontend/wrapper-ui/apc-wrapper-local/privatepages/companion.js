@@ -338,18 +338,32 @@
     return text;
   }
 
+
+  /* Companion Browser Listen R3F */
+  function restorePromptAfterRender(text) {
+    const prompt = byId("companionPrompt");
+    const clean = String(text || "").trim();
+
+    if (prompt && clean) {
+      prompt.value = clean;
+      prompt.focus();
+    }
+  }
+
+
   function submitListenedPrompt() {
     const prompt = byId("companionPrompt");
-    const text = prompt ? String(prompt.value || "").trim() : "";
+    const capturedText = prompt ? String(prompt.value || "").trim() : "";
 
-    if (!text || browserListenAutoSending) return;
+    if (!capturedText || browserListenAutoSending) return;
 
     browserListenAutoSending = true;
     stopBrowserListening("");
 
     window.setTimeout(function () {
       const current = byId("companionPrompt");
-      const finalText = current ? String(current.value || "").trim() : text;
+      const currentText = current ? String(current.value || "").trim() : "";
+      const finalText = currentText || capturedText;
 
       if (finalText) {
         if (current) current.value = "";
@@ -375,7 +389,11 @@
     }, 5000);
   }
 
+
   function stopBrowserListening(message) {
+    const promptBeforeStop = byId("companionPrompt");
+    const preservedPromptText = promptBeforeStop ? String(promptBeforeStop.value || "").trim() : "";
+
     clearBrowserListenTimer();
 
     try {
@@ -392,8 +410,13 @@
     listening = false;
     setSolState("listening");
 
-    if (message) companionVoiceNotice(message);
-    else render();
+    if (message) {
+      companionVoiceNotice(message);
+      restorePromptAfterRender(preservedPromptText);
+    } else {
+      render();
+      restorePromptAfterRender(preservedPromptText);
+    }
   }
 
   function startBrowserListening(mode) {
