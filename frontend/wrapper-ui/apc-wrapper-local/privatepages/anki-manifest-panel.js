@@ -225,7 +225,7 @@
       : "—";
 
     return ''
-      + '<details class="apc-anki-manifest-details apc-anki-file-picker-details" open>'
+      + '<details class="apc-anki-manifest-details apc-anki-file-picker-details">'
       + '  <summary>Find and choose your Anki file</summary>'
       + '  <p class="muted">Choose a file yourself. APC can only read what you explicitly select, and Stage 17J only stores a browser-local proof.</p>'
       + '  <div class="profile-preference-list apc-anki-location-list">'
@@ -259,7 +259,7 @@
     const safeMessage = message ? '<p class="profile-preference-save-message">' + escapeHtml(message) + '</p>' : '';
     return ''
       + '<section class="summary-card profile-preferences-card apc-anki-manifest-card" id="' + PANEL_ID + '">'
-      + '  <span class="eyebrow">Stage 17J · Anki File Picker</span>'
+      + '  <span class="eyebrow">Anki file picker</span>'
       + '  <strong>Profile Anki discovery manifest</strong>'
       + '  <p>Paste an APC Anki discovery manifest here to save deck availability with your profile. This is browser-local and read-only for now.</p>'
       + renderFilePickerHtml(readSavedFileProof())
@@ -417,7 +417,11 @@
     const page = event && event.detail ? event.detail.page : "";
     if (page === "profile") scheduleMount();
   });
-  document.addEventListener("click", function () {
+  document.addEventListener("click", function (event) {
+    if (event && event.target && event.target.closest && event.target.closest("#" + PANEL_ID)) {
+      return;
+    }
+
     window.setTimeout(function () {
       installRouteMutationObserver();
       scheduleMount();
