@@ -955,24 +955,6 @@
     `;
   }
 
-
-  /* Companion Local-First Drive Notice R3O */
-  function renderDriveOwnershipBanner() {
-    return `
-      <section class="sol-voice-box sol-drive-notice-banner" style="border-left: 4px solid rgba(59, 130, 246, 0.65);">
-        <h2>Data ownership notice</h2>
-
-        <p class="study-muted">
-          We’re working toward Google Drive sync so decks, cards, sessions, and study history can stay in each user’s own Google account.
-        </p>
-
-        <p class="study-muted">
-          This is a planned storage direction. Current Companion data still uses the existing platform storage until Drive sync is built, tested, and enabled.
-        </p>
-      </section>
-    `;
-  }
-
   function render() {
     const el = document.getElementById("companionPrivateApp");
     if (!el || !store()) return;
@@ -1004,8 +986,6 @@
       ${renderVoiceBox(settings)}
 
         ${renderListenBox()}
-
-        ${renderDriveOwnershipBanner()}
 
         ${renderNoticeBox()}
     `;
