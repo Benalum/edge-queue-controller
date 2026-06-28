@@ -210,6 +210,14 @@
 
   async function extractBasicCardsIntoMemory(file) {
     var selection = requireAnkiSelection();
+
+    if (!file && memoryState.cards && memoryState.cards.length) {
+      memoryState.status = memoryState.active ? "active" : memoryState.status;
+      memoryState.message = "Anki cards are already loaded in browser memory. Stage 17K-K-R4 preserved the active local session.";
+      renderPanel();
+      return snapshot();
+    }
+
     await inspectFileHeaderOnly(file);
 
     if (memoryState.selected_file_header_kind !== "sqlite-anki-collection") {
