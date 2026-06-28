@@ -138,7 +138,7 @@
     const safeMessage = message ? '<p class="profile-preference-save-message">' + escapeHtml(message) + '</p>' : '';
     return ''
       + '<section class="summary-card profile-preferences-card apc-anki-manifest-card" id="' + PANEL_ID + '">'
-      + '  <span class="eyebrow">Stage 17E · Anki Manifest</span>'
+      + '  <span class="eyebrow">Stage 17H · Anki Manifest</span>'
       + '  <strong>Profile Anki discovery manifest</strong>'
       + '  <p>Paste an APC Anki discovery manifest here to save deck availability with your profile. This is browser-local and read-only for now.</p>'
       + '  <div class="profile-preference-list apc-anki-summary-list">'
@@ -194,10 +194,24 @@
   }
 
   function findProfileAnchor() {
+    const app = document.getElementById("app") || document.body;
+    if (!app) return null;
+
+    const privateGrid = app.querySelector(".private-grid");
+    if (privateGrid) {
+      const cards = Array.from(privateGrid.querySelectorAll(".private-card"));
+      const preferencesCard = cards.find(function (card) {
+        return /Preferences/i.test(String(card.textContent || ""));
+      });
+      if (preferencesCard && preferencesCard.parentElement) {
+        return preferencesCard.parentElement;
+      }
+      return privateGrid;
+    }
+
     return document.querySelector(".profile-page")
       || document.querySelector('[data-current-route="/profile"] #app')
-      || document.getElementById("app")
-      || document.body;
+      || app;
   }
 
   function mountPanel(message) {
@@ -229,16 +243,40 @@
     window.setTimeout(function () { mountPanel(""); }, 0);
     window.setTimeout(function () { mountPanel(""); }, 250);
     window.setTimeout(function () { mountPanel(""); }, 1000);
+    window.setTimeout(function () { mountPanel(""); }, 2000);
   }
 
-  window.addEventListener("DOMContentLoaded", scheduleMount);
+  function installRouteMutationObserver() {
+    const app = document.getElementById("app");
+    if (!app || app.dataset.apcAnkiManifestObserver === "true") return;
+    app.dataset.apcAnkiManifestObserver = "true";
+
+    const observer = new MutationObserver(function () {
+      if (!isProfileRoute()) return;
+      window.clearTimeout(installRouteMutationObserver._timer);
+      installRouteMutationObserver._timer = window.setTimeout(function () {
+        mountPanel("");
+      }, 80);
+    });
+
+    observer.observe(app, { childList: true, subtree: true });
+  }
+
+  window.addEventListener("DOMContentLoaded", function () {
+    installRouteMutationObserver();
+    scheduleMount();
+  });
   window.addEventListener("popstate", scheduleMount);
   window.addEventListener("hashchange", scheduleMount);
   document.addEventListener("click", function () {
-    window.setTimeout(scheduleMount, 50);
+    window.setTimeout(function () {
+      installRouteMutationObserver();
+      scheduleMount();
+    }, 50);
   });
 
   if (document.readyState === "interactive" || document.readyState === "complete") {
+    installRouteMutationObserver();
     scheduleMount();
   }
 
