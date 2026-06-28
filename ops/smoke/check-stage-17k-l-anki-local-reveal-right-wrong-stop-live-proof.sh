@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+DOC="${REPO_ROOT}/docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md"
+
+test -f "${DOC}"
+
+grep -Fq 'Stage 17K-L — Anki Local Reveal / Right / Wrong / Stop Live Proof' "${DOC}"
+grep -Fq '2c822f9' "${DOC}"
+grep -Fq 'aa8831c' "${DOC}"
+grep -Fq '5f9b449' "${DOC}"
+grep -Fq '29b9d71' "${DOC}"
+grep -Fq 'stage17kk-anki-basic-memory-session-20260628-r4-status-repair' "${DOC}"
+grep -Fq 'stage17kk-r4-anki-active-status-repair-20260628T223627Z' "${DOC}"
+
+grep -Fq 'ok: true' "${DOC}"
+grep -Fq 'before.status: active' "${DOC}"
+grep -Fq 'before.active: true' "${DOC}"
+grep -Fq 'before.cardCount: 2' "${DOC}"
+grep -Fq 'firstCardShape.hasQuestion: true' "${DOC}"
+grep -Fq 'firstCardShape.hasAnswer: true' "${DOC}"
+grep -Fq 'firstCardShape.deckName: Anki Deck1' "${DOC}"
+grep -Fq 'firstCardShape.noteTypeName: Basic' "${DOC}"
+grep -Fq 'afterReveal1.answerVisible: true' "${DOC}"
+grep -Fq 'afterRight1.reviewed: 1' "${DOC}"
+grep -Fq 'afterRight1.correct: 1' "${DOC}"
+grep -Fq 'secondCardShape.hasQuestion: true' "${DOC}"
+grep -Fq 'secondCardShape.hasAnswer: true' "${DOC}"
+grep -Fq 'afterReveal2.answerVisible: true' "${DOC}"
+grep -Fq 'afterWrong2.status: complete' "${DOC}"
+grep -Fq 'afterWrong2.reviewed: 2' "${DOC}"
+grep -Fq 'afterWrong2.correct: 1' "${DOC}"
+grep -Fq 'afterWrong2.wrong: 1' "${DOC}"
+grep -Fq 'afterStop.status: stopped' "${DOC}"
+grep -Fq 'afterStop.active: false' "${DOC}"
+
+grep -Fq 'No Anki file is uploaded to the server' "${DOC}"
+grep -Fq 'No Anki card text is saved to repo docs' "${DOC}"
+grep -Fq 'card_text_localstorage_allowed: false' "${DOC}"
+grep -Fq 'backend_calls_allowed: false' "${DOC}"
+grep -Fq 'anki_write_allowed: false' "${DOC}"
+grep -Fq 'mydecks_writeback_allowed: false' "${DOC}"
+grep -Fq 'No backend deploy, DB write, Anki write' "${DOC}"
+grep -Fq 'The stop action cleared in-memory cards' "${DOC}"
+
+echo "PASS: Stage 17K-L Anki local reveal/right/wrong/stop live proof smoke passed"
