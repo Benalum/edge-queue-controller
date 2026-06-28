@@ -139,3 +139,97 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* APC_ADMIN_USERS_CONTRAST_R3U4 */
+.apc-admin-users-page,
+.apc-admin-users-page * {
+  box-sizing: border-box;
+}
+
+.apc-admin-users-page {
+  color: #e5eef8;
+}
+
+.apc-admin-users-head h1 {
+  color: #f8fafc;
+  text-shadow: none;
+}
+
+.apc-admin-users-muted {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.apc-admin-users-card {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.18);
+}
+
+.apc-admin-users-card strong {
+  color: #0f172a;
+}
+
+.apc-admin-users-table-wrap {
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+}
+
+.apc-admin-users-table {
+  background: #ffffff;
+  color: #0f172a;
+  min-width: 980px;
+}
+
+.apc-admin-users-table th {
+  background: #e2e8f0;
+  color: #1e293b;
+  font-weight: 900;
+}
+
+.apc-admin-users-table td {
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 650;
+}
+
+.apc-admin-users-table tbody tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.apc-admin-users-table code,
+.apc-admin-users-page code {
+  color: #0f172a;
+  background: rgba(226, 232, 240, 0.9);
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+
+.apc-admin-users-badge.online {
+  background: #bbf7d0;
+  color: #14532d;
+  border-color: #22c55e;
+}
+
+.apc-admin-users-badge.offline {
+  background: #e2e8f0;
+  color: #334155;
+  border-color: #94a3b8;
+}
+
+.apc-admin-users-btn {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.24);
+}
+
+.apc-admin-users-btn:hover {
+  background: #e2e8f0;
+}
+
+.apc-admin-users-error {
+  background: #fff1f2;
+  color: #7f1d1d;
+  border-color: #fca5a5;
+}
