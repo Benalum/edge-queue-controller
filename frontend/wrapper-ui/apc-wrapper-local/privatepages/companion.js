@@ -16,6 +16,7 @@
   let recognition = null;
   let listening = false;
   let solState = "listening";
+  let browserVoices = [];
 
   function store() {
     return window.APC_STUDY_STORE;
@@ -80,9 +81,11 @@
     return {
       voiceEnabled: false,
       voiceProvider: "browser",
+      browserVoiceURI: "",
+      browserVoiceName: "",
       kokoroEnabled: false,
-      voiceName: "kokoro:af_sarah",
-      volume: 0.85,
+      voiceName: "",
+      volume: 1.0,
       speed: 1.0,
       autoListen: false
     };
@@ -112,15 +115,24 @@
 
   function normalizeVoiceSettings(settings) {
     const next = { ...defaultSettings(), ...(settings || {}) };
+
     next.voiceProvider = browserSpeechSupported() ? "browser" : "kokoro";
-    if (next.voiceProvider === "browser") next.kokoroEnabled = false;
+
+    if (next.voiceProvider === "browser") {
+      next.kokoroEnabled = false;
+    }
+
+    next.autoListen = false;
+    next.volume = 1.0;
+    next.speed = 1.0;
+
     return next;
   }
 
   function voiceProviderLabel(settings) {
     if (!settings || !settings.voiceEnabled) return "Voice is off.";
     if (browserSpeechSupported()) return "Voice is on using your browser.";
-    return "Browser voice is not supported here. Kokoro fallback is selected, but it needs the backend endpoint before it can speak.";
+    return "Browser voice is not supported in this browser.";
   }
 
   function speakWithBrowser(text, settings) {
@@ -140,8 +152,11 @@
         window.speechSynthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(clean);
-        utterance.volume = Math.max(0, Math.min(1, Number(settings.volume || 0.85)));
-        utterance.rate = Math.max(0.6, Math.min(1.4, Number(settings.speed || 1.0)));
+        const selectedVoice = selectedBrowserVoice(settings);
+        if (selectedVoice) utterance.voice = selectedVoice;
+
+        utterance.volume = 1.0;
+        utterance.rate = 1.0;
         utterance.pitch = 1.0;
 
         utterance.onend = function () {
@@ -184,7 +199,7 @@
     settings.voiceProvider = "kokoro";
     settings.kokoroEnabled = true;
     saveSettings(settings);
-    companionVoiceNotice("Browser voice is not supported here. Kokoro fallback is selected, but the Kokoro endpoint is not connected yet.");
+    companionVoiceNotice("Browser voice is not supported in this browser.");
   }
 
   function disableVoice() {
@@ -213,16 +228,67 @@
     }
   }
 
-  function renderVoiceOptions(settings) {
-    return [
-      ["kokoro:af_heart", "af_heart"],
-      ["kokoro:af_bella", "af_bella"],
-      ["kokoro:af_sarah", "af_sarah"],
-      ["kokoro:am_adam", "am_adam"],
-      ["kokoro:am_michael", "am_michael"]
-    ].map(([value, label]) => (
-      `<option value="${value}" ${settings.voiceName === value ? "selected" : ""}>${label}</option>`
-    )).join("");
+  /* Companion Browser Voice R3D */
+  function getBrowserVoices() {
+    try {
+      if (!browserSpeechSupported()) return [];
+
+      const voices = window.speechSynthesis.getVoices() || [];
+      if (voices.length) browserVoices = voices;
+
+      return browserVoices || [];
+    } catch (_) {
+      return browserVoices || [];
+    }
+  }
+
+  function browserVoiceKey(voice) {
+    if (!voice) return "";
+    return voice.voiceURI || `${voice.name || "voice"}|${voice.lang || ""}`;
+  }
+
+  function browserVoiceLabel(voice) {
+    const parts = [
+      voice.name || "Unnamed voice",
+      voice.lang || "unknown language",
+      voice.localService ? "local" : "browser"
+    ];
+
+    if (voice.default) parts.push("default");
+
+    return parts.join(" — ");
+  }
+
+  function selectedBrowserVoice(settings) {
+    const voices = getBrowserVoices();
+    if (!voices.length) return null;
+
+    const key = settings && settings.browserVoiceURI ? String(settings.browserVoiceURI) : "";
+    if (key) {
+      const selected = voices.find((voice) => browserVoiceKey(voice) === key);
+      if (selected) return selected;
+    }
+
+    return voices.find((voice) => voice.default) || null;
+  }
+
+  function renderBrowserVoiceOptions(settings) {
+    const voices = getBrowserVoices();
+
+    const systemSelected = !settings.browserVoiceURI ? "selected" : "";
+    const options = [`<option value="" ${systemSelected}>System default</option>`];
+
+    voices.forEach((voice) => {
+      const key = browserVoiceKey(voice);
+      const selected = settings.browserVoiceURI === key ? "selected" : "";
+      options.push(`<option value="${escapeHtml(key)}" ${selected}>${escapeHtml(browserVoiceLabel(voice))}</option>`);
+    });
+
+    if (!voices.length) {
+      options.push(`<option value="" disabled>No browser voices listed yet</option>`);
+    }
+
+    return options.join("");
   }
 
   function renderLastMessage() {
@@ -396,38 +462,18 @@
         <div class="sol-voice-actions">
           <button class="sol-button" type="button" data-companion-action="enable-voice" ${enableDisabled}>Enable Voice</button>
           <button class="sol-button secondary" type="button" data-companion-action="disable-voice" ${disableDisabled}>Disable Voice</button>
-          <button class="sol-button secondary" type="button" data-companion-action="listen">Start listening</button>
         </div>
 
-        <div class="sol-voice-grid">
-          <label class="sol-toggle">
-            <input id="companionAutoListen" type="checkbox" ${settings.autoListen ? "checked" : ""} />
-            Auto-listen after Sol speaks
-          </label>
-
-          <label class="sol-control">
-            Kokoro fallback voice
-            <select id="companionVoiceSelect">
-              ${renderVoiceOptions(settings)}
-            </select>
-          </label>
-
-          <label class="sol-control">
-            Volume
-            <input id="companionVoiceVolume" type="range" min="0" max="1" step="0.05" value="${escapeHtml(settings.volume)}" />
-          </label>
-
-          <label class="sol-control">
-            Speed
-            <input id="companionVoiceSpeed" type="range" min="0.6" max="1.4" step="0.05" value="${escapeHtml(settings.speed)}" />
-          </label>
-        </div>
-
-        <p class="study-muted">
-          ${browserOk
-            ? "Sol will speak with your browser first. Kokoro is not used unless browser voice is unavailable."
-            : "This browser does not expose speechSynthesis. Kokoro fallback can be connected in a later backend step."}
-        </p>
+        ${
+          browserOk
+            ? `<label class="sol-control full-width">
+                Browser voice
+                <select id="companionBrowserVoiceSelect">
+                  ${renderBrowserVoiceOptions(settings)}
+                </select>
+              </label>`
+            : ""
+        }
       </section>
     `;
   }
@@ -1253,4 +1299,35 @@
   document.addEventListener("apc-private-page-rendered", function (event) {
     if (event.detail && event.detail.page === "companion") syncThenRender();
   });
+
+  /* Companion Browser Voice R3D change handler */
+  document.addEventListener("change", function (event) {
+    if (!event.target || !event.target.matches("#companionBrowserVoiceSelect")) return;
+
+    const settings = normalizeVoiceSettings(loadSettings());
+    settings.browserVoiceURI = event.target.value || "";
+
+    const selected = selectedBrowserVoice(settings);
+    settings.browserVoiceName = selected ? selected.name || "" : "";
+
+    saveSettings(settings);
+  });
+
+  if (browserSpeechSupported()) {
+    try {
+      browserVoices = window.speechSynthesis.getVoices() || [];
+
+      const refreshVoices = function () {
+        browserVoices = window.speechSynthesis.getVoices() || [];
+        if (byId("companionBrowserVoiceSelect")) render();
+      };
+
+      if (typeof window.speechSynthesis.addEventListener === "function") {
+        window.speechSynthesis.addEventListener("voiceschanged", refreshVoices);
+      } else {
+        window.speechSynthesis.onvoiceschanged = refreshVoices;
+      }
+    } catch (_) {}
+  }
+
 })();
