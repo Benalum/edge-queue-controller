@@ -577,6 +577,21 @@
   }
 
 
+  function applyBrowserOnlyVoiceDefaultsR3M() {
+    try {
+      const key = "apcCompanionBrowserOnlyVoiceR3M";
+      if (window.localStorage && window.localStorage.getItem(key) === "1") return;
+
+      const settings = normalizeVoiceSettings(loadSettings());
+      settings.voiceProvider = "browser";
+      settings.kokoroEnabled = false;
+      saveSettings(settings);
+
+      if (window.localStorage) window.localStorage.setItem(key, "1");
+    } catch (_) {}
+  }
+
+
   function startBrowserListening(mode) {
     const Recognition = browserRecognitionConstructor();
 
@@ -846,6 +861,7 @@
 
 
 
+
   function renderVoiceBox(settings) {
     const normalized = normalizeVoiceSettings(settings || loadSettings());
     const voiceOn = Boolean(normalized.voiceEnabled);
@@ -867,7 +883,11 @@
             ${renderBrowserVoiceOptions(normalized)}
           </select>
         </div>
-        <!-- Companion Voice UI R3L -->
+
+        <p class="study-muted" style="margin-top: 12px;">
+          Voice and listening use your browser only. Google Chrome has been tested and verified; if voice or listening has issues, use the latest Google Chrome browser.
+        </p>
+        <!-- Companion Browser-Only Voice R3M -->
       </section>
     `;
   }
@@ -1476,28 +1496,10 @@
     return "af_sarah";
   }
 
-  async function speakWithKokoro(text, settings) {
-    const response = await fetch("/api/tts/kokoro", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: {
-        Accept: "audio/wav,audio/mpeg,audio/*,application/json",
-        "Content-Type": "application/json",
-        ...(localStorage.getItem("edgeStudyToken") ? { Authorization: "Bearer " + localStorage.getItem("edgeStudyToken") } : {})
-      },
-      body: JSON.stringify({
-        text,
-        voice: kokoroVoiceId(settings),
-        speed: Number(settings.speed) || 1.0,
-        volume: Number(settings.volume) || 0.85,
-        format: "wav"
-      })
-    });
 
-    if (!response.ok) throw new Error("Kokoro failed HTTP " + response.status);
-    const blob = await response.blob();
-    const audioUrl = URL.createObjectURL(blob);
-    await playAudioUrl(audioUrl, settings, true);
+  async function speakWithKokoro(_text, _settings) {
+    // Companion Browser-Only Voice R3M: server-side Kokoro fallback is intentionally disabled for the MVP.
+    return;
   }
 
   function playAudioUrl(url, settings, revokeWhenDone) {
@@ -1523,12 +1525,23 @@
 
 
 
+
   async function speakText(text) {
     const clean = String(text || "").trim();
     if (!clean) return;
 
     const settings = normalizeVoiceSettings(loadSettings());
+    settings.voiceProvider = "browser";
+    settings.kokoroEnabled = false;
+    saveSettings(settings);
+
     if (!settings.voiceEnabled) {
+      if (settings.conversationModeEnabled) maybeStartConversationListening();
+      return;
+    }
+
+    if (!browserSpeechSupported()) {
+      console.warn("[companion] browser voice is not supported in this browser");
       if (settings.conversationModeEnabled) maybeStartConversationListening();
       return;
     }
@@ -1536,23 +1549,9 @@
     setSolState("talking");
 
     try {
-      if (browserSpeechSupported()) {
-        settings.voiceProvider = "browser";
-        settings.kokoroEnabled = false;
-        saveSettings(settings);
-        await speakWithBrowser(clean, settings);
-      } else {
-        settings.voiceProvider = "kokoro";
-        settings.kokoroEnabled = true;
-        saveSettings(settings);
-        await speakWithKokoro(clean, settings);
-      }
+      await speakWithBrowser(clean, settings);
     } catch (error) {
-      console.warn("[companion] voice failed", error);
-      loadMessages();
-      addMessage("assistant", browserSpeechSupported()
-        ? "Browser voice failed. Click Enable Voice and try again."
-        : "Browser voice is not supported and Kokoro fallback is not available yet.");
+      console.warn("[companion] browser voice failed", error);
     } finally {
       setSolState("listening");
 
@@ -1725,6 +1724,7 @@
       console.warn("[sol] backend sync failed", error);
     }
     applyPassiveInteractionDefaultsR3K();
+  applyBrowserOnlyVoiceDefaultsR3M();
   render();
   }
 
