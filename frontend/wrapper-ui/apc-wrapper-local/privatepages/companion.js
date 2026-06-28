@@ -845,6 +845,7 @@
 
 
 
+
   function renderVoiceBox(settings) {
     const normalized = normalizeVoiceSettings(settings || loadSettings());
     const voiceOn = Boolean(normalized.voiceEnabled);
@@ -855,17 +856,18 @@
       <section class="sol-voice-box">
         <h2>Voice</h2>
 
-        <div class="sol-voice-actions">
+        <div class="sol-voice-actions sol-voice-toggle-actions" style="margin-bottom: 16px;">
           <button class="${enableClass}" type="button" data-companion-action="enable-voice" aria-pressed="${voiceOn ? "true" : "false"}">Enable Voice</button>
           <button class="${disableClass}" type="button" data-companion-action="disable-voice" aria-pressed="${voiceOn ? "false" : "true"}">Disable Voice</button>
         </div>
 
-        <label class="sol-field">
-          <span>Browser voice</span>
-          <select id="companionBrowserVoiceSelect">
+        <div class="sol-browser-voice-row" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0 0;">
+          <label for="companionBrowserVoiceSelect" style="font-weight: 600;">Browser voice</label>
+          <select id="companionBrowserVoiceSelect" style="min-width: 280px; max-width: 100%;">
             ${renderBrowserVoiceOptions(normalized)}
           </select>
-        </label>
+        </div>
+        <!-- Companion Voice UI R3L -->
       </section>
     `;
   }
