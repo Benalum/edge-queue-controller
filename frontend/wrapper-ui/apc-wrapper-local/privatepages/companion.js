@@ -90,6 +90,7 @@
       browserVoiceURI: "",
       browserVoiceName: "",
       conversationModeEnabled: false,
+      conversationSilenceSeconds: 5,
       kokoroEnabled: false,
       voiceName: "",
       volume: 1.0,
@@ -310,7 +311,7 @@
 
   function listenStatusText() {
     if (!browserRecognitionSupported()) return "Browser listening is not supported in this browser.";
-    if (listening && browserListenMode === "auto-send") return "Listening. I will auto-send 5 seconds after you stop speaking.";
+    if (listening && browserListenMode === "auto-send") return `Listening. I will auto-send ${conversationSilenceSeconds()} seconds after you stop speaking.`;
     if (listening && browserListenMode === "draft") return "Listening. I will paste the text below and wait for you to send.";
     return "Browser listening is ready.";
   }
@@ -378,6 +379,8 @@
   function scheduleBrowserListenSilence() {
     clearBrowserListenTimer();
 
+    const silenceMs = conversationSilenceSeconds() * 1000;
+
     browserListenSilenceTimer = window.setTimeout(function () {
       if (browserListenMode === "auto-send") {
         submitListenedPrompt();
@@ -387,7 +390,7 @@
       if (browserListenMode === "draft") {
         stopBrowserListening("Listening stopped. Review the message, then press Send.");
       }
-    }, 5000);
+    }, silenceMs);
   }
 
 
@@ -422,6 +425,32 @@
 
 
   /* Companion Conversation Mode R3G */
+
+  /* Companion Listen UI R3H */
+  function conversationSilenceSeconds() {
+    const settings = normalizeVoiceSettings(loadSettings());
+    const value = Number(settings.conversationSilenceSeconds || 5);
+
+    if (!Number.isFinite(value)) return 5;
+    return Math.min(15, Math.max(2, Math.round(value)));
+  }
+
+  function updateConversationSilenceSeconds() {
+    const input = byId("companionSilenceSeconds");
+    const settings = normalizeVoiceSettings(loadSettings());
+    const seconds = Number(input && input.value ? input.value : 5);
+
+    settings.conversationSilenceSeconds = Number.isFinite(seconds)
+      ? Math.min(15, Math.max(2, Math.round(seconds)))
+      : 5;
+
+    saveSettings(settings);
+
+    if (input) input.value = String(settings.conversationSilenceSeconds);
+    return settings.conversationSilenceSeconds;
+  }
+
+
   function conversationModeEnabled() {
     return Boolean(normalizeVoiceSettings(loadSettings()).conversationModeEnabled);
   }
@@ -462,7 +491,8 @@
     settings.kokoroEnabled = false;
     saveSettings(settings);
 
-    companionVoiceNotice("Conversation mode started. I will listen, auto-send after 5 seconds of silence, speak my reply, then listen again.");
+    const silenceSeconds = conversationSilenceSeconds();
+    companionVoiceNotice(`Conversation mode started. I will listen, auto-send after ${silenceSeconds} seconds of silence, speak my reply, then listen again.`);
     speakText("Conversation mode started. I am listening.").catch(function () {
       maybeStartConversationListening();
     });
@@ -754,14 +784,13 @@
 
 
 
+
   function renderListenBox() {
     const supported = browserRecognitionSupported();
     const settings = normalizeVoiceSettings(loadSettings());
     const conversationOn = Boolean(settings.conversationModeEnabled);
+    const silenceSeconds = conversationSilenceSeconds();
 
-    const autoDisabled = !supported || conversationOn || (listening && browserListenMode === "auto-send") ? "disabled" : "";
-    const draftDisabled = !supported || conversationOn || (listening && browserListenMode === "draft") ? "disabled" : "";
-    const stopDisabled = listening ? "" : "disabled";
     const conversationStartDisabled = !supported || conversationOn ? "disabled" : "";
     const conversationStopDisabled = conversationOn ? "" : "disabled";
 
@@ -775,14 +804,14 @@
           <button class="sol-button secondary" type="button" data-companion-action="conversation-stop" ${conversationStopDisabled}>Stop conversation mode</button>
         </div>
 
-        <div class="sol-voice-actions">
-          <button class="sol-button secondary" type="button" data-companion-action="listen-auto-send" ${autoDisabled}>Listen and auto-send</button>
-          <button class="sol-button secondary" type="button" data-companion-action="listen-draft" ${draftDisabled}>Listen to draft</button>
-          <button class="sol-button secondary" type="button" data-companion-action="stop-listening" ${stopDisabled}>Stop listening</button>
-        </div>
+        <label class="sol-field">
+          <span>Silence before sending</span>
+          <input id="companionSilenceSeconds" type="number" min="2" max="15" step="1" value="${escapeHtml(silenceSeconds)}" />
+          <span class="study-muted">seconds</span>
+        </label>
 
         <p class="study-muted">
-          Conversation mode listens, sends after 5 seconds of silence, speaks Sol’s reply, then listens again.
+          Conversation mode listens, sends after your selected silence delay, speaks Sol’s reply, then listens again.
         </p>
       </section>
     `;
@@ -1577,7 +1606,22 @@
       }
     });
 
-    document.addEventListener("click", function (event) {
+  
+  document.addEventListener("input", function (event) {
+    const target = event.target;
+    if (target && target.id === "companionSilenceSeconds") {
+      updateConversationSilenceSeconds();
+    }
+  });
+
+  document.addEventListener("change", function (event) {
+    const target = event.target;
+    if (target && target.id === "companionSilenceSeconds") {
+      updateConversationSilenceSeconds();
+    }
+  });
+
+  document.addEventListener("click", function (event) {
       const button = event.target.closest("[data-companion-action]");
       if (!button) return;
       event.preventDefault();
