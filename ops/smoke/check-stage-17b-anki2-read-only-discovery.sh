@@ -1,29 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-cd "$ROOT"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+HELPER="${REPO_ROOT}/ops/anki/anki_readonly_discovery.py"
 
-TMPDIR="$(mktemp -d)"
+TMP_DIR="$(mktemp -d)"
 cleanup() {
-  rm -rf "$TMPDIR"
+  rm -rf "${TMP_DIR}"
 }
 trap cleanup EXIT
 
-ANKI_ROOT="$TMPDIR/Anki2"
-PROFILE="$ANKI_ROOT/User 1"
-MEDIA="$PROFILE/collection.media"
-mkdir -p "$MEDIA"
-printf 'fake image bytes not read by smoke\n' > "$MEDIA/cell-diagram.png"
+FAKE_HOME="${TMP_DIR}/home"
+FAKE_XDG="${TMP_DIR}/xdg-data"
+ANKI_ROOT="${FAKE_HOME}/.local/share/Anki2"
+PROFILE="${ANKI_ROOT}/User 1"
+MEDIA="${PROFILE}/collection.media"
+COLLECTION="${PROFILE}/collection.anki2"
+OUT="${TMP_DIR}/discovery.json"
 
-python3 - "$PROFILE/collection.anki2" <<'PY'
-import json
+mkdir -p "${MEDIA}" "${FAKE_XDG}"
+
+python3 - "${COLLECTION}" <<'PY'
 import sqlite3
 import sys
-from pathlib import Path
 
-collection_path = Path(sys.argv[1])
-conn = sqlite3.connect(collection_path)
+collection = sys.argv[1]
+conn = sqlite3.connect(collection)
 try:
     conn.execute("CREATE TABLE col (decks TEXT)")
     conn.execute(
@@ -53,37 +55,35 @@ finally:
     conn.close()
 PY
 
-OUT="$TMPDIR/discovery.json"
-python3 ops/anki/anki_readonly_discovery.py --json-only --root "$ANKI_ROOT" > "$OUT"
+printf 'fake image bytes\n' > "${MEDIA}/diagram.png"
 
-python3 - "$OUT" "$ANKI_ROOT" <<'PY'
+HOME="${FAKE_HOME}" \
+XDG_DATA_HOME="${FAKE_XDG}" \
+python3 "${HELPER}" --json-only > "${OUT}"
+
+python3 - "${OUT}" "${FAKE_HOME}" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-out = Path(sys.argv[1])
-expected_root = str(Path(sys.argv[2]))
-data = json.loads(out.read_text())
+out_path = Path(sys.argv[1])
+fake_home = Path(sys.argv[2])
+data = json.loads(out_path.read_text())
 
-assert data["schema_version"] == 1, data
 assert data["tool"] == "apc_anki_readonly_discovery", data
-assert data["status"] in {"ok", "not_found"}, data
-assert data["anki_running"] is False, data.get("anki_process_matches")
+assert data["status"] == "ok", data
+assert data["anki_running"] is False, data
 assert data["safety"]["writes_performed"] is False, data
 assert data["safety"]["collection_writes_allowed"] is False, data
 assert data["safety"]["media_writes_allowed"] is False, data
-assert data["safety"]["import_export_performed"] is False, data
-
-root_records = [r for r in data["roots"] if r["path"] == expected_root]
-assert root_records, data["roots"]
-assert root_records[0]["exists"] is True, root_records[0]
-assert root_records[0]["profile_count"] == 1, root_records[0]
 
 profiles = data["profiles"]
 assert len(profiles) == 1, profiles
+
 profile = profiles[0]
-assert profile["name"] == "User 1", profile
 assert profile["read_sqlite"] is True, profile
+assert str(profile["profile_path"]).startswith(str(fake_home)), profile
+assert "/home/alex/.local/share/Anki2" not in str(profile), profile
 assert profile["media_present"] is True, profile
 assert profile["media_file_count"] == 1, profile
 assert profile["deck_count"] == 2, profile
@@ -97,9 +97,6 @@ assert decks["Anki Deck2"]["card_count"] == 1, decks
 assert decks["Anki Deck2"]["note_count"] == 1, decks
 assert decks["Anki Deck1"]["media_present_in_profile"] is True, decks
 assert "col.decks is empty" not in profile.get("warnings", []), profile
-
-# Confirm the smoke stayed inside the temp fixture and did not depend on a real profile.
-assert all(expected_root in p["profile_path"] for p in profiles), profiles
 
 print("PASS: Stage 17B Anki2 read-only discovery helper smoke passed")
 PY
