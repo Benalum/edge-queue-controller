@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "stage17kp-companion-local-anki-visible-privacy-copy-20260628";
+  var VERSION = "stage17kq-companion-local-anki-current-card-shape-command-20260628";
   var PANEL_ID = "apc-companion-local-anki-bridge";
   var mountTimer = null;
 
@@ -97,6 +97,49 @@
     };
   }
 
+  function currentCardShapeCommand() {
+    var state = snapshot();
+    var shape = state.current_card_shape || {};
+    var lines = [];
+
+    lines.push("Local Anki bridge status:");
+    lines.push("- source: " + (state.source_type || "none"));
+    lines.push("- status: " + (state.status || "unknown"));
+    lines.push("- active: " + (state.active ? "yes" : "no"));
+    lines.push("- deck: " + (state.selected_deck_name || "none"));
+    lines.push("- cards in memory: " + String(state.card_count_in_memory || 0));
+    lines.push("- current card shape: " + (shape.present ? "present" : "none"));
+    lines.push("- question present: " + (shape.has_question ? "yes" : "no"));
+    lines.push("- answer present: " + (shape.has_answer ? "yes" : "no"));
+    lines.push("- note type: " + (shape.note_type_name || "none"));
+    lines.push("");
+    lines.push("Privacy: this command does not return card question text or answer text, and it does not call a backend or model.");
+
+    return {
+      version: VERSION,
+      ok: true,
+      command: "current_anki_card_shape",
+      message: lines.join("\n"),
+      shape: {
+        present: Boolean(shape.present),
+        has_question: Boolean(shape.has_question),
+        has_answer: Boolean(shape.has_answer),
+        deck_name: shape.deck_name || "",
+        note_type_name: shape.note_type_name || "",
+        question_length: Number(shape.question_length || 0),
+        answer_length: Number(shape.answer_length || 0)
+      },
+      privacy: {
+        browser_memory_only: true,
+        card_text_returned_by_command: false,
+        backend_calls_allowed: false,
+        model_calls_allowed: false,
+        anki_write_allowed: false,
+        mydecks_writeback_allowed: false
+      }
+    };
+  }
+
   function isCompanionRoute() {
     var routeText = String(window.location.pathname + " " + window.location.hash).toLowerCase();
     if (routeText.indexOf("companion") !== -1) return true;
@@ -131,6 +174,8 @@
       + '  <div class="profile-preference-row"><span>Note type</span><strong>' + escapeHtml(shape.note_type_name || "none") + '</strong></div>'
       + '  <div class="profile-preference-row"><span>Reviewed</span><strong>' + escapeHtml(state.reviewed_count) + '</strong></div>'
       + '  <button type="button" class="study-button secondary" data-local-anki-bridge-action="refresh">Refresh local bridge</button>'
+      + '  <button type="button" class="study-button secondary" data-local-anki-bridge-action="describe-shape">Describe current local Anki card shape</button>'
+      + '  <pre class="study-muted apc-companion-local-anki-command-output" aria-live="polite">' + escapeHtml(currentCardShapeCommand().message) + '</pre>'
       + '  <details class="apc-anki-manifest-details">'
       + '    <summary>Privacy boundary</summary>'
       + '    <p class="study-muted">This bridge does not return card question text or answer text. It exposes only shape and counters for local Companion UI integration.</p>'
@@ -142,6 +187,13 @@
   function bindPanel(panel) {
     panel.querySelectorAll("[data-local-anki-bridge-action='refresh']").forEach(function (button) {
       button.addEventListener("click", renderPanel);
+    });
+
+    panel.querySelectorAll("[data-local-anki-bridge-action='describe-shape']").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var output = panel.querySelector(".apc-companion-local-anki-command-output");
+        if (output) output.textContent = currentCardShapeCommand().message;
+      });
     });
   }
 
@@ -173,6 +225,7 @@
     version: VERSION,
     snapshot: snapshot,
     currentCardShape: currentCardShape,
+    currentCardShapeCommand: currentCardShapeCommand,
     renderPanel: renderPanel,
     privacy: {
       browser_memory_only: true,
