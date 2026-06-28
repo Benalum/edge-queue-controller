@@ -89,6 +89,7 @@
       voiceProvider: "browser",
       browserVoiceURI: "",
       browserVoiceName: "",
+      conversationModeEnabled: false,
       kokoroEnabled: false,
       voiceName: "",
       volume: 1.0,
@@ -419,6 +420,63 @@
     }
   }
 
+
+  /* Companion Conversation Mode R3G */
+  function conversationModeEnabled() {
+    return Boolean(normalizeVoiceSettings(loadSettings()).conversationModeEnabled);
+  }
+
+  function maybeStartConversationListening() {
+    const settings = normalizeVoiceSettings(loadSettings());
+
+    if (!settings.conversationModeEnabled) return;
+    if (!browserRecognitionSupported()) {
+      companionVoiceNotice("Conversation mode needs browser listening, but this browser does not support it.");
+      return;
+    }
+
+    if (listening || browserListenRecognition) return;
+
+    const prompt = byId("companionPrompt");
+    if (prompt && String(prompt.value || "").trim()) return;
+
+    window.setTimeout(function () {
+      const latest = normalizeVoiceSettings(loadSettings());
+      if (!latest.conversationModeEnabled) return;
+      if (listening || browserListenRecognition) return;
+      startBrowserListening("auto-send");
+    }, 650);
+  }
+
+  function startConversationMode() {
+    const settings = normalizeVoiceSettings(loadSettings());
+
+    if (!browserRecognitionSupported()) {
+      companionVoiceNotice("Conversation mode needs browser listening, but this browser does not support it.");
+      return;
+    }
+
+    settings.conversationModeEnabled = true;
+    settings.voiceEnabled = true;
+    settings.voiceProvider = browserSpeechSupported() ? "browser" : "kokoro";
+    settings.kokoroEnabled = false;
+    saveSettings(settings);
+
+    companionVoiceNotice("Conversation mode started. I will listen, auto-send after 5 seconds of silence, speak my reply, then listen again.");
+    speakText("Conversation mode started. I am listening.").catch(function () {
+      maybeStartConversationListening();
+    });
+  }
+
+  function stopConversationMode() {
+    const settings = normalizeVoiceSettings(loadSettings());
+    settings.conversationModeEnabled = false;
+    saveSettings(settings);
+
+    stopBrowserListening("");
+    companionVoiceNotice("Conversation mode stopped.");
+  }
+
   function startBrowserListening(mode) {
     const Recognition = browserRecognitionConstructor();
 
@@ -695,11 +753,17 @@
   }
 
 
+
   function renderListenBox() {
     const supported = browserRecognitionSupported();
-    const autoDisabled = !supported || (listening && browserListenMode === "auto-send") ? "disabled" : "";
-    const draftDisabled = !supported || (listening && browserListenMode === "draft") ? "disabled" : "";
+    const settings = normalizeVoiceSettings(loadSettings());
+    const conversationOn = Boolean(settings.conversationModeEnabled);
+
+    const autoDisabled = !supported || conversationOn || (listening && browserListenMode === "auto-send") ? "disabled" : "";
+    const draftDisabled = !supported || conversationOn || (listening && browserListenMode === "draft") ? "disabled" : "";
     const stopDisabled = listening ? "" : "disabled";
+    const conversationStartDisabled = !supported || conversationOn ? "disabled" : "";
+    const conversationStopDisabled = conversationOn ? "" : "disabled";
 
     return `
       <section class="sol-voice-box">
@@ -707,12 +771,19 @@
         <p class="study-muted">${escapeHtml(listenStatusText())}</p>
 
         <div class="sol-voice-actions">
-          <button class="sol-button" type="button" data-companion-action="listen-auto-send" ${autoDisabled}>Listen and auto-send</button>
+          <button class="sol-button" type="button" data-companion-action="conversation-start" ${conversationStartDisabled}>Start conversation mode</button>
+          <button class="sol-button secondary" type="button" data-companion-action="conversation-stop" ${conversationStopDisabled}>Stop conversation mode</button>
+        </div>
+
+        <div class="sol-voice-actions">
+          <button class="sol-button secondary" type="button" data-companion-action="listen-auto-send" ${autoDisabled}>Listen and auto-send</button>
           <button class="sol-button secondary" type="button" data-companion-action="listen-draft" ${draftDisabled}>Listen to draft</button>
           <button class="sol-button secondary" type="button" data-companion-action="stop-listening" ${stopDisabled}>Stop listening</button>
         </div>
 
-        <p class="study-muted">Auto-send waits 5 seconds after you stop speaking. Draft mode only pastes text into the message box.</p>
+        <p class="study-muted">
+          Conversation mode listens, sends after 5 seconds of silence, speaks Sol’s reply, then listens again.
+        </p>
       </section>
     `;
   }
@@ -1335,12 +1406,16 @@
   }
 
 
+
   async function speakText(text) {
     const clean = String(text || "").trim();
     if (!clean) return;
 
     const settings = normalizeVoiceSettings(loadSettings());
-    if (!settings.voiceEnabled) return;
+    if (!settings.voiceEnabled) {
+      if (settings.conversationModeEnabled) maybeStartConversationListening();
+      return;
+    }
 
     setSolState("talking");
 
@@ -1363,11 +1438,11 @@
         ? "Browser voice failed. Click Enable Voice and try again."
         : "Browser voice is not supported and Kokoro fallback is not available yet.");
     } finally {
+      setSolState("listening");
+
       const latestSettings = normalizeVoiceSettings(loadSettings());
-      if (latestSettings.autoListen) {
-        startListening();
-      } else {
-        setSolState("listening");
+      if (latestSettings.conversationModeEnabled) {
+        maybeStartConversationListening();
       }
     }
   }
@@ -1426,6 +1501,8 @@
 
     if (action === "enable-voice") return enableVoice();
     if (action === "disable-voice") return disableVoice();
+    if (action === "conversation-start") return startConversationMode();
+    if (action === "conversation-stop") return stopConversationMode();
     if (action === "listen-auto-send") return startBrowserListening("auto-send");
     if (action === "listen-draft") return startBrowserListening("draft");
     if (action === "stop-listening") return stopBrowserListening("Listening stopped.");
