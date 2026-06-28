@@ -17,6 +17,12 @@
   let listening = false;
   let solState = "listening";
   let browserVoices = [];
+  let browserListenRecognition = null;
+  let browserListenMode = "";
+  let browserListenBaseText = "";
+  let browserListenFinalText = "";
+  let browserListenSilenceTimer = null;
+  let browserListenAutoSending = false;
 
   function store() {
     return window.APC_STUDY_STORE;
@@ -291,6 +297,193 @@
     return options.join("");
   }
 
+
+  /* Companion Browser Listen R3E */
+  function browserRecognitionConstructor() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  }
+
+  function browserRecognitionSupported() {
+    return Boolean(browserRecognitionConstructor());
+  }
+
+  function listenStatusText() {
+    if (!browserRecognitionSupported()) return "Browser listening is not supported in this browser.";
+    if (listening && browserListenMode === "auto-send") return "Listening. I will auto-send 5 seconds after you stop speaking.";
+    if (listening && browserListenMode === "draft") return "Listening. I will paste the text below and wait for you to send.";
+    return "Browser listening is ready.";
+  }
+
+  function clearBrowserListenTimer() {
+    if (browserListenSilenceTimer) {
+      window.clearTimeout(browserListenSilenceTimer);
+      browserListenSilenceTimer = null;
+    }
+  }
+
+  function updatePromptFromListening(interimText) {
+    const prompt = byId("companionPrompt");
+    if (!prompt) return "";
+
+    const pieces = [
+      browserListenBaseText,
+      browserListenFinalText,
+      interimText || ""
+    ].map((part) => String(part || "").trim()).filter(Boolean);
+
+    const text = pieces.join(" ").replace(/\s+/g, " ").trim();
+    prompt.value = text;
+    prompt.focus();
+
+    return text;
+  }
+
+  function submitListenedPrompt() {
+    const prompt = byId("companionPrompt");
+    const text = prompt ? String(prompt.value || "").trim() : "";
+
+    if (!text || browserListenAutoSending) return;
+
+    browserListenAutoSending = true;
+    stopBrowserListening("");
+
+    window.setTimeout(function () {
+      const current = byId("companionPrompt");
+      const finalText = current ? String(current.value || "").trim() : text;
+
+      if (finalText) {
+        if (current) current.value = "";
+        submitPrompt(finalText);
+      }
+
+      browserListenAutoSending = false;
+    }, 100);
+  }
+
+  function scheduleBrowserListenSilence() {
+    clearBrowserListenTimer();
+
+    browserListenSilenceTimer = window.setTimeout(function () {
+      if (browserListenMode === "auto-send") {
+        submitListenedPrompt();
+        return;
+      }
+
+      if (browserListenMode === "draft") {
+        stopBrowserListening("Listening stopped. Review the message, then press Send.");
+      }
+    }, 5000);
+  }
+
+  function stopBrowserListening(message) {
+    clearBrowserListenTimer();
+
+    try {
+      if (browserListenRecognition) {
+        browserListenRecognition.onresult = null;
+        browserListenRecognition.onerror = null;
+        browserListenRecognition.onend = null;
+        browserListenRecognition.stop();
+      }
+    } catch (_) {}
+
+    browserListenRecognition = null;
+    browserListenMode = "";
+    listening = false;
+    setSolState("listening");
+
+    if (message) companionVoiceNotice(message);
+    else render();
+  }
+
+  function startBrowserListening(mode) {
+    const Recognition = browserRecognitionConstructor();
+
+    if (!Recognition) {
+      companionVoiceNotice("Browser listening is not supported in this browser.");
+      return;
+    }
+
+    stopBrowserListening("");
+
+    browserListenMode = mode === "auto-send" ? "auto-send" : "draft";
+    browserListenFinalText = "";
+    browserListenAutoSending = false;
+
+    const prompt = byId("companionPrompt");
+    browserListenBaseText = prompt ? String(prompt.value || "").trim() : "";
+
+    const recognitionInstance = new Recognition();
+    browserListenRecognition = recognitionInstance;
+
+    recognitionInstance.lang = navigator.language || "en-US";
+    recognitionInstance.continuous = true;
+    recognitionInstance.interimResults = true;
+    recognitionInstance.maxAlternatives = 1;
+
+    recognitionInstance.onresult = function (event) {
+      let interimText = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const result = event.results[i];
+        const transcript = result && result[0] ? result[0].transcript || "" : "";
+
+        if (result.isFinal) {
+          browserListenFinalText = `${browserListenFinalText} ${transcript}`.replace(/\s+/g, " ").trim();
+        } else {
+          interimText = `${interimText} ${transcript}`.replace(/\s+/g, " ").trim();
+        }
+      }
+
+      updatePromptFromListening(interimText);
+      scheduleBrowserListenSilence();
+    };
+
+    recognitionInstance.onerror = function (event) {
+      const error = event && event.error ? event.error : "unknown";
+      stopBrowserListening(`Browser listening stopped: ${error}`);
+    };
+
+    recognitionInstance.onend = function () {
+      if (browserListenAutoSending) return;
+
+      const prompt = byId("companionPrompt");
+      const text = prompt ? String(prompt.value || "").trim() : "";
+
+      if (browserListenMode === "auto-send" && text) {
+        scheduleBrowserListenSilence();
+        render();
+        return;
+      }
+
+      if (browserListenMode === "draft" && text) {
+        browserListenRecognition = null;
+        listening = false;
+        clearBrowserListenTimer();
+        render();
+        return;
+      }
+
+      browserListenRecognition = null;
+      listening = false;
+      clearBrowserListenTimer();
+      render();
+    };
+
+    try {
+      listening = true;
+      setSolState("listening");
+      recognitionInstance.start();
+      render();
+      scheduleBrowserListenSilence();
+    } catch (error) {
+      console.warn("[companion] browser listening failed", error);
+      listening = false;
+      browserListenRecognition = null;
+      companionVoiceNotice("Browser listening could not start. Check microphone permission and browser support.");
+    }
+  }
+
   function renderLastMessage() {
     const latest = lastAssistantMessage();
     if (!latest) return `<div class="sol-reply empty">Ask Sol a question or start a study session below.</div>`;
@@ -478,6 +671,29 @@
     `;
   }
 
+
+  function renderListenBox() {
+    const supported = browserRecognitionSupported();
+    const autoDisabled = !supported || (listening && browserListenMode === "auto-send") ? "disabled" : "";
+    const draftDisabled = !supported || (listening && browserListenMode === "draft") ? "disabled" : "";
+    const stopDisabled = listening ? "" : "disabled";
+
+    return `
+      <section class="sol-voice-box">
+        <h2>Listen</h2>
+        <p class="study-muted">${escapeHtml(listenStatusText())}</p>
+
+        <div class="sol-voice-actions">
+          <button class="sol-button" type="button" data-companion-action="listen-auto-send" ${autoDisabled}>Listen and auto-send</button>
+          <button class="sol-button secondary" type="button" data-companion-action="listen-draft" ${draftDisabled}>Listen to draft</button>
+          <button class="sol-button secondary" type="button" data-companion-action="stop-listening" ${stopDisabled}>Stop listening</button>
+        </div>
+
+        <p class="study-muted">Auto-send waits 5 seconds after you stop speaking. Draft mode only pastes text into the message box.</p>
+      </section>
+    `;
+  }
+
   function render() {
     const el = document.getElementById("companionPrivateApp");
     if (!el || !store()) return;
@@ -502,10 +718,13 @@
         <form class="sol-input-form" data-companion-form="chat">
           <textarea id="companionPrompt" placeholder="Message Sol..."></textarea>
           <button class="sol-button sol-send" type="submit">Send</button>
+          <button class="sol-button secondary" type="button" data-companion-action="listen-draft">Listen to draft</button>
         </form>
       </section>
 
       ${renderVoiceBox(settings)}
+
+        ${renderListenBox()}
     `;
 
     bindRenderedControls();
@@ -1184,7 +1403,10 @@
 
     if (action === "enable-voice") return enableVoice();
     if (action === "disable-voice") return disableVoice();
-    if (action === "listen") return startListening();
+    if (action === "listen-auto-send") return startBrowserListening("auto-send");
+    if (action === "listen-draft") return startBrowserListening("draft");
+    if (action === "stop-listening") return stopBrowserListening("Listening stopped.");
+    if (action === "listen") return startBrowserListening("draft");
     if (action === "stop-speaking") return stopSpeaking();
     if (action === "clear-chat") return clearChat();
 
