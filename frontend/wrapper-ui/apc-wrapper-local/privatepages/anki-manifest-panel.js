@@ -155,7 +155,7 @@
       : "—";
 
     return ''
-      + '<details class="apc-anki-manifest-details apc-anki-file-picker-details">'
+      + '<details class="apc-anki-manifest-details apc-anki-file-picker-details"' + (hasProof ? ' open' : '') + '>'
       + '  <summary>Choose Anki file</summary>'
       + '  <p class="muted">Choose a file yourself. APC can only read what you explicitly select, and Stage 17J only stores a browser-local proof.</p>'
       + '  <div class="profile-preference-list apc-anki-location-list">'
