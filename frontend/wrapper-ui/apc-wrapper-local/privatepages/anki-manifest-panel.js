@@ -321,6 +321,5 @@
   window.APC_PROFILE_ANKI_MANIFEST_PANEL = {
     mount: mountPanel,
     readSavedManifest: readSavedManifest,
-    validateManifest: validateManifest,
   };
 })();
