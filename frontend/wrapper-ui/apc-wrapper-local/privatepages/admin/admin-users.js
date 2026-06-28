@@ -15,6 +15,106 @@
       .replace(/"/g, "&quot;");
   }
 
+  function extractBearerToken(value) {
+    if (!value) return "";
+    if (typeof value === "string") {
+      const raw = value.trim();
+      if (!raw) return "";
+      if (raw.toLowerCase().startsWith("bearer ")) return raw.replace(/^Bearer\s+/i, "");
+      if (raw.startsWith("eyJ") || raw.length > 40) return raw;
+      try {
+        return extractBearerToken(JSON.parse(raw));
+      } catch (_) {
+        return "";
+      }
+    }
+
+    if (typeof value === "object") {
+      const direct = value.access_token
+        || value.accessToken
+        || value.token
+        || value.jwt
+        || value.authToken
+        || value.sessionToken
+        || value.session_token
+        || value.bearer
+        || (value.session && (
+          value.session.access_token
+          || value.session.accessToken
+          || value.session.token
+          || value.session.jwt
+        ))
+        || (value.auth && (
+          value.auth.access_token
+          || value.auth.accessToken
+          || value.auth.token
+          || value.auth.jwt
+        ));
+
+      if (direct) return extractBearerToken(direct);
+    }
+
+    return "";
+  }
+
+  function findBearerToken() {
+    const globals = [
+      window.authState,
+      window.APC_AUTH,
+      window.APC_AUTH_STATE,
+      window.APC_SESSION,
+      window.APC_PRIVATE_SESSION,
+    ];
+
+    for (const item of globals) {
+      const token = extractBearerToken(item);
+      if (token) return token;
+    }
+
+    const storageKeys = [
+      "edgeStudyToken",
+      "access_token",
+      "accessToken",
+      "apc_access_token",
+      "token",
+      "jwt",
+      "authToken",
+      "sessionToken",
+      "session_token",
+      "apcAuth",
+      "apc_auth",
+      "apcSession",
+      "apc_session",
+    ];
+
+    for (const store of [localStorage, sessionStorage]) {
+      for (const key of storageKeys) {
+        try {
+          const token = extractBearerToken(store.getItem(key));
+          if (token) return token;
+        } catch (_) {}
+      }
+
+      try {
+        for (let i = 0; i < store.length; i += 1) {
+          const key = store.key(i);
+          if (!key || !/token|auth|session|jwt/i.test(key)) continue;
+          const token = extractBearerToken(store.getItem(key));
+          if (token) return token;
+        }
+      } catch (_) {}
+    }
+
+    return "";
+  }
+
+  function buildHeaders() {
+    const headers = { Accept: "application/json" };
+    const token = findBearerToken();
+    if (token) headers.Authorization = "Bearer " + token;
+    return headers;
+  }
+
   function currentAdminEmail(payload) {
     const direct = payload && (payload.admin_email || payload.current_admin || payload.email);
     if (direct) return direct;
@@ -78,7 +178,7 @@
         const response = await fetch(path, {
           credentials: "include",
           cache: "no-store",
-          headers: { Accept: "application/json" },
+          headers: buildHeaders(),
         });
         const text = await response.text();
         let data = null;
