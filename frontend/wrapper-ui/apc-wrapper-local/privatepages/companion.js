@@ -799,16 +799,17 @@
         <h2>Listen</h2>
         <p class="study-muted">${escapeHtml(listenStatusText())}</p>
 
-        <div class="sol-voice-actions">
+        <div class="sol-voice-actions sol-listen-actions" style="margin-bottom: 16px;">
           <button class="sol-button" type="button" data-companion-action="conversation-start" ${conversationStartDisabled}>Start conversation mode</button>
           <button class="sol-button secondary" type="button" data-companion-action="conversation-stop" ${conversationStopDisabled}>Stop conversation mode</button>
         </div>
 
-        <label class="sol-field">
-          <span>Silence before sending</span>
-          <input id="companionSilenceSeconds" type="number" min="2" max="15" step="1" value="${escapeHtml(silenceSeconds)}" />
+        <div class="sol-listen-delay-row" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0 16px;">
+          <label for="companionSilenceSeconds" style="font-weight: 600;">Silence before sending</label>
+          <input id="companionSilenceSeconds" type="number" min="2" max="15" step="1" value="${escapeHtml(silenceSeconds)}" style="width: 72px; padding: 4px 6px;" />
           <span class="study-muted">seconds</span>
-        </label>
+        </div>
+        <!-- Companion Listen UI R3I -->
 
         <p class="study-muted">
           Conversation mode listens, sends after your selected silence delay, speaks Sol’s reply, then listens again.
