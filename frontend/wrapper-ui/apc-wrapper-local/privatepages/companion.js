@@ -271,6 +271,8 @@
     return voices.find((voice) => voice.default) || null;
   }
 
+
+  /* Companion Intro Copy R3N */
   function renderBrowserVoiceOptions(settings) {
     const voices = getBrowserVoices();
 
@@ -1159,7 +1161,7 @@
       if (found) deck = found;
     }
 
-    if (!deck) return "Create or select a deck first. You can say “list decks” or “select deck mathmatic”.";
+    if (!deck) return "Create or select a deck first. You can say “list decks” or “select deck [deck name]”.";
 
     store().setActiveDeck(String(deck.id));
     const result = store().startSession(style, [String(deck.id)]);
@@ -1441,7 +1443,7 @@
       return "Hi, I’m Sol. What would you like to work on?";
     }
 
-    return "I’m here with you. To study, say things like: list decks, select deck mathmatic, start study, create card, edit card, delete card, flag card, pause study, resume study, or stop study.";
+    return "I’m here with you. You can talk with me, study flashcards, and manage your decks.\n\nTo study, try saying things like “list decks,” “select deck [deck name],” “start study,” or “show current card.” You can also create, edit, delete, and flag cards.";
   }
 
 
