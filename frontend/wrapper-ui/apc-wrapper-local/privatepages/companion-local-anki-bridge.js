@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "stage17kn-companion-local-anki-bridge-source-20260628";
+  var VERSION = "stage17kp-companion-local-anki-visible-privacy-copy-20260628";
   var PANEL_ID = "apc-companion-local-anki-bridge";
   var mountTimer = null;
 
@@ -118,6 +118,7 @@
       + '<section id="' + PANEL_ID + '" class="profile-card apc-companion-local-anki-bridge-card">'
       + '  <h3>Companion local Anki bridge</h3>'
       + '  <p class="study-muted">Browser-memory bridge only. It reports the current local Anki card shape without returning card text.</p>'
+      + '  <p class="study-muted apc-companion-local-anki-visible-privacy-copy">This bridge does not return card question text or answer text.</p>'
       + '  <div class="profile-preference-row"><span>Bridge version</span><strong>' + escapeHtml(VERSION) + '</strong></div>'
       + '  <div class="profile-preference-row"><span>Anki adapter</span><strong>' + escapeHtml(state.anki_adapter_present ? "present" : "missing") + '</strong></div>'
       + '  <div class="profile-preference-row"><span>Source</span><strong>' + escapeHtml(state.source_type || "none") + '</strong></div>'
