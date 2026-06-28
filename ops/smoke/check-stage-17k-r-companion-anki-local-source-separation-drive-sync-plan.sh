@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+DOC="${REPO_ROOT}/docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md"
+
+test -f "${DOC}"
+
+grep -Fq 'Stage 17K-R — Companion Anki/Local Source Separation and Future Drive Sync Plan' "${DOC}"
+grep -Fq 'APC / Local / MyDecks cards' "${DOC}"
+grep -Fq 'User-selected Anki cards' "${DOC}"
+grep -Fq 'The sources must remain separate' "${DOC}"
+grep -Fq 'Anki cards must not be merged into MyDecks' "${DOC}"
+grep -Fq 'Use Anki' "${DOC}"
+grep -Fq 'Show my Anki decks' "${DOC}"
+grep -Fq 'Study Anki Deck1' "${DOC}"
+grep -Fq 'Use Local decks' "${DOC}"
+grep -Fq 'user-provided browser-local file source' "${DOC}"
+grep -Fq 'discover deck names' "${DOC}"
+grep -Fq 'load selected Anki cards into browser memory' "${DOC}"
+grep -Fq 'The Anki source must remain read-only toward Anki' "${DOC}"
+grep -Fq 'These edit/write flows apply to platform cards only' "${DOC}"
+grep -Fq 'For now, session stats should remain local' "${DOC}"
+grep -Fq 'Future Google Drive direction' "${DOC}"
+grep -Fq 'Drive sync may include' "${DOC}"
+grep -Fq 'Anki and platform cards must remain separate in Drive sync' "${DOC}"
+grep -Fq 'not raw Anki card content' "${DOC}"
+grep -Fq 'Forbidden for Anki bridge/backend/model paths' "${DOC}"
+grep -Fq 'raw question text' "${DOC}"
+grep -Fq 'raw answer text' "${DOC}"
+grep -Fq 'model calls containing Anki card content' "${DOC}"
+grep -Fq 'Stage 17K-S should add a Companion local Anki session mount' "${DOC}"
+grep -Fq 'stay separate from `companion.js` MyDecks edit/write flows' "${DOC}"
+grep -Fq 'No frontend deploy, backend deploy, DB write' "${DOC}"
+
+echo "PASS: Stage 17K-R Companion Anki/Local source separation and Drive sync plan smoke passed"
