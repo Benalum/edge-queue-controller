@@ -458,6 +458,12 @@
           if (action === "start") {
             var fileInput = document.getElementById(FILE_INPUT_ID);
             var file = selectedAnkiFile || (fileInput && fileInput.files && fileInput.files[0]);
+            if (!file && memoryState.cards && memoryState.cards.length) {
+              memoryState.status = memoryState.active ? "active" : memoryState.status;
+              memoryState.message = "Anki cards are already loaded in browser memory. Use reveal/right/wrong or stop and re-select the file to reload.";
+              renderPanel();
+              return;
+            }
             await extractBasicCardsIntoMemory(file);
           }
           if (action === "reveal") revealAnswer();
