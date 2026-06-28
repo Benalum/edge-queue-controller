@@ -36,6 +36,8 @@ const ALLOWED_ROUTES = [
   { method: "POST", pattern: /^\/api\/ads\/reward\/claim$/ },
   { method: "GET",  pattern: /^\/api\/system\/public-status$/ },
   { method: "GET",  pattern: /^\/api\/system\/admin-status$/ },
+  { method: "GET",  pattern: /^\/api\/admin\/users$/ },
+  { method: "GET",  pattern: /^\/api\/system\/admin\/users$/ },
   { method: "POST", pattern: /^\/api\/system\/pveso\/boot$/ }
 ];
 
@@ -142,6 +144,9 @@ function mapApiPathToBackend(path) {
   if (path.startsWith("/api/ads/")) {
     return path.replace("/api/ads/", "/system/ads/");
   }
+
+  // Controller-owned admin users: route is protected by backend admin auth.
+  if (path === "/api/admin/users") return "/system/admin/users";
 
   // Controller-owned system status and power: /api/system/* -> /system/*
   if (path.startsWith("/api/system/")) {

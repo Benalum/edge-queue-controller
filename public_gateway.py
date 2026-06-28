@@ -615,6 +615,32 @@ def _system_v2_is_admin(request):
 
 
 @app.middleware("http")
+async def _admin_users_api_proxy_r3s(request, call_next):
+    path = request.url.path
+    method = request.method.upper()
+
+    if method in {"GET", "HEAD"} and path in {"/api/admin/users", "/api/system/admin/users"}:
+        forward_headers = {}
+        authorization = request.headers.get("Authorization")
+        if authorization:
+            forward_headers["Authorization"] = authorization
+
+        edge_key = request.headers.get("X-Edge-Api-Key")
+        if edge_key:
+            forward_headers["X-Edge-Api-Key"] = edge_key
+
+        status_code, payload = _system_v2_fetch_json(
+            "/system/admin/users",
+            method="GET",
+            headers=forward_headers,
+            timeout=15,
+        )
+        return _SystemV2JSONResponse(payload, status_code=status_code)
+
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def _system_public_admin_status_v2(request, call_next):
     path = request.url.path
     method = request.method.upper()

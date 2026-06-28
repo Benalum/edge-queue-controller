@@ -449,6 +449,7 @@ class SPAProxyHandler(SimpleHTTPRequestHandler):
             auth_source_path.startswith("/api/backend/")
             or auth_source_path.startswith("/api/study/")
             or auth_source_path.startswith("/api/companion/")
+            or auth_source_path.startswith("/api/admin/")
             or auth_source_path == "/api/auth/me"
             or auth_source_path == "/api/me"
         ) and not headers.get("Authorization"):

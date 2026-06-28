@@ -16997,3 +16997,269 @@ if (typeof window !== "undefined") {
   document.addEventListener("click", handleNavigationClick, true);
 })();
 /* APC_STAGE16_FC_O45_E_CG_B_SURFACE_OWNER_END */
+
+/* APC_ADMIN_USERS_ONLY_PAGE_R3S_BEGIN */
+(function () {
+  const MARKER = "APC_ADMIN_USERS_ONLY_PAGE_R3S";
+  const ADMIN_PATHS = ["/admin/users", "/system/admin/users"];
+  let usersPayload = null;
+  let usersLoading = false;
+  let usersError = "";
+  let lastLoadedAt = "";
+
+  function isAdminRoute() {
+    return String(location.pathname || "") === "/admin";
+  }
+
+  function isLoggedIn() {
+    return Boolean(window.authState && window.authState.token);
+  }
+
+  function currentUser() {
+    return (window.authState && window.authState.user) || {};
+  }
+
+  function isAdminUser() {
+    const user = currentUser();
+    return Boolean(user && (user.is_admin === true || String(user.role || "").toLowerCase() === "admin"));
+  }
+
+  function esc(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+  function num(value) {
+    const n = Number(value || 0);
+    return Number.isFinite(n) ? n.toLocaleString() : "0";
+  }
+
+  function adminFetchHeaders() {
+    const headers = { "Accept": "application/json" };
+    const token = window.authState && window.authState.token;
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return headers;
+  }
+
+  async function readJson(response) {
+    const text = await response.text();
+    try {
+      return text ? JSON.parse(text) : {};
+    } catch (_) {
+      return { ok: false, detail: text || `HTTP ${response.status}` };
+    }
+  }
+
+  async function fetchAdminUsersOnly() {
+    if (!isLoggedIn() || !isAdminUser() || usersLoading) return;
+
+    usersLoading = true;
+    usersError = "";
+    renderAdminUsersOnly();
+
+    const base = (typeof API_BASE !== "undefined" && API_BASE) ? API_BASE : "/api";
+    let lastError = "";
+
+    try {
+      for (const path of ADMIN_PATHS) {
+        const url = `${base}${path}`;
+        try {
+          const response = await fetch(url, {
+            method: "GET",
+            credentials: "same-origin",
+            cache: "no-store",
+            headers: adminFetchHeaders(),
+          });
+
+          const payload = await readJson(response);
+          if (response.ok && payload && Array.isArray(payload.users)) {
+            usersPayload = payload;
+            lastLoadedAt = new Date().toLocaleString();
+            usersError = "";
+            return;
+          }
+
+          lastError = payload.detail || payload.error || `HTTP ${response.status}`;
+        } catch (err) {
+          lastError = err && err.message ? err.message : String(err);
+        }
+      }
+
+      usersPayload = null;
+      usersError = lastError || "Could not load users.";
+    } finally {
+      usersLoading = false;
+      renderAdminUsersOnly();
+    }
+  }
+
+  function userLastSeen(user) {
+    return user.last_seen_at || user.last_login_at || user.updated_at || user.created_at || "Never";
+  }
+
+  function userLabel(user) {
+    return user.email || user.display_name || user.username || `User ${user.id || ""}`.trim();
+  }
+
+  function userOnline(user) {
+    return user.online === true || String(user.online || "").toLowerCase() === "true";
+  }
+
+  function renderRows(users) {
+    if (!users.length) {
+      return `<div class="empty-list">No users found.</div>`;
+    }
+
+    return `
+      <div class="admin-table-wrap apc-admin-users-only-table-wrap">
+        <table class="admin-table apc-admin-users-only-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Last seen</th>
+              <th>Active sessions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${users.map((user) => {
+              const online = userOnline(user);
+              return `
+                <tr>
+                  <td><span class="badge ${online ? "online" : "offline"}">${online ? "online" : "offline"}</span></td>
+                  <td>
+                    <strong>${esc(userLabel(user))}</strong>
+                    ${user.display_name && user.email ? `<br><span class="muted">${esc(user.display_name)}</span>` : ""}
+                  </td>
+                  <td>${esc(user.role || (user.is_admin ? "admin" : "user"))}</td>
+                  <td>${esc(userLastSeen(user))}</td>
+                  <td>${num(user.active_session_count || 0)}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function renderAdminUsersOnly() {
+    if (!isAdminRoute()) return false;
+
+    const app = document.getElementById("app");
+    if (!app) return false;
+
+    if (!isLoggedIn()) {
+      app.innerHTML = `
+        <section class="hero" data-apc-admin-users-only="${MARKER}">
+          <p class="eyebrow">Admin</p>
+          <h1>Admin users</h1>
+          <p>Log in with an admin account to view users.</p>
+          <button class="primary-btn" type="button" data-apc-admin-users-login>Log in</button>
+        </section>
+      `;
+      app.querySelector("[data-apc-admin-users-login]")?.addEventListener("click", () => {
+        if (typeof openAuthModal === "function") openAuthModal("login");
+      });
+      return true;
+    }
+
+    if (!isAdminUser()) {
+      app.innerHTML = `
+        <section class="hero" data-apc-admin-users-only="${MARKER}">
+          <p class="eyebrow">Admin</p>
+          <h1>Admin access required</h1>
+          <p>This page is only available to admin users.</p>
+        </section>
+      `;
+      return true;
+    }
+
+    const payload = usersPayload || {};
+    const users = Array.isArray(payload.users) ? payload.users : [];
+    const onlineCount = payload.online_count ?? users.filter(userOnline).length;
+    const totalCount = payload.user_count_returned ?? users.length;
+    const onlineWindowSeconds = payload.online_window_seconds || 300;
+    const email = currentUser().email || "admin";
+
+    app.innerHTML = `
+      <section class="hero" data-apc-admin-users-only="${MARKER}">
+        <p class="eyebrow">Admin only</p>
+        <h1>Admin users</h1>
+        <p>Current admin: ${esc(email)}</p>
+      </section>
+
+      <section class="system-section apc-admin-users-only">
+        <div class="summary-grid">
+          <div class="summary-box">
+            <span>Online</span>
+            <strong>${num(onlineCount)}</strong>
+            <p>Users active within about ${num(Math.round(Number(onlineWindowSeconds) / 60) || 5)} minutes.</p>
+          </div>
+          <div class="summary-box">
+            <span>Total users</span>
+            <strong>${num(totalCount)}</strong>
+            <p>All non-deleted platform users returned by the admin users endpoint.</p>
+          </div>
+          <div class="summary-box">
+            <span>Last refreshed</span>
+            <strong>${esc(lastLoadedAt || (usersLoading ? "Loading" : "Not loaded"))}</strong>
+            <p>${usersError ? esc(usersError) : "User status is read-only on this page."}</p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="apcAdminUsersRefreshBtn" class="primary-btn" type="button" ${usersLoading ? "disabled" : ""}>
+            ${usersLoading ? "Refreshing..." : "Refresh users"}
+          </button>
+        </div>
+
+        ${usersError ? `<div class="notice error">${esc(usersError)}</div>` : ""}
+        ${usersLoading && !users.length ? `<div class="empty-list">Loading users...</div>` : renderRows(users)}
+      </section>
+    `;
+
+    app.querySelector("#apcAdminUsersRefreshBtn")?.addEventListener("click", () => {
+      usersPayload = null;
+      fetchAdminUsersOnly();
+    });
+
+    return true;
+  }
+
+  const previousRenderPage = typeof renderPage === "function" ? renderPage : null;
+  if (previousRenderPage && !window.__apcAdminUsersOnlyPageR3SInstalled) {
+    window.__apcAdminUsersOnlyPageR3SInstalled = true;
+    renderPage = function (...args) {
+      if (isAdminRoute()) {
+        const rendered = renderAdminUsersOnly();
+        fetchAdminUsersOnly();
+        return rendered;
+      }
+      return previousRenderPage.apply(this, args);
+    };
+  }
+
+  function onRouteMaybeChanged() {
+    if (!isAdminRoute()) return;
+    usersPayload = null;
+    renderAdminUsersOnly();
+    fetchAdminUsersOnly();
+  }
+
+  document.addEventListener("click", (event) => {
+    const link = event.target && event.target.closest && event.target.closest('[data-route="/admin"], a[href="/admin"]');
+    if (!link) return;
+    setTimeout(onRouteMaybeChanged, 0);
+  }, true);
+
+  window.addEventListener("popstate", () => setTimeout(onRouteMaybeChanged, 0));
+  window.addEventListener("pageshow", () => setTimeout(onRouteMaybeChanged, 0));
+
+  setTimeout(onRouteMaybeChanged, 0);
+})();
+/* APC_ADMIN_USERS_ONLY_PAGE_R3S_END */

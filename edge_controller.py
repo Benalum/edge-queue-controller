@@ -16289,6 +16289,8 @@ def _apc_admin_users_apply_credit_balances(payload, conn):
             pass
         return payload
 
+@app.get("/api/admin/users")
+@app.get("/admin/users")
 @app.get("/system/admin/users")
 async def system_admin_users(request: Request):
     _admin_support_require_admin(request)
@@ -16322,7 +16324,6 @@ async def system_admin_users(request: Request):
             WHERE COALESCE(u.status, 'active') != 'deleted'
             GROUP BY u.id
             ORDER BY COALESCE(MAX(s.last_seen_at), u.last_login_at, u.created_at) DESC
-            LIMIT 250
             """,
             (now,),
         ).fetchall()
