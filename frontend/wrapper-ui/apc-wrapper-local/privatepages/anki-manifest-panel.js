@@ -2,7 +2,6 @@
   "use strict";
 
   const PANEL_ID = "apcAnkiManifestProfilePanel";
-  const TEXTAREA_ID = "apcAnkiManifestProfileInput";
   const FILE_INPUT_ID = "apcAnkiFilePickerInput";
   const STORAGE_PREFIX = "apcProfileAnkiManifest:";
   const FILE_PROOF_PREFIX = "apcProfileAnkiFileProof:";
@@ -144,75 +143,6 @@
     };
   }
 
-  function validateManifest(manifest) {
-    if (!manifest || typeof manifest !== "object") {
-      return "Manifest must be a JSON object.";
-    }
-    if (manifest.tool !== "apc_anki_discovery_manifest") {
-      return "Manifest tool must be apc_anki_discovery_manifest.";
-    }
-    if (!manifest.safety || manifest.safety.writes_performed !== false) {
-      return "Manifest safety must explicitly report writes_performed=false.";
-    }
-    if (manifest.safety.cards_imported !== false || manifest.safety.media_copied !== false) {
-      return "Manifest must be discovery-only: cards_imported=false and media_copied=false.";
-    }
-    return "";
-  }
-
-  function manifestSummary(manifest) {
-    const summary = manifest && manifest.summary ? manifest.summary : {};
-    return {
-      status: manifest && manifest.status ? String(manifest.status) : "not loaded",
-      profileCount: Number(summary.profile_count || 0),
-      deckCount: Number(summary.deck_count || 0),
-      cardCount: Number(summary.card_count || 0),
-      noteCount: Number(summary.note_count || 0),
-      mediaFileCount: Number(summary.media_file_count || 0),
-    };
-  }
-
-  function renderDeckRows(profile) {
-    const decks = Array.isArray(profile.decks) ? profile.decks : [];
-    if (!decks.length) {
-      return '<p class="muted">No decks found in this Anki profile.</p>';
-    }
-    return '<div class="profile-preference-list apc-anki-deck-list">'
-      + decks.map(function (deck) {
-        return '<div class="profile-preference-row apc-anki-deck-row">'
-          + '  <span>'
-          + '    <strong>' + escapeHtml(deck.name || "Unnamed deck") + '</strong>'
-          + '    <small>'
-          +        Number(deck.card_count || 0) + ' card(s) · '
-          +        Number(deck.note_count || 0) + ' note(s) · '
-          +        escapeHtml(deck.import_status || "available")
-          + '    </small>'
-          + '  </span>'
-          + '  <strong>Read-only</strong>'
-          + '</div>';
-      }).join("")
-      + '</div>';
-  }
-
-  function renderProfiles(manifest) {
-    const profiles = manifest && Array.isArray(manifest.profiles) ? manifest.profiles : [];
-    if (!profiles.length) {
-      return '<p class="muted">No Anki profiles are loaded yet.</p>';
-    }
-    return profiles.map(function (profile) {
-      return '<div class="apc-anki-profile-block">'
-        + '<h3>Profile: ' + escapeHtml(profile.profile_name || "Unknown profile") + '</h3>'
-        + '<p class="muted">'
-        +   Number(profile.total_card_count || 0) + ' card(s) · '
-        +   Number(profile.total_note_count || 0) + ' note(s) · '
-        +   (profile.media_present ? 'collection.media present' : 'no media folder detected')
-        +   ' · ' + Number(profile.media_file_count || 0) + ' media file(s)'
-        + '</p>'
-        + renderDeckRows(profile)
-        + '</div>';
-    }).join("");
-  }
-
   function renderFilePickerHtml(fileProof) {
     const hasProof = Boolean(fileProof);
     const status = hasProof ? escapeHtml(fileProof.status || "selected") : "not selected";
@@ -267,10 +197,7 @@
   }
 
   function bindPanel(panel) {
-    const textarea = panel.querySelector("#" + TEXTAREA_ID);
     const fileInput = panel.querySelector("#" + FILE_INPUT_ID);
-    const loadButton = panel.querySelector('[data-anki-manifest-action="load"]');
-    const clearButton = panel.querySelector('[data-anki-manifest-action="clear"]');
     const clearFileButton = panel.querySelector('[data-anki-file-action="clear"]');
 
     if (fileInput) {
@@ -294,29 +221,6 @@
       });
     }
 
-    if (loadButton) {
-      loadButton.addEventListener("click", function () {
-        try {
-          const manifest = JSON.parse(textarea ? textarea.value : "");
-          const validationError = validateManifest(manifest);
-          if (validationError) {
-            mountPanel(validationError);
-            return;
-          }
-          saveManifest(manifest);
-          mountPanel("Anki manifest saved to this browser profile.");
-        } catch (error) {
-          mountPanel("Could not parse manifest JSON: " + (error && error.message ? error.message : error));
-        }
-      });
-    }
-
-    if (clearButton) {
-      clearButton.addEventListener("click", function () {
-        clearManifest();
-        mountPanel("Saved Anki manifest cleared.");
-      });
-    }
   }
 
   function findProfileAnchor() {
