@@ -579,6 +579,21 @@
 
   function applyBrowserOnlyVoiceDefaultsR3M() {
     try {
+      const key = "apcCompanionBrowserOnlyNoticeR3M";
+      if (window.localStorage && window.localStorage.getItem(key) === "1") return;
+
+      const settings = normalizeVoiceSettings(loadSettings());
+      settings.voiceProvider = "browser";
+      settings.kokoroEnabled = false;
+      saveSettings(settings);
+
+      if (window.localStorage) window.localStorage.setItem(key, "1");
+    } catch (_) {}
+  }
+
+
+  function applyBrowserOnlyVoiceDefaultsR3M() {
+    try {
       const key = "apcCompanionBrowserOnlyVoiceR3M";
       if (window.localStorage && window.localStorage.getItem(key) === "1") return;
 
@@ -862,6 +877,7 @@
 
 
 
+
   function renderVoiceBox(settings) {
     const normalized = normalizeVoiceSettings(settings || loadSettings());
     const voiceOn = Boolean(normalized.voiceEnabled);
@@ -883,11 +899,6 @@
             ${renderBrowserVoiceOptions(normalized)}
           </select>
         </div>
-
-        <p class="study-muted" style="margin-top: 12px;">
-          Voice and listening use your browser only. Google Chrome has been tested and verified; if voice or listening has issues, use the latest Google Chrome browser.
-        </p>
-        <!-- Companion Browser-Only Voice R3M -->
       </section>
     `;
   }
@@ -924,6 +935,24 @@
     `;
   }
 
+
+  /* Companion Browser-Only Notice R3M */
+  function renderNoticeBox() {
+    return `
+      <section class="sol-voice-box">
+        <h2>Notice</h2>
+
+        <p class="study-muted">
+          Voice and listening use your browser only. Google Chrome has been tested and verified; if voice or listening has issues, use the latest Google Chrome browser.
+        </p>
+
+        <p class="study-muted">
+          Companion can chat with you, speak replies, listen to drafts, run hands-free conversation mode, list and select study decks, start study sessions, show cards, create/edit/delete decks and cards, and flag cards.
+        </p>
+      </section>
+    `;
+  }
+
   function render() {
     const el = document.getElementById("companionPrivateApp");
     if (!el || !store()) return;
@@ -955,6 +984,8 @@
       ${renderVoiceBox(settings)}
 
         ${renderListenBox()}
+
+        ${renderNoticeBox()}
     `;
 
     bindRenderedControls();
@@ -1497,8 +1528,9 @@
   }
 
 
+
   async function speakWithKokoro(_text, _settings) {
-    // Companion Browser-Only Voice R3M: server-side Kokoro fallback is intentionally disabled for the MVP.
+    // Companion Browser-Only Notice R3M: server-side Kokoro fallback is intentionally disabled for this browser MVP.
     return;
   }
 
@@ -1522,6 +1554,7 @@
       audio.play().catch(reject);
     });
   }
+
 
 
 
@@ -1724,6 +1757,7 @@
       console.warn("[sol] backend sync failed", error);
     }
     applyPassiveInteractionDefaultsR3K();
+  applyBrowserOnlyVoiceDefaultsR3M();
   applyBrowserOnlyVoiceDefaultsR3M();
   render();
   }
