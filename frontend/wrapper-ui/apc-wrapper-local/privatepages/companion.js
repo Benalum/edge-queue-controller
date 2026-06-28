@@ -190,26 +190,16 @@
     render();
   }
 
+
   function enableVoice() {
     const settings = normalizeVoiceSettings(loadSettings());
     settings.voiceEnabled = true;
-
-    if (browserSpeechSupported()) {
-      settings.voiceProvider = "browser";
-      settings.kokoroEnabled = false;
-      saveSettings(settings);
-      companionVoiceNotice("Voice enabled using your browser.");
-      speakWithBrowser("Voice enabled.", settings).catch(function (error) {
-        console.warn("[companion] browser voice unlock failed", error);
-      });
-      return;
-    }
-
-    settings.voiceProvider = "kokoro";
-    settings.kokoroEnabled = true;
+    settings.voiceProvider = browserSpeechSupported() ? "browser" : settings.voiceProvider;
+    settings.kokoroEnabled = false;
     saveSettings(settings);
-    companionVoiceNotice("Browser voice is not supported in this browser.");
+    render();
   }
+
 
   function disableVoice() {
     const settings = normalizeVoiceSettings(loadSettings());
@@ -218,10 +208,10 @@
     saveSettings(settings);
 
     try {
-      if (browserSpeechSupported()) window.speechSynthesis.cancel();
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
     } catch (_) {}
 
-    companionVoiceNotice("Voice disabled.");
+    render();
   }
 
 
@@ -540,26 +530,24 @@
     }, 650);
   }
 
-  function startConversationMode() {
-    const settings = normalizeVoiceSettings(loadSettings());
 
+  function startConversationMode() {
     if (!browserRecognitionSupported()) {
-      companionVoiceNotice("Conversation mode needs browser listening, but this browser does not support it.");
+      render();
       return;
     }
 
+    const settings = normalizeVoiceSettings(loadSettings());
     settings.conversationModeEnabled = true;
     settings.voiceEnabled = true;
-    settings.voiceProvider = browserSpeechSupported() ? "browser" : "kokoro";
+    settings.voiceProvider = browserSpeechSupported() ? "browser" : settings.voiceProvider;
     settings.kokoroEnabled = false;
     saveSettings(settings);
 
-    const silenceSeconds = conversationSilenceSeconds();
-    companionVoiceNotice(`Conversation mode started. I will listen, auto-send after ${silenceSeconds} seconds of silence, speak my reply, then listen again.`);
-    speakText("Conversation mode started. I am listening.").catch(function () {
-      maybeStartConversationListening();
-    });
+    render();
+    maybeStartConversationListening();
   }
+
 
   function stopConversationMode() {
     const settings = normalizeVoiceSettings(loadSettings());
@@ -567,7 +555,25 @@
     saveSettings(settings);
 
     stopBrowserListening("");
-    companionVoiceNotice("Conversation mode stopped.");
+    render();
+  }
+
+
+  /* Companion Toggle UI R3K */
+  function applyPassiveInteractionDefaultsR3K() {
+    try {
+      const key = "apcCompanionPassiveDefaultsR3K";
+      if (window.localStorage && window.localStorage.getItem(key) === "1") return;
+
+      const settings = normalizeVoiceSettings(loadSettings());
+      settings.voiceEnabled = false;
+      settings.conversationModeEnabled = false;
+      settings.kokoroEnabled = false;
+      settings.voiceProvider = browserSpeechSupported() ? "browser" : settings.voiceProvider;
+      saveSettings(settings);
+
+      if (window.localStorage) window.localStorage.setItem(key, "1");
+    } catch (_) {}
   }
 
 
@@ -838,37 +844,32 @@
   }
 
 
-  function renderVoiceBox(settings) {
-    settings = normalizeVoiceSettings(settings);
 
-    const browserOk = browserSpeechSupported();
-    const providerText = voiceProviderLabel(settings);
-    const enableDisabled = settings.voiceEnabled ? "disabled" : "";
-    const disableDisabled = settings.voiceEnabled ? "" : "disabled";
+  function renderVoiceBox(settings) {
+    const normalized = normalizeVoiceSettings(settings || loadSettings());
+    const voiceOn = Boolean(normalized.voiceEnabled);
+    const enableClass = voiceOn ? "sol-button" : "sol-button secondary";
+    const disableClass = voiceOn ? "sol-button secondary" : "sol-button";
 
     return `
       <section class="sol-voice-box">
         <h2>Voice</h2>
-        <p class="study-muted">${escapeHtml(providerText)}</p>
 
         <div class="sol-voice-actions">
-          <button class="sol-button" type="button" data-companion-action="enable-voice" ${enableDisabled}>Enable Voice</button>
-          <button class="sol-button secondary" type="button" data-companion-action="disable-voice" ${disableDisabled}>Disable Voice</button>
+          <button class="${enableClass}" type="button" data-companion-action="enable-voice" aria-pressed="${voiceOn ? "true" : "false"}">Enable Voice</button>
+          <button class="${disableClass}" type="button" data-companion-action="disable-voice" aria-pressed="${voiceOn ? "false" : "true"}">Disable Voice</button>
         </div>
 
-        ${
-          browserOk
-            ? `<label class="sol-control full-width">
-                Browser voice
-                <select id="companionBrowserVoiceSelect">
-                  ${renderBrowserVoiceOptions(settings)}
-                </select>
-              </label>`
-            : ""
-        }
+        <label class="sol-field">
+          <span>Browser voice</span>
+          <select id="companionBrowserVoiceSelect">
+            ${renderBrowserVoiceOptions(normalized)}
+          </select>
+        </label>
       </section>
     `;
   }
+
 
 
 
@@ -879,17 +880,17 @@
     const conversationOn = Boolean(settings.conversationModeEnabled);
     const silenceSeconds = conversationSilenceSeconds();
 
-    const conversationStartDisabled = !supported || conversationOn ? "disabled" : "";
-    const conversationStopDisabled = conversationOn ? "" : "disabled";
+    const startClass = conversationOn ? "sol-button" : "sol-button secondary";
+    const stopClass = conversationOn ? "sol-button secondary" : "sol-button";
+    const startDisabled = supported ? "" : "disabled";
 
     return `
       <section class="sol-voice-box">
         <h2>Listen</h2>
-        <p class="study-muted">${escapeHtml(listenStatusText())}</p>
 
         <div class="sol-voice-actions sol-listen-actions" style="margin-bottom: 16px;">
-          <button class="sol-button" type="button" data-companion-action="conversation-start" ${conversationStartDisabled}>Start conversation mode</button>
-          <button class="sol-button secondary" type="button" data-companion-action="conversation-stop" ${conversationStopDisabled}>Stop conversation mode</button>
+          <button class="${startClass}" type="button" data-companion-action="conversation-start" aria-pressed="${conversationOn ? "true" : "false"}" ${startDisabled}>Start conversation mode</button>
+          <button class="${stopClass}" type="button" data-companion-action="conversation-stop" aria-pressed="${conversationOn ? "false" : "true"}">Stop conversation mode</button>
         </div>
 
         <div class="sol-listen-delay-row" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0 16px;">
@@ -897,11 +898,6 @@
           <input id="companionSilenceSeconds" type="number" min="2" max="15" step="1" value="${escapeHtml(silenceSeconds)}" style="width: 72px; padding: 4px 6px;" />
           <span class="study-muted">seconds</span>
         </div>
-        <!-- Companion Listen UI R3I -->
-
-        <p class="study-muted">
-          Conversation mode listens, sends after your selected silence delay, speaks Sol’s reply, then listens again.
-        </p>
       </section>
     `;
   }
@@ -1726,7 +1722,8 @@
     } catch (error) {
       console.warn("[sol] backend sync failed", error);
     }
-    render();
+    applyPassiveInteractionDefaultsR3K();
+  render();
   }
 
   function init() {
