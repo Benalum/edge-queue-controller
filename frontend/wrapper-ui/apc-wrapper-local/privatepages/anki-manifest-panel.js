@@ -138,7 +138,7 @@
     const safeMessage = message ? '<p class="profile-preference-save-message">' + escapeHtml(message) + '</p>' : '';
     return ''
       + '<section class="summary-card profile-preferences-card apc-anki-manifest-card" id="' + PANEL_ID + '">'
-      + '  <span class="eyebrow">Stage 17H · Anki Manifest</span>'
+      + '  <span class="eyebrow">Stage 17I · Anki Manifest</span>'
       + '  <strong>Profile Anki discovery manifest</strong>'
       + '  <p>Paste an APC Anki discovery manifest here to save deck availability with your profile. This is browser-local and read-only for now.</p>'
       + '  <div class="profile-preference-list apc-anki-summary-list">'
@@ -259,7 +259,7 @@
       }, 80);
     });
 
-    observer.observe(app, { childList: true, subtree: true });
+    observer.observe(app, { childList: true, subtree: false });
   }
 
   window.addEventListener("DOMContentLoaded", function () {
@@ -268,6 +268,10 @@
   });
   window.addEventListener("popstate", scheduleMount);
   window.addEventListener("hashchange", scheduleMount);
+  document.addEventListener("apc-private-page-rendered", function (event) {
+    const page = event && event.detail ? event.detail.page : "";
+    if (page === "profile") scheduleMount();
+  });
   document.addEventListener("click", function () {
     window.setTimeout(function () {
       installRouteMutationObserver();
