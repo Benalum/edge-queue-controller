@@ -22,6 +22,7 @@
   let browserListenBaseText = "";
   let browserListenFinalText = "";
   let browserListenSilenceTimer = null;
+  let browserListenRestartTimer = null;
   let browserListenAutoSending = false;
 
   function store() {
@@ -323,6 +324,67 @@
     }
   }
 
+
+  /* Companion Listen Idle R3J */
+  function clearBrowserListenRestartTimer() {
+    if (browserListenRestartTimer) {
+      window.clearTimeout(browserListenRestartTimer);
+      browserListenRestartTimer = null;
+    }
+  }
+
+  function browserListenPromptText() {
+    const prompt = byId("companionPrompt");
+    return prompt ? String(prompt.value || "").trim() : "";
+  }
+
+  function browserListenShouldKeepWaiting(mode) {
+    if (mode === "draft") return true;
+    if (mode === "auto-send") return conversationModeEnabled();
+    return false;
+  }
+
+  function scheduleBrowserListenRestart(mode, preservedText) {
+    const restartMode = mode === "auto-send" ? "auto-send" : "draft";
+
+    clearBrowserListenTimer();
+
+    if (!browserListenShouldKeepWaiting(restartMode)) {
+      browserListenRecognition = null;
+      listening = false;
+      render();
+      restorePromptAfterRender(preservedText || "");
+      return;
+    }
+
+    if (browserListenRestartTimer) return;
+
+    try {
+      if (browserListenRecognition) {
+        browserListenRecognition.onresult = null;
+        browserListenRecognition.onerror = null;
+        browserListenRecognition.onend = null;
+        browserListenRecognition.stop();
+      }
+    } catch (_) {}
+
+    browserListenRecognition = null;
+    browserListenMode = restartMode;
+    listening = false;
+    setSolState("listening");
+    render();
+    restorePromptAfterRender(preservedText || "");
+
+    browserListenRestartTimer = window.setTimeout(function () {
+      browserListenRestartTimer = null;
+
+      if (!browserListenShouldKeepWaiting(restartMode)) return;
+      if (listening || browserListenRecognition) return;
+
+      startBrowserListening(restartMode);
+    }, 700);
+  }
+
   function updatePromptFromListening(interimText) {
     const prompt = byId("companionPrompt");
     if (!prompt) return "";
@@ -399,6 +461,7 @@
     const preservedPromptText = promptBeforeStop ? String(promptBeforeStop.value || "").trim() : "";
 
     clearBrowserListenTimer();
+    clearBrowserListenRestartTimer();
 
     try {
       if (browserListenRecognition) {
@@ -507,6 +570,7 @@
     companionVoiceNotice("Conversation mode stopped.");
   }
 
+
   function startBrowserListening(mode) {
     const Recognition = browserRecognitionConstructor();
 
@@ -515,7 +579,9 @@
       return;
     }
 
+    clearBrowserListenRestartTimer();
     stopBrowserListening("");
+    clearBrowserListenRestartTimer();
 
     browserListenMode = mode === "auto-send" ? "auto-send" : "draft";
     browserListenFinalText = "";
@@ -546,38 +612,60 @@
         }
       }
 
-      updatePromptFromListening(interimText);
-      scheduleBrowserListenSilence();
+      const text = updatePromptFromListening(interimText);
+
+      if (text) {
+        scheduleBrowserListenSilence();
+      }
     };
 
     recognitionInstance.onerror = function (event) {
       const error = event && event.error ? event.error : "unknown";
+      const modeAtError = browserListenMode;
+      const preservedText = browserListenPromptText();
+
+      if (error === "no-speech" && browserListenShouldKeepWaiting(modeAtError) && !preservedText) {
+        scheduleBrowserListenRestart(modeAtError, preservedText);
+        return;
+      }
+
+      if (error === "aborted" && browserListenRestartTimer) return;
+
       stopBrowserListening(`Browser listening stopped: ${error}`);
     };
 
     recognitionInstance.onend = function () {
       if (browserListenAutoSending) return;
 
-      const prompt = byId("companionPrompt");
-      const text = prompt ? String(prompt.value || "").trim() : "";
+      const modeAtEnd = browserListenMode;
+      const text = browserListenPromptText();
 
-      if (browserListenMode === "auto-send" && text) {
-        scheduleBrowserListenSilence();
-        render();
+      if (!text && browserListenShouldKeepWaiting(modeAtEnd)) {
+        scheduleBrowserListenRestart(modeAtEnd, text);
         return;
       }
 
-      if (browserListenMode === "draft" && text) {
+      if (modeAtEnd === "auto-send" && text) {
+        scheduleBrowserListenSilence();
+        render();
+        restorePromptAfterRender(text);
+        return;
+      }
+
+      if (modeAtEnd === "draft" && text) {
         browserListenRecognition = null;
         listening = false;
         clearBrowserListenTimer();
+        clearBrowserListenRestartTimer();
         render();
+        restorePromptAfterRender(text);
         return;
       }
 
       browserListenRecognition = null;
       listening = false;
       clearBrowserListenTimer();
+      clearBrowserListenRestartTimer();
       render();
     };
 
@@ -586,7 +674,7 @@
       setSolState("listening");
       recognitionInstance.start();
       render();
-      scheduleBrowserListenSilence();
+      restorePromptAfterRender(browserListenBaseText);
     } catch (error) {
       console.warn("[companion] browser listening failed", error);
       listening = false;
