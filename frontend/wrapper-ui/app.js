@@ -17001,7 +17001,7 @@ if (typeof window !== "undefined") {
 /* APC_ADMIN_USERS_ONLY_PAGE_R3S_BEGIN */
 (function () {
   const MARKER = "APC_ADMIN_USERS_ONLY_PAGE_R3S";
-  const ADMIN_PATHS = ["/admin/users", "/system/admin/users"];
+  const ADMIN_PATHS = ["/api/admin/users", "/system/admin/users"];
   let usersPayload = null;
   let usersLoading = false;
   let usersError = "";
