@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "stage17kk-anki-basic-memory-session-20260628";
+  var VERSION = "stage17ks-r3-anki-readonly-renderpanel-export-20260628";
   var PANEL_ID = "apc-anki-readonly-session";
   var FILE_INPUT_ID = "apc-anki-readonly-session-file";
   var SELECTION_KEY = "apc.study.sourceSelection.v1";
@@ -523,6 +523,7 @@
     clearMemory: clearMemory,
     snapshot: snapshot,
     currentCard: currentCard,
+    renderPanel: renderPanel,
     privacy: {
       browser_memory_only: true,
       card_text_localstorage_allowed: false,
