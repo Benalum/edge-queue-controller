@@ -18,7 +18,7 @@ require_file_contains frontend/wrapper-ui/app.js "Refresh users"
 require_file_contains frontend/wrapper-ui/app.js "online"
 require_file_contains frontend/wrapper-ui/app.js "offline"
 require_file_contains frontend/wrapper-ui/app.js "All non-deleted platform users"
-require_file_contains frontend/wrapper-ui/app.js 'const ADMIN_PATHS = ["/admin/users", "/system/admin/users"]'
+require_file_contains frontend/wrapper-ui/app.js 'const ADMIN_PATHS = ["/api/admin/users", "/system/admin/users"]'
 
 require_file_contains edge_controller.py '@app.get("/api/admin/users")'
 require_file_contains edge_controller.py '@app.get("/admin/users")'
