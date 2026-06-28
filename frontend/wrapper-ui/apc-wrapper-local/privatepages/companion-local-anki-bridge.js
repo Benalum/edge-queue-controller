@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "stage17ks-companion-local-anki-session-mount-20260628";
+  var VERSION = "stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628";
   var PANEL_ID = "apc-companion-local-anki-bridge";
   var mountTimer = null;
 
@@ -156,6 +156,27 @@
     };
   }
 
+  function ensureMountOutput(panel) {
+    if (!panel) return null;
+
+    var output = panel.querySelector(".apc-companion-local-anki-session-mount-output");
+    if (output) return output;
+
+    output = document.createElement("pre");
+    output.className = "study-muted apc-companion-local-anki-session-mount-output";
+    output.setAttribute("aria-live", "polite");
+    output.textContent = "Local Anki session controls can be mounted here. Card text stays in the read-only Anki session UI only.";
+
+    var details = panel.querySelector(".apc-anki-manifest-details");
+    if (details && details.parentNode) {
+      details.parentNode.insertBefore(output, details);
+    } else {
+      panel.appendChild(output);
+    }
+
+    return output;
+  }
+
   function ankiSessionMountCommand() {
     var api = window.APC_ANKI_READONLY_SESSION;
     var raw = null;
@@ -196,6 +217,10 @@
     lines.push("");
     lines.push("Use the local Anki session controls to load, reveal, and mark cards. Companion bridge only reports status, counters, and shape.");
 
+    try {
+      ensureMountOutput(document.getElementById(PANEL_ID));
+    } catch (error) {}
+
     return {
       version: VERSION,
       ok: Boolean(api),
@@ -226,7 +251,7 @@
 
       var result = ankiSessionMountCommand();
       var panel = document.getElementById(PANEL_ID);
-      var output = panel ? panel.querySelector(".apc-companion-local-anki-session-mount-output") : null;
+      var output = ensureMountOutput(panel);
       if (output) output.textContent = result.message;
     });
   }
@@ -306,6 +331,7 @@
 
     existing.outerHTML = renderHtml();
     bindPanel(document.getElementById(PANEL_ID));
+    ensureMountOutput(document.getElementById(PANEL_ID));
   }
 
   function scheduleMount() {
