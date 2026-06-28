@@ -252,9 +252,10 @@
   }
 
   async function loadPageFragment(page) {
-    const response = await fetch(`/privatepages/pages/${page}.html?v=privatepages-v1-20260626`, {
+    const response = await fetch(`/privatepages/pages/${page}.html?v=stage17j-r3-profile-fragment-cache-20260628`, {
       method: "GET",
       credentials: "same-origin",
+      cache: "no-store",
       headers: { Accept: "text/html" }
     });
 
