@@ -320,6 +320,33 @@ def table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
     return row is not None
 
 
+def read_decks_table(conn: sqlite3.Connection) -> Tuple[Dict[str, Dict[str, Any]], List[str]]:
+    """Read modern Anki normalized decks table when available."""
+    warnings: List[str] = []
+    decks_by_id: Dict[str, Dict[str, Any]] = {}
+    if not table_exists(conn, "decks"):
+        return decks_by_id, ["modern decks table missing"]
+    try:
+        rows = conn.execute(
+            "SELECT CAST(id AS TEXT), name FROM decks ORDER BY name COLLATE NOCASE"
+        ).fetchall()
+    except sqlite3.Error as exc:
+        return decks_by_id, [f"unable to read modern decks table: {exc}"]
+
+    for deck_id, name in rows:
+        deck_id_str = str(deck_id)
+        deck_name = str(name or deck_id_str)
+        decks_by_id[deck_id_str] = {
+            "id": deck_id_str,
+            "name": deck_name,
+            "card_count": 0,
+            "note_count": 0,
+        }
+    if not decks_by_id:
+        warnings.append("modern decks table is empty")
+    return decks_by_id, warnings
+
+
 def read_decks_json(conn: sqlite3.Connection) -> Tuple[Dict[str, Dict[str, Any]], List[str]]:
     warnings: List[str] = []
     decks_by_id: Dict[str, Dict[str, Any]] = {}
@@ -349,7 +376,6 @@ def read_decks_json(conn: sqlite3.Connection) -> Tuple[Dict[str, Dict[str, Any]]
             "note_count": 0,
         }
     return decks_by_id, warnings
-
 
 def read_count_map(conn: sqlite3.Connection, sql: str) -> Tuple[Dict[str, int], Optional[str]]:
     counts: Dict[str, int] = {}
@@ -395,8 +421,14 @@ def read_collection_metadata(collection_path: Path, media_file_count: Optional[i
         ]
         metadata["sqlite_tables_present"] = tables
 
-        decks_by_id, deck_warnings = read_decks_json(conn)
-        warnings.extend(deck_warnings)
+        decks_by_id, deck_warnings = read_decks_table(conn)
+        if not decks_by_id:
+            fallback_decks_by_id, fallback_warnings = read_decks_json(conn)
+            decks_by_id = fallback_decks_by_id
+            warnings.extend(deck_warnings)
+            warnings.extend(fallback_warnings)
+        else:
+            warnings.extend(deck_warnings)
 
         if table_exists(conn, "cards"):
             card_counts, card_err = read_count_map(

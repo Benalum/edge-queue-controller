@@ -241,3 +241,8 @@ python3 ops/anki/anki_readonly_discovery.py --json-only --root '/path/to/Anki2/U
   }
 }
 ```
+
+### Stage 17B-R2: modern deck names
+
+Modern Anki collections may keep deck names in the normalized `decks` table instead of the older `col.decks` JSON blob. The read-only discovery helper now prefers `decks.id` and `decks.name`, then falls back to `col.decks` for older collections. This preserves the Anki-closed safety gate and does not change the no-write boundary.
+

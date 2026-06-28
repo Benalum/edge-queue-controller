@@ -26,13 +26,19 @@ collection_path = Path(sys.argv[1])
 conn = sqlite3.connect(collection_path)
 try:
     conn.execute("CREATE TABLE col (decks TEXT)")
+    conn.execute(
+        "CREATE TABLE decks (id INTEGER PRIMARY KEY, name TEXT NOT NULL, mtime_secs INTEGER NOT NULL, usn INTEGER NOT NULL, common BLOB NOT NULL, kind BLOB NOT NULL)"
+    )
     conn.execute("CREATE TABLE notes (id INTEGER PRIMARY KEY)")
     conn.execute("CREATE TABLE cards (id INTEGER PRIMARY KEY, nid INTEGER, did INTEGER)")
-    decks = {
-        "1001": {"id": 1001, "name": "Biology"},
-        "1002": {"id": 1002, "name": "Biology::Cells"},
-    }
-    conn.execute("INSERT INTO col (decks) VALUES (?)", (json.dumps(decks),))
+    conn.execute("INSERT INTO col (decks) VALUES (?)", ("",))
+    conn.executemany(
+        "INSERT INTO decks (id, name, mtime_secs, usn, common, kind) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+            (1001, "Anki Deck1", 1700000000, -1, b"", b""),
+            (1002, "Anki Deck2", 1700000001, -1, b"", b""),
+        ],
+    )
     conn.executemany("INSERT INTO notes (id) VALUES (?)", [(2001,), (2002,), (2003,)])
     conn.executemany(
         "INSERT INTO cards (id, nid, did) VALUES (?, ?, ?)",
@@ -85,11 +91,12 @@ assert profile["total_card_count"] == 3, profile
 assert profile["total_note_count"] == 3, profile
 
 decks = {deck["name"]: deck for deck in profile["decks"]}
-assert decks["Biology"]["card_count"] == 2, decks
-assert decks["Biology"]["note_count"] == 2, decks
-assert decks["Biology::Cells"]["card_count"] == 1, decks
-assert decks["Biology::Cells"]["note_count"] == 1, decks
-assert decks["Biology"]["media_present_in_profile"] is True, decks
+assert decks["Anki Deck1"]["card_count"] == 2, decks
+assert decks["Anki Deck1"]["note_count"] == 2, decks
+assert decks["Anki Deck2"]["card_count"] == 1, decks
+assert decks["Anki Deck2"]["note_count"] == 1, decks
+assert decks["Anki Deck1"]["media_present_in_profile"] is True, decks
+assert "col.decks is empty" not in profile.get("warnings", []), profile
 
 # Confirm the smoke stayed inside the temp fixture and did not depend on a real profile.
 assert all(expected_root in p["profile_path"] for p in profiles), profiles
