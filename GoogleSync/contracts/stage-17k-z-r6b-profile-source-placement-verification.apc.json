@@ -1,0 +1,32 @@
+{
+  "block_delimiters_present": true,
+  "disabled_connect_button_present": true,
+  "disabled_sync_button_present": true,
+  "drive_reads_false_attribute_present": true,
+  "drive_writes_false_attribute_present": true,
+  "fetch_present_in_block": false,
+  "marker_hits": [
+    "frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js"
+  ],
+  "marker_present": true,
+  "navigation_present_in_block": false,
+  "oauth_active_false_attribute_present": true,
+  "placement_class": "profile_adjacent_anki_panel_source",
+  "profile_only_data_attribute_present": true,
+  "recommendation": "acceptable_temporarily_then_split_before_oauth",
+  "recommendation_reason": "The selected source is Profile-adjacent because the current Profile local Anki panel lives there, but GoogleSync should be split into a clearer Profile GoogleSync module before real OAuth activation.",
+  "runtime_profile_guard_present": true,
+  "selected_source": "frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js",
+  "selected_source_exists": true,
+  "selected_source_name": "anki-manifest-panel.js",
+  "selected_source_parent": "frontend/wrapper-ui/apc-wrapper-local/privatepages",
+  "selected_source_reference_hits": [
+    "frontend/wrapper-ui/apc-wrapper-local/index.html"
+  ],
+  "source_anki_hits": 75,
+  "source_card_hits": 36,
+  "source_deck_hits": 101,
+  "source_profile_hits": 70,
+  "stage": "17K-Z-R6B",
+  "status": "verification_only"
+}

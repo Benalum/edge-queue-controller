@@ -83,3 +83,21 @@ R6 files:
 - GoogleSync/contracts/stage-17k-z-r6-profile-only-google-sync-login-ui.md.
 - GoogleSync/contracts/stage-17k-z-r6-profile-ui-source-path.txt.
 - The selected source file recorded in the source path contract.
+
+## Stage 17K-Z-R6B
+
+R6B verifies the Profile-only GoogleSync UI shell source placement.
+
+R6B remains verification-only:
+
+- No source relocation.
+- No OAuth activation.
+- No Drive reads.
+- No Drive writes.
+- No backend deploy.
+- No frontend deploy.
+
+R6B recommendation:
+
+- Keep the current guarded placement only temporarily if it is Profile-adjacent.
+- Before real OAuth activation, split the GoogleSync UI into a clearer Profile-specific module.
