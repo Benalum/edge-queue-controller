@@ -1,0 +1,36 @@
+{
+  "backend_db_used": false,
+  "backend_deploy": false,
+  "backend_queue_used": false,
+  "baseline_commit": "75204ab",
+  "bootstrap_files": [
+    "apc-google-sync-manifest.json",
+    "apc-google-sync-database.json"
+  ],
+  "browser_test_sequence": [
+    "Open Profile.",
+    "Confirm GoogleSync panel appears only on Profile.",
+    "Confirm status is Ready for explicit consent.",
+    "Check explicit consent checkbox.",
+    "Click Connect Google Drive.",
+    "Complete Google consent.",
+    "Click Create hidden APC sync database.",
+    "Click Read APC app data metadata.",
+    "Click Rollback/delete APC proof files.",
+    "Confirm rollback success."
+  ],
+  "can_browse_user_drive": false,
+  "client_id_runtime_only": true,
+  "generated_runtime_config_path": "/privatepages/google-sync-config.js",
+  "manual_browser_oauth_required": true,
+  "profile_only": true,
+  "real_client_id_committed": false,
+  "scope": "https://www.googleapis.com/auth/drive.appdata",
+  "source_injection": "/privatepages/google-sync-config.js?v=20260629-stage17k-z-r7d-appdata-vm200",
+  "stage": "17K-Z-R7D",
+  "status": "vm200_deploy_appdatafolder_profile_google_sync_proof",
+  "storage_space": "appDataFolder",
+  "token_storage": "memory_only",
+  "user_visible_drive_folder": false,
+  "vm200_frontend_static_deploy": true
+}

@@ -161,3 +161,12 @@ R7C changes the Profile GoogleSync proof to use hidden Google Drive app data ins
 - Prompt: APC will not browse, read, or modify other Drive files or folders.
 - Anki files are not uploaded by default.
 - No deploy in this stage.
+
+## Stage 17K-Z-R7D VM200 deploy
+
+R7D deploys the Profile-only GoogleSync appDataFolder proof to VM200 with generated runtime client ID config.
+
+- Real client ID is generated into live `/privatepages/google-sync-config.js` and is not committed.
+- Scope: `drive.appdata`.
+- Storage: `appDataFolder`.
+- Browser proof creates manifest/database bootstrap files in hidden app data storage.
