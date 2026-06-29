@@ -1,0 +1,31 @@
+{
+  "anki_boundary": "Anki files are not uploaded unless the user explicitly chooses import/convert later.",
+  "backend_db_used": false,
+  "backend_queue_used": false,
+  "baseline_commit": "e7137e9",
+  "bootstrap_files": [
+    "apc-google-sync-manifest.json",
+    "apc-google-sync-database.json"
+  ],
+  "can_browse_user_drive": false,
+  "drive_reads_in_this_stage": false,
+  "drive_writes_in_this_stage": false,
+  "frontend_deployed_in_this_stage": false,
+  "future_visible_folder_mode": {
+    "allowed_later": true,
+    "requires_google_picker": true,
+    "requires_separate_user_choice": true,
+    "scope": "https://www.googleapis.com/auth/drive.file"
+  },
+  "oauth_executed_in_this_stage": false,
+  "profile_only": true,
+  "profile_prompt": "AI Platform Control will only create and manage its own hidden Google Drive app data. It will not browse, read, or modify your other Drive files or folders.",
+  "real_client_id_committed": false,
+  "scope": "https://www.googleapis.com/auth/drive.appdata",
+  "stage": "17K-Z-R7C",
+  "status": "appdatafolder_boundary_source_contract_no_deploy",
+  "storage_mode": "hidden_google_drive_appdatafolder",
+  "storage_space": "appDataFolder",
+  "token_storage": "memory_only",
+  "user_visible_drive_folder": false
+}

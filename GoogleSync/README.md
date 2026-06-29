@@ -151,3 +151,13 @@ Preferred injection:
 - Do not commit the real client ID to source.
 
 Browser proof remains gated on a later deploy stage.
+
+## Stage 17K-Z-R7C appDataFolder boundary
+
+R7C changes the Profile GoogleSync proof to use hidden Google Drive app data instead of a visible test file.
+
+- Scope: `drive.appdata`.
+- Storage: `appDataFolder`.
+- Prompt: APC will not browse, read, or modify other Drive files or folders.
+- Anki files are not uploaded by default.
+- No deploy in this stage.

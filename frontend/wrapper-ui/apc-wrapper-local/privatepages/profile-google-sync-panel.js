@@ -1,31 +1,36 @@
 /* APC_GOOGLE_SYNC_PROFILE_MODULE_STAGE_17K_Z_R6C_START */
-(function apcProfileGoogleSyncPanelStage17kZr7() {
+(function apcProfileGoogleSyncPanelStage17kZr7cAppdata() {
   const marker = 'APC_GOOGLE_SYNC_PROFILE_MODULE_MARKER_STAGE_17K_Z_R6C';
-  const liveMarker = 'APC_GOOGLE_SYNC_PROFILE_OAUTH_DRIVE_DEV_PROOF_STAGE_17K_Z_R7';
-  const panelId = 'apc-google-sync-profile-panel-stage-17k-z-r7';
-  const styleId = 'apc-google-sync-profile-style-stage-17k-z-r7';
+  const liveMarker = 'APC_GOOGLE_SYNC_PROFILE_APPDATA_BOUNDARY_STAGE_17K_Z_R7C';
+  const panelId = 'apc-google-sync-profile-panel-stage-17k-z-r7c-appdata';
+  const styleId = 'apc-google-sync-profile-style-stage-17k-z-r7c-appdata';
   const apiName = 'APC_PROFILE_GOOGLE_SYNC_PANEL_STAGE_17K_Z_R6C';
-  const tokenScope = 'https://www.googleapis.com/auth/drive.file';
+  const tokenScope = 'https://www.googleapis.com/auth/drive.appdata';
+  const appDataSpace = 'appDataFolder';
   const gisScriptUrl = 'https://accounts.google.com/gsi/client';
-  const driveUploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,createdTime';
+  const driveUploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,createdTime,spaces';
   const driveFilesUrl = 'https://www.googleapis.com/drive/v3/files';
-  const sessionKey = 'apcGoogleSyncDevProofStage17kZr7';
+  const sessionKey = 'apcGoogleSyncAppDataProofStage17kZr7c';
 
   const officialLibraryDecision = Object.freeze({
     auth: 'Google Identity Services JavaScript authorization client',
     drive: 'Google Drive REST API',
-    picker: 'Google Picker for later user-selected files and folders',
+    picker: 'Google Picker only for future visible-folder mode, not hidden app data mode',
     preferredScope: tokenScope,
+    storageSpace: appDataSpace,
     oauthActivated: true,
     driveReadsEnabled: true,
     driveWritesEnabled: true,
     profileOnly: true,
-    explicitConsentRequired: true
+    explicitConsentRequired: true,
+    userVisibleDriveFolder: false,
+    canBrowseUserDrive: false
   });
 
   let accessToken = '';
   let tokenClient = null;
-  let lastTestFileId = '';
+  let manifestFileId = '';
+  let databaseFileId = '';
 
   function readSessionState() {
     try {
@@ -128,13 +133,13 @@
     const configured = Boolean(getConfiguredClientId());
     const consent = consentChecked();
     const connect = document.querySelector('[data-apc-google-sync-connect]');
-    const write = document.querySelector('[data-apc-google-sync-write-test]');
-    const read = document.querySelector('[data-apc-google-sync-read-test]');
-    const rollback = document.querySelector('[data-apc-google-sync-rollback-test]');
+    const bootstrap = document.querySelector('[data-apc-google-sync-bootstrap-appdata]');
+    const list = document.querySelector('[data-apc-google-sync-list-appdata]');
+    const rollback = document.querySelector('[data-apc-google-sync-rollback-appdata-proof]');
     if (connect) connect.disabled = !(configured && consent);
-    if (write) write.disabled = !(configured && consent && accessToken);
-    if (read) read.disabled = !(configured && consent && accessToken && lastTestFileId);
-    if (rollback) rollback.disabled = !(configured && consent && accessToken && lastTestFileId);
+    if (bootstrap) bootstrap.disabled = !(configured && consent && accessToken);
+    if (list) list.disabled = !(configured && consent && accessToken);
+    if (rollback) rollback.disabled = !(configured && consent && accessToken && (manifestFileId || databaseFileId));
   }
 
   function loadGoogleIdentityServices() {
@@ -172,7 +177,7 @@
       updateButtons();
       return;
     }
-    setStatus('Opening Google consent...', 'Requesting narrow drive.file access only.');
+    setStatus('Opening Google consent...', 'Requesting hidden app data access only. APC will not browse your Drive.');
     await loadGoogleIdentityServices();
     tokenClient = window.google.accounts.oauth2.initTokenClient({
       client_id: clientId,
@@ -185,7 +190,7 @@
           return;
         }
         accessToken = response.access_token;
-        setStatus('Connected for this browser session', 'Token is held in memory only. No refresh token is stored.');
+        setStatus('Connected for this browser session', 'Token is held in memory only. APC can use its hidden appDataFolder, not your normal Drive folders.');
         updateButtons();
       }
     });
@@ -210,30 +215,13 @@
     return { boundary, body };
   }
 
-  async function writeHarmlessTestFile() {
-    if (!accessToken) {
-      setStatus('Connect first', 'Google consent is required before writing the harmless test file.');
-      return;
-    }
-    if (!consentChecked()) {
-      setStatus('Consent required', 'Check the explicit consent box first.');
-      return;
-    }
-    const createdAt = new Date().toISOString();
+  async function createAppDataJsonFile(name, content) {
     const metadata = {
-      name: 'APC GoogleSync Dev Proof ' + createdAt.replace(/[:.]/g, '-') + '.apc-test.json',
-      mimeType: 'application/json'
-    };
-    const content = {
-      record_type: 'apc_google_sync_dev_proof',
-      stage: '17K-Z-R7',
-      created_at: createdAt,
-      harmless: true,
-      purpose: 'Verify explicit-consent Google Drive file create path for APC Profile GoogleSync.',
-      rollback: 'Use the Profile rollback button to delete this test file.'
+      name,
+      mimeType: 'application/json',
+      parents: [appDataSpace]
     };
     const multipart = makeMultipartBody(metadata, content);
-    setStatus('Writing harmless Drive test file...', metadata.name);
     const response = await fetch(driveUploadUrl, {
       method: 'POST',
       headers: {
@@ -244,57 +232,98 @@
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || !result.id) {
-      setStatus('Drive test write failed', JSON.stringify(result, null, 2));
-      updateButtons();
+      throw new Error(JSON.stringify(result, null, 2));
+    }
+    return result;
+  }
+
+  async function bootstrapHiddenAppDatabase() {
+    if (!accessToken) {
+      setStatus('Connect first', 'Google consent is required before creating hidden APC app data.');
       return;
     }
-    lastTestFileId = result.id;
-    writeSessionState({ lastTestFileId, lastTestFileName: result.name || metadata.name, lastWriteAt: createdAt });
-    setStatus('Drive test file created', JSON.stringify(result, null, 2));
+    if (!consentChecked()) {
+      setStatus('Consent required', 'Check the explicit consent box first.');
+      return;
+    }
+
+    const createdAt = new Date().toISOString();
+    setStatus('Creating hidden APC app data...', 'Creating manifest and database bootstrap in Google Drive appDataFolder.');
+
+    const manifest = await createAppDataJsonFile('apc-google-sync-manifest.json', {
+      record_type: 'apc_google_sync_manifest',
+      stage: '17K-Z-R7C',
+      created_at: createdAt,
+      storage_space: appDataSpace,
+      visibility: 'hidden_app_data_folder',
+      user_visible_drive_folder: false,
+      can_browse_user_drive: false,
+      files: {
+        database: 'apc-google-sync-database.json'
+      }
+    });
+
+    const database = await createAppDataJsonFile('apc-google-sync-database.json', {
+      record_type: 'apc_google_sync_database',
+      schema_version: 1,
+      stage: '17K-Z-R7C',
+      created_at: createdAt,
+      storage_space: appDataSpace,
+      decks: [],
+      sessions: [],
+      history: [],
+      stats: {},
+      anki_upload_default: false
+    });
+
+    manifestFileId = manifest.id;
+    databaseFileId = database.id;
+    writeSessionState({ manifestFileId, databaseFileId, lastBootstrapAt: createdAt });
+
+    setStatus('Hidden APC app data created', JSON.stringify({ manifest, database }, null, 2));
     updateButtons();
   }
 
-  async function readHarmlessTestFile() {
-    const state = readSessionState();
-    const fileId = lastTestFileId || state.lastTestFileId;
-    if (!accessToken || !fileId) {
-      setStatus('Nothing to read yet', 'Connect and create a test file first.');
+  async function listHiddenAppDataFiles() {
+    if (!accessToken) {
+      setStatus('Connect first', 'Google consent is required before reading hidden APC app data metadata.');
       return;
     }
-    const url = driveFilesUrl + '/' + encodeURIComponent(fileId) + '?fields=id,name,mimeType,createdTime,modifiedTime,webViewLink';
-    setStatus('Reading Drive test file metadata...', fileId);
+    const url = driveFilesUrl + '?spaces=appDataFolder&fields=files(id,name,mimeType,createdTime,modifiedTime,spaces)';
+    setStatus('Reading hidden APC app data metadata...', appDataSpace);
     const response = await fetch(url, {
       method: 'GET',
       headers: { Authorization: 'Bearer ' + accessToken }
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setStatus('Drive test read failed', JSON.stringify(result, null, 2));
+      setStatus('Hidden app data metadata read failed', JSON.stringify(result, null, 2));
       return;
     }
-    setStatus('Drive test file read succeeded', JSON.stringify(result, null, 2));
+    setStatus('Hidden APC app data metadata read succeeded', JSON.stringify(result, null, 2));
   }
 
-  async function rollbackHarmlessTestFile() {
+  async function rollbackHiddenAppDataProof() {
     const state = readSessionState();
-    const fileId = lastTestFileId || state.lastTestFileId;
-    if (!accessToken || !fileId) {
-      setStatus('Nothing to roll back', 'Connect and create a test file first.');
+    const ids = [manifestFileId || state.manifestFileId, databaseFileId || state.databaseFileId].filter(Boolean);
+    if (!accessToken || ids.length === 0) {
+      setStatus('Nothing to roll back', 'Connect and create the hidden app data proof first.');
       return;
     }
-    setStatus('Deleting Drive test file...', fileId);
-    const response = await fetch(driveFilesUrl + '/' + encodeURIComponent(fileId), {
-      method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + accessToken }
-    });
-    if (!response.ok && response.status !== 404) {
-      const result = await response.json().catch(() => ({}));
-      setStatus('Rollback delete failed', JSON.stringify(result, null, 2));
-      return;
+
+    const results = [];
+    for (const fileId of ids) {
+      const response = await fetch(driveFilesUrl + '/' + encodeURIComponent(fileId), {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + accessToken }
+      });
+      results.push({ fileId, ok: response.ok || response.status === 404, status: response.status });
     }
-    lastTestFileId = '';
-    writeSessionState({ lastTestFileId: '', lastRollbackAt: new Date().toISOString() });
-    setStatus('Rollback complete', 'The APC GoogleSync dev proof test file was deleted or was already gone.');
+
+    manifestFileId = '';
+    databaseFileId = '';
+    writeSessionState({ manifestFileId: '', databaseFileId: '', lastRollbackAt: new Date().toISOString() });
+    setStatus('Rollback complete', JSON.stringify(results, null, 2));
     updateButtons();
   }
 
@@ -302,39 +331,45 @@
     if (!document.body || !isProfileSurface()) return;
     if (document.getElementById(panelId)) return;
     installStyle();
+
     const state = readSessionState();
-    lastTestFileId = state.lastTestFileId || lastTestFileId || '';
+    manifestFileId = state.manifestFileId || manifestFileId || '';
+    databaseFileId = state.databaseFileId || databaseFileId || '';
+
     const configured = Boolean(getConfiguredClientId());
     const panel = document.createElement('section');
     panel.id = panelId;
     panel.className = 'apc-google-sync-profile-panel';
     panel.setAttribute('data-apc-google-sync-profile-panel', 'true');
     panel.setAttribute('data-apc-google-sync-profile-only', 'true');
-    panel.setAttribute('data-apc-google-sync-oauth-active', 'dev-proof-explicit-consent-only');
-    panel.setAttribute('data-apc-google-sync-drive-reads', 'dev-proof-explicit-consent-only');
-    panel.setAttribute('data-apc-google-sync-drive-writes', 'dev-proof-explicit-consent-only');
+    panel.setAttribute('data-apc-google-sync-oauth-active', 'appdata-explicit-consent-only');
+    panel.setAttribute('data-apc-google-sync-drive-reads', 'appdata-explicit-consent-only');
+    panel.setAttribute('data-apc-google-sync-drive-writes', 'appdata-explicit-consent-only');
     panel.setAttribute('data-apc-google-sync-scope', tokenScope);
+    panel.setAttribute('data-apc-google-sync-storage-space', appDataSpace);
+    panel.setAttribute('data-apc-google-sync-user-visible-folder', 'false');
     panel.setAttribute('data-apc-marker', liveMarker);
     panel.innerHTML = [
       '<h3>Google Drive sync</h3>',
-      '<p>Profile-only developer proof using Google Identity Services and narrow Drive file access.</p>',
+      '<p>AI Platform Control will only create and manage its own hidden Google Drive app data. It will not browse, read, or modify your other Drive files or folders.</p>',
       '<div class="apc-google-sync-status"><span class="apc-google-sync-dot" aria-hidden="true"></span><span data-apc-google-sync-status-text>' + (configured ? 'Ready for explicit consent' : 'Google client ID not configured') + '</span></div>',
-      '<label><input type="checkbox" data-apc-google-sync-explicit-consent> I understand this test can create one harmless APC test file in my Google Drive and the rollback button can delete that test file.</label>',
+      '<label><input type="checkbox" data-apc-google-sync-explicit-consent> I understand APC will create hidden app data in my Google Drive for APC-native decks, sessions, history, and stats. APC will not upload Anki files unless I explicitly choose an import/convert option later.</label>',
       '<div class="apc-google-sync-actions">',
       '<button type="button" data-apc-google-sync-connect>Connect Google Drive</button>',
-      '<button type="button" data-apc-google-sync-write-test>Write harmless test file</button>',
-      '<button type="button" data-apc-google-sync-read-test>Read test file metadata</button>',
-      '<button type="button" data-apc-google-sync-rollback-test>Rollback/delete test file</button>',
+      '<button type="button" data-apc-google-sync-bootstrap-appdata>Create hidden APC sync database</button>',
+      '<button type="button" data-apc-google-sync-list-appdata>Read APC app data metadata</button>',
+      '<button type="button" data-apc-google-sync-rollback-appdata-proof>Rollback/delete APC proof files</button>',
       '</div>',
-      '<small>Scope: drive.file. Token is kept in memory only. No backend queue, no DB write, and no broad Drive access.</small>',
+      '<small>Scope: drive.appdata. Storage: appDataFolder. Token is kept in memory only. No backend queue, no DB write, and no broad Drive access.</small>',
       '<pre data-apc-google-sync-proof-detail></pre>'
     ].join('');
+
     findProfileAnchor().appendChild(panel);
     panel.querySelector('[data-apc-google-sync-explicit-consent]').addEventListener('change', updateButtons);
     panel.querySelector('[data-apc-google-sync-connect]').addEventListener('click', () => connectGoogleDrive().catch((err) => setStatus('Google connection error', err.message || String(err))));
-    panel.querySelector('[data-apc-google-sync-write-test]').addEventListener('click', () => writeHarmlessTestFile().catch((err) => setStatus('Drive test write error', err.message || String(err))));
-    panel.querySelector('[data-apc-google-sync-read-test]').addEventListener('click', () => readHarmlessTestFile().catch((err) => setStatus('Drive test read error', err.message || String(err))));
-    panel.querySelector('[data-apc-google-sync-rollback-test]').addEventListener('click', () => rollbackHarmlessTestFile().catch((err) => setStatus('Rollback error', err.message || String(err))));
+    panel.querySelector('[data-apc-google-sync-bootstrap-appdata]').addEventListener('click', () => bootstrapHiddenAppDatabase().catch((err) => setStatus('Hidden app data create error', err.message || String(err))));
+    panel.querySelector('[data-apc-google-sync-list-appdata]').addEventListener('click', () => listHiddenAppDataFiles().catch((err) => setStatus('Hidden app data read error', err.message || String(err))));
+    panel.querySelector('[data-apc-google-sync-rollback-appdata-proof]').addEventListener('click', () => rollbackHiddenAppDataProof().catch((err) => setStatus('Rollback error', err.message || String(err))));
     updateButtons();
   }
 
@@ -351,6 +386,7 @@
     liveMarker,
     officialLibraryDecision,
     scope: tokenScope,
+    storageSpace: appDataSpace,
     profileOnly: true,
     explicitConsentRequired: true
   });
