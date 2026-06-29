@@ -2,13 +2,14 @@
 set -euo pipefail
 
 test -f frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.js
+test -f frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users-r3u10.js
 test -f frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.css
 
 grep -q 'APC_ADMIN_USERS_ADMIN_FOLDER_R3U' frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.js
 grep -q '/api/admin/users' frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.js
 grep -q '/system/admin/users' frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.js
-grep -q '/privatepages/admin/admin-users.css?v=20260628-admin-users-r3u9' frontend/wrapper-ui/apc-wrapper-local/index.html
-grep -q '/privatepages/admin/admin-users.js?v=20260628-admin-users-r3u9' frontend/wrapper-ui/apc-wrapper-local/index.html
+grep -q '/privatepages/admin/admin-users.css?v=20260629-admin-users-r3u10' frontend/wrapper-ui/apc-wrapper-local/index.html
+grep -q '/privatepages/admin/admin-users-r3u10.js?v=20260629-admin-users-r3u10' frontend/wrapper-ui/apc-wrapper-local/index.html
 
 node --check frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.js
 
@@ -34,5 +35,5 @@ grep -q '/privatepages/privatepages.js?v=20260628-admin-users-r3u9' frontend/wra
 
 grep -q 'APC_ADMIN_USERS_ROUTE_RETRY_R3U9' frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.js
 grep -q 'window.APC_ADMIN_USERS_ROUTE_RETRY_R3U9' frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.js
-grep -q '20260628-admin-users-r3u9' frontend/wrapper-ui/apc-wrapper-local/index.html
-
+grep -q '20260629-admin-users-r3u10' frontend/wrapper-ui/apc-wrapper-local/index.html
+grep -q 'APC_ADMIN_USERS_ROUTE_RETRY_R3U9' frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users-r3u10.js
