@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "stage17kt-companion-anki-active-session-controls-20260628";
+  var VERSION = "stage17kw-anki-session-companion-only-20260628";
   var PANEL_ID = "apc-anki-readonly-session";
   var FILE_INPUT_ID = "apc-anki-readonly-session-file";
   var SELECTION_KEY = "apc.study.sourceSelection.v1";
@@ -374,12 +374,6 @@
     };
   }
 
-  function isStudyRoute() {
-    var routeText = String(window.location.pathname + " " + window.location.hash).toLowerCase();
-    if (routeText.indexOf("study") !== -1) return true;
-    return Boolean(document.querySelector("[data-page='study'], #apc-study-source-selector"));
-  }
-
 
   function isCompanionRoute() {
     var routeText = String(window.location.pathname + " " + window.location.hash).toLowerCase();
@@ -388,8 +382,9 @@
 
   function findHost() {
     return document.querySelector("#apc-anki-readonly-session")
-      || document.querySelector("#apc-study-source-selector")
-      || document.querySelector("[data-page='study']")
+      || document.querySelector("#apc-companion-local-anki-bridge")
+      || document.querySelector("#companionPrivateApp")
+      || document.querySelector("[data-page='companion']")
       || document.querySelector("main")
       || document.body;
   }
@@ -494,7 +489,7 @@
   }
 
   function renderPanel() {
-    if (!isStudyRoute() && !isCompanionRoute()) return;
+    if (!isCompanionRoute()) return;
 
     var host = findHost();
     if (!host && isCompanionRoute()) {
