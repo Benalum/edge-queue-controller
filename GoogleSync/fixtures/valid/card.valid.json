@@ -1,0 +1,32 @@
+{
+  "answer_text": "AI Platform Control.",
+  "app_version": "stage-17k-z-r4",
+  "card_id": "card_example",
+  "card_type": "basic",
+  "content_hash": "hash_example",
+  "created_at": "2026-06-29T00:00:00Z",
+  "deck_id": "deck_example",
+  "deleted_at": null,
+  "device_id": "device_example",
+  "difficulty_label": "normal",
+  "due_at": null,
+  "ease_factor": null,
+  "extra_text": null,
+  "hint_text": null,
+  "interval_days": null,
+  "media_refs": [],
+  "owner_subject_hash": "subject_hash_example",
+  "previous_hash": null,
+  "prompt_text": "What is APC?",
+  "record_id": "card_example",
+  "record_type": "card",
+  "revision": 1,
+  "schema_version": "17k-z-r4",
+  "source": "apc_native",
+  "source_type": "apc_native",
+  "suspended": false,
+  "tags": [
+    "example"
+  ],
+  "updated_at": "2026-06-29T00:00:00Z"
+}

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "app_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "attempt_count": {
+      "type": "integer"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "created_from_event_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "last_attempt_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_error": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "operation": {
+      "enum": [
+        "write_file",
+        "append_history",
+        "update_manifest",
+        "write_stats",
+        "write_session"
+      ],
+      "type": "string"
+    },
+    "outbox_entry_id": {
+      "type": "string"
+    },
+    "owner_subject_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "record_type": {
+      "const": "google_sync_outbox_entry",
+      "type": "string"
+    },
+    "revision": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "apc_native",
+        "anki_local_import",
+        "anki_browser_local",
+        "companion_session",
+        "manual_edit",
+        "sync_merge",
+        "sync_engine",
+        "migration"
+      ],
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "syncing",
+        "synced",
+        "failed",
+        "paused"
+      ],
+      "type": "string"
+    },
+    "target_path": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "record_id",
+    "created_at",
+    "updated_at",
+    "device_id",
+    "revision",
+    "source",
+    "content_hash",
+    "outbox_entry_id",
+    "operation",
+    "target_path",
+    "status",
+    "created_from_event_id"
+  ],
+  "title": "APC GoogleSync Local Outbox Entry",
+  "type": "object",
+  "x_apc_scope": "local_schema_validation_only",
+  "x_apc_stage": "17K-Z-R4",
+  "x_no_drive_writes": true,
+  "x_no_oauth": true
+}

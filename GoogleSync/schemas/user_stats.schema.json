@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "app_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "based_on_history_hash": {
+      "type": "string"
+    },
+    "by_source_type": {
+      "type": "object"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "current_streak_days": {
+      "type": "integer"
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "last_session_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lifetime_cards_answered": {
+      "type": "integer"
+    },
+    "lifetime_cards_correct": {
+      "type": "integer"
+    },
+    "lifetime_cards_seen": {
+      "type": "integer"
+    },
+    "lifetime_cards_wrong": {
+      "type": "integer"
+    },
+    "lifetime_sessions": {
+      "type": "integer"
+    },
+    "longest_streak_days": {
+      "type": "integer"
+    },
+    "owner_subject_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recomputed_at": {
+      "type": "string"
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "record_type": {
+      "const": "user_stats",
+      "type": "string"
+    },
+    "revision": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "apc_native",
+        "anki_local_import",
+        "anki_browser_local",
+        "companion_session",
+        "manual_edit",
+        "sync_merge",
+        "sync_engine",
+        "migration"
+      ],
+      "type": "string"
+    },
+    "stats_id": {
+      "type": "string"
+    },
+    "total_study_ms": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "record_id",
+    "created_at",
+    "updated_at",
+    "device_id",
+    "revision",
+    "source",
+    "content_hash",
+    "stats_id",
+    "lifetime_sessions",
+    "lifetime_cards_seen",
+    "based_on_history_hash",
+    "recomputed_at"
+  ],
+  "title": "APC GoogleSync User Stats",
+  "type": "object",
+  "x_apc_scope": "local_schema_validation_only",
+  "x_apc_stage": "17K-Z-R4",
+  "x_no_drive_writes": true,
+  "x_no_oauth": true
+}

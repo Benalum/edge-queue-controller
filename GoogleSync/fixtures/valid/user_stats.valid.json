@@ -1,0 +1,32 @@
+{
+  "app_version": "stage-17k-z-r4",
+  "based_on_history_hash": "history_hash_example",
+  "by_source_type": {
+    "apc_native": {
+      "sessions": 1
+    }
+  },
+  "content_hash": "hash_example",
+  "created_at": "2026-06-29T00:00:00Z",
+  "current_streak_days": 1,
+  "deleted_at": null,
+  "device_id": "device_example",
+  "last_session_at": "2026-06-29T00:10:00Z",
+  "lifetime_cards_answered": 1,
+  "lifetime_cards_correct": 1,
+  "lifetime_cards_seen": 1,
+  "lifetime_cards_wrong": 0,
+  "lifetime_sessions": 1,
+  "longest_streak_days": 1,
+  "owner_subject_hash": "subject_hash_example",
+  "previous_hash": null,
+  "recomputed_at": "2026-06-29T00:10:00Z",
+  "record_id": "user-current",
+  "record_type": "user_stats",
+  "revision": 1,
+  "schema_version": "17k-z-r4",
+  "source": "apc_native",
+  "stats_id": "user-current",
+  "total_study_ms": 600000,
+  "updated_at": "2026-06-29T00:00:00Z"
+}

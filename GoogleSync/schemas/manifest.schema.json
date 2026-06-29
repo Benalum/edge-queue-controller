@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "app_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "files": {
+      "type": "array"
+    },
+    "folder_label": {
+      "type": "string"
+    },
+    "last_local_sync_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "manifest_id": {
+      "type": "string"
+    },
+    "owner_subject_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "record_type": {
+      "const": "google_sync_manifest",
+      "type": "string"
+    },
+    "revision": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "schema_set_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "apc_native",
+        "anki_local_import",
+        "anki_browser_local",
+        "companion_session",
+        "manual_edit",
+        "sync_merge",
+        "sync_engine",
+        "migration"
+      ],
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "record_id",
+    "created_at",
+    "updated_at",
+    "device_id",
+    "revision",
+    "source",
+    "content_hash",
+    "manifest_id",
+    "folder_label",
+    "schema_set_version",
+    "last_local_sync_at",
+    "files"
+  ],
+  "title": "APC GoogleSync Manifest",
+  "type": "object",
+  "x_apc_scope": "local_schema_validation_only",
+  "x_apc_stage": "17K-Z-R4",
+  "x_no_drive_writes": true,
+  "x_no_oauth": true
+}

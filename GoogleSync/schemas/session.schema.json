@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "answer_events_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "app_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cards_answered": {
+      "type": "integer"
+    },
+    "cards_correct": {
+      "type": "integer"
+    },
+    "cards_seen": {
+      "type": "integer"
+    },
+    "cards_skipped": {
+      "type": "integer"
+    },
+    "cards_wrong": {
+      "type": "integer"
+    },
+    "companion_enabled": {
+      "type": "boolean"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "deck_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "integer"
+    },
+    "ended_at": {
+      "type": "string"
+    },
+    "local_only_source_refs": {
+      "type": "array"
+    },
+    "owner_subject_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "record_type": {
+      "const": "study_session",
+      "type": "string"
+    },
+    "revision": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "apc_native",
+        "anki_local_import",
+        "anki_browser_local",
+        "companion_session",
+        "manual_edit",
+        "sync_merge",
+        "sync_engine",
+        "migration"
+      ],
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "stats_delta_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "study_source_type": {
+      "enum": [
+        "apc_native",
+        "anki_browser_local",
+        "mixed",
+        "companion_generated"
+      ],
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "user_id_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "record_id",
+    "created_at",
+    "updated_at",
+    "device_id",
+    "revision",
+    "source",
+    "content_hash",
+    "session_id",
+    "study_source_type",
+    "started_at",
+    "ended_at",
+    "duration_ms",
+    "cards_seen"
+  ],
+  "title": "APC GoogleSync Study Session",
+  "type": "object",
+  "x_apc_scope": "local_schema_validation_only",
+  "x_apc_stage": "17K-Z-R4",
+  "x_no_drive_writes": true,
+  "x_no_oauth": true
+}

@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "answer_text": {
+      "type": "string"
+    },
+    "app_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "card_id": {
+      "type": "string"
+    },
+    "card_type": {
+      "enum": [
+        "basic",
+        "cloze",
+        "reverse",
+        "multiple_choice",
+        "note"
+      ],
+      "type": "string"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "deck_id": {
+      "type": "string"
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "difficulty_label": {
+      "type": "string"
+    },
+    "due_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ease_factor": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "extra_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hint_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "interval_days": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "media_refs": {
+      "type": "array"
+    },
+    "owner_subject_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "prompt_text": {
+      "type": "string"
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "record_type": {
+      "const": "card",
+      "type": "string"
+    },
+    "revision": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "apc_native",
+        "anki_local_import",
+        "anki_browser_local",
+        "companion_session",
+        "manual_edit",
+        "sync_merge",
+        "sync_engine",
+        "migration"
+      ],
+      "type": "string"
+    },
+    "source_type": {
+      "enum": [
+        "apc_native",
+        "anki_local_import",
+        "generated",
+        "manual_edit"
+      ],
+      "type": "string"
+    },
+    "suspended": {
+      "type": "boolean"
+    },
+    "tags": {
+      "type": "array"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "record_id",
+    "created_at",
+    "updated_at",
+    "device_id",
+    "revision",
+    "source",
+    "content_hash",
+    "card_id",
+    "deck_id",
+    "card_type",
+    "prompt_text",
+    "answer_text",
+    "source_type"
+  ],
+  "title": "APC GoogleSync Card",
+  "type": "object",
+  "x_apc_scope": "local_schema_validation_only",
+  "x_apc_stage": "17K-Z-R4",
+  "x_no_drive_writes": true,
+  "x_no_oauth": true
+}

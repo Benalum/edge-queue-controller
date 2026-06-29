@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "app_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "consent_event_id": {
+      "type": "string"
+    },
+    "consent_version": {
+      "type": "string"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "decision": {
+      "enum": [
+        "connect_requested",
+        "connected",
+        "disconnected",
+        "sync_paused",
+        "sync_resumed"
+      ],
+      "type": "string"
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "drive_write_performed": {
+      "type": "boolean"
+    },
+    "folder_label": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "oauth_activated": {
+      "type": "boolean"
+    },
+    "owner_subject_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "record_type": {
+      "const": "google_sync_consent_event",
+      "type": "string"
+    },
+    "revision": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "selected_data_categories": {
+      "type": "array"
+    },
+    "source": {
+      "enum": [
+        "apc_native",
+        "anki_local_import",
+        "anki_browser_local",
+        "companion_session",
+        "manual_edit",
+        "sync_merge",
+        "sync_engine",
+        "migration"
+      ],
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "record_id",
+    "created_at",
+    "updated_at",
+    "device_id",
+    "revision",
+    "source",
+    "content_hash",
+    "consent_event_id",
+    "consent_version",
+    "decision",
+    "selected_data_categories"
+  ],
+  "title": "APC GoogleSync Consent Event",
+  "type": "object",
+  "x_apc_scope": "local_schema_validation_only",
+  "x_apc_stage": "17K-Z-R4",
+  "x_no_drive_writes": true,
+  "x_no_oauth": true
+}

@@ -1,0 +1,28 @@
+{
+  "app_version": "stage-17k-z-r4",
+  "consent_event_id": "consent_event_example",
+  "consent_version": "17k-z-r4",
+  "content_hash": "hash_example",
+  "created_at": "2026-06-29T00:00:00Z",
+  "decision": "connect_requested",
+  "deleted_at": null,
+  "device_id": "device_example",
+  "drive_write_performed": false,
+  "folder_label": "AI Platform Control",
+  "oauth_activated": false,
+  "owner_subject_hash": "subject_hash_example",
+  "previous_hash": null,
+  "record_id": "consent_event_example",
+  "record_type": "google_sync_consent_event",
+  "revision": 1,
+  "schema_version": "17k-z-r4",
+  "selected_data_categories": [
+    "decks",
+    "cards",
+    "sessions",
+    "history",
+    "stats"
+  ],
+  "source": "apc_native",
+  "updated_at": "2026-06-29T00:00:00Z"
+}

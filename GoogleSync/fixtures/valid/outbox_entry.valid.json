@@ -1,0 +1,23 @@
+{
+  "app_version": "stage-17k-z-r4",
+  "attempt_count": 0,
+  "content_hash": "hash_example",
+  "created_at": "2026-06-29T00:00:00Z",
+  "created_from_event_id": "history_event_example",
+  "deleted_at": null,
+  "device_id": "device_example",
+  "last_attempt_at": null,
+  "last_error": null,
+  "operation": "write_session",
+  "outbox_entry_id": "outbox_entry_example",
+  "owner_subject_hash": "subject_hash_example",
+  "previous_hash": null,
+  "record_id": "outbox_entry_example",
+  "record_type": "google_sync_outbox_entry",
+  "revision": 1,
+  "schema_version": "17k-z-r4",
+  "source": "apc_native",
+  "status": "pending",
+  "target_path": "study/sessions/2026/06/session_example.apc.json",
+  "updated_at": "2026-06-29T00:00:00Z"
+}

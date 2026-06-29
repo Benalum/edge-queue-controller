@@ -1,0 +1,20 @@
+{
+  "app_version": "stage-17k-z-r4",
+  "content_hash": "hash_example",
+  "created_at": "2026-06-29T00:00:00Z",
+  "deleted_at": null,
+  "device_id": "device_example",
+  "files": [],
+  "folder_label": "AI Platform Control",
+  "last_local_sync_at": null,
+  "manifest_id": "manifest_current",
+  "owner_subject_hash": "subject_hash_example",
+  "previous_hash": null,
+  "record_id": "manifest_current",
+  "record_type": "google_sync_manifest",
+  "revision": 1,
+  "schema_set_version": "17k-z-r4",
+  "schema_version": "17k-z-r4",
+  "source": "apc_native",
+  "updated_at": "2026-06-29T00:00:00Z"
+}

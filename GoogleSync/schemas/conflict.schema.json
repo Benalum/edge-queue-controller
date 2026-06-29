@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "app_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "chosen_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "conflict_id": {
+      "type": "string"
+    },
+    "conflict_record_id": {
+      "type": "string"
+    },
+    "conflict_record_type": {
+      "type": "string"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "detected_at": {
+      "type": "string"
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "local_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "local_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner_subject_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "record_type": {
+      "const": "sync_conflict",
+      "type": "string"
+    },
+    "remote_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "remote_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolution_status": {
+      "enum": [
+        "pending",
+        "auto_merged",
+        "user_resolved",
+        "ignored"
+      ],
+      "type": "string"
+    },
+    "revision": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "apc_native",
+        "anki_local_import",
+        "anki_browser_local",
+        "companion_session",
+        "manual_edit",
+        "sync_merge",
+        "sync_engine",
+        "migration"
+      ],
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "record_id",
+    "created_at",
+    "updated_at",
+    "device_id",
+    "revision",
+    "source",
+    "content_hash",
+    "conflict_id",
+    "detected_at",
+    "conflict_record_type",
+    "conflict_record_id",
+    "resolution_status"
+  ],
+  "title": "APC GoogleSync Conflict",
+  "type": "object",
+  "x_apc_scope": "local_schema_validation_only",
+  "x_apc_stage": "17K-Z-R4",
+  "x_no_drive_writes": true,
+  "x_no_oauth": true
+}

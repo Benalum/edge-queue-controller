@@ -1,0 +1,27 @@
+{
+  "app_version": "stage-17k-z-r4",
+  "card_count_declared": 1,
+  "card_count_verified_at": "2026-06-29T00:00:00Z",
+  "content_hash": "hash_example",
+  "created_at": "2026-06-29T00:00:00Z",
+  "deck_id": "deck_example",
+  "default_daily_target": 10,
+  "default_study_mode": "companion",
+  "deleted_at": null,
+  "description": "Local validator fixture.",
+  "device_id": "device_example",
+  "owner_subject_hash": "subject_hash_example",
+  "previous_hash": null,
+  "record_id": "deck_example",
+  "record_type": "deck",
+  "revision": 1,
+  "schema_version": "17k-z-r4",
+  "source": "apc_native",
+  "source_ref": null,
+  "source_type": "apc_native",
+  "tags": [
+    "example"
+  ],
+  "title": "Example Deck",
+  "updated_at": "2026-06-29T00:00:00Z"
+}
