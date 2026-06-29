@@ -380,3 +380,104 @@
   observer.observe(document.documentElement, { childList: true, subtree: true });
   window.APC_ADMIN_USERS_ADMIN_FOLDER_R3U = { marker: MARKER, render: renderAdminUsers };
 })();
+
+/* APC_ADMIN_USERS_ROUTE_RETRY_R3U9 */
+(function apcAdminUsersRouteRetryR3U9() {
+  "use strict";
+
+  let retryTimer = null;
+  let retryUntil = 0;
+
+  function isAdminRoute() {
+    return location.pathname === "/admin"
+      || location.hash === "#admin"
+      || location.hash === "#/admin";
+  }
+
+  function hasAdminShell() {
+    return !!document.querySelector("[data-apc-admin-users-root], .apc-admin-users-page");
+  }
+
+  function hasLoadedUsersTable() {
+    return !!document.querySelector(".apc-admin-users-table")
+      || /Loaded from \/api\/admin\/users/i.test(document.body ? document.body.textContent || "" : "");
+  }
+
+  function shouldRenderAdminUsers() {
+    if (!isAdminRoute()) return false;
+    if (!hasAdminShell()) return false;
+    if (hasLoadedUsersTable()) return false;
+    return true;
+  }
+
+  function renderWhenReady(reason) {
+    if (!shouldRenderAdminUsers()) return;
+
+    const api = window.APC_ADMIN_USERS_ADMIN_FOLDER_R3U;
+    if (!api || typeof api.render !== "function") {
+      scheduleRetry(reason);
+      return;
+    }
+
+    try {
+      api.render();
+    } catch (error) {
+      console.warn("APC_ADMIN_USERS_ROUTE_RETRY_R3U9 render failed", reason, error);
+      scheduleRetry(reason);
+    }
+  }
+
+  function scheduleRetry(reason) {
+    clearTimeout(retryTimer);
+
+    if (!retryUntil) retryUntil = Date.now() + 12000;
+    if (Date.now() > retryUntil) return;
+
+    retryTimer = setTimeout(function () {
+      renderWhenReady(reason || "scheduled");
+    }, 120);
+  }
+
+  function startAdminRetry(reason) {
+    retryUntil = Date.now() + 12000;
+    scheduleRetry(reason);
+  }
+
+  document.addEventListener("click", function (event) {
+    const link = event.target && event.target.closest
+      ? event.target.closest('a[href="/admin"], a[href="#admin"], a[href="#/admin"], [data-route="admin"], [data-page="admin"]')
+      : null;
+
+    if (link) {
+      setTimeout(function () { startAdminRetry("admin-click"); }, 0);
+      setTimeout(function () { startAdminRetry("admin-click-late"); }, 350);
+    }
+  }, true);
+
+  window.addEventListener("popstate", function () { startAdminRetry("popstate"); });
+  window.addEventListener("hashchange", function () { startAdminRetry("hashchange"); });
+  window.addEventListener("DOMContentLoaded", function () { startAdminRetry("domcontentloaded"); });
+  window.addEventListener("load", function () { startAdminRetry("load"); });
+
+  const observer = new MutationObserver(function () {
+    if (shouldRenderAdminUsers()) startAdminRetry("mutation");
+  });
+
+  function startObserver() {
+    const root = document.body || document.documentElement;
+    if (!root) return;
+    observer.observe(root, { childList: true, subtree: true });
+    startAdminRetry("observer-start");
+  }
+
+  if (document.body) {
+    startObserver();
+  } else {
+    document.addEventListener("DOMContentLoaded", startObserver, { once: true });
+  }
+
+  window.APC_ADMIN_USERS_ROUTE_RETRY_R3U9 = {
+    marker: "APC_ADMIN_USERS_ROUTE_RETRY_R3U9",
+    start: startAdminRetry,
+  };
+})();
