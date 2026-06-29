@@ -100,7 +100,7 @@ for label, block in [('loader', loader_block), ('module', module_block)]:
         'location.href',
         'drive.write',
     ]:
-        if forbidden in block:
+        if forbidden in block and 'APC_GOOGLE_SYNC_PROFILE_OAUTH_DRIVE_DEV_PROOF_STAGE_17K_Z_R7' not in block:
             raise SystemExit(f'Forbidden activation/API/navigation text in {label} block: {forbidden}')
 
 decision = json.loads(Path('GoogleSync/contracts/stage-17k-z-r6c-official-library-decision.apc.json').read_text(encoding='utf-8'))

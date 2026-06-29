@@ -1,0 +1,29 @@
+{
+  "backend_db_used": false,
+  "backend_queue_used": false,
+  "baseline_commit": "8451db8",
+  "browser_can_perform_drive_test_after_explicit_consent": true,
+  "browser_can_perform_oauth_after_client_id_configured": true,
+  "client_id_source": [
+    "window.APC_GOOGLE_SYNC_CONFIG.googleClientId",
+    "meta[name=apc-google-client-id]"
+  ],
+  "drive_api": "Google Drive REST API",
+  "explicit_consent_required": true,
+  "official_auth_library": "Google Identity Services JavaScript authorization client",
+  "ppb_smoke_performs_drive_read": false,
+  "ppb_smoke_performs_drive_write": false,
+  "ppb_smoke_performs_oauth": false,
+  "profile_only": true,
+  "refresh_token_storage": false,
+  "scope": "drive.file",
+  "stage": "17K-Z-R7",
+  "status": "profile_only_dev_proof_source",
+  "test_file": {
+    "harmless": true,
+    "mime_type": "application/json",
+    "name_prefix": "APC GoogleSync Dev Proof",
+    "rollback": "delete by file id after explicit user click"
+  },
+  "token_storage": "memory_only"
+}

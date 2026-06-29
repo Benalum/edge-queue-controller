@@ -655,7 +655,7 @@
   const loaderMarker = 'APC_GOOGLE_SYNC_PROFILE_LOADER_MARKER_STAGE_17K_Z_R6C';
   const moduleGlobal = 'APC_PROFILE_GOOGLE_SYNC_PANEL_STAGE_17K_Z_R6C';
   const moduleScriptId = 'apc-profile-google-sync-panel-script-stage-17k-z-r6c';
-  const modulePath = '/privatepages/profile-google-sync-panel.js?v=20260629-stage17k-z-r6c';
+  const modulePath = '/privatepages/profile-google-sync-panel.js?v=20260629-stage17k-z-r7';
   const uiTextMovedToModule = 'Google Drive sync Not connected Connect Google Drive Sync now';
 
   function isProfileSurface() {

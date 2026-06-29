@@ -120,3 +120,20 @@ R6C library decision:
 - Use the Google Drive REST API for future Drive operations.
 - Use Google Picker for future user-selected files and folders.
 - Do not build custom OAuth.
+
+## Stage 17K-Z-R7
+
+R7 adds Profile-only Google OAuth and Drive dev proof source.
+
+R7 behavior:
+
+- Uses Google Identity Services in the browser.
+- Uses narrow drive.file access.
+- Requires explicit Profile-page consent.
+- Creates one harmless APC test file only after consent.
+- Reads that test file metadata.
+- Deletes that test file during rollback.
+- Keeps access token in memory only.
+- Does not use backend queue or backend DB.
+
+PPB smoke remains static and does not call Google.
