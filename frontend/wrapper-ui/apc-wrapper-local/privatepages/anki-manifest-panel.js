@@ -445,129 +445,66 @@
     }
   }
 
-  function renderDeckSummaryHtml(deckSummary) {
-    if (!deckSummary) {
-      return ''
-        + '<div class="apc-anki-local-summary apc-muted">'
-        + '  <strong>Local deck extraction</strong>'
-        + '  <p>Select an Anki SQLite collection to parse deck names locally in this browser.</p>'
-        + '</div>';
-    }
 
-    if (deckSummary.status === "error") {
-      return ''
-        + '<div class="apc-anki-local-summary apc-error">'
-        + '  <strong>Local deck extraction failed</strong>'
-        + '  <p>' + escapeHtml(deckSummary.message || "Unknown error") + '</p>'
-        + '</div>';
+
+
+  function renderAnkiFileHelpHtml() {
+    return ''
+      + '<details class="apc-anki-file-location-help">'
+      + '  <summary>Where is my Anki file?</summary>'
+      + '  <div class="study-muted">'
+      + '    <p>Look for <code>collection.anki2</code> inside your Anki profile folder.</p>'
+      + '    <ul>'
+      + '      <li><strong>Windows:</strong> <code>%APPDATA%\\Anki2\\&lt;Profile&gt;\\collection.anki2</code></li>'
+      + '      <li><strong>macOS:</strong> <code>~/Library/Application Support/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+      + '      <li><strong>Linux:</strong> <code>~/.local/share/Anki2/&lt;Profile&gt;/collection.anki2</code> or <code>$XDG_DATA_HOME/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+      + '      <li><strong>Android / AnkiDroid:</strong> check AnkiDroid Settings → Advanced → Collection path. If the browser cannot open that folder, export/copy the collection file to Downloads first.</li>'
+      + '      <li><strong>iPhone / iPad:</strong> export or transfer from AnkiMobile using Add/Export, AirDrop, Finder, or iTunes, then choose the exported file from this browser.</li>'
+      + '    </ul>'
+      + '  </div>'
+      + '</details>';
+  }
+
+  function renderMinimalDeckSummaryHtml() {
+    var deckSummary = storageRead(DECK_SUMMARY_KEY);
+    if (!deckSummary || deckSummary.status !== "extracted") {
+      return '<p class="study-muted">Choose an Anki file to show deck and card counts.</p>';
     }
 
     var summary = deckSummary.summary || {};
     var decks = Array.isArray(deckSummary.decks) ? deckSummary.decks : [];
-    var noteTypes = Array.isArray(deckSummary.note_types) ? deckSummary.note_types : [];
-    var activeNoteTypes = noteTypes.filter(function (noteType) {
-      return Number(noteType.note_count || 0) > 0;
-    });
-
     var deckRows = decks.length
       ? decks.map(function (deck) {
           return ''
-            + '<label class="profile-preference-row apc-anki-deck-choice">'
-            + '  <span>'
-            + '    <input type="radio" name="apc-local-anki-deck" value="' + escapeHtml(deck.id) + '">'
-            + '    <strong>' + escapeHtml(deck.name) + '</strong>'
-            + '  </span>'
-            + '  <span>' + escapeHtml(deck.card_count) + ' cards / ' + escapeHtml(deck.note_count) + ' notes</span>'
-            + '</label>';
-        }).join("")
-      : '<p class="apc-muted">No decks with cards were found.</p>';
-
-    var noteRows = activeNoteTypes.length
-      ? activeNoteTypes.map(function (noteType) {
-          var fields = (noteType.field_names || []).join(", ");
-          var templates = (noteType.template_names || []).join(", ");
-          return ''
-            + '<div class="profile-preference-row">'
-            + '  <span>' + escapeHtml(noteType.name) + '</span>'
-            + '  <strong>' + escapeHtml(noteType.note_count) + ' notes</strong>'
-            + '</div>'
-            + '<div class="profile-preference-row apc-muted">'
-            + '  <span>Fields</span>'
-            + '  <span>' + escapeHtml(fields || "—") + '</span>'
-            + '</div>'
-            + '<div class="profile-preference-row apc-muted">'
-            + '  <span>Templates</span>'
-            + '  <span>' + escapeHtml(templates || "—") + '</span>'
+            + '<div class="profile-preference-row apc-anki-minimal-deck-row">'
+            + '  <span>' + escapeHtml(deck.name || deck.id || "Unnamed deck") + '</span>'
+            + '  <strong>' + escapeHtml(deck.card_count || 0) + ' card(s)</strong>'
             + '</div>';
         }).join("")
-      : '<p class="apc-muted">No active note types were found.</p>';
+      : '<p class="study-muted">No decks with cards were found.</p>';
 
     return ''
-      + '<div class="apc-anki-local-summary">'
-      + '  <h4>Local Anki decks</h4>'
-      + '  <p class="apc-muted">Parsed locally in this browser. Deck names, card text, tags, and media are not sent to the server.</p>'
-      + '  <div class="profile-preference-row"><span>Source type</span><strong>' + escapeHtml(deckSummary.source_type || "anki_browser_local") + '</strong></div>'
-      + '  <div class="profile-preference-row"><span>Cards</span><strong>' + escapeHtml(summary.card_count || 0) + '</strong></div>'
-      + '  <div class="profile-preference-row"><span>Notes</span><strong>' + escapeHtml(summary.note_count || 0) + '</strong></div>'
-      + '  <div class="profile-preference-row"><span>Decks with cards</span><strong>' + escapeHtml(summary.deck_count_with_cards || 0) + '</strong></div>'
-      + '  <div class="profile-preference-row"><span>Note types with notes</span><strong>' + escapeHtml(summary.note_type_count_with_notes || 0) + '</strong></div>'
-      + '  <div class="profile-preference-list">' + deckRows + '</div>'
-      + '  <details class="apc-anki-manifest-details apc-anki-note-type-details">'
-      + '    <summary>Local note type details</summary>'
-      + noteRows
-      + '  </details>'
+      + '<div class="apc-anki-minimal-summary">'
+      + '  <div class="profile-preference-row"><span>Decks</span><strong>' + escapeHtml(summary.deck_count_with_cards || decks.length || 0) + '</strong></div>'
+      + '  <div class="profile-preference-row"><span>Total cards</span><strong>' + escapeHtml(summary.card_count || 0) + '</strong></div>'
+      + '  <h4>Deck card counts</h4>'
+      + deckRows
       + '</div>';
   }
 
-  function renderFilePickerHtml(fileProof, deckSummary) {
-    var hasProof = Boolean(fileProof);
-    var status = hasProof ? escapeHtml(fileProof.status || "selected") : "not selected";
-    var fileName = hasProof ? escapeHtml(fileProof.name || "") : "No file selected yet";
-    var fileSize = hasProof ? escapeHtml(fileProof.size_label || "") : "—";
-    var header = hasProof ? escapeHtml(fileProof.header_kind || "unknown") : "—";
-    var modified = hasProof ? escapeHtml(fileProof.last_modified || "unknown") : "—";
-    var sampleHash = hasProof && fileProof.sample_sha256
-      ? escapeHtml(String(fileProof.sample_sha256).slice(0, 24) + "…")
-      : "—";
-
-    return ''
-      + '<section class="profile-card apc-anki-local-card" id="' + PANEL_ID + '-card">'
-      + '  <h3>Anki file picker</h3>'
-      + '  <p class="apc-muted">Choose your Anki collection. APC reads it locally in this browser only.</p>'
-      + '  <div class="profile-preference-row">'
-      + '    <span>Choose Anki file</span>'
-      + '    <input id="' + FILE_INPUT_ID + '" type="file" accept=".anki2,.anki21,.sqlite,.db">'
-      + '  </div>'
-      + '  <div class="profile-preference-row">'
-      + '    <span>Privacy</span>'
-      + '    <strong>Browser-local read-only</strong>'
-      + '  </div>'
-      + '  <button type="button" id="' + CLEAR_BUTTON_ID + '" class="profile-secondary-button">Clear local Anki proof</button>'
-      + '  <details class="apc-anki-manifest-details apc-anki-file-picker-details"' + (hasProof ? ' open' : '') + '>'
-      + '    <summary>Selected file proof</summary>'
-      + '    <div class="profile-preference-row"><span>File status</span><strong>' + status + '</strong></div>'
-      + '    <div class="profile-preference-row"><span>File name</span><strong>' + fileName + '</strong></div>'
-      + '    <div class="profile-preference-row"><span>Size</span><strong>' + fileSize + '</strong></div>'
-      + '    <div class="profile-preference-row"><span>Header</span><strong>' + header + '</strong></div>'
-      + '    <div class="profile-preference-row"><span>Modified</span><strong>' + modified + '</strong></div>'
-      + '    <div class="profile-preference-row"><span>Sample SHA-256</span><strong>' + sampleHash + '</strong></div>'
-      + '  </details>'
-      + renderDeckSummaryHtml(deckSummary)
-      + '</section>';
-  }
-
   function renderPanelHtml(message) {
-    var msg = message
-      ? '<p class="apc-anki-message">' + escapeHtml(message) + '</p>'
-      : '';
-
     return ''
-      + '<section class="profile-card apc-anki-ownership-card">'
-      + '  <h3>Data ownership update</h3>'
-      + '  <p>Anki files stay local to your browser. APC will not upload Anki deck names, card text, tags, answers, or media.</p>'
-      + '</section>'
-      + msg
-      + renderFilePickerHtml(readSavedFileProof(), readSavedDeckSummary());
+      + '<section class="profile-card apc-anki-minimal-card" id="' + PANEL_ID + '-card">'
+      + '  <h3>Anki</h3>'
+      + '  <p class="study-muted">Choose your Anki collection file. APC reads deck names and card counts locally in this browser.</p>'
+      + renderAnkiFileHelpHtml()
+      + (message ? '<p class="apc-anki-message">' + escapeHtml(message) + '</p>' : '')
+      + '  <div class="profile-preference-row">'
+      + '    <label for="' + FILE_INPUT_ID + '"><strong>Choose Anki file</strong></label>'
+      + '    <input id="' + FILE_INPUT_ID + '" type="file" accept=".anki2,.anki21,.sqlite,.db,.colpkg,.apkg">'
+      + '  </div>'
+      + renderMinimalDeckSummaryHtml()
+      + '</section>';
   }
 
   function isProfileRoute() {
@@ -575,6 +512,7 @@
     if (routeText.indexOf("profile") !== -1) return true;
     return Boolean(document.querySelector("[data-page='profile'], #profilePrivateApp, .apc-profile-root"));
   }
+
 
 
   function findMountHost() {
@@ -679,7 +617,7 @@
   }
 
   window.APC_ANKI_LOCAL = {
-    version: "stage17kwr4-anki-manifest-profile-only-20260629",
+    version: "stage17ky-profile-anki-minimal-panel-20260629",
     readSavedFileProof: readSavedFileProof,
     readSavedDeckSummary: readSavedDeckSummary,
     clearSavedFileProof: clearSavedFileProof,
