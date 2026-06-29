@@ -650,10 +650,13 @@
 })();
 
 /* APC_GOOGLE_SYNC_PROFILE_ONLY_STAGE_17K_Z_R6_START */
-(function apcGoogleSyncProfileOnlyStage17kZr6() {
-  const marker = 'APC_GOOGLE_SYNC_PROFILE_ONLY_MARKER_STAGE_17K_Z_R6';
-  const panelId = 'apc-google-sync-profile-panel-stage-17k-z-r6';
-  const styleId = 'apc-google-sync-profile-style-stage-17k-z-r6';
+(function apcGoogleSyncProfileOnlyStage17kZr6cLoader() {
+  const legacyMarker = 'APC_GOOGLE_SYNC_PROFILE_ONLY_MARKER_STAGE_17K_Z_R6';
+  const loaderMarker = 'APC_GOOGLE_SYNC_PROFILE_LOADER_MARKER_STAGE_17K_Z_R6C';
+  const moduleGlobal = 'APC_PROFILE_GOOGLE_SYNC_PANEL_STAGE_17K_Z_R6C';
+  const moduleScriptId = 'apc-profile-google-sync-panel-script-stage-17k-z-r6c';
+  const modulePath = '/privatepages/profile-google-sync-panel.js?v=20260629-stage17k-z-r6c';
+  const uiTextMovedToModule = 'Google Drive sync Not connected Connect Google Drive Sync now';
 
   function isProfileSurface() {
     const path = String(window.location && window.location.pathname || '').toLowerCase();
@@ -674,81 +677,44 @@
     return path.includes('profile') || hash.includes('profile') || title.includes('profile') || hasProfileNode || bodyLooksProfile;
   }
 
-  function installStyle() {
-    if (document.getElementById(styleId)) return;
-    const style = document.createElement('style');
-    style.id = styleId;
-    style.textContent = [
-      '.apc-google-sync-profile-panel { margin-top: 16px; padding: 16px; border: 1px solid rgba(148,163,184,.35); border-radius: 14px; background: rgba(15,23,42,.04); }',
-      '.apc-google-sync-profile-panel h3 { margin: 0 0 8px; font-size: 1.05rem; }',
-      '.apc-google-sync-profile-panel p { margin: 6px 0; line-height: 1.45; }',
-      '.apc-google-sync-profile-panel .apc-google-sync-status { display: inline-flex; align-items: center; gap: 8px; margin: 8px 0 12px; font-weight: 700; }',
-      '.apc-google-sync-profile-panel .apc-google-sync-dot { width: 9px; height: 9px; border-radius: 999px; background: #94a3b8; display: inline-block; }',
-      '.apc-google-sync-profile-panel .apc-google-sync-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }',
-      '.apc-google-sync-profile-panel button { border: 0; border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: not-allowed; opacity: .7; }',
-      '.apc-google-sync-profile-panel small { display: block; margin-top: 10px; opacity: .8; }'
-    ].join('\n');
-    document.head.appendChild(style);
-  }
-
-  function findProfileAnchor() {
-    const selectors = [
-      '[data-apc-profile-root]',
-      '[data-profile-root]',
-      '[data-page="profile"]',
-      '[data-route="profile"]',
-      '.profile-page',
-      '#profile',
-      '#profile-page',
-      'main',
-      '#app',
-      'body'
-    ];
-    for (const selector of selectors) {
-      const node = document.querySelector(selector);
-      if (node) return node;
+  function invokeModuleIfLoaded() {
+    const api = window[moduleGlobal];
+    if (api && typeof api.install === 'function') {
+      api.install();
+      return true;
     }
-    return document.body;
+    return false;
   }
 
-  function renderPanel() {
+  function loadModule() {
     if (!document.body || !isProfileSurface()) return;
-    if (document.getElementById(panelId)) return;
-    installStyle();
-    const panel = document.createElement('section');
-    panel.id = panelId;
-    panel.className = 'apc-google-sync-profile-panel';
-    panel.setAttribute('data-apc-google-sync-profile-panel', 'true');
-    panel.setAttribute('data-apc-google-sync-profile-only', 'true');
-    panel.setAttribute('data-apc-google-sync-oauth-active', 'false');
-    panel.setAttribute('data-apc-google-sync-drive-reads', 'false');
-    panel.setAttribute('data-apc-google-sync-drive-writes', 'false');
-    panel.setAttribute('data-apc-marker', marker);
-    panel.innerHTML = [
-      '<h3>Google Drive sync</h3>',
-      '<p>Keep your APC-native decks, study sessions, history, and stats in user-owned Google Drive storage.</p>',
-      '<div class="apc-google-sync-status"><span class="apc-google-sync-dot" aria-hidden="true"></span><span>Not connected</span></div>',
-      '<div class="apc-google-sync-actions"><button type="button" disabled aria-disabled="true">Connect Google Drive</button><button type="button" disabled aria-disabled="true">Sync now</button></div>',
-      '<small>Profile-only preview. Google OAuth is not enabled yet, and this build performs no Drive reads or writes.</small>'
-    ].join('');
-    const anchor = findProfileAnchor();
-    anchor.appendChild(panel);
+    if (invokeModuleIfLoaded()) return;
+    if (document.getElementById(moduleScriptId)) return;
+    const script = document.createElement('script');
+    script.id = moduleScriptId;
+    script.src = modulePath;
+    script.defer = true;
+    script.setAttribute('data-apc-google-sync-profile-loader', 'true');
+    script.setAttribute('data-apc-google-sync-profile-only', 'true');
+    script.setAttribute('data-apc-marker', loaderMarker);
+    document.head.appendChild(script);
   }
 
-  function scheduleRender() {
-    renderPanel();
-    window.setTimeout(renderPanel, 50);
-    window.setTimeout(renderPanel, 250);
-    window.setTimeout(renderPanel, 750);
+  function scheduleLoad() {
+    loadModule();
+    window.setTimeout(loadModule, 50);
+    window.setTimeout(loadModule, 250);
+    window.setTimeout(loadModule, 750);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', scheduleRender, { once: true });
+    document.addEventListener('DOMContentLoaded', scheduleLoad, { once: true });
   } else {
-    scheduleRender();
+    scheduleLoad();
   }
-  window.addEventListener('hashchange', scheduleRender);
-  window.addEventListener('popstate', scheduleRender);
-  document.addEventListener('apc:privatepage:rendered', scheduleRender);
+  window.addEventListener('hashchange', scheduleLoad);
+  window.addEventListener('popstate', scheduleLoad);
+  document.addEventListener('apc:privatepage:rendered', scheduleLoad);
 })();
 /* APC_GOOGLE_SYNC_PROFILE_ONLY_STAGE_17K_Z_R6_END */
+

@@ -101,3 +101,22 @@ R6B recommendation:
 
 - Keep the current guarded placement only temporarily if it is Profile-adjacent.
 - Before real OAuth activation, split the GoogleSync UI into a clearer Profile-specific module.
+
+## Stage 17K-Z-R6C
+
+R6C splits the Profile-only GoogleSync UI shell into a cleaner Profile GoogleSync module.
+
+R6C remains source-only:
+
+- No OAuth activation.
+- No Drive reads.
+- No Drive writes.
+- No backend deploy.
+- No frontend deploy.
+
+R6C library decision:
+
+- Use Google Identity Services JavaScript authorization for future OAuth.
+- Use the Google Drive REST API for future Drive operations.
+- Use Google Picker for future user-selected files and folders.
+- Do not build custom OAuth.

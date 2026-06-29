@@ -1,0 +1,22 @@
+{
+  "auth_library": "Google Identity Services JavaScript authorization client",
+  "custom_oauth_implementation": false,
+  "drive_library": "Google Drive REST API",
+  "drive_reads_in_this_stage": false,
+  "drive_writes_in_this_stage": false,
+  "fallback_scope_for_hidden_app_state_only": "drive.appdata",
+  "notes": [
+    "Do not reinvent OAuth.",
+    "Use official Google browser authorization for user consent.",
+    "Use narrow Drive file access with user-selected APC files and folders.",
+    "Do not request broad Drive access for the personal study sync MVP."
+  ],
+  "oauth_activated_in_this_stage": false,
+  "picker_library": "Google Picker for user-selected files and folders",
+  "preferred_scope": "drive.file",
+  "requires_future_authorized_javascript_origin": true,
+  "requires_future_browser_consent_test": true,
+  "requires_future_google_cloud_client_id": true,
+  "stage": "17K-Z-R6C",
+  "status": "library_decision_only_no_activation"
+}
