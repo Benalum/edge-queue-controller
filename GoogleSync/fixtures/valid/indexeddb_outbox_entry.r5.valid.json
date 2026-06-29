@@ -1,0 +1,23 @@
+{
+  "attempt_count": 0,
+  "created_at": "2026-06-29T00:00:00Z",
+  "created_from_event_id": "history_event_example",
+  "drive_write_performed": false,
+  "last_attempt_at": null,
+  "last_error": null,
+  "oauth_activated": false,
+  "operation": "write_session",
+  "outbox_entry_id": "outbox_entry_r5_example",
+  "payload_hash": "payload_hash_example",
+  "payload_local_ref": "google_sync_sessions_pending/session_example",
+  "payload_record_id": "session_example",
+  "payload_record_type": "study_session",
+  "record_id": "outbox_entry_r5_example",
+  "record_type": "google_sync_outbox_entry",
+  "requires_consent": true,
+  "requires_network": true,
+  "schema_version": "17k-z-r5",
+  "status": "paused_for_consent",
+  "target_path": "study/sessions/2026/06/session_example.apc.json",
+  "updated_at": "2026-06-29T00:00:00Z"
+}

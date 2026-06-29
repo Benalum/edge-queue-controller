@@ -1,0 +1,122 @@
+{
+  "allowed_operations": [
+    "write_session",
+    "append_history",
+    "write_user_stats",
+    "write_deck_stats",
+    "update_manifest",
+    "write_conflict",
+    "write_consent_event"
+  ],
+  "allowed_statuses": [
+    "pending",
+    "paused_for_consent",
+    "paused_offline",
+    "syncing",
+    "synced",
+    "failed_retryable",
+    "failed_needs_user"
+  ],
+  "database": {
+    "browser_local_only": true,
+    "name": "apc_google_sync",
+    "no_backend_db": true,
+    "no_drive_write": true,
+    "no_oauth_activation": true,
+    "version": 1
+  },
+  "end_session_local_transaction": [
+    "begin_indexeddb_transaction",
+    "finalize_session_record",
+    "append_session_ended_history_event",
+    "append_missing_card_answered_events",
+    "recompute_user_stats",
+    "recompute_deck_stats_when_deck_id_exists",
+    "create_write_session_outbox_entry",
+    "create_append_history_outbox_entry",
+    "create_write_user_stats_outbox_entry",
+    "create_write_deck_stats_outbox_entry_when_deck_id_exists",
+    "create_update_manifest_outbox_entry",
+    "commit_indexeddb_transaction",
+    "mark_ui_saved_locally"
+  ],
+  "execution_rules": {
+    "outbox_creation_before_consent": true,
+    "outbox_execution_requires_consent": true,
+    "outbox_execution_requires_network": true,
+    "r5_runtime_implementation": false
+  },
+  "outbox_entry_required_fields": [
+    "outbox_entry_id",
+    "created_at",
+    "updated_at",
+    "operation",
+    "target_path",
+    "record_type",
+    "record_id",
+    "payload_hash",
+    "payload_local_ref",
+    "status",
+    "attempt_count",
+    "last_attempt_at",
+    "last_error",
+    "created_from_event_id",
+    "requires_consent",
+    "requires_network",
+    "oauth_activated",
+    "drive_write_performed"
+  ],
+  "privacy_rules": {
+    "backend_personal_drive_write_queue": false,
+    "local_save_blocks_on_drive": false,
+    "oauth_tokens_in_outbox": false,
+    "raw_anki_upload_default": false
+  },
+  "record_id": "google_sync_indexeddb_outbox_contract_v1",
+  "record_type": "indexeddb_outbox_contract",
+  "schema_version": "17k-z-r5",
+  "stage": "17K-Z-R5",
+  "status": "contract_only",
+  "stores": [
+    {
+      "key_path": "manifest_id",
+      "name": "google_sync_manifest_cache",
+      "purpose": "last known local manifest cache after future sync is enabled"
+    },
+    {
+      "key_path": "outbox_entry_id",
+      "name": "google_sync_outbox",
+      "purpose": "pending local write intents"
+    },
+    {
+      "key_path": "event_id",
+      "name": "google_sync_history_pending",
+      "purpose": "local history events not yet confirmed by future sync"
+    },
+    {
+      "key_path": "session_id",
+      "name": "google_sync_sessions_pending",
+      "purpose": "finalized local sessions not yet confirmed by future sync"
+    },
+    {
+      "key_path": "stats_key",
+      "name": "google_sync_stats_pending",
+      "purpose": "derived stats snapshots not yet confirmed by future sync"
+    },
+    {
+      "key_path": "conflict_id",
+      "name": "google_sync_conflicts",
+      "purpose": "preserved conflict summaries"
+    },
+    {
+      "key_path": "consent_event_id",
+      "name": "google_sync_consent_audit",
+      "purpose": "local consent decision records"
+    },
+    {
+      "key_path": "device_id",
+      "name": "google_sync_device_state",
+      "purpose": "non-secret local device sync state"
+    }
+  ]
+}

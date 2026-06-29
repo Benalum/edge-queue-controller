@@ -45,3 +45,21 @@ Validator:
 - The validator does not call Google APIs.
 - The validator does not activate OAuth.
 - The validator does not write to Drive.
+
+## Stage 17K-Z-R5
+
+R5 adds the browser-local IndexedDB outbox contract.
+
+R5 files:
+
+- GoogleSync/contracts/stage-17k-z-r5-indexeddb-outbox-contract.md.
+- GoogleSync/contracts/indexeddb-outbox-contract.apc.json.
+- GoogleSync/fixtures/valid/indexeddb_outbox_entry.r5.valid.json.
+- GoogleSync/validators/validate_indexeddb_outbox_contract.py.
+
+R5 remains contract-only:
+
+- No OAuth activation.
+- No Drive writes.
+- No frontend runtime implementation.
+- No backend runtime implementation.
