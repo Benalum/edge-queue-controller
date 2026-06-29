@@ -137,3 +137,17 @@ R7 behavior:
 - Does not use backend queue or backend DB.
 
 PPB smoke remains static and does not call Google.
+
+## Stage 17K-Z-R7B
+
+R7B defines the Google OAuth Web client ID injection contract and deploy-gated browser test plan.
+
+R7B does not deploy and does not execute OAuth or Drive operations.
+
+Preferred injection:
+
+- Generate `/privatepages/google-sync-config.js` during deploy.
+- Set `window.APC_GOOGLE_SYNC_CONFIG.googleClientId` there.
+- Do not commit the real client ID to source.
+
+Browser proof remains gated on a later deploy stage.

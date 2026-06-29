@@ -1,0 +1,59 @@
+{
+  "backend_db_used": false,
+  "backend_queue_used": false,
+  "baseline_commit": "4543675",
+  "browser_test_sequence": [
+    "Deploy R7/R7B frontend source with generated runtime client ID config.",
+    "Open Profile page signed in to APC.",
+    "Confirm GoogleSync panel appears only on Profile.",
+    "Check explicit consent checkbox.",
+    "Click Connect Google Drive.",
+    "Complete Google consent.",
+    "Click Write harmless test file.",
+    "Click Read test file metadata.",
+    "Click Rollback/delete test file.",
+    "Confirm rollback reports success.",
+    "Confirm no backend DB or queue write occurred for this proof."
+  ],
+  "do_not": [
+    "Do not commit a real Google OAuth client ID into repository source.",
+    "Do not request broad Drive scope.",
+    "Do not store access tokens in localStorage.",
+    "Do not store refresh tokens.",
+    "Do not run this from Study, Companion, Admin, or global navigation.",
+    "Do not write APC personal study data to Drive in this proof."
+  ],
+  "drive_reads_in_this_stage": false,
+  "drive_writes_in_this_stage": false,
+  "frontend_deployed_in_this_stage": false,
+  "google_cloud_requirements": [
+    "Drive API enabled in the Google Cloud project.",
+    "OAuth consent configured for the app.",
+    "OAuth client type is Web application.",
+    "Authorized JavaScript origin includes the deployed origin, such as https://alexhartel.com.",
+    "Test users are added while the app is in testing mode, if applicable."
+  ],
+  "injection_methods_supported_by_r7": [
+    "window.APC_GOOGLE_SYNC_CONFIG.googleClientId",
+    "meta[name=apc-google-client-id]"
+  ],
+  "oauth_executed_in_this_stage": false,
+  "profile_only": true,
+  "real_client_id_committed": false,
+  "recommended_deploy_injection": {
+    "cache_bust_required": true,
+    "git_commit_real_client_id": false,
+    "method": "runtime_generated_config_script",
+    "path": "/privatepages/google-sync-config.js",
+    "script_body_shape": "window.APC_GOOGLE_SYNC_CONFIG = Object.freeze({ googleClientId: '<web-client-id>.apps.googleusercontent.com' });"
+  },
+  "rollback": [
+    "Remove or disable the generated runtime client ID config script.",
+    "Revert index/script injection if one was added during deploy.",
+    "Use Profile rollback button to delete the harmless test file.",
+    "If needed, manually delete files named APC GoogleSync Dev Proof from Drive."
+  ],
+  "scope": "https://www.googleapis.com/auth/drive.file",
+  "stage": "17K-Z-R7B",
+  "status": "client_id_injection_contract_and_deploy_gated_browser_test_plan"
+}
