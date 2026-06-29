@@ -1,0 +1,1 @@
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js

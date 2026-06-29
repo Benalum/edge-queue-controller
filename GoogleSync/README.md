@@ -63,3 +63,23 @@ R5 remains contract-only:
 - No Drive writes.
 - No frontend runtime implementation.
 - No backend runtime implementation.
+
+## Stage 17K-Z-R6
+
+R6 adds a Profile-only Google Drive sync/login UI shell.
+
+R6 remains source-only:
+
+- Profile page runtime only.
+- Shared privatepages router source is allowed only with a Profile runtime guard.
+- No OAuth activation.
+- No Drive reads.
+- No Drive writes.
+- No backend deploy.
+- No frontend deploy.
+
+R6 files:
+
+- GoogleSync/contracts/stage-17k-z-r6-profile-only-google-sync-login-ui.md.
+- GoogleSync/contracts/stage-17k-z-r6-profile-ui-source-path.txt.
+- The selected source file recorded in the source path contract.
