@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628";
+  var VERSION = "stage17kv-companion-anki-consented-current-card-handoff-20260628";
   var PANEL_ID = "apc-companion-local-anki-bridge";
   var mountTimer = null;
 
@@ -132,6 +132,75 @@
       privacy: {
         browser_memory_only: true,
         card_text_returned_by_command: false,
+        backend_calls_allowed: false,
+        model_calls_allowed: false,
+        anki_write_allowed: false,
+        mydecks_writeback_allowed: false
+      }
+    };
+  }
+
+  function currentAnkiCardForConsent() {
+    var api = window.APC_ANKI_READONLY_SESSION;
+    if (!api || typeof api.currentCard !== "function") return null;
+
+    try {
+      return api.currentCard();
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function consentedCurrentAnkiCardForStudyCommand(consented) {
+    var state = snapshot();
+    var shape = state.current_card_shape || {};
+    var card = currentAnkiCardForConsent();
+    var allowed = consented === true;
+    var present = Boolean(card && (String(card.question || "").trim() || String(card.answer || "").trim()));
+    var cardTextReturned = Boolean(allowed && present);
+    var lines = [];
+
+    lines.push("Consented local Anki study handoff:");
+    lines.push("- consented: " + (allowed ? "yes" : "no"));
+    lines.push("- card present: " + (present ? "yes" : "no"));
+    lines.push("- deck: " + (shape.deck_name || state.selected_deck_name || "none"));
+    lines.push("- note type: " + (shape.note_type_name || "none"));
+    lines.push("- question length: " + String(shape.question_length || 0));
+    lines.push("- answer length: " + String(shape.answer_length || 0));
+    lines.push("");
+
+    if (!allowed) {
+      lines.push("Card text was not returned. Use the consent button for this browser-only study interaction.");
+    } else if (!present) {
+      lines.push("No current in-memory Anki card is available.");
+    } else {
+      lines.push("Current card text is available in this browser command result only. It is not persisted, sent to a backend, sent to a model, written to Anki, or written to MyDecks.");
+    }
+
+    var safeCard = {
+      present: present,
+      deck_name: shape.deck_name || state.selected_deck_name || "",
+      note_type_name: shape.note_type_name || "",
+      question_length: Number(shape.question_length || 0),
+      answer_length: Number(shape.answer_length || 0)
+    };
+
+    if (cardTextReturned) {
+      safeCard.question = String(card.question || "");
+      safeCard.answer = String(card.answer || "");
+    }
+
+    return {
+      version: VERSION,
+      ok: true,
+      command: "consented_current_anki_card_for_study",
+      consented: Boolean(cardTextReturned),
+      message: lines.join("\n"),
+      card: safeCard,
+      privacy: {
+        browser_memory_only: true,
+        card_text_returned_by_command: cardTextReturned,
+        card_text_persisted: false,
         backend_calls_allowed: false,
         model_calls_allowed: false,
         anki_write_allowed: false,
@@ -292,7 +361,9 @@
       + '  <button type="button" class="study-button secondary" data-local-anki-bridge-action="refresh">Refresh local bridge</button>'
       + '  <button type="button" class="study-button secondary" data-local-anki-bridge-action="describe-shape">Describe current local Anki card shape</button>'
       + '  <button type="button" class="study-button secondary" data-local-anki-bridge-action="mount-anki-session">Mount local Anki session controls</button>'
+      + '  <button type="button" class="study-button secondary" data-local-anki-bridge-action="consent-current-card">Use current Anki card in Companion study</button>'
       + '  <pre class="study-muted apc-companion-local-anki-command-output" aria-live="polite">' + escapeHtml(currentCardShapeCommand().message) + '</pre>'
+      + '  <pre class="study-muted apc-companion-local-anki-consent-output" aria-live="polite">Consent required before current Anki card text can be returned to a browser-only study command.</pre>'
       + '  <details class="apc-anki-manifest-details">'
       + '    <summary>Privacy boundary</summary>'
       + '    <p class="study-muted">This bridge does not return card question text or answer text. It exposes only shape and counters for local Companion UI integration.</p>'
@@ -310,6 +381,14 @@
       button.addEventListener("click", function () {
         var output = panel.querySelector(".apc-companion-local-anki-command-output");
         if (output) output.textContent = currentCardShapeCommand().message;
+      });
+    });
+
+    panel.querySelectorAll("[data-local-anki-bridge-action='consent-current-card']").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var result = consentedCurrentAnkiCardForStudyCommand(true);
+        var output = panel.querySelector(".apc-companion-local-anki-consent-output");
+        if (output) output.textContent = result.message;
       });
     });
   }
@@ -345,6 +424,7 @@
     snapshot: snapshot,
     currentCardShape: currentCardShape,
     currentCardShapeCommand: currentCardShapeCommand,
+    consentedCurrentAnkiCardForStudyCommand: consentedCurrentAnkiCardForStudyCommand,
     ankiSessionMountCommand: ankiSessionMountCommand,
     renderPanel: renderPanel,
     privacy: {
