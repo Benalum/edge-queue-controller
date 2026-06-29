@@ -605,7 +605,12 @@
       host.appendChild(panel);
     }
 
+    var ankiFileHelpWasOpen = Boolean(panel.querySelector(".apc-anki-file-location-help[open]"));
     panel.innerHTML = renderPanelHtml(message);
+    if (ankiFileHelpWasOpen) {
+      var ankiFileHelp = panel.querySelector(".apc-anki-file-location-help");
+      if (ankiFileHelp) ankiFileHelp.setAttribute("open", "");
+    }
     bindPanel(panel);
   }
 
@@ -617,7 +622,7 @@
   }
 
   window.APC_ANKI_LOCAL = {
-    version: "stage17ky-profile-anki-minimal-panel-20260629",
+    version: "stage17kyr2-profile-anki-dropdown-stable-20260629",
     readSavedFileProof: readSavedFileProof,
     readSavedDeckSummary: readSavedDeckSummary,
     clearSavedFileProof: clearSavedFileProof,
@@ -640,9 +645,6 @@
     scheduleMount();
   });
 
-  document.addEventListener("click", function () {
-    scheduleMount();
-  });
 
   scheduleMount();
 })();
