@@ -573,9 +573,9 @@
   function isProfileRoute() {
     var routeText = String(window.location.pathname + " " + window.location.hash).toLowerCase();
     if (routeText.indexOf("profile") !== -1) return true;
-    if (document.querySelector(".profile-card, .profile-hero, [data-page='profile']")) return true;
-    return false;
+    return Boolean(document.querySelector("[data-page='profile'], #profilePrivateApp, .apc-profile-root"));
   }
+
 
   function findMountHost() {
     return document.querySelector("[data-page='profile']")
@@ -642,8 +642,19 @@
     }
   }
 
+  function removeManifestPanel() {
+    var panel = document.getElementById(PANEL_ID);
+    if (panel && panel.parentNode) panel.parentNode.removeChild(panel);
+    var card = document.getElementById(PANEL_ID + "-card");
+    if (card && card.parentNode) card.parentNode.removeChild(card);
+    document.querySelectorAll(".apc-anki-manifest-panel, .apc-anki-local-only-panel, .apc-anki-local-card, .apc-anki-ownership-card").forEach(function (el) {
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    });
+  }
+
+
   function renderPanel(message) {
-    if (!isProfileRoute()) return;
+    if (!isProfileRoute()) { removeManifestPanel(); return; }
 
     var host = findMountHost();
     if (!host) return;
@@ -668,7 +679,7 @@
   }
 
   window.APC_ANKI_LOCAL = {
-    version: "stage17kf-browser-local-deck-ui-20260628",
+    version: "stage17kwr4-anki-manifest-profile-only-20260629",
     readSavedFileProof: readSavedFileProof,
     readSavedDeckSummary: readSavedDeckSummary,
     clearSavedFileProof: clearSavedFileProof,
