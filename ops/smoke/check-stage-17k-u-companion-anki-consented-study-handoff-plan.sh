@@ -1,1 +1,24 @@
-#!/usr/bin/env bash\nset -euo pipefail\nDOC="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md"\ntest -f "$DOC"\ngrep -Fq 'Stage 17K-U' "$DOC"\ngrep -Fq 'Companion Anki Consented Study Handoff Plan' "$DOC"\ngrep -Fq 'shape-only' "$DOC"\ngrep -Fq 'explicit user consent' "$DOC"\ngrep -Fq 'current browser page/session only' "$DOC"\ngrep -Fq 'no Anki card text in localStorage' "$DOC"\ngrep -Fq 'no backend handoff until separately approved' "$DOC"\ngrep -Fq 'no model handoff until separately approved' "$DOC"\ngrep -Fq 'no Anki writes' "$DOC"\ngrep -Fq 'no Anki-to-MyDecks writeback' "$DOC"\ngrep -Fq 'consentedCurrentAnkiCardForStudyCommand' "$DOC"\ngrep -Fq 'consented: false' "$DOC"\ngrep -Fq 'consented: true' "$DOC"\ngrep -Fq 'No source runtime behavior is changed by this plan' "$DOC"\ngrep -Fq 'No backend deploy, DB write, Anki write' "$DOC"\ngrep -Fq 'No Anki question text or answer text is saved to repo docs' "$DOC"\necho "PASS: Stage 17K-U Companion Anki consented study handoff plan smoke passed"\n
+#!/usr/bin/env bash
+set -euo pipefail
+DOC="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md"
+test -f "$DOC"
+grep -Fq 'Stage 17K-U-R2' "$DOC"
+grep -Fq 'Companion Anki Consented Study Handoff Plan Repair' "$DOC"
+grep -Fq 'single-line escaped-newline file' "$DOC"
+grep -Fq 'shape-only' "$DOC"
+grep -Fq 'explicit user consent' "$DOC"
+grep -Fq 'current browser page/session only' "$DOC"
+grep -Fq 'no Anki card text in localStorage' "$DOC"
+grep -Fq 'no backend handoff until separately approved' "$DOC"
+grep -Fq 'no model handoff until separately approved' "$DOC"
+grep -Fq 'no Anki writes' "$DOC"
+grep -Fq 'no Anki-to-MyDecks writeback' "$DOC"
+grep -Fq 'consentedCurrentAnkiCardForStudyCommand' "$DOC"
+grep -Fq 'consented: false' "$DOC"
+grep -Fq 'consented: true' "$DOC"
+grep -Fq 'No source runtime behavior is changed by this repair' "$DOC"
+grep -Fq 'No backend deploy, DB write, Anki write' "$DOC"
+grep -Fq 'No Anki question text or answer text is saved to repo docs' "$DOC"
+line_count="$(wc -l < "$DOC")"
+test "$line_count" -gt 50
+echo "PASS: Stage 17K-U-R2 consented study handoff plan repair smoke passed"
