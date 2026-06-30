@@ -1,0 +1,20 @@
+remote_user=jkg76nid
+remote_host=website-edge
+remote_pkg_sha256=d81ff7eeb010650d939eb00716dc220e39b8c31b53b481cf8473f66af101edb1
+header_writable=no
+reset_writable=no
+deploy_mode=blocked_needs_interactive_sudo
+manual_package=/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/vm200-header-reset-brand-leftovers.20260630T185351Z.tgz
+manual_stage=/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/stage
+manual_command_start
+ssh -t website-edge 'bash -lc '\''
+set -euo pipefail
+STAMP="20260630T185351Z"
+REMOTE_ROOT="/var/www/apc-wrapper-local"
+REMOTE_DIR="/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z"
+REMOTE_PKG="/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/vm200-header-reset-brand-leftovers.20260630T185351Z.tgz"
+REMOTE_STAGE="/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/stage"
+BACKUP="/var/www/apc-wrapper-local/apc-r9r-header-reset-brand-backup-20260630T185351Z"
+rm -rf "/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/stage"
+mkdir -p "/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/stage"
+tar -xzf "/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/vm200-header-reset-brand-leftovers.20260630T185351Z.tgz" -C "/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/stage"

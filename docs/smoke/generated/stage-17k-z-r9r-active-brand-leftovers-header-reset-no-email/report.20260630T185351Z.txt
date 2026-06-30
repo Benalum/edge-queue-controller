@@ -1,0 +1,74 @@
+=== stage-17k-z-r9r-active-brand-leftovers-header-reset-no-email ===
+created_utc=20260630T185351Z
+repo_head_short=aa49247
+repo_head_full=aa492471e77fecafc9071bf19c20f0df971ce867
+
+Scope:
+- active source patch for header/reset brand leftovers
+- tiny VM200 package for header/header.html and auth/reset.js
+- direct no-sudo deploy attempt or clean manual-sudo blocker
+- repo docs/smoke commit/tag/push
+- no backend deploy
+- no CT203 mutation
+- no DB write
+- no email send
+- no signup open
+- no password reset request
+- no nginx/cloudflared config mutation
+- no service restart/reload/start/stop
+- no CT/VM restart
+
+Source patch:
+- patched_count=0
+- targeted_source_hits_after=0
+- patch_log=docs/smoke/generated/stage-17k-z-r9r-active-brand-leftovers-header-reset-no-email/patch-log.20260630T185351Z.txt
+
+Tiny package:
+- package=docs/smoke/generated/stage-17k-z-r9r-active-brand-leftovers-header-reset-no-email/vm200-header-reset-brand-leftovers.20260630T185351Z.tgz
+- package_sha256=d81ff7eeb010650d939eb00716dc220e39b8c31b53b481cf8473f66af101edb1
+- tiny_stage_hits=0
+
+VM200:
+- deploy_mode=blocked_needs_interactive_sudo
+- remote_exit=1
+- remote_dir=/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z
+- remote_package=/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/vm200-header-reset-brand-leftovers.20260630T185351Z.tgz
+- remote_report=docs/smoke/generated/stage-17k-z-r9r-active-brand-leftovers-header-reset-no-email/remote-header-reset.20260630T185351Z.txt
+
+Public safety:
+- reset_code=200
+- register_code=403
+- register_marker=closed_beta_signup_disabled
+
+Decision:
+- Active header/reset browser-label leftovers are patched in source.
+- If deploy_mode is blocked_needs_interactive_sudo, use remote_report manual command block and then run verify-only.
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9r-active-brand-leftovers-header-reset-no-email",
+  "created_utc": "20260630T185351Z",
+  "mutation_scope": "source_patch_plus_attempt_or_package_vm200_header_reset_brand_leftovers",
+  "backend_deploy": false,
+  "ct203_mutation": false,
+  "db_write": false,
+  "email_send": false,
+  "signup_opened": false,
+  "password_reset_request": false,
+  "service_restart": false,
+  "repo_head_short": "aa49247",
+  "repo_head_full": "aa492471e77fecafc9071bf19c20f0df971ce867",
+  "prior_checkpoint": "aa49247",
+  "patched_count": "0",
+  "targeted_source_hits_after": "0",
+  "package_sha256": "d81ff7eeb010650d939eb00716dc220e39b8c31b53b481cf8473f66af101edb1",
+  "deploy_mode": "blocked_needs_interactive_sudo",
+  "remote_exit": "1",
+  "remote_dir": "/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z",
+  "remote_package": "/home/jkg76nid/apc-r9r-header-reset-brand-20260630T185351Z/vm200-header-reset-brand-leftovers.20260630T185351Z.tgz",
+  "reset_code": "200",
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "remote_report": "docs/smoke/generated/stage-17k-z-r9r-active-brand-leftovers-header-reset-no-email/remote-header-reset.20260630T185351Z.txt",
+  "pass": true
+}
