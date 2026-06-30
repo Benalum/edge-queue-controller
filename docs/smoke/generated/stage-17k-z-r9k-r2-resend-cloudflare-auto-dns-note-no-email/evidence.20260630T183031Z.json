@@ -1,0 +1,27 @@
+{
+  "stage": "stage-17k-z-r9k-r2-resend-cloudflare-auto-dns-note-no-email",
+  "created_utc": "20260630T183031Z",
+  "mutation_scope": "repo_docs_smoke_commit_tag_push_only",
+  "runtime_mutation": false,
+  "email_send": false,
+  "resend_api_call": false,
+  "cloudflare_api_call": false,
+  "dns_mutation": false,
+  "repo_head_short": "2876add",
+  "repo_head_full": "2876add7c2037551560ee2c452327b68198fb497",
+  "prior_checkpoint": "2876add",
+  "prior_timeout_recovered": true,
+  "operator_report": {
+    "resend_api_key_kept_same": true,
+    "resend_domain_changed_to": "buddieswhostudy.com",
+    "resend_cloudflare_dns_auto_hookup_reported": true
+  },
+  "expected_live_email_env": {
+    "PUBLIC_BASE_URL": "https://buddieswhostudy.com",
+    "EMAIL_FROM": "no-reply@buddieswhostudy.com",
+    "EMAIL_FROM_NAME": "Buddies Who Study"
+  },
+  "resend_dashboard_status": "MANUAL_CHECK_REQUIRED",
+  "resend_gate": "Do not send production or beta email until Resend dashboard says buddieswhostudy.com is Verified.",
+  "pass": true
+}
