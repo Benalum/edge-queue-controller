@@ -1,0 +1,62 @@
+=== stage-17k-z-r9c3-vm200-normal-user-ssh-key-repair ===
+MUTATION_SCOPE=vm200_normal_user_authorized_keys_plus_local_ssh_alias_only
+NO PermitRootLogin change
+NO root authorized_keys change
+NO service restart
+NO deploy
+NO DB write
+NO email send
+NO nginx/cloudflared mutation
+NO website file mutation
+
+=== utc ===
+2026-06-30T18:03:01Z
+
+=== repo ===
+85b6267
+?? docs/smoke/generated/stage-17k-z-r9a-read-only-vm200-ssh-auth-path-diagnostic/
+?? docs/smoke/generated/stage-17k-z-r9b-read-only-vm200-guest-agent-ssh-auth-inspect/
+?? docs/smoke/generated/stage-17k-z-r9b2-read-only-vm200-qga-cli-compat/
+?? docs/smoke/generated/stage-17k-z-r9c2-vm200-root-authorized-key-repair-qm-guest-exec/
+?? docs/smoke/generated/stage-17k-z-r9c3-vm200-normal-user-ssh-key-repair/
+
+=== public key fingerprint to install ===
+256 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc alex@alex-Latitude-3540 (ED25519)
+
+=== route baseline ===
+100.127.73.75 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+100.105.133.69 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+
+=== before local ssh smoke ===
+pvew
+root
+root@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
+
+=== VM200 normal-user key repair through pvew/qm guest exec ===
+--- pvew identity ---
+pvew
+root
+
+--- VM200 status ---
+status: running
+
+--- qga ping ---
+
+--- confirm root ssh remains disabled ---
+permitrootlogin_no_check_exitcode=0
+
+--- confirm non-root pubkey auth is allowed ---
+pubkeyauthentication_yes_check_exitcode=0
+
+--- candidate user detection ---
+candidate_user=alex exitcode=1
+candidate_user=ubuntu exitcode=1
+candidate_user=admin exitcode=1
+candidate_user=deploy exitcode=1
+candidate_user=website exitcode=1
+candidate_user=edge exitcode=1
+REFUSING_CONTINUE: no expected normal admin user found
+
+R9C3 remote step failed or timed out: status=51

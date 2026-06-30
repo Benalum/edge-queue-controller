@@ -1,0 +1,57 @@
+=== stage-17k-z-r9c2-vm200-root-authorized-key-repair-qm-guest-exec ===
+MUTATION_SCOPE=vm200_root_authorized_keys_only_via_pvew_qm_guest_exec
+NO service restart
+NO deploy
+NO DB write
+NO email send
+NO nginx/cloudflared mutation
+NO website file mutation
+
+=== utc ===
+2026-06-30T17:59:13Z
+
+=== repo ===
+85b6267
+?? docs/smoke/generated/stage-17k-z-r9a-read-only-vm200-ssh-auth-path-diagnostic/
+?? docs/smoke/generated/stage-17k-z-r9b-read-only-vm200-guest-agent-ssh-auth-inspect/
+?? docs/smoke/generated/stage-17k-z-r9b2-read-only-vm200-qga-cli-compat/
+?? docs/smoke/generated/stage-17k-z-r9c2-vm200-root-authorized-key-repair-qm-guest-exec/
+
+=== public key fingerprint to install ===
+256 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc alex@alex-Latitude-3540 (ED25519)
+
+=== local route baseline ===
+100.127.73.75 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+100.105.133.69 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+
+=== before local ssh smoke ===
+pvew
+root
+root@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
+
+=== controlled VM200 authorized_keys repair via pvew/qm guest exec ===
+--- pvew identity ---
+pvew
+root
+
+--- VM200 status ---
+status: running
+
+--- qga ping ---
+
+--- preflight guest exec /bin/true ---
+{
+   "exitcode" : 0,
+   "exited" : 1
+}
+
+--- run guest mutation, authorized_keys only ---
+{
+   "exitcode" : 42,
+   "exited" : 1
+}
+guest_exec_exited=1
+guest_exec_exitcode=42
+REFUSING_CONTINUE: VM200 sshd reports PermitRootLogin no

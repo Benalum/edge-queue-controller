@@ -1,0 +1,23 @@
+--- pvew identity ---
+pvew
+root
+
+--- VM200 status ---
+status: running
+
+--- qga ping ---
+
+--- confirm root ssh remains disabled ---
+permitrootlogin_no_check_exitcode=0
+
+--- confirm non-root pubkey auth is allowed ---
+pubkeyauthentication_yes_check_exitcode=0
+
+--- candidate user detection ---
+candidate_user=alex exitcode=1
+candidate_user=ubuntu exitcode=1
+candidate_user=admin exitcode=1
+candidate_user=deploy exitcode=1
+candidate_user=website exitcode=1
+candidate_user=edge exitcode=1
+REFUSING_CONTINUE: no expected normal admin user found

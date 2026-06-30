@@ -1,0 +1,238 @@
+=== stage-17k-z-r9b2-read-only-vm200-qga-cli-compat ===
+MUTATION_SCOPE=read_only_pvew_vm200_qga_cli_compat_diagnostic
+NO remote file mutation
+NO service restart
+NO deploy
+NO DB write
+NO email send
+
+=== utc ===
+2026-06-30T17:56:51Z
+
+=== repo ===
+85b6267
+?? docs/smoke/generated/stage-17k-z-r9a-read-only-vm200-ssh-auth-path-diagnostic/
+?? docs/smoke/generated/stage-17k-z-r9b-read-only-vm200-guest-agent-ssh-auth-inspect/
+?? docs/smoke/generated/stage-17k-z-r9b2-read-only-vm200-qga-cli-compat/
+
+=== local ssh baseline ===
+pvew
+root
+root@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
+
+=== pvew qga compatibility inspection ===
+--- pvew identity ---
+pvew
+root
+
+--- qm version if available ---
+ERROR: unknown command 'qm version'
+USAGE: qm <COMMAND> [ARGS] [OPTIONS]
+
+       qm cloudinit dump <vmid> <type>
+       qm cloudinit pending <vmid>
+       qm cloudinit update <vmid>
+
+       qm disk move <vmid> <disk> [<storage>] [OPTIONS]
+       qm disk resize <vmid> <disk> <size> [OPTIONS]
+       qm disk unlink <vmid> --idlist <string> [OPTIONS]
+       qm disk import <vmid> <source> <storage> [OPTIONS]
+       qm disk rescan  [OPTIONS]
+
+       qm guest cmd <vmid> <command>
+       qm guest exec-status <vmid> <pid>
+       qm guest passwd <vmid> <username> [OPTIONS]
+       qm guest exec <vmid> [<extra-args>] [OPTIONS]
+
+       qm clone <vmid> <newid> [OPTIONS]
+       qm config <vmid> [OPTIONS]
+       qm create <vmid> [OPTIONS]
+       qm delsnapshot <vmid> <snapname> [OPTIONS]
+       qm destroy <vmid> [OPTIONS]
+       qm list  [OPTIONS]
+       qm listsnapshot <vmid>
+       qm migrate <vmid> <target> [OPTIONS]
+       qm pending <vmid>
+       qm reboot <vmid> [OPTIONS]
+       qm reset <vmid> [OPTIONS]
+       qm resume <vmid> [OPTIONS]
+       qm rollback <vmid> <snapname> [OPTIONS]
+       qm sendkey <vmid> <key> [OPTIONS]
+       qm set <vmid> [OPTIONS]
+       qm shutdown <vmid> [OPTIONS]
+       qm snapshot <vmid> <snapname> [OPTIONS]
+       qm start <vmid> [OPTIONS]
+       qm stop <vmid> [OPTIONS]
+       qm suspend <vmid> [OPTIONS]
+       qm template <vmid> [OPTIONS]
+
+       qm cleanup <vmid> <clean-shutdown> <guest-requested>
+       qm enroll-efi-keys <vmid>
+       qm import <vmid> <source> --storage <string> [OPTIONS]
+       qm importovf <vmid> <manifest> <storage> [OPTIONS]
+       qm monitor <vmid>
+       qm mtunnel 
+       qm nbdstop <vmid>
+       qm remote-migrate <vmid> [<target-vmid>] <target-endpoint> --target-bridge <string> --target-storage <string> [OPTIONS]
+       qm showcmd <vmid> [OPTIONS]
+       qm status <vmid> [OPTIONS]
+       qm terminal <vmid> [OPTIONS]
+       qm unlock <vmid>
+       qm vncproxy <vmid>
+       qm wait <vmid> [OPTIONS]
+
+       qm help [<extra-args>] [OPTIONS]
+
+--- VM200 status ---
+status: running
+
+--- qga ping ---
+
+--- qm guest exec help ---
+Unknown option: help
+400 unable to parse option
+qm guest exec <vmid> [<extra-args>] [OPTIONS]
+
+--- qm guest exec-status help ---
+Unknown option: help
+400 unable to parse option
+qm guest exec-status <vmid> <pid>
+
+--- qm guest cmd list/help ---
+Unknown option: help
+400 unable to parse option
+qm guest cmd <vmid> <command>
+
+--- read-only qga built-in: get-osinfo ---
+{
+   "id" : "ubuntu",
+   "kernel-release" : "7.0.0-22-generic",
+   "kernel-version" : "#22-Ubuntu SMP PREEMPT_DYNAMIC Mon May 25 15:54:34 UTC 2026",
+   "machine" : "x86_64",
+   "name" : "Ubuntu",
+   "pretty-name" : "Ubuntu 26.04 LTS",
+   "version" : "26.04 (Resolute Raccoon)",
+   "version-id" : "26.04"
+}
+
+--- read-only qga built-in: network-get-interfaces ---
+[
+   {
+      "hardware-address" : "00:00:00:00:00:00",
+      "ip-addresses" : [
+         {
+            "ip-address" : "127.0.0.1",
+            "ip-address-type" : "ipv4",
+            "prefix" : 8
+         },
+         {
+            "ip-address" : "::1",
+            "ip-address-type" : "ipv6",
+            "prefix" : 128
+         }
+      ],
+      "name" : "lo",
+      "statistics" : {
+         "rx-bytes" : 979264320,
+         "rx-dropped" : 0,
+         "rx-errs" : 0,
+         "rx-packets" : 923491,
+         "tx-bytes" : 979264320,
+         "tx-dropped" : 0,
+         "tx-errs" : 0,
+         "tx-packets" : 923491
+      }
+   },
+   {
+      "hardware-address" : "bc:24:11:46:32:17",
+      "ip-addresses" : [
+         {
+            "ip-address" : "192.168.0.144",
+            "ip-address-type" : "ipv4",
+            "prefix" : 24
+         },
+         {
+            "ip-address" : "2601:8c0:800:7627:be24:11ff:fe46:3217",
+            "ip-address-type" : "ipv6",
+            "prefix" : 64
+         },
+         {
+            "ip-address" : "fe80::be24:11ff:fe46:3217",
+            "ip-address-type" : "ipv6",
+            "prefix" : 64
+         }
+      ],
+      "name" : "ens18",
+      "statistics" : {
+         "rx-bytes" : 2046606038,
+         "rx-dropped" : 70740,
+         "rx-errs" : 0,
+         "rx-packets" : 8785528,
+         "tx-bytes" : 1702440556,
+         "tx-dropped" : 0,
+         "tx-errs" : 0,
+         "tx-packets" : 6732390
+      }
+   },
+   {
+      "hardware-address" : "00:00:00:00:00:00",
+      "ip-addresses" : [
+         {
+            "ip-address" : "100.105.133.69",
+            "ip-address-type" : "ipv4",
+            "prefix" : 32
+         },
+         {
+            "ip-address" : "fd7a:115c:a1e0::e43a:8546",
+            "ip-address-type" : "ipv6",
+            "prefix" : 128
+         },
+         {
+            "ip-address" : "fe80::327f:a1c6:2ac2:ee89",
+            "ip-address-type" : "ipv6",
+            "prefix" : 64
+         }
+      ],
+      "name" : "tailscale0",
+      "statistics" : {
+         "rx-bytes" : 39145655,
+         "rx-dropped" : 0,
+         "rx-errs" : 0,
+         "rx-packets" : 156996,
+         "tx-bytes" : 19524565,
+         "tx-dropped" : 0,
+         "tx-errs" : 0,
+         "tx-packets" : 158960
+      }
+   }
+]
+
+--- pvesh availability ---
+/usr/bin/pvesh
+
+--- pvesh agent exec usage ---
+USAGE: pvesh create /nodes/pvew/qemu/200/agent/exec --command <array> [OPTIONS]
+
+--- pvesh agent exec-status usage ---
+USAGE: pvesh get /nodes/pvew/qemu/200/agent/exec-status --pid <integer> [OPTIONS]
+
+--- pvesh agent get-osinfo ---
+┌────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ key    │ value                                                                                                                                                                                                                                                            │
+╞════════╪══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╡
+│ result │ {"id":"ubuntu","kernel-release":"7.0.0-22-generic","kernel-version":"#22-Ubuntu SMP PREEMPT_DYNAMIC Mon May 25 15:54:34 UTC 2026","machine":"x86_64","name":"Ubuntu","pretty-name":"Ubuntu 26.04 LTS","version":"26.04 (Resolute Raccoon)","version-id":"26.04"} │
+└────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+--- minimal qm guest exec read-only test, no output capture expected ---
+start={
+   "exitcode" : 0,
+   "exited" : 1
+}
+pid=
+
+--- minimal pvesh exec read-only test if available ---
+pstart=┌─────┬───────┐
+│ key │ value │
+╞═════╪═══════╡
+│ pid │ 97440 │
+└─────┴───────┘

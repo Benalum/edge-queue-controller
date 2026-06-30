@@ -1,0 +1,61 @@
+=== stage-17k-z-r9a-read-only-vm200-ssh-auth-path-diagnostic ===
+MUTATION_SCOPE=read_only_remote_diagnostics_via_pvew
+NO remote file mutation
+NO service restart
+NO deploy
+NO DB write
+NO email send
+
+=== utc ===
+2026-06-30T17:53:16Z
+
+=== local route to pvew and website-edge ===
+100.127.73.75 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+100.105.133.69 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+
+=== local pvew ssh smoke ===
+pvew
+root
+
+=== local website-edge ssh smoke ===
+root@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
+
+=== pvew can see VM200? read-only ===
+--- pvew identity ---
+pvew
+root
+
+--- VM200 Proxmox status if available ---
+status: running
+agent: enabled=1
+boot: order=ide2;scsi0
+cores: 2
+cpu: host
+description: AI Platform Control website-edge VM. Created stopped in Phase 14J-EW retry after approved pvecm expected 1. No Cloudflare cutover. No controller/queue migration. No worker/runtime activation.
+ide2: none,media=cdrom
+memory: 2048
+meta: creation-qemu=10.1.2,ctime=1781723019
+name: website-edge
+net0: virtio=BC:24:11:46:32:17,bridge=vmbr0
+onboot: 1
+ostype: l26
+scsi0: local-lvm:vm-200-disk-0,discard=on,iothread=1,size=20G
+scsihw: virtio-scsi-pci
+smbios1: uuid=0df393ea-aaea-4e2e-9f0b-f5c6ce428db4
+tablet: 1
+vmgenid: a73a98a9-9153-42c2-b826-ce6be9c6552c
+
+--- pvew route to website-edge tailscale IP ---
+100.105.133.69 dev tailscale0 table 52 src 100.127.73.75 uid 0 
+    cache 
+
+--- pvew TCP probe to website-edge SSH ---
+tcp/22 reachable from pvew
+
+=== local website-edge verbose auth summary ===
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+debug1: Offering public key: /home/alex/.ssh/id_ed25519 ED25519 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+root@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
