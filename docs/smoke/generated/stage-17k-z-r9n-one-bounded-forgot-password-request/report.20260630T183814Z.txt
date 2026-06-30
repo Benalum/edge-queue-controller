@@ -1,0 +1,69 @@
+=== stage-17k-z-r9n-one-bounded-forgot-password-request ===
+created_utc=20260630T183814Z
+repo_head_short=c031b95
+repo_head_full=c031b95a206d8ac510020b6271ebe9ad9f23919c
+
+Scope:
+- one public forgot-password request
+- repo docs/smoke commit/tag/push
+- no runtime mutation
+- no CT/VM/service restart
+- no backend/frontend deploy
+- no registration open
+- no beta invite
+- no production email blast
+
+Target:
+- target_email_domain=gmail.com
+- target_email_sha256=2b99402cdd7ef42174aea9095cb5f83bda3f21ee598b1f170fda073d15460446
+- target_email_plaintext_not_recorded=true
+
+Precheck:
+- register_code_before=403
+- register_marker_before=closed_beta_signup_disabled
+
+Forgot password request:
+- endpoint=https://buddieswhostudy.com/api/auth/forgot-password
+- method=POST
+- forgot_code=200
+- forgot_body_first_500={\"ok\":true,\"message\":\"If that email exists, a password reset link has been sent.\",\"email\":\"alexhartel179@gmail.com\",\"email_delivery\":\"smtp\"}
+- forgot_headers=docs/smoke/generated/stage-17k-z-r9n-one-bounded-forgot-password-request/forgot-password-headers.20260630T183814Z.txt
+- forgot_body=docs/smoke/generated/stage-17k-z-r9n-one-bounded-forgot-password-request/forgot-password-body.20260630T183814Z.json
+
+Postcheck:
+- register_code_after=403
+- register_marker_after=closed_beta_signup_disabled
+
+Decision:
+- This checkpoint performs one bounded Forgot Password request for a controlled existing-user email.
+- Public registration remains blocked afterward.
+- Next manual action is to check the target inbox for the reset email.
+- Do not open registration.
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9n-one-bounded-forgot-password-request",
+  "created_utc": "20260630T183814Z",
+  "mutation_scope": "one_public_forgot_password_request_plus_repo_docs_smoke_commit_tag_push",
+  "runtime_mutation": false,
+  "backend_frontend_deploy": false,
+  "email_send_type": "forgot_password_existing_user_only",
+  "beta_invite": false,
+  "production_blast": false,
+  "registration_opened": false,
+  "repo_head_short": "c031b95",
+  "repo_head_full": "c031b95a206d8ac510020b6271ebe9ad9f23919c",
+  "prior_checkpoint": "c031b95",
+  "target_email_domain": "gmail.com",
+  "target_email_sha256": "2b99402cdd7ef42174aea9095cb5f83bda3f21ee598b1f170fda073d15460446",
+  "target_email_plaintext_recorded": false,
+  "register_code_before": "403",
+  "register_marker_before": "closed_beta_signup_disabled",
+  "forgot_password_endpoint": "https://buddieswhostudy.com/api/auth/forgot-password",
+  "forgot_password_code": "200",
+  "forgot_password_body_first_500": "{\"ok\":true,\"message\":\"If that email exists, a password reset link has been sent.\",\"email\":\"alexhartel179@gmail.com\",\"email_delivery\":\"smtp\"}",
+  "register_code_after": "403",
+  "register_marker_after": "closed_beta_signup_disabled",
+  "next_manual_action": "check_target_inbox_for_reset_email",
+  "pass": true
+}
