@@ -1,0 +1,17 @@
+{
+  "alexhartel_redirect_observed": true,
+  "apc_tailscale_config_written": true,
+  "bindinterface_or_bindaddress_configured": true,
+  "ct203_sender_read_success": false,
+  "llms_resolves_to_tailscale_ip": true,
+  "local_laptop_ssh_config_mutation": true,
+  "public_buddieswhostudy_http_200_observed": true,
+  "pveso_resolves_to_tailscale_ip": true,
+  "pvew_resolves_to_tailscale_ip": true,
+  "pvew_ssh_success": false,
+  "recommended_next_stage": "Create source refresh zip and start new chat with handoff.",
+  "remote_mutation": false,
+  "ssh_config_include_added_or_present": true,
+  "stage": "17K-Z-R8S",
+  "website_edge_resolves_to_tailscale_ip": true
+}
