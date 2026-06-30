@@ -1,0 +1,12 @@
+sql.js version: 1.12.0
+Vendored date: 2026-06-28
+Source package: npm sql.js@1.12.0
+Assets:
+- sql-wasm.js
+- sql-wasm.wasm
+- LICENSE.sql-js
+
+APC usage rule:
+- Serve these assets same-origin only.
+- Do not load sql.js from a CDN in production.
+- Use only for browser-local, user-selected Anki SQLite metadata extraction.

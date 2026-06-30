@@ -1,0 +1,292 @@
+/* Dedicated Sol Companion UI override */
+
+.sol-page-shell,
+.private-shell[data-private-page="companion"] .sol-page-shell {
+  max-width: 860px !important;
+  margin: 0 auto !important;
+  padding: 1.25rem 1rem 4rem !important;
+}
+
+.sol-app {
+  display: grid !important;
+  gap: 1.15rem !important;
+}
+
+.sol-card {
+  display: block !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(205, 189, 255, 0.28) !important;
+  border-radius: 1.65rem !important;
+  background:
+    radial-gradient(circle at top left, rgba(205, 189, 255, 0.18), transparent 18rem),
+    radial-gradient(circle at top right, rgba(183, 244, 212, 0.12), transparent 20rem),
+    linear-gradient(145deg, rgba(7, 23, 19, 0.98), rgba(13, 42, 34, 0.94)) !important;
+  box-shadow: 0 28px 80px rgba(3, 12, 10, 0.55) !important;
+}
+
+.sol-header.with-video {
+  display: grid !important;
+  grid-template-columns: 180px minmax(0, 1fr) !important;
+  gap: 1.25rem !important;
+  align-items: center !important;
+  padding: 1.25rem 1.25rem 0.8rem !important;
+}
+
+.sol-video-frame {
+  position: relative !important;
+  width: 180px !important;
+  height: 135px !important;
+  max-width: 180px !important;
+  max-height: 135px !important;
+  overflow: hidden !important;
+  border-radius: 1.2rem !important;
+  border: 2px solid rgba(183, 244, 212, 0.58) !important;
+  background: rgba(3, 12, 10, 0.72) !important;
+  box-shadow: 0 14px 36px rgba(3, 12, 10, 0.45) !important;
+}
+
+.sol-video-frame video,
+#solStateVideo {
+  display: block !important;
+  width: 180px !important;
+  height: 135px !important;
+  max-width: 180px !important;
+  max-height: 135px !important;
+  object-fit: cover !important;
+  border: 0 !important;
+}
+
+.sol-state-badge {
+  display: none !important;
+}
+
+.sol-title-wrap {
+  display: grid !important;
+  gap: 0.3rem !important;
+  align-items: center !important;
+}
+
+.sol-title {
+  margin: 0 !important;
+  color: #f7f2ff !important;
+  font-size: clamp(3.6rem, 8vw, 5.2rem) !important;
+  line-height: 0.9 !important;
+  letter-spacing: -0.065em !important;
+  text-shadow: 0 2px 0 rgba(205, 189, 255, 0.26) !important;
+}
+
+.sol-message-window {
+  margin: 0.9rem 1.25rem 1rem !important;
+  padding: 1rem !important;
+  min-height: 170px !important;
+  display: grid !important;
+  align-items: center !important;
+  border-radius: 1.3rem !important;
+  border: 1px solid rgba(183, 244, 212, 0.24) !important;
+  background:
+    radial-gradient(circle at top left, rgba(205, 189, 255, 0.1), transparent 18rem),
+    linear-gradient(145deg, rgba(5, 18, 15, 0.88), rgba(11, 34, 28, 0.9)) !important;
+}
+
+.sol-reply {
+  display: block !important;
+  padding: 1.05rem 1.15rem !important;
+  border-radius: 1.15rem !important;
+  color: #f8f5ff !important;
+  background:
+    linear-gradient(145deg, rgba(38, 82, 68, 0.96), rgba(18, 58, 47, 0.96)) !important;
+  border: 1px solid rgba(183, 244, 212, 0.36) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 34px rgba(3, 12, 10, 0.32) !important;
+  line-height: 1.6 !important;
+  white-space: pre-wrap !important;
+  font-size: 1.05rem !important;
+}
+
+.sol-reply.empty {
+  color: rgba(248, 245, 255, 0.7) !important;
+  background: rgba(205, 189, 255, 0.08) !important;
+  border-style: dashed !important;
+}
+
+.sol-input-form {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 110px !important;
+  gap: 0.85rem !important;
+  padding: 0 1.25rem 1.25rem !important;
+}
+
+.sol-input-form textarea,
+#companionPrompt {
+  width: 100% !important;
+  min-height: 7.2rem !important;
+  max-height: 14rem !important;
+  resize: vertical !important;
+  border: 1px solid rgba(205, 189, 255, 0.3) !important;
+  border-radius: 1.15rem !important;
+  padding: 1rem !important;
+  color: #f8f5ff !important;
+  background: rgba(3, 12, 10, 0.55) !important;
+  font-size: 1.05rem !important;
+  line-height: 1.45 !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+}
+
+.sol-input-form textarea:focus,
+#companionPrompt:focus {
+  border-color: rgba(183, 244, 212, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(183, 244, 212, 0.13) !important;
+}
+
+.sol-button,
+button.sol-button,
+.sol-input-form button,
+.sol-voice-actions button {
+  appearance: none !important;
+  border: 0 !important;
+  border-radius: 1rem !important;
+  padding: 0.85rem 1.05rem !important;
+  min-height: 3rem !important;
+  color: #071713 !important;
+  font-weight: 850 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.01em !important;
+  cursor: pointer !important;
+  background: linear-gradient(135deg, #cdbdff, #b7f4d4) !important;
+  box-shadow: 0 12px 28px rgba(3, 12, 10, 0.34) !important;
+}
+
+.sol-button:hover,
+button.sol-button:hover,
+.sol-input-form button:hover,
+.sol-voice-actions button:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.04) !important;
+}
+
+.sol-send {
+  align-self: stretch !important;
+  min-width: 110px !important;
+}
+
+.sol-button.secondary,
+button.sol-button.secondary,
+.sol-voice-actions button.sol-button.secondary {
+  color: #f8f5ff !important;
+  background: rgba(205, 189, 255, 0.14) !important;
+  border: 1px solid rgba(205, 189, 255, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.sol-voice-box {
+  display: block !important;
+  margin-top: 1rem !important;
+  padding: 1rem !important;
+  border: 1px solid rgba(205, 189, 255, 0.26) !important;
+  border-radius: 1.45rem !important;
+  background:
+    radial-gradient(circle at top right, rgba(205, 189, 255, 0.12), transparent 15rem),
+    linear-gradient(145deg, rgba(18, 48, 39, 0.9), rgba(7, 23, 19, 0.82)) !important;
+  box-shadow: 0 18px 48px rgba(3, 12, 10, 0.38) !important;
+}
+
+.sol-voice-box h2 {
+  margin: 0 0 0.9rem !important;
+  color: #cdbdff !important;
+  font-size: 1.6rem !important;
+}
+
+.sol-voice-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
+  gap: 0.85rem !important;
+}
+
+.sol-toggle,
+.sol-control {
+  display: grid !important;
+  gap: 0.45rem !important;
+  padding: 0.9rem !important;
+  border: 1px solid rgba(205, 189, 255, 0.18) !important;
+  border-radius: 1rem !important;
+  background: rgba(3, 12, 10, 0.32) !important;
+  color: rgba(248, 245, 255, 0.86) !important;
+  box-sizing: border-box !important;
+}
+
+.sol-toggle {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+}
+
+.sol-toggle input {
+  width: 1.1rem !important;
+  height: 1.1rem !important;
+  accent-color: #b7f4d4 !important;
+}
+
+.sol-control.full-width {
+  grid-column: 1 / -1 !important;
+}
+
+.sol-control select {
+  width: 100% !important;
+  border: 1px solid rgba(205, 189, 255, 0.28) !important;
+  border-radius: 0.85rem !important;
+  padding: 0.75rem !important;
+  color: #f8f5ff !important;
+  background: #071713 !important;
+}
+
+.sol-control input[type="range"] {
+  width: 100% !important;
+  accent-color: #b7f4d4 !important;
+}
+
+.sol-voice-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.7rem !important;
+  margin-top: 0.9rem !important;
+}
+
+@media (max-width: 720px) {
+  .sol-header.with-video {
+    grid-template-columns: 112px 1fr !important;
+  }
+
+  .sol-video-frame,
+  .sol-video-frame video,
+  #solStateVideo {
+    width: 112px !important;
+    height: 84px !important;
+    max-width: 112px !important;
+    max-height: 84px !important;
+  }
+
+  .sol-title {
+    font-size: clamp(3rem, 18vw, 4.2rem) !important;
+  }
+
+  .sol-input-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sol-send {
+    min-height: 3.2rem !important;
+  }
+
+  .sol-voice-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Companion tab must not expose study management GUI */
+#companionPrivateApp .sol-study-box,
+[data-private-page="companion"] .sol-study-box,
+.private-shell[data-private-page="companion"] .sol-study-box {
+  display: none !important;
+}

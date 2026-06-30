@@ -1,0 +1,84 @@
+=== stage-17k-z-r9p-r2-website-edge-brand-deploy-recovery ===
+created_utc=20260630T184707Z
+repo_head_short=475f5eb
+repo_head_full=475f5eb3850ab059edf06bdfc7202c6598ec2ccc
+
+Scope:
+- attempt direct VM200 static deploy without sudo, or record sudo blocker
+- repo docs/smoke commit/tag/push
+- no backend deploy
+- no CT203 mutation
+- no DB write
+- no email send
+- no signup open
+- no password reset request
+- no nginx/cloudflared config mutation
+- no service restart/reload/start/stop
+- no CT/VM restart
+
+Prior failure:
+- R9P package built and uploaded.
+- sudo -n failed on website-edge because interactive authentication is required.
+- Public title remained AlexHartel AI Platform.
+
+R9P-R2 result:
+- deploy_mode=blocked_needs_interactive_sudo
+- deploy_success=false
+- remote_exit=40
+- local_legacy_hits=0
+- package=docs/smoke/generated/stage-17k-z-r9p-r2-website-edge-brand-deploy-recovery/vm200-static-brand-labels-r9p-r2.20260630T184707Z.tgz
+- package_sha256=f5d443ed1178bb01ea3fc34d6b43d0f5c9237795f9ce4e1928541d7030ce1334
+- remote_package=/home/jkg76nid/apc-r9p-r2-brand-deploy-20260630T184707Z/vm200-static-brand-labels-r9p-r2.20260630T184707Z.tgz
+- remote_dir=/home/jkg76nid/apc-r9p-r2-brand-deploy-20260630T184707Z
+
+Public verification:
+- root_code_after=200
+- public_title_after=AlexHartel AI Platform
+- public_old_brand_hits=1
+- public_buddies_hits=1
+
+Safety verification:
+- register_code=403
+- register_marker=closed_beta_signup_disabled
+
+Evidence:
+- remote_report=docs/smoke/generated/stage-17k-z-r9p-r2-website-edge-brand-deploy-recovery/remote-r9p-r2.20260630T184707Z.txt
+- public_body_after=docs/smoke/generated/stage-17k-z-r9p-r2-website-edge-brand-deploy-recovery/public-root-after.20260630T184707Z.html
+- register_body=docs/smoke/generated/stage-17k-z-r9p-r2-website-edge-brand-deploy-recovery/register-body.20260630T184707Z.json
+
+Manual action if deploy_mode=blocked_needs_interactive_sudo:
+- SSH into website-edge interactively.
+- Use the manual command block printed in remote_report.
+- Then run a verify-only checkpoint.
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9p-r2-website-edge-brand-deploy-recovery",
+  "created_utc": "20260630T184707Z",
+  "mutation_scope": "attempt_direct_vm200_static_deploy_or_record_sudo_blocker_plus_repo_docs_smoke_commit_tag_push",
+  "backend_deploy": false,
+  "ct203_mutation": false,
+  "db_write": false,
+  "email_send": false,
+  "signup_opened": false,
+  "password_reset_request": false,
+  "service_restart": false,
+  "repo_head_short": "475f5eb",
+  "repo_head_full": "475f5eb3850ab059edf06bdfc7202c6598ec2ccc",
+  "prior_checkpoint": "475f5eb",
+  "deploy_mode": "blocked_needs_interactive_sudo",
+  "deploy_success": false,
+  "remote_exit": "40",
+  "remote_package": "/home/jkg76nid/apc-r9p-r2-brand-deploy-20260630T184707Z/vm200-static-brand-labels-r9p-r2.20260630T184707Z.tgz",
+  "remote_dir": "/home/jkg76nid/apc-r9p-r2-brand-deploy-20260630T184707Z",
+  "package_sha256": "f5d443ed1178bb01ea3fc34d6b43d0f5c9237795f9ce4e1928541d7030ce1334",
+  "local_legacy_hits": "0",
+  "root_code_after": "200",
+  "public_title_after": "AlexHartel AI Platform",
+  "public_old_brand_hits": "1",
+  "public_buddies_hits": "1",
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "remote_report": "docs/smoke/generated/stage-17k-z-r9p-r2-website-edge-brand-deploy-recovery/remote-r9p-r2.20260630T184707Z.txt",
+  "pass": true
+}

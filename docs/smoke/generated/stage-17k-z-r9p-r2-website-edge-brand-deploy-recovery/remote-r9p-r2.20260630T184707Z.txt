@@ -1,0 +1,20 @@
+remote_user=jkg76nid
+remote_host=website-edge
+remote_root=/var/www/apc-wrapper-local
+remote_pkg=/home/jkg76nid/apc-r9p-r2-brand-deploy-20260630T184707Z/vm200-static-brand-labels-r9p-r2.20260630T184707Z.tgz
+remote_pkg_sha256=f5d443ed1178bb01ea3fc34d6b43d0f5c9237795f9ce4e1928541d7030ce1334
+webroot_writable=no
+index_writable=no
+deploy_mode=blocked_needs_interactive_sudo
+manual_package=/home/jkg76nid/apc-r9p-r2-brand-deploy-20260630T184707Z/vm200-static-brand-labels-r9p-r2.20260630T184707Z.tgz
+manual_stage=/home/jkg76nid/apc-r9p-r2-brand-deploy-20260630T184707Z/stage
+manual_command_start
+ssh website-edge
+cd /home/jkg76nid/apc-r9p-r2-brand-deploy-20260630T184707Z
+tar -xzf vm200-static-brand-labels-r9p-r2.20260630T184707Z.tgz -C stage
+sudo mkdir -p /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260630T184707Z
+sudo cp -a /var/www/apc-wrapper-local/index.html /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260630T184707Z/ 2>/dev/null || true
+sudo cp -a stage/. /var/www/apc-wrapper-local/
+grep -nE '<title>|Buddies Who Study|AlexHartel AI Platform' /var/www/apc-wrapper-local/index.html
+manual_command_end
+remote_exit=40
