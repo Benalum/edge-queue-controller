@@ -1,0 +1,71 @@
+=== stage-17k-z-r9t-r4-header-click-guard-finalizer-count-fix ===
+created_utc=20260630T225256Z
+repo_head=80e888f
+
+Scope:
+- tiny verify/pull source finalizer
+- aggregate count fix for prior R9T-R3 grep issue
+- no runtime mutation
+- no deploy
+- no service restart
+- no backend deploy
+- no DB write
+- no email send
+- no signup open
+
+Live/header behavior:
+- brand/logo area is static/inert
+- brand has no home href
+- header blank-click guard marker is present
+- old Alex/Hartel brand labels are gone from active/public header files
+
+Counts:
+- brand_static_count=1
+- brand_link_count=0
+- guard_count=2
+- old_brand_count=0
+- source_brand_static_count=1
+- source_brand_link_count=0
+- source_guard_count=2
+- source_old_brand_count=0
+- header_html_code=200
+- header_js_code=200
+- public_brand_static_count=1
+- public_brand_link_count=0
+- public_guard_count=2
+- public_old_brand_count=0
+- register_code=403
+- register_marker=closed_beta_signup_disabled
+
+Decision:
+- Header blank/brand clicks are now inert.
+- Real header buttons/nav remain interactive.
+- Registration remains closed.
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9t-r4-header-click-guard-finalizer-count-fix",
+  "created_utc": "20260630T225256Z",
+  "repo_head": "80e888f",
+  "runtime_mutation": false,
+  "deploy": false,
+  "email_send": false,
+  "signup_opened": false,
+  "brand_static_count": "1",
+  "brand_link_count": "0",
+  "guard_count": "2",
+  "old_brand_count": "0",
+  "source_brand_static_count": "1",
+  "source_brand_link_count": "0",
+  "source_guard_count": "2",
+  "source_old_brand_count": "0",
+  "header_html_code": "200",
+  "header_js_code": "200",
+  "public_brand_static_count": "1",
+  "public_brand_link_count": "0",
+  "public_guard_count": "2",
+  "public_old_brand_count": "0",
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "pass": true
+}

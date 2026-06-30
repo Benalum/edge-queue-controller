@@ -1,0 +1,4 @@
+brand_static_count=1
+brand_link_count=0
+guard_count=2
+old_brand_count=0
