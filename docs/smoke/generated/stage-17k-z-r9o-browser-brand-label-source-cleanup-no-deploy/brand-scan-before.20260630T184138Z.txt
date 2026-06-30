@@ -1,0 +1,832 @@
+./ops/smoke/check-phase-14j-cf-source-refresh-handoff-snapshot-and-new-chat-checkpoint.sh:41:grep -F "Continue the AI Platform Control project." "$PROMPT_DOC" >/dev/null
+./ops/smoke/check-phase-14k-e-public-path-hardening-source-refresh-handoff.sh:30:        "Continue AI Platform Control from the Phase 14K-E Public Path Hardening Source Refresh Handoff",
+./ops/smoke/check-stage-16-a-model-worker-reentry-plan-no-apply.sh:37:require_text "Linux kernel worker threads, not AI Platform worker activation"
+./ops/smoke/check-stage-17k-z-r7c-appdatafolder-boundary-profile-prompt.sh:35:    'AI Platform Control will only create and manage its own hidden Google Drive app data',
+./ops/smoke/check-phase-14j-fv-persistent-sqlite-backup-restore-scripts-no-runtime-change.sh:94:grep -F "AI Platform Edge Queue SQLite Backup" "$MANIFEST_FILE" >/dev/null
+./ops/smoke/check-stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.sh:10:grep -Fq "AI Platform Control — Stage 17K Study/Profile Cleanup + Companion Study Workflow Handoff" "$DOC"
+./ops/smoke/check-stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.sh:11:grep -Fq "AI Platform Control — Google Drive Sync Contract Plan" "$DOC"
+./ops/smoke/check-stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.sh:12:grep -Fq "AI Platform Control — Companion Source Adapters and Study Workflow" "$DOC"
+./ops/smoke/check-laptop-postgres-backup.sh:56:grep -F "AI Platform Controller Postgres Backup" "$MANIFEST_FILE" >/dev/null
+./ops/smoke/check-phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.sh:17:  grep -q "AlexHartel AI Platform" "$out"
+./ops/workers/run-one-companion-ollama-job.py:72:        "You are the AI Platform Control Companion.\n"
+./ops/db/backup-laptop-postgres.sh:45:  echo "AI Platform Controller Postgres Backup"
+./ops/db/backup-edge-queue-sqlite.sh:83:    fh.write("AI Platform Edge Queue SQLite Backup\n")
+./ops/db/laptop-app-schema-v1.sql:1:-- AI Platform Controller Laptop App Schema v1
+./ops/systemd/edge-queue-scheduler-one-shot.service:7:Description=AI Platform Control one-shot queue scheduler tick
+./ops/systemd/edge-queue-scheduler-one-shot.timer:7:Description=AI Platform Control one-shot queue scheduler timer
+./ops/ppb/ppb-sha256-runner.sh:2:# AI Platform Control PPB checksum-gated script runner.
+./edge_controller.py.bak-api-study-aliases-2026-06-10-160722:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-api-study-aliases-2026-06-10-160722:8665:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.local/run-r8h-readonly-domain-cutover-readiness.sh:208:Inventory readiness for moving the public AI Platform Control product surface from `alexhartel.com` toward `buddieswhostudy.com`.
+./.local/run-r8i-exact-domain-cutover-plan-no-mutation.sh:316:### R8P — AlexHartel.com Portfolio Split
+./.local/run-r8l-r2-finalize-source-email-domain-config-no-runtime.sh:82:env = env.replace("EMAIL_FROM_NAME=AlexHartel AI Platform", "EMAIL_FROM_NAME=Buddies Who Study")
+./.local/run-r8h-r2-finalize-domain-readiness.sh:106:Inventory readiness for moving the public AI Platform Control product surface from `alexhartel.com` toward `buddieswhostudy.com`.
+./.local/run-r8l-source-email-domain-config-no-runtime.sh:63:    "EMAIL_FROM_NAME=AlexHartel AI Platform": "EMAIL_FROM_NAME=Buddies Who Study",
+./docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:11:frontend/wrapper-ui/index.html:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./docs/cleanup/stage-5o13-header-nav-inventory-2026-06-11.md:4:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./docs/cleanup/stage-5n6-calendar-direction-google-apple-only-2026-06-11.md:7:The AI Platform Calendar feature should use external calendar providers only:
+./docs/cleanup/stage-5k20-study-shared-wrapper-post-cutover-smoke-2026-06-10.md:9:- /study serves AlexHartel AI Platform wrapper shell.
+./docs/stage-16-fc-o43-c-r2-record-product-visible-thinking-refusal-read-only-docs-only.md:99:    Jun 24 00:38:39 llms systemd[1]: Starting edge-ct101-general-queue-job-worker@117.service - AI Platform Control CT101 general_queue Ollama worker (117)...
+./docs/stage-16-fc-o43-c-r2-record-product-visible-thinking-refusal-read-only-docs-only.md:100:    Jun 24 00:38:39 llms systemd[1]: Started edge-ct101-general-queue-job-worker@117.service - AI Platform Control CT101 general_queue Ollama worker (117).
+./docs/stage-16-fc-o43-c-r2-record-product-visible-thinking-refusal-read-only-docs-only.md:103:    Jun 24 01:06:46 llms systemd[1]: Starting edge-ct101-general-queue-job-worker@117.service - AI Platform Control CT101 general_queue Ollama worker (117)...
+./docs/stage-16-fc-o43-c-r2-record-product-visible-thinking-refusal-read-only-docs-only.md:104:    Jun 24 01:06:46 llms systemd[1]: Started edge-ct101-general-queue-job-worker@117.service - AI Platform Control CT101 general_queue Ollama worker (117).
+./docs/laptop-job-queue-facade-plan.md:27:CT101 still owns the current production AI Platform app data and job processing behavior.
+./docs/phase-14j-ga-private-edge-data-lxc-creation-record.md:28:- description marks it as AI Platform Control private edge-data LXC
+./docs/frontend-chat-submit-handler-inspection.md:185:2573:  document.title = `${page.title} | AlexHartel AI Platform`;
+./docs/frontend-chat-submit-handler-inspection.md:500:6:  <title>AlexHartel AI Platform</title>
+./docs/frontend-chat-submit-handler-inspection.md:501:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./docs/stage-16-a-model-worker-reentry-plan-no-apply.md:49:The observed pvescheduler.service is Proxmox VE scheduler, not the AI Platform model scheduler.
+./docs/stage-16-a-model-worker-reentry-plan-no-apply.md:51:The long kworker process list is Linux kernel worker threads, not AI Platform worker activation.
+./docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:3:Continue AI Platform Control from the Phase 14K-E Public Path Hardening Source Refresh Handoff.
+./docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:431:frontend/study-ui/index.html:6:  <title>AI Study Dashboard | AI Platform Control</title>
+./docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:433:frontend/study-ui/index.html:10:  <meta name="description" content="Study cards and local AI learning workspace for AI Platform Control.">
+./docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:434:frontend/study-ui/index.html:11:  <meta name="application-name" content="AI Platform Control Study">
+./docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:878:frontend/study-ui/study-content.partial.html:68:          The full companion runs in the AI Platform app. It is designed for conversation,
+./docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:880:frontend/study-ui/study-content.partial.html:82:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:891:frontend/study-ui/index.html:98:          The full companion runs in the AI Platform app. It is designed for conversation,
+./docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:893:frontend/study-ui/index.html:112:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:69:You are the AI Platform Control Companion for Alex's platform.
+./docs/smoke/generated/stage-17k-z-r9j-r2-resend-dns-timeout-recovery-no-email/root-body.20260630T182604Z.html:94:  <title>AlexHartel AI Platform</title>
+./docs/smoke/generated/stage-17k-z-r8u-local-tailscale-ssh-bindaddress-test/report.20260630T174333Z.txt:65:# AI Platform Control Tailscale management aliases
+./docs/smoke/generated/stage-17k-z-r9b-read-only-vm200-guest-agent-ssh-auth-inspect/report.20260630T175547Z.txt:42:description: AI Platform Control website-edge VM. Created stopped in Phase 14J-EW retry after approved pvecm expected 1. No Cloudflare cutover. No controller/queue migration. No worker/runtime activation.
+./docs/smoke/generated/stage-17k-z-r9a-read-only-vm200-ssh-auth-path-diagnostic/report.20260630T175316Z.txt:36:description: AI Platform Control website-edge VM. Created stopped in Phase 14J-EW retry after approved pvecm expected 1. No Cloudflare cutover. No controller/queue migration. No worker/runtime activation.
+./docs/smoke/generated/stage-17k-z-r9m-forgot-password-readiness-no-email/root-body.20260630T183510Z.html:94:  <title>AlexHartel AI Platform</title>
+./docs/stage-17k-z-r8h-readonly-buddieswhostudy-domain-cutover-readiness.md:8:Inventory readiness for moving the public AI Platform Control product surface from `alexhartel.com` toward `buddieswhostudy.com`.
+./docs/stage-16-fc-o45-e-ae-r2-db-lock-pveso-route-readiness-unblocker.md:257:  edge-queue-controller.service                loaded    active   running AI Platform Control CT203 Edge Queue Controller
+./docs/phase-14j-fj-read-only-cloudflare-route-and-tunnel-inventory.md:300:- docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:11:frontend/wrapper-ui/index.html:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./docs/phase-14j-fj-read-only-cloudflare-route-and-tunnel-inventory.md:326:- docs/cleanup/stage-5o13-header-nav-inventory-2026-06-11.md:4:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:7:AI Platform Control — Stage 17K Study/Profile Cleanup + Companion Study Workflow Handoff
+./docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:46:AI Platform Control — Google Drive Sync Contract Plan
+./docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:50:Continue AI Platform Control from Stage 17K-Z-R3. We need a Google Drive sync contract plan before final Companion stat writeback.
+./docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:94:AI Platform Control — Companion Source Adapters and Study Workflow
+./docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:98:Continue AI Platform Control after the Google Drive sync contract plan. We need to implement Companion source adapters and the Companion study workflow.
+./docs/stage-16-e2j-pveso-model-runtime-readiness-plan-no-apply.md:7:Define the safest next path for bringing model runtime capacity back into the AI Platform Control system after PVESO inventory access was restored.
+./docs/stage-16-b-model-target-inventory-no-apply.md:63:PVEW showed Proxmox services and kernel worker threads, but no AI Platform model worker was activated by this phase.
+./docs/phase-14j-mq-ct203-private-storage-backup-execution-plan-no-apply.md:54:- `CT203_SERVICE=edge-queue-controller.service loaded active running AI Platform Control CT203 Edge Queue Controller`
+./docs/stage-16-fc-o45-e-ah-job127-result-reader-quality-contract.md:74:- The model did not reliably follow the intended AI Platform Control Companion persona.
+./docs/phase-14j-fc-inspect-public-wrapper-entrypoints-and-plan-local-only-clone-smoke.md:337:docs/cleanup/stage-5k20-study-shared-wrapper-post-cutover-smoke-2026-06-10.md:9:- /study serves AlexHartel AI Platform wrapper shell.
+./docs/stage-16-fc-o45-e-ar-companion-immersion-state-ui-contract.md:324:frontend/study-ui/study-content.partial.html:68:          The full companion runs in the AI Platform app. It is designed for conversation,
+./docs/stage-16-fc-o45-e-ar-companion-immersion-state-ui-contract.md:326:frontend/study-ui/study-content.partial.html:82:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./docs/stage-16-fc-o45-e-ar-companion-immersion-state-ui-contract.md:334:frontend/study-ui/index.html:98:          The full companion runs in the AI Platform app. It is designed for conversation,
+./docs/stage-16-fc-o45-e-ar-companion-immersion-state-ui-contract.md:336:frontend/study-ui/index.html:112:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./docs/ct101-worker-laptop-queue-integration-plan.md:25:CT101 currently remains the production AI Platform backend and worker host.
+./docs/ct101-worker-laptop-queue-integration-plan.md:29:- normal AI Platform backend routes
+./docs/phase-14j-cf-new-chat-continuation-prompt.md:5:Continue the AI Platform Control project.
+./docs/stage-16-e3z-a-persistent-scheduler-activation-readiness-plan-no-activation.md:59:  edge-queue-controller.service      loaded active running AI Platform Control CT203 Edge Queue Controller
+./docs/stage-16-fc-o45-e-av-r3-vm200-access-method-discovery.md:110:description: AI Platform Control website-edge VM. Created stopped in Phase 14J-EW retry after approved pvecm expected 1. No Cloudflare cutover. No controller/queue migration. No worker/runtime activation.
+./docs/phase-14k-e-public-path-hardening-source-refresh-handoff.md:130:AI Platform Control — Phase 14K Public Path Hardened + CT203 Static Upstream
+./docs/phase-14k-e-public-path-hardening-source-refresh-handoff.md:134:Continue AI Platform Control from the Phase 14K-E Public Path Hardening Source Refresh Handoff.
+./docs/phase-14j-fy-proxmox-data-target-inventory-no-creation.md:7:This phase records the read-only Proxmox inventory used to plan a future private data LXC for the AI Platform Control controller SQLite authority.
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:36:Google Drive is for user-owned personal study data created in AI Platform Control or explicitly imported into APC-native data.
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:92:- AI Platform Control
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:96:- AI Platform Control/manifest.apc.json
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:97:- AI Platform Control/profile/profile.apc.json
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:98:- AI Platform Control/study/decks/index.apc.json
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:99:- AI Platform Control/study/decks/by-id/DECK_ID/deck.apc.json
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:100:- AI Platform Control/study/decks/by-id/DECK_ID/cards.apc.jsonl
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:101:- AI Platform Control/study/decks/by-id/DECK_ID/media/MEDIA_ID
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:102:- AI Platform Control/study/sessions/YYYY/MM/SESSION_ID.apc.json
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:103:- AI Platform Control/study/history/YYYY/MM/YYYY-MM-DD.apc.jsonl
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:104:- AI Platform Control/study/stats/user-current.apc.json
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:105:- AI Platform Control/study/stats/decks/DECK_ID.apc.json
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:106:- AI Platform Control/sync/sync-state.apc.json
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:107:- AI Platform Control/sync/conflicts/YYYY/MM/CONFLICT_ID.apc.json
+./docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:108:- AI Platform Control/audit/consent-log.apc.jsonl
+./docs/phase-11p-pveso-ct101-recovery.md:42:- AI Platform API returned HTTP 200 at `http://100.88.245.33:8088/health`
+./docs/stage-16-e3z-ez-r2-installed-unit-repeatability-recovered-success-checkpoint.md:136:    Starting edge-ct101-exact-job-worker@56.service - AI Platform Control CT101 exact-job Ollama worker (56)...
+./docs/stage-16-e3z-ez-r2-installed-unit-repeatability-recovered-success-checkpoint.md:137:    Started edge-ct101-exact-job-worker@56.service - AI Platform Control CT101 exact-job Ollama worker (56).
+./docs/phase-14j-by-controller-owned-static-ui-copy-layout-patch-plan.md:316:  L4: <p class="eyebrow">AI Platform Control</p>
+./docs/phase-14j-by-controller-owned-static-ui-copy-layout-patch-plan.md:404:  L6: <title>AlexHartel AI Platform</title>
+./docs/phase-14j-by-controller-owned-static-ui-copy-layout-patch-plan.md:408:  L6: <title>AlexHartel AI Platform</title>
+./docs/phase-14j-by-controller-owned-static-ui-copy-layout-patch-plan.md:411:  L13: <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./docs/phase-14j-by-targeted-active-ui-source-shape-inspection-and-patch-plan.md:316:  L4: <p class="eyebrow">AI Platform Control</p>
+./docs/phase-14j-by-targeted-active-ui-source-shape-inspection-and-patch-plan.md:404:  L6: <title>AlexHartel AI Platform</title>
+./docs/phase-14j-by-targeted-active-ui-source-shape-inspection-and-patch-plan.md:408:  L6: <title>AlexHartel AI Platform</title>
+./docs/phase-14j-by-targeted-active-ui-source-shape-inspection-and-patch-plan.md:411:  L13: <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./docs/stage-17k-z-r8i-exact-buddieswhostudy-cutover-plan-no-mutation.md:101:### R8P — AlexHartel.com Portfolio Split
+./edge_controller.py.bak-study-delete-deck-route-2026-06-10-161600:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-study-delete-deck-route-2026-06-10-161600:8673:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-stage5n6-calendar-api-2026-06-11-101239:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage5n6-calendar-api-2026-06-11-101239:8726:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/stage5m0a-login-background-api-stability-2026-06-10-223615/frontend/wrapper-ui/app.js:3483:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/wrapper-app-before-study-preview-2026-06-10-192906.js:2575:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5j2-stale-route-docs-2026-06-10-190613/docs/ct101-worker-laptop-queue-integration-plan.md:25:CT101 currently remains the production AI Platform backend and worker host.
+./.cleanup-archive/stage5j2-stale-route-docs-2026-06-10-190613/docs/ct101-worker-laptop-queue-integration-plan.md:29:- normal AI Platform backend routes
+./.cleanup-archive/stage5j2-stale-route-docs-2026-06-10-190613/docs/laptop-job-queue-facade-plan.md:27:CT101 still owns the current production AI Platform app data and job processing behavior.
+./.cleanup-archive/stage5j8-finish-wrapper-stale-reference-cleanup-2026-06-10-191706/frontend/wrapper-ui/app.js:2575:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5k15-study-preview-review-queue-2026-06-10-202119/frontend/wrapper-ui/app.js:3059:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/final-cleanup-prep-2026-06-10-185544/pre-cleanup-working-diff.patch:591:   AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/stage5k13-study-preview-create-deck-2026-06-10-201554/frontend/wrapper-ui/app.js:2894:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/final-cleanup-prep-2026-06-10-185146/pre-cleanup-working-diff.patch:849:   AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/stage5l8-minimal-queued-chat-ui-2026-06-10-211824/frontend/wrapper-ui/app.js:3251:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5k19-study-controlled-cutover-2026-06-10-203203/frontend/wrapper-ui/app.js:3247:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192616/frontend/study-ui/index.html:14:        <span>AI Platform</span>
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192616/frontend/study-ui/index.html:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192616/frontend/study-ui/index.html:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192616/frontend/study-ui/index.html:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192616/frontend/study-ui/index.html:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192616/frontend/study-ui/index.html:280:  AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192104/frontend/study-ui/index.html:14:        <span>AI Platform</span>
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192104/frontend/study-ui/index.html:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192104/frontend/study-ui/index.html:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192104/frontend/study-ui/index.html:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192104/frontend/study-ui/index.html:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192104/frontend/study-ui/index.html:280:  AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/stage5k6-study-preview-hydrator-2026-06-10-195217/frontend/wrapper-ui/app.js:2627:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192057/frontend/study-ui/index.html:14:        <span>AI Platform</span>
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192057/frontend/study-ui/index.html:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192057/frontend/study-ui/index.html:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192057/frontend/study-ui/index.html:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192057/frontend/study-ui/index.html:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/stage5k2-study-content-partial-2026-06-10-192057/frontend/study-ui/index.html:280:  AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/leftover-cleanup-docs-2026-06-10-190158/laptop-owned-platform-architecture-2026-06-10.md:1:# Laptop-Owned AI Platform Architecture
+./.cleanup-archive/stage5k14-study-preview-add-card-2026-06-10-201801/frontend/wrapper-ui/app.js:2971:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5k16-study-preview-review-submit-2026-06-10-202503/frontend/wrapper-ui/app.js:3197:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5k8-study-preview-readonly-2026-06-10-200012/frontend/wrapper-ui/app.js:2830:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/wrapper-index-before-study-preview-2026-06-10-192842.html:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/wrapper-index-before-study-preview-2026-06-10-192842.html:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/stage5j9-final-wrapper-comment-sweep-2026-06-10-191745/frontend/wrapper-ui/app.js:2575:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5k12-study-preview-deck-switch-2026-06-10-201443/frontend/wrapper-ui/app.js:2860:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5j7-wrapper-gateway-reference-cleanup-2026-06-10-191618/frontend/wrapper-ui/app.js:2575:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/stage5k10-study-preview-live-link-2026-06-10-200808/frontend/wrapper-ui/app.js:2856:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/docs/frontend-chat-submit-handler-inspection.md.bak-bump-app-version-20260609200419:185:2573:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/docs/frontend-chat-submit-handler-inspection.md.bak-bump-app-version-20260609200419:500:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/docs/frontend-chat-submit-handler-inspection.md.bak-bump-app-version-20260609200419:501:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g26-normalized-worker-detail-2026-06-08-200659:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g26-normalized-worker-detail-2026-06-08-200659:8604:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g24-worker-status-2026-06-08-195059:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g24-worker-status-2026-06-08-195059:8386:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-extract-credit-helpers-2026-06-05-101323:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-extract-credit-helpers-2026-06-05-101323:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g16-targeted-refresh-2026-06-08-154230:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g16-targeted-refresh-2026-06-08-154230:8386:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-143543/edge_controller.py.bak-password-reset-2026-06-05-143339:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-143543/edge_controller.py.bak-password-reset-2026-06-05-143339:8143:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-143543/email_verification.py.bak-password-reset-2026-06-05-143339:67:    from_name = str(os.getenv("EMAIL_FROM_NAME", "AlexHartel AI Platform")).strip()
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-143543/.env.example.bak-password-reset-2026-06-05-143339:71:EMAIL_FROM_NAME=AlexHartel AI Platform
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-115134/edge_controller.py.bak-extract-ad-reward-claim-2026-06-05-115101:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-115134/edge_controller.py.bak-extract-ad-reward-claim-2026-06-05-115101:7714:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-135639/email_verification.py.bak-api-verify-email-link-2026-06-05-135347:65:    from_name = str(os.getenv("EMAIL_FROM_NAME", "AlexHartel AI Platform")).strip()
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-132314/index.html.bak-fix-register-verification-response-2026-06-05-132223:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-132314/index.html.bak-fix-register-verification-response-2026-06-05-132223:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-132314/app.js.bak-fix-register-verification-response-2026-06-05-132223:2374:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-132314/index.html.bak-fix-register-verification-response-2026-06-05-132223.bak-bump-app-version-20260609200419:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-132314/index.html.bak-fix-register-verification-response-2026-06-05-132223.bak-bump-app-version-20260609200419:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-103211/edge_controller.py.bak-extract-ad-reward-status-2026-06-05-103031:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-103211/edge_controller.py.bak-extract-ad-reward-status-2026-06-05-103031:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-134453/edge_controller.py.bak-api-auth-verify-email-alias-2026-06-05-134228:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-134453/edge_controller.py.bak-api-auth-verify-email-alias-2026-06-05-134228:7972:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-131730/index.html.bak-email-verification-ui-2026-06-05-131606:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-131730/index.html.bak-email-verification-ui-2026-06-05-131606:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-131730/app.js.bak-email-verification-ui-2026-06-05-131606:2373:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-131730/index.html.bak-email-verification-ui-2026-06-05-131606.bak-bump-app-version-20260609200419:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-131730/index.html.bak-email-verification-ui-2026-06-05-131606.bak-bump-app-version-20260609200419:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-142307/index.html.bak-frontend-verify-redirect-2026-06-05-142049:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-142307/index.html.bak-frontend-verify-redirect-2026-06-05-142049:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-142307/app.js.bak-frontend-verify-redirect-2026-06-05-142049:2374:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-142307/index.html.bak-frontend-verify-redirect-2026-06-05-142049.bak-bump-app-version-20260609200419:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-142307/index.html.bak-frontend-verify-redirect-2026-06-05-142049.bak-bump-app-version-20260609200419:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-142307/email_verification.py.bak-frontend-verify-redirect-2026-06-05-142049:68:    from_name = str(os.getenv("EMAIL_FROM_NAME", "AlexHartel AI Platform")).strip()
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-144035/index.html.bak-password-reset-ui-2026-06-05-143929:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-144035/index.html.bak-password-reset-ui-2026-06-05-143929:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-144035/index.html.bak-password-reset-ui-2026-06-05-143929.bak-bump-app-version-20260609200419:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-144035/index.html.bak-password-reset-ui-2026-06-05-143929.bak-bump-app-version-20260609200419:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-144035/app.js.bak-password-reset-ui-2026-06-05-143929:2374:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-123508/app.js.bak-google-gpt-client-claim-2026-06-05-123359:2300:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-145222/app.js.bak-system-labels-2026-06-05-145123:2374:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-145222/index.html.bak-system-labels-2026-06-05-145123:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-145222/index.html.bak-system-labels-2026-06-05-145123:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-145222/index.html.bak-system-labels-2026-06-05-145123.bak-bump-app-version-20260609200419:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-145222/index.html.bak-system-labels-2026-06-05-145123.bak-bump-app-version-20260609200419:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-122727/app.js.bak-google-gpt-rewarded-ui-2026-06-05-122617:2099:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-122727/index.html.bak-google-gpt-rewarded-ui-2026-06-05-122617.bak-bump-app-version-20260609200419:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-122727/index.html.bak-google-gpt-rewarded-ui-2026-06-05-122617.bak-bump-app-version-20260609200419:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-122727/index.html.bak-google-gpt-rewarded-ui-2026-06-05-122617:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-122727/index.html.bak-google-gpt-rewarded-ui-2026-06-05-122617:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-113908/edge_controller.py.bak-extract-ad-reward-init-tables-2026-06-05-112857:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-113908/edge_controller.py.bak-extract-ad-reward-init-tables-2026-06-05-112857:7714:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-113908/edge_controller.py.bak-extract-ad-reward-init-tables-2026-06-05-112928:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-113908/edge_controller.py.bak-extract-ad-reward-init-tables-2026-06-05-112928:7714:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-131246/edge_controller.py.bak-email-verification-backend-2026-06-05-130750:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-131246/edge_controller.py.bak-email-verification-backend-2026-06-05-130750:7714:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-power-idle-dry-run-2026-06-02-113327.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-apply-web-power-policy-2026-06-04-205414:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-study-distinct-counts-2026-06-03-134745.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-remediation-reset-2026-06-02-111226.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-fix-auto-tick-web-policy-helper-2026-06-04-214918:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-ollama-direct-tick-2026-06-02-210625.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-user-owned-jobs-safe-2026-06-03-133430:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-remediation-reset-2026-06-02-111226:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-stop-plan-offline-postprocess-2026-06-02-223508:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-tick-direct-mode-2026-06-02-211416:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-ollama-direct-tick-2026-06-02-210625:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-wake-start-wait-registry-2026-06-02-171338.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-web-presence-power-policy-2026-06-04-203319:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-forwarded-terminal-status-2026-06-02-113915:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-host-shutdown-endpoints-2026-06-02-125011:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-recent-auth-keeps-container-required-2026-06-05-080617:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-recent-auth-keeps-container-required-2026-06-05-080617:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-web-power-pveso-state-guard-2026-06-04-210759:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-stop-plan-offline-marker-flex-2026-06-02-220508.bak-gemma4-e4b-2026-06-03-180022:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-power-auto-pause-2026-06-02-133344.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-worker-start-endpoints-2026-06-02-134830:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-fix-heartbeat-age-var-2026-06-03-112242:1101:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-manual-execute-stop-plan-2026-06-02-120209:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-public-auth-2026-06-03-131511.bak-gemma4-e4b-2026-06-03-180023:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-ad-status-mock-flag-2026-06-05-091639:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-ad-status-mock-flag-2026-06-05-091639:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-clean-offline-marker-2026-06-02-223717:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-add-public-api-2026-06-03-103919.bak-gemma4-e4b-2026-06-03-180022:1101:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-credit-engine-2026-06-04-134904:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-study-overall-distinct-counts-2026-06-03-134942:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-clean-offline-marker-2026-06-02-223717.bak-gemma4-e4b-2026-06-03-180022:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-system-status-cleanup-2026-06-04-073049:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-companion-chat-context-2026-06-03-162251:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-companion-study-grade-2026-06-03-160143.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-public-jobs-user-owned-2026-06-03-132750:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-credit-pools-v2-2026-06-04-142512:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-fix-web-power-parse-bool-2026-06-04-205847:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-study-overall-distinct-counts-2026-06-03-134942.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-proxmox-inventory-2026-06-02-115525.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-power-auto-tick-2026-06-02-131447:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-account-roles-credits-2026-06-04-124356:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-stop-plan-offline-marker-2026-06-02-220239.bak-gemma4-e4b-2026-06-03-180022:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-study-foundation-2026-06-03-134424.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-fix-stale-constant-2026-06-03-112740:1136:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-mock-gpu-sessions-2026-06-04-152656:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-stop-plan-offline-marker-2026-06-02-220314.bak-gemma4-e4b-2026-06-03-180022:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-session-presence-2026-06-04-165506:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-power-stop-plan-2026-06-02-115922.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-mock-gpu-quotes-2026-06-04-150646:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-add-public-api-2026-06-03-103919:1101:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-fast-study-status-2026-06-04-225535:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-fast-study-status-2026-06-04-225535:7735:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-wake-and-start-worker-2026-06-02-165921:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-fix-pveso-state-bool-2026-06-04-211548:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-mark-worker-offline-on-stop-2026-06-02-220009:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-ad-status-mock-flag-fix-2026-06-05-091954:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-ad-status-mock-flag-fix-2026-06-05-091954:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-fix-heartbeat-age-var-2026-06-03-112242.bak-gemma4-e4b-2026-06-03-180023:1101:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-study-health-first-2026-06-04-221129:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-study-health-first-2026-06-04-221129:7735:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-public-api-2026-06-03-103142:1101:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-tune-card-buckets-2026-06-03-140021.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-public-api-2026-06-03-103135:1101:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-start-workers-2026-06-02-173457:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-logged-in-host-required-2026-06-04-204828:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-preserve-remediation-counters-2026-06-02-110610.bak-gemma4-e4b-2026-06-03-180022:997:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-pause-after-worker-start-2026-06-02-140247.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-companion-study-grade-2026-06-03-160143:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-worker-row-offline-health-rewrite-2026-06-02-225720.bak-gemma4-e4b-2026-06-03-180022:1098:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-stop-plan-offline-marker-2026-06-02-220314:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-connect-idle-to-proxmox-inventory-2026-06-02-115709:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-companion-chat-context-2026-06-03-162251.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-safe-apply-power-policy-errors-2026-06-04-211345:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-worker-start-endpoints-2026-06-02-134836.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-safe-logout-2026-06-04-184656:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-power-auto-pause-2026-06-02-133344:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-public-jobs-user-owned-2026-06-03-132750.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-card-stats-review-queue-2026-06-03-135707:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-tick-direct-mode-2026-06-02-211416.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-tick-boot-grace-guard-2026-06-04-214552:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-host-wake-endpoints-2026-06-02-124403.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-study-distinct-counts-2026-06-03-134745:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-offline-health-state-flex-2026-06-02-225517.bak-gemma4-e4b-2026-06-03-180023:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-add-reset-endpoint-2026-06-02-111517.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-wake-and-start-worker-2026-06-02-165921.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-add-reset-endpoint-2026-06-02-111517:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-remediation-reset-2026-06-02-111220:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-offline-health-state-2026-06-02-225318:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-session-me-enriched-2026-06-04-124412:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-power-idle-dry-run-2026-06-02-113327:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-host-shutdown-endpoints-2026-06-02-125011.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-public-me-enriched-2026-06-04-131130:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-start-use-start-plan-2026-06-02-174918:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-admin-support-panel-2026-06-04-161839:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-tune-card-buckets-2026-06-03-140021:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-public-auth-2026-06-03-131511:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-public-api-2026-06-03-103135.bak-gemma4-e4b-2026-06-03-180022:1101:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-worker-row-offline-health-rewrite-2026-06-02-225720:1098:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-mark-worker-offline-on-stop-2026-06-02-220009.bak-gemma4-e4b-2026-06-03-180022:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-stop-plan-offline-marker-flex-2026-06-02-220508:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-card-stats-review-queue-2026-06-03-135707.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-mock-gpu-cleanup-2026-06-04-154415:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-forwarded-terminal-status-2026-06-02-113915.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-pause-after-worker-start-2026-06-02-140247:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-defensive-worker-row-to-dict-2026-06-03-112630:1127:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-worker-start-endpoints-2026-06-02-134836:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-public-api-2026-06-03-103142.bak-gemma4-e4b-2026-06-03-180022:1101:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-wake-start-db-registry-2026-06-02-172456:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-wake-start-refresh-registry-2026-06-02-203615:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-web-presence-container-start-demand-2026-06-05-075919:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-web-presence-container-start-demand-2026-06-05-075919:7744:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-host-wake-endpoints-2026-06-02-124403:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-stop-plan-offline-postprocess-2026-06-02-223508.bak-gemma4-e4b-2026-06-03-180022:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-connect-idle-to-proxmox-inventory-2026-06-02-115709.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-defensive-worker-row-to-dict-2026-06-03-112630.bak-gemma4-e4b-2026-06-03-180022:1127:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-no-pause-for-web-presence-start-2026-06-05-080248:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-no-pause-for-web-presence-start-2026-06-05-080248:7758:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-rewrite-worker-row-to-dict-2026-06-03-112448:1102:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-study-foundation-2026-06-03-134424:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-offline-health-state-flex-2026-06-02-225517:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-ad-reward-dev-guard-2026-06-04-145354:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-companion-chat-context-2026-06-03-162320.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-start-workers-2026-06-02-173419:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-wake-start-wait-registry-2026-06-02-171338:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-system-status-2026-06-04-072708:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-worker-start-endpoints-2026-06-02-134830.bak-gemma4-e4b-2026-06-03-180023:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-system-session-auth-2026-06-04-123039:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-stop-plan-offline-marker-2026-06-02-220239:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-hide-deleted-users-2026-06-04-175628:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-manual-execute-stop-plan-2026-06-02-120209.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-remove-ct108-comfy-status-2026-06-04-213852:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-system-session-me-2026-06-04-121541:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-preserve-remediation-counters-2026-06-02-110610:997:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-offline-health-state-2026-06-02-225318.bak-gemma4-e4b-2026-06-03-180022:1097:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-remove-openwebui-status-2026-06-04-215213:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-power-auto-tick-2026-06-02-131447.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-start-workers-2026-06-02-173419.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-wake-start-refresh-registry-2026-06-02-203615.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-proxmox-inventory-2026-06-02-115525:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-wake-start-db-registry-2026-06-02-172456.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-rewrite-worker-row-to-dict-2026-06-03-112448.bak-gemma4-e4b-2026-06-03-180023:1102:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-remediation-reset-2026-06-02-111220.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-web-policy-boot-confirm-2026-06-04-211857:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-support-statuses-2026-06-04-170057:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-power-stop-plan-2026-06-02-115922:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-tick-web-presence-guard-2026-06-04-214419:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-fix-stale-constant-2026-06-03-112740.bak-gemma4-e4b-2026-06-03-180022:1136:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-study-health-route-2026-06-04-073207:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-start-workers-2026-06-02-173457.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-support-mark-solved-2026-06-04-170502:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-auto-start-use-start-plan-2026-06-02-174918.bak-gemma4-e4b-2026-06-03-180022:993:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-companion-chat-context-2026-06-03-162320:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-ad-rewards-2026-06-04-144447:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/root-bak-files-2026-06-05-095635/edge_controller.py.bak-user-owned-jobs-safe-2026-06-03-133430.bak-gemma4-e4b-2026-06-03-180022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-120824/edge_controller.py.bak-extract-credit-grants-2026-06-05-120742:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-120824/edge_controller.py.bak-extract-credit-grants-2026-06-05-120742:7714:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-102048/edge_controller.py.bak-ad-count-nowiso-2026-06-05-102022:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-102048/edge_controller.py.bak-ad-count-nowiso-2026-06-05-102022:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-115402/edge_controller.py.bak-fix-ad-claim-extraction-2026-06-05-115213:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-115402/edge_controller.py.bak-fix-ad-claim-extraction-2026-06-05-115213:7714:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-120404/edge_controller.py.bak-extract-credit-pool-small-helpers-2026-06-05-120311:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-120404/edge_controller.py.bak-extract-credit-pool-small-helpers-2026-06-05-120311:7714:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-121118/edge_controller.py.bak-ad-claim-use-credit-helper-2026-06-05-121011:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-121118/edge_controller.py.bak-ad-claim-use-credit-helper-2026-06-05-121011:7714:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-104550/edge_controller.py.bak-remove-duplicate-companion-routes-2026-06-05-104508:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-104550/edge_controller.py.bak-remove-duplicate-companion-routes-2026-06-05-104508:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-143139/edge_controller.py.bak-change-password-2026-06-05-142944:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-143139/edge_controller.py.bak-change-password-2026-06-05-142944:7985:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-143816/.env.example.bak-token-minutes-2026-06-05-143712:71:EMAIL_FROM_NAME=AlexHartel AI Platform
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-143816/email_verification.py.bak-token-minutes-2026-06-05-143712:67:    from_name = str(os.getenv("EMAIL_FROM_NAME", "AlexHartel AI Platform")).strip()
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-143816/email_verification.py.bak-token-minutes-2026-06-05-143712:170:    from_name = str(os.getenv("EMAIL_FROM_NAME", "AlexHartel AI Platform")).strip()
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-104701/edge_controller.py.bak-remove-duplicate-companion-routes-actual-2026-06-05-104628:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-104701/edge_controller.py.bak-remove-duplicate-companion-routes-actual-2026-06-05-104628:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-101856/edge_controller.py.bak-extract-ad-reward-basic-2026-06-05-101747:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-101856/edge_controller.py.bak-extract-ad-reward-basic-2026-06-05-101747:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-extract-ad-reward-counts-2026-06-05-101901:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-extract-ad-reward-counts-2026-06-05-101901:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5h3-corrected2-trusted-ct101-owner-2026-06-08-230859:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5h3-corrected2-trusted-ct101-owner-2026-06-08-230859:8623:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-auto-tick-inventory-exception-2026-06-10-095130:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-auto-tick-inventory-exception-2026-06-10-095130:8623:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/website-code-report.txt.bak-bump-app-version-20260609200419:380:          <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/website-code-report.txt.bak-bump-app-version-20260609200419:594:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/website-code-report.txt.bak-bump-app-version-20260609200419:609:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/website-code-report.txt.bak-bump-app-version-20260609200419:673:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/website-code-report.txt.bak-bump-app-version-20260609200419:687:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/website-code-report.txt.bak-bump-app-version-20260609200419:697:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/2026-06-10-155808/bak-files/website-code-report.txt.bak-bump-app-version-20260609200419:2228:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-enable-real-stop-action-2026-06-10-105924:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-enable-real-stop-action-2026-06-10-105924:8667:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g16-preauth-trusted-refresh-2026-06-08-154029:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g16-preauth-trusted-refresh-2026-06-08-154029:8386:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-web-policy-execute-flags-2026-06-10-101344:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-web-policy-execute-flags-2026-06-10-101344:8668:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g14-trusted-edge-queued-2026-06-08-141755:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g14-trusted-edge-queued-2026-06-08-141755:8386:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g24-worker-status-safe-2026-06-08-195231:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g24-worker-status-safe-2026-06-08-195231:8386:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-ast-extract-credit-helpers-2026-06-05-101513:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-ast-extract-credit-helpers-2026-06-05-101513:7766:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g16-token-hash-reclaim-2026-06-08-154506:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g16-token-hash-reclaim-2026-06-08-154506:8386:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-disable-old-admin-support-layer-2026-06-04-182744:2049:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-clickable-credits-2026-06-04-131826:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-clickable-credits-2026-06-04-131826:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-auth-header-2026-06-04-094732:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-auth-header-2026-06-04-094732:13:      <span>AlexHartel AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-auth-header-2026-06-04-094736:10:    title: "AlexHartel AI Platform",
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-auth-header-2026-06-04-094736:214:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-summary-pages-and-node-groups-2026-06-04-115630:390:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-support-ui-2026-06-04-162447:1401:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-logged-in-full-app-handoff-2026-06-04-233919:1991:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-show-public-mock-reward-2026-06-05-091639:2027:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-auth-cookie-for-route-proxy-2026-06-04-234605:1991:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-fix-dot-appjs-cachebust-2026-06-04-233350:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-fix-dot-appjs-cachebust-2026-06-04-233350:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-support-metrics-scroll-2026-06-04-175608:1853:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-before-restore-old-header-2026-06-04-165430:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-before-restore-old-header-2026-06-04-165430:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-disable-admin-power-policy-wrapper-2026-06-04-210126:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-ad-rewards-ui-2026-06-04-144610:713:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-support-inbox-status-tabs-2026-06-04-170113:1842:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-normalize-auth-credits-ui-2026-06-04-232711:1942:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-appjs-cachebust-2026-06-04-232958:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-appjs-cachebust-2026-06-04-232958:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-label-shared-credit-tools-2026-06-04-201541:2019:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-power-policy-api-fallback-2026-06-04-204819:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-gpu-quote-ui-2026-06-04-150904:773:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-support-solved-button-2026-06-04-170513:1849:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-fix-admin-support-route-loading-2026-06-04-164329:1842:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-web-presence-apply-policy-2026-06-04-205445:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-global-cloudflare-html-sanitizer-2026-06-07-113030:2504:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-presence-cache-safe-2026-06-04-182334:2043:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-power-policy-api-fallback-2026-06-04-204606:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-credits-header-2026-06-04-131149:433:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-remove-admin-power-wrapper-real-2026-06-04-210329:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-support-ui-2026-06-04-163022:1842:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-power-policy-wrapper-2026-06-04-204358:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-fix-support-admin-nav-2026-06-04-164244:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-fix-support-admin-nav-2026-06-04-164244:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-credits-page-2026-06-04-131830:458:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-remove-session-presence-2026-06-04-231627:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-credit-section-markers-2026-06-04-202252:1929:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-header-free-paid-credits-2026-06-04-155443:1250:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-same-origin-api-base-2026-06-04-232106:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-api-cache-layer-2026-06-04-181221:1853:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-web-presence-reliable-2026-06-04-203651:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-system-groups-2026-06-04-114734:266:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-local-proxy-api-base-2026-06-04-122153:431:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-bump-app-version-20260609200419:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-bump-app-version-20260609200419:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-visible-tab-guard-2026-06-04-201853:1929:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-login-token-and-system-only-actions-2026-06-04-100233:16:    title: "AlexHartel AI Platform",
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-login-token-and-system-only-actions-2026-06-04-100233:276:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-credit-grant-ui-2026-06-04-160638:1271:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-local-api-override-2026-06-04-120746:429:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-before-remove-force-patch-2026-06-04-165430:1842:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-remove-dead-legacy-admin-support-2026-06-04-201019:2019:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-reward-status-labels-2026-06-05-092430.bak-bump-app-version-20260609200419:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-reward-status-labels-2026-06-05-092430.bak-bump-app-version-20260609200419:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-stage5g25-worker-ui-detail-2026-06-08-200251:2573:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-live-credits-page-2026-06-04-135913:625:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-reward-status-labels-2026-06-05-092430:2029:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-before-remove-force-patch-2026-06-04-164834:1842:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-move-cache-layer-up-2026-06-04-181445:1856:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-section-markers-auth-support-2026-06-04-202357:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-power-policy-view-2026-06-04-204014:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-home-welcome-learning-research-2026-06-04-100251:16:    title: "AlexHartel AI Platform",
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-home-welcome-learning-research-2026-06-04-100251:276:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-reward-status-labels-2026-06-05-092430:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-reward-status-labels-2026-06-05-092430:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-fast-auth-2026-06-04-183610:2019:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-login-token-and-system-only-actions-2026-06-04-095511:16:    title: "AlexHartel AI Platform",
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-login-token-and-system-only-actions-2026-06-04-095511:276:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-web-presence-client-2026-06-04-203343:1946:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-gpu-sessions-load-on-refresh-2026-06-04-155121:1250:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-support-force-ui-2026-06-04-164646:1842:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-stage5g1-syntax-2026-06-08-123533:2573:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-appjs-version-2026-06-04-233146:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-appjs-version-2026-06-04-233146:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-appjs-version-2026-06-05-091954:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-appjs-version-2026-06-05-091954:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-local-only-mock-ad-ui-2026-06-04-145435:757:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-remove-home-link-2026-06-04-165500:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-remove-home-link-2026-06-04-165500:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-hide-cloudflare-html-companion-2026-06-07-112701:2482:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-credits-header-2026-06-04-131138:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-credits-header-2026-06-04-131138:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-remove-dead-legacy-admin-support-2026-06-04-201212:1495:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-stop-handoff-loop-2026-06-04-234240:1991:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-reservation-refund-ui-2026-06-04-151925:999:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-better-logo-2026-06-04-180306:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-better-logo-2026-06-04-180306:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-support-summary-logo-2026-06-04-180306:1853:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-logo-summary-cleanup-2026-06-04-115602:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-logo-summary-cleanup-2026-06-04-115602:13:      <span>AlexHartel AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-clean-admin-support-pages-2026-06-04-165526:1842:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-remove-unused-legacy-pages-2026-06-04-201732:2022:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-admin-support-nav-2026-06-04-163553:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-admin-support-nav-2026-06-04-163553:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-force-admin-support-nav-2026-06-04-164631:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-force-admin-support-nav-2026-06-04-164631:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-support-ui-2026-06-04-163622:1842:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-remove-full-app-handoff-2026-06-04-234428:1991:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-gpu-session-ui-2026-06-04-152944:1059:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-support-ui-2026-06-04-163603:1842:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-disable-legacy-admin-support-2026-06-04-200654:2019:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-admin-support-nav-2026-06-04-162423:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-admin-support-nav-2026-06-04-162423:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-safe-optimize-2026-06-04-174601:1849:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-force-auth-refresh-2026-06-04-232227:1942:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-run-startup-auth-immediately-2026-06-04-232418:1942:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-decouple-system-credit-poll-2026-06-04-182136:2043:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-admin-public-status-split-2026-06-04-120407:422:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-appjs-version-2026-06-05-091954.bak-bump-app-version-20260609200419:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-appjs-version-2026-06-05-091954.bak-bump-app-version-20260609200419:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-before-restore-old-header-2026-06-04-164834:6:  <title>AlexHartel AI Platform</title>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/index.html.bak-before-restore-old-header-2026-06-04-164834:11:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-credit-pools-display-2026-06-04-143219:685:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-event-driven-user-data-2026-06-04-183939:2019:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-safe-optimize-2026-06-04-174454:1849:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-login-private-route-refresh-2026-06-05-081707:2009:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-mock-reward-button-fix-2026-06-05-091954:2029:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/wrapper-ui/app.js.bak-gpu-history-always-visible-2026-06-04-154440:1205:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-app-subdomains-2026-06-03-200516:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-app-subdomains-2026-06-03-200516:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-app-subdomains-2026-06-03-200516:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-app-subdomains-2026-06-03-200516:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-app-subdomains-2026-06-03-200516:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-companion-pending-gateway-2026-06-07-111712:1369:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-remove-study-dup-auth-2026-06-03-150440:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-remove-study-dup-auth-2026-06-03-150440:32:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/styles.css.bak-auth-aware-header-2026-06-03-195455:659:/* Unified AI Platform header */
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-apex-home-2026-06-03-195726:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-apex-home-2026-06-03-195726:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-apex-home-2026-06-03-195726:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-apex-home-2026-06-03-195726:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-apex-home-2026-06-03-195726:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-default-study-route-2026-06-10-153948:1443:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-force-study-path-show-study-2026-06-10-153832:1444:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-add-profile-header-2026-06-03-192328:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-add-profile-header-2026-06-03-192328:32:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-add-profile-header-2026-06-03-192328:96:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-add-profile-header-2026-06-03-192328:110:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-fix-study-loop-2026-06-03-201652:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-fix-study-loop-2026-06-03-201652:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-fix-study-loop-2026-06-03-201652:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-fix-study-loop-2026-06-03-201652:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-fix-study-loop-2026-06-03-201652:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/styles.css.bak-system-panel-2026-06-04-074302:659:/* Unified AI Platform header */
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/styles.css.bak-system-panel-2026-06-04-074302:735:/* Unified AI Platform header */
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-real-companion-link-2026-06-03-190813:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-real-companion-link-2026-06-03-190813:32:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-path-based-2026-06-03-201452:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-path-based-2026-06-03-201452:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-path-based-2026-06-03-201452:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-path-based-2026-06-03-201452:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-path-based-2026-06-03-201452:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-disable-public-start-server-2026-06-04-080204:1369:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-unified-header-2026-06-03-193556:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-unified-header-2026-06-03-193556:30:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-unified-header-2026-06-03-193556:94:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-unified-header-2026-06-03-193556:108:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-account-auth-redirect-2026-06-03-193814:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-account-auth-redirect-2026-06-03-193814:30:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-account-auth-redirect-2026-06-03-193814:94:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-account-auth-redirect-2026-06-03-193814:108:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-app-header-2026-06-03-145849:13:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-app-subdomains-2026-06-03-200516:1369:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-account-auth-links-2026-06-03-192933:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-account-auth-links-2026-06-03-192933:33:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-account-auth-links-2026-06-03-192933:97:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-account-auth-links-2026-06-03-192933:111:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-companion-calendar-2026-06-03-190206:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-companion-calendar-2026-06-03-190206:32:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-auth-aware-header-2026-06-03-195455:1369:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-study-asset-paths-2026-06-10-154311:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-study-asset-paths-2026-06-10-154311:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-study-asset-paths-2026-06-10-154311:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-study-asset-paths-2026-06-10-154311:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-study-asset-paths-2026-06-10-154311:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-study-asset-paths-2026-06-10-154311:280:  AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-force-private-study-panel-2026-06-10-154153:1443:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-api-base-same-origin-2026-06-10-153037:1444:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-disable-old-auth-panel-2026-06-03-194212:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-disable-old-auth-panel-2026-06-03-194212:30:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-disable-old-auth-panel-2026-06-03-194212:94:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-disable-old-auth-panel-2026-06-03-194212:108:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-fix-study-loop-2026-06-03-201652:1369:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-calendar-link-to-companion-2026-06-03-191344:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-calendar-link-to-companion-2026-06-03-191344:32:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-calendar-link-to-companion-2026-06-03-191344:96:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-calendar-link-to-companion-2026-06-03-191344:110:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-companion-ui-2026-06-03-161254:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-companion-ui-2026-06-03-161254:32:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-unified-header-2026-06-03-193544:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-unified-header-2026-06-03-193544:34:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-unified-header-2026-06-03-193544:98:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-unified-header-2026-06-03-193544:112:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-auth-aware-header-2026-06-03-195455:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-auth-aware-header-2026-06-03-195455:30:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-auth-aware-header-2026-06-03-195455:94:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-auth-aware-header-2026-06-03-195455:108:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-auth-aware-header-2026-06-03-195455:118:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-disable-home-force-2026-06-10-154741:1443:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-path-based-2026-06-03-201452:1369:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-system-panel-2026-06-04-074302:1369:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-visible-version-2026-06-04-080442:14:        <span>AI Platform</span>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-visible-version-2026-06-04-080442:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-visible-version-2026-06-04-080442:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-visible-version-2026-06-04-080442:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/index.html.bak-visible-version-2026-06-04-080442:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/2026-06-10-155808/bak-files/frontend/study-ui/app.js.bak-apex-home-2026-06-03-195726:1369:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5h2-companion-mode-ownership-2026-06-08-225942:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5h2-companion-mode-ownership-2026-06-08-225942:8623:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-remove-duplicate-companion-context-2026-06-07-101534:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-remove-duplicate-companion-context-2026-06-07-101534:8544:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g24-repair-2026-06-08-195608:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g24-repair-2026-06-08-195608:8599:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g24-linewise-2026-06-08-195422:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g24-linewise-2026-06-08-195422:8386:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5h3-trusted-ct101-auth-owner-2026-06-08-230556:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5h3-trusted-ct101-auth-owner-2026-06-08-230556:8623:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g14-trusted-edge-corrected-2026-06-08-142002:1147:                "label": "LLMs / AI Platform / Ollama",
+./.cleanup-archive/2026-06-10-155808/bak-files/edge_controller.py.bak-stage5g14-trusted-edge-corrected-2026-06-08-142002:8386:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./.cleanup-archive/stage5k7-study-preview-card-stats-2026-06-10-195532/frontend/wrapper-ui/app.js:2725:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/app.js.bak-hard-block-login-redirect-2026-06-10-182517:1453:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/app.js.bak-kill-login-next-2026-06-10-181804:2575:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-wrapper-like-header-2026-06-10-182807:14:        <span>AI Platform</span>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-wrapper-like-header-2026-06-10-182807:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-wrapper-like-header-2026-06-10-182807:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-wrapper-like-header-2026-06-10-182807:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-wrapper-like-header-2026-06-10-182807:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-wrapper-like-header-2026-06-10-182807:280:  AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/app.js.bak-stop-old-login-redirect-2026-06-10-181530:1453:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/app.js.bak-cookie-auth-only-2026-06-10-182807:1467:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/app.js.bak-study-wrapper-route-2026-06-10-182320:2575:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/app.js.bak-null-listener-guard-2026-06-10-181237:1443:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/app.js.bak-cookie-session-ui-state-2026-06-10-183135:1462:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-unified-private-tab-layout-2026-06-10-182034:14:        <span>AI Platform</span>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-unified-private-tab-layout-2026-06-10-182034:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-unified-private-tab-layout-2026-06-10-182034:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-unified-private-tab-layout-2026-06-10-182034:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-unified-private-tab-layout-2026-06-10-182034:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-unified-private-tab-layout-2026-06-10-182034:280:  AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/app.js.bak-unified-private-tab-layout-2026-06-10-182034:2575:  document.title = `${page.title} | AlexHartel AI Platform`;
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-cachebust-study-js-2026-06-10-182517:14:        <span>AI Platform</span>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-cachebust-study-js-2026-06-10-182517:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-cachebust-study-js-2026-06-10-182517:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-cachebust-study-js-2026-06-10-182517:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-cachebust-study-js-2026-06-10-182517:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-cachebust-study-js-2026-06-10-182517:280:  AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/app.js.bak-fix-render-crashes-2026-06-10-183246:1463:    if (title) title.textContent = "Use your shared AI Platform account";
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-fix-render-crashes-2026-06-10-183246:14:        <span>AI Platform</span>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-fix-render-crashes-2026-06-10-183246:29:        <p class="eyebrow">AI Platform Control</p>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-fix-render-crashes-2026-06-10-183246:93:          The full companion runs in the AI Platform app. It is designed for conversation,
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-fix-render-crashes-2026-06-10-183246:107:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-fix-render-crashes-2026-06-10-183246:117:            <h2>Use your shared AI Platform account</h2>
+./.cleanup-archive/study-fix-backups-2026-06-10-183842/index.html.bak-fix-render-crashes-2026-06-10-183246:280:  AI Platform deploy marker: 2026-06-04 08:04:42
+./.cleanup-archive/stage5j2-stale-route-docs-2026-06-10-190630/docs/ct101-worker-laptop-queue-integration-plan.md:25:CT101 currently remains the production AI Platform backend and worker host.
+./.cleanup-archive/stage5j2-stale-route-docs-2026-06-10-190630/docs/ct101-worker-laptop-queue-integration-plan.md:29:- normal AI Platform backend routes
+./.cleanup-archive/stage5j2-stale-route-docs-2026-06-10-190630/docs/laptop-job-queue-facade-plan.md:27:CT101 still owns the current production AI Platform app data and job processing behavior.
+./GoogleSync/README.md:6:This folder contains the isolated Google Drive sync contract artifacts for AI Platform Control.
+./GoogleSync/contracts/stage-17k-z-r7c-appdatafolder-boundary-profile-prompt.apc.json:22:  "profile_prompt": "AI Platform Control will only create and manage its own hidden Google Drive app data. It will not browse, read, or modify your other Drive files or folders.",
+./GoogleSync/contracts/stage-17k-z-r7c-appdatafolder-boundary-profile-prompt.md:11:The Profile prompt now tells users that AI Platform Control will only create and manage its own hidden Google Drive app data and will not browse, read, or modify other Drive files or folders.
+./GoogleSync/fixtures/valid/card.valid.json:2:  "answer_text": "AI Platform Control.",
+./GoogleSync/fixtures/valid/manifest.valid.json:8:  "folder_label": "AI Platform Control",
+./GoogleSync/fixtures/valid/consent_event.valid.json:11:  "folder_label": "AI Platform Control",
+./edge_controller.py.bak-stage-5p3a-2026-06-11-150903:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage-5p3a-2026-06-11-150903:8869:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-stage-5p3b-2026-06-11-151111:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage-5p3b-2026-06-11-151111:8964:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-stage7p-2026-06-12-134720:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage7p-2026-06-12-134720:10323:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-stage-5p4-2026-06-11-194816:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage-5p4-2026-06-11-194816:9091:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_modules/email_verification.py:81:    from_name = str(os.getenv("EMAIL_FROM_NAME", "AlexHartel AI Platform")).strip()
+./edge_modules/email_verification.py:198:    from_name = str(os.getenv("EMAIL_FROM_NAME", "AlexHartel AI Platform")).strip()
+./edge_controller.py.bak-stage-5p6b-2026-06-11-212635:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage-5p6b-2026-06-11-212635:9437:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./website-code-report.txt:380:          <span>AI Platform</span>
+./website-code-report.txt:594:        <span>AI Platform</span>
+./website-code-report.txt:609:        <p class="eyebrow">AI Platform Control</p>
+./website-code-report.txt:673:          The full companion runs in the AI Platform app. It is designed for conversation,
+./website-code-report.txt:687:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./website-code-report.txt:697:            <h2>Use your shared AI Platform account</h2>
+./website-code-report.txt:2228:    if (title) title.textContent = "Use your shared AI Platform account";
+./edge_controller.py.bak-stage-5p6d-2026-06-11-212859:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage-5p6d-2026-06-11-212859:9529:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-stage5o2-power-auto-nonblocking-2026-06-11-103620:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage5o2-power-auto-nonblocking-2026-06-11-103620:8726:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-stage7p-2026-06-12-134725:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage7p-2026-06-12-134725:10323:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./README.md:3:Always-on laptop/Raspberry Pi controller for the AI Platform.
+./README.md:11:- Forward jobs into the AI Platform protected edge ingest endpoint
+./edge_controller.py.bak-stage-5p2-2026-06-11-150742:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage-5p2-2026-06-11-150742:8758:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-stage7p-retry-2026-06-12-134804:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage7p-retry-2026-06-12-134804:10323:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-stage5n6-calendar-api-safe-2026-06-11-101358:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage5n6-calendar-api-safe-2026-06-11-101358:8726:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-study-delete-card-route-2026-06-10-162422:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-study-delete-card-route-2026-06-10-162422:8700:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-api-companion-aliases-2026-06-10-163444:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-api-companion-aliases-2026-06-10-163444:8723:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./frontend/study-ui/app.js:1506:    if (title) title.textContent = "Use your shared AI Platform account";
+./frontend/study-ui/styles.css:659:/* Unified AI Platform header */
+./frontend/study-ui/styles.css:735:/* Unified AI Platform header */
+./frontend/study-ui/study-content.partial.html:4:        <p class="eyebrow">AI Platform Control</p>
+./frontend/study-ui/study-content.partial.html:68:          The full companion runs in the AI Platform app. It is designed for conversation,
+./frontend/study-ui/study-content.partial.html:82:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./frontend/study-ui/study-content.partial.html:92:            <h2>Use your shared AI Platform account</h2>
+./frontend/study-ui/index.html:6:  <title>AI Study Dashboard | AI Platform Control</title>
+./frontend/study-ui/index.html:10:  <meta name="description" content="Study cards and local AI learning workspace for AI Platform Control.">
+./frontend/study-ui/index.html:11:  <meta name="application-name" content="AI Platform Control Study">
+./frontend/study-ui/index.html:19:        <span>AI Platform</span>
+./frontend/study-ui/index.html:34:        <p class="eyebrow">AI Platform Control</p>
+./frontend/study-ui/index.html:98:          The full companion runs in the AI Platform app. It is designed for conversation,
+./frontend/study-ui/index.html:112:          The full calendar/reminder system belongs in the AI Platform app so the companion
+./frontend/study-ui/index.html:122:            <h2>Use your shared AI Platform account</h2>
+./frontend/study-ui/index.html:285:  AI Platform deploy marker: 2026-06-04 08:04:42
+./frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:3663:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o24-study-format-cleanup-2026-06-11-121612:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o24-study-format-cleanup-2026-06-11-121612:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/index.html.bak-stage5o27b-public-gate-blank-fix-2026-06-11-122012:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o27b-public-gate-blank-fix-2026-06-11-122012:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage-5o35-2026-06-11-134447:3761:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o8-header-active-2026-06-11-110049:3483:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o29-support-public-summary-2026-06-11-122711:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o29-support-public-summary-2026-06-11-122711:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/index.html.bak-stage5o30-support-public-override-2026-06-11-122836:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o30-support-public-override-2026-06-11-122836:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:354:      '<p>AI Platform Control will only create and manage its own hidden Google Drive app data. It will not browse, read, or modify your other Drive files or folders.</p>',
+./frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:298:    document.title = `${TITLE_BY_PAGE[page] || "Private"} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:6:      title: "AlexHartel AI Platform",
+./frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:11:      title: "Study | AlexHartel AI Platform",
+./frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:15:      title: "Companion | AlexHartel AI Platform",
+./frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:19:      title: "Profile | AlexHartel AI Platform",
+./frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:23:      title: "Support | AlexHartel AI Platform",
+./frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:27:      title: "System | AlexHartel AI Platform",
+./frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:108:      document.title = page.title || "AlexHartel AI Platform";
+./frontend/wrapper-ui/apc-wrapper-local/index.html:94:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage7q-2026-06-12-135105:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage7q-2026-06-12-135105:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/index.html.bak-stage5o31-force-support-public-summary-2026-06-11-122923:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o31-force-support-public-summary-2026-06-11-122923:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o18-study-style-reenable-2026-06-11-120520:3488:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o22-remove-study-style-link-2026-06-11-121107:3493:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o32-profile-after-login-gate-2026-06-11-123351:3634:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o34-profile-polish-2026-06-11-124315:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o34-profile-polish-2026-06-11-124315:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/index.html.bak-stage5o26-complete-public-gates-2026-06-11-121702:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o26-complete-public-gates-2026-06-11-121702:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o29-support-public-summary-2026-06-11-122711:3633:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o33-profile-route-fix-2026-06-11-123729:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o33-profile-route-fix-2026-06-11-123729:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/index.html.bak-stage5o17-study-shared-style-2026-06-11-120210:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o17-study-shared-style-2026-06-11-120210:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/index.html:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/index.html.bak-stage5o28-public-summary-polish-2026-06-11-122403:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o28-public-summary-polish-2026-06-11-122403:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o10-remove-fresh-source-2026-06-11-110531:3483:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o23-study-layout-logo-unify-2026-06-11-121251:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o23-study-layout-logo-unify-2026-06-11-121251:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o17-study-shared-style-2026-06-11-120210:3488:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o27b-public-gate-blank-fix-2026-06-11-122012:3606:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5n7-calendar-provider-only-2026-06-11-102043:3483:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o31-force-support-public-summary-2026-06-11-122923:3634:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o16-credits-pill-nav-2026-06-11-120018:3488:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o30-support-public-override-2026-06-11-122836:3634:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o14b-single-nav-router-2026-06-11-115530:3488:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o13-header-nav-state-2026-06-11-112822:3488:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage-5o35-2026-06-11-134447:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage-5o35-2026-06-11-134447:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/index.html.bak-stage5o18-study-style-reenable-2026-06-11-120520:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o18-study-style-reenable-2026-06-11-120520:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/index.html.bak-stage5o16-credits-pill-nav-2026-06-11-120018:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o16-credits-pill-nav-2026-06-11-120018:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o9-credits-fresh-2026-06-11-110356:3483:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o21-admin-fast-status-2026-06-11-120928:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o21-admin-fast-status-2026-06-11-120928:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage7q-2026-06-12-135105:4761:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o12-clean-fresh-marker-2026-06-11-112327:3488:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o32-profile-after-login-gate-2026-06-11-123351:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o32-profile-after-login-gate-2026-06-11-123351:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o34-profile-polish-2026-06-11-124315:3761:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o20-admin-status-caller-2026-06-11-120835:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o20-admin-status-caller-2026-06-11-120835:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o24-study-format-cleanup-2026-06-11-121612:3490:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o25-public-feature-gate-2026-06-11-121619:3487:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o11-deep-route-reload-fix-2026-06-11-110737:3488:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o27-generic-public-gates-2026-06-11-121802:3595:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-broken-stage5o14b-2026-06-11-115711:3494:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o23-study-layout-logo-unify-2026-06-11-121251:3485:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o26-complete-public-gates-2026-06-11-121702:3595:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/app.js.bak-stage5o20-admin-status-caller-2026-06-11-120835:3493:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o15-asset-recovery-2026-06-11-115819:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o15-asset-recovery-2026-06-11-115819:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js:6528:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o25-public-feature-gate-2026-06-11-121619:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o25-public-feature-gate-2026-06-11-121619:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o28-public-summary-polish-2026-06-11-122403:3651:  document.title = `${page.title} | AlexHartel AI Platform`;
+./frontend/wrapper-ui/index.html.bak-stage5o22-remove-study-style-link-2026-06-11-121107:6:  <title>AlexHartel AI Platform</title>
+./frontend/wrapper-ui/index.html.bak-stage5o22-remove-study-style-link-2026-06-11-121107:13:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+./frontend/wrapper-ui/app.js.bak-stage5o21-admin-fast-status-2026-06-11-120928:3493:  document.title = `${page.title} | AlexHartel AI Platform`;
+./edge_controller.py.bak-stage-5p6a-2026-06-11-212510:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage-5p6a-2026-06-11-212510:9362:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_inventory.example.json:28:      "label": "LLMs / AI Platform / Ollama",
+./create_stage5p_inspection_pack.sh:21:AI Platform Control — Stage 5P inspection pack
+./edge_controller.py:1239:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py:24017:        "You are the AI Platform Control Companion exact-answer executor.\n"
+./edge_controller.py:24048:                "You are the AI Platform Control Study Companion.\n"
+./edge_controller.py:24066:            "You are the AI Platform Control Companion.\n"
+./edge_controller.py.bak-stage-5p5a-2026-06-11-212232:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-stage-5p5a-2026-06-11-212232:9287:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],
+./edge_controller.py.bak-laptop-only-2026-06-12-024703:1147:                "label": "LLMs / AI Platform / Ollama",
+./edge_controller.py.bak-laptop-only-2026-06-12-024703:10175:        "services": ["Ollama", "AI Platform API", "TTS", "Whisper"],

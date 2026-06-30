@@ -1,0 +1,69 @@
+=== stage-17k-z-r9o-browser-brand-label-source-cleanup-no-deploy ===
+created_utc=20260630T184138Z
+repo_head_short=752410d
+repo_head_full=752410d689b47909a5d65ac0b7c04d28d38a5ead
+
+Scope:
+- active browser/user-facing source brand label cleanup
+- docs/smoke commit/tag/push
+- no runtime mutation
+- no CT/VM/service restart
+- no backend/frontend deploy
+- no DB write
+- no email send
+- no signup open
+- no password reset request
+
+Brand target:
+- Product/browser label: Buddies Who Study
+- Product domain: buddieswhostudy.com
+
+Patch policy:
+- Broad scan recorded for AlexHartel AI Platform, Alex Hartel AI Platform, AlexHartel, Alex Hartel, Hartel, AI Platform, and Alex.
+- Patch applied only to active browser/user-facing source files.
+- Historical docs, generated smoke, backup snapshots, and archived source copies were intentionally not rewritten.
+
+Patch result:
+- patched_count=6
+- patch_log=docs/smoke/generated/stage-17k-z-r9o-browser-brand-label-source-cleanup-no-deploy/patch-log.20260630T184138Z.txt
+- scan_before=docs/smoke/generated/stage-17k-z-r9o-browser-brand-label-source-cleanup-no-deploy/brand-scan-before.20260630T184138Z.txt
+- scan_after=docs/smoke/generated/stage-17k-z-r9o-browser-brand-label-source-cleanup-no-deploy/brand-scan-after.20260630T184138Z.txt
+- remaining_active_brand_hits=0
+
+Public no-deploy smoke:
+- root_code=200
+- register_code=403
+- register_marker=closed_beta_signup_disabled
+
+Decision:
+- Source browser labels are patched toward Buddies Who Study branding.
+- This checkpoint does not deploy to VM200/public runtime.
+- Registration remains blocked.
+- Next stage should deploy the static/browser source change to website-edge and verify browser title/public UI.
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9o-browser-brand-label-source-cleanup-no-deploy",
+  "created_utc": "20260630T184138Z",
+  "mutation_scope": "source_browser_brand_labels_plus_docs_smoke_commit_tag_push_only",
+  "runtime_mutation": false,
+  "backend_frontend_deploy": false,
+  "email_send": false,
+  "signup_opened": false,
+  "password_reset_request": false,
+  "repo_head_short": "752410d",
+  "repo_head_full": "752410d689b47909a5d65ac0b7c04d28d38a5ead",
+  "prior_checkpoint": "752410d",
+  "brand_target": "Buddies Who Study",
+  "product_domain": "buddieswhostudy.com",
+  "patched_count": "6",
+  "remaining_active_brand_hits": "0",
+  "scan_before": "docs/smoke/generated/stage-17k-z-r9o-browser-brand-label-source-cleanup-no-deploy/brand-scan-before.20260630T184138Z.txt",
+  "scan_after": "docs/smoke/generated/stage-17k-z-r9o-browser-brand-label-source-cleanup-no-deploy/brand-scan-after.20260630T184138Z.txt",
+  "patch_log": "docs/smoke/generated/stage-17k-z-r9o-browser-brand-label-source-cleanup-no-deploy/patch-log.20260630T184138Z.txt",
+  "root_code": "200",
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "next_recommended_stage": "deploy_browser_brand_label_patch_to_website_edge",
+  "pass": true
+}

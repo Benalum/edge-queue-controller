@@ -1,0 +1,13 @@
+patched frontend/wrapper-ui/apc-wrapper-local/index.html
+patched frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+patched frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+patched frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js
+patched frontend/wrapper-ui/app.js
+patched frontend/wrapper-ui/index.html
+changed_count=6
+changed=frontend/wrapper-ui/apc-wrapper-local/index.html
+changed=frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+changed=frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+changed=frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js
+changed=frontend/wrapper-ui/app.js
+changed=frontend/wrapper-ui/index.html

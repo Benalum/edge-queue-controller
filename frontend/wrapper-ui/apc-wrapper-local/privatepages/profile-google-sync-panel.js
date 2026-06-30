@@ -351,7 +351,7 @@
     panel.setAttribute('data-apc-marker', liveMarker);
     panel.innerHTML = [
       '<h3>Google Drive sync</h3>',
-      '<p>AI Platform Control will only create and manage its own hidden Google Drive app data. It will not browse, read, or modify your other Drive files or folders.</p>',
+      '<p>Buddies Who Study will only create and manage its own hidden Google Drive app data. It will not browse, read, or modify your other Drive files or folders.</p>',
       '<div class="apc-google-sync-status"><span class="apc-google-sync-dot" aria-hidden="true"></span><span data-apc-google-sync-status-text>' + (configured ? 'Ready for explicit consent' : 'Google client ID not configured') + '</span></div>',
       '<label><input type="checkbox" data-apc-google-sync-explicit-consent> I understand APC will create hidden app data in my Google Drive for APC-native decks, sessions, history, and stats. APC will not upload Anki files unless I explicitly choose an import/convert option later.</label>',
       '<div class="apc-google-sync-actions">',

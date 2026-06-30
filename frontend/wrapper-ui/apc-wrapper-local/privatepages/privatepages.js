@@ -295,7 +295,7 @@
       });
     });
 
-    document.title = `${TITLE_BY_PAGE[page] || "Private"} | AlexHartel AI Platform`;
+    document.title = `${TITLE_BY_PAGE[page] || "Private"} | Buddies Who Study`;
   }
 
   async function renderPrivateRoute() {

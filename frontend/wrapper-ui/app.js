@@ -6525,7 +6525,7 @@ function renderPage() {
     }
   }
 
-  document.title = `${page.title} | AlexHartel AI Platform`;
+  document.title = `${page.title} | Buddies Who Study`;
   setActiveNav(path);
   setSystemHeaderState();
   renderAuthButtons();

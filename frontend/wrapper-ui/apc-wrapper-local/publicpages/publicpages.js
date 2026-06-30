@@ -3,28 +3,28 @@
 
   const PUBLIC_PAGES = {
     "/": {
-      title: "AlexHartel AI Platform",
+      title: "Buddies Who Study",
       file: "/publicpages/pages/home.html",
       publicEvenWhenLoggedIn: true
     },
     "/study": {
-      title: "Study | AlexHartel AI Platform",
+      title: "Study | Buddies Who Study",
       file: "/publicpages/pages/study.html"
     },
     "/companion": {
-      title: "Companion | AlexHartel AI Platform",
+      title: "Companion | Buddies Who Study",
       file: "/publicpages/pages/companion.html"
     },
     "/profile": {
-      title: "Profile | AlexHartel AI Platform",
+      title: "Profile | Buddies Who Study",
       file: "/publicpages/pages/profile.html"
     },
     "/support": {
-      title: "Support | AlexHartel AI Platform",
+      title: "Support | Buddies Who Study",
       file: "/publicpages/pages/support.html"
     },
     "/system": {
-      title: "System | AlexHartel AI Platform",
+      title: "System | Buddies Who Study",
       file: "/publicpages/pages/system.html"
     }
   };
@@ -105,7 +105,7 @@
       }
 
       app.innerHTML = await response.text();
-      document.title = page.title || "AlexHartel AI Platform";
+      document.title = page.title || "Buddies Who Study";
       lastRenderedRoute = route;
 
       if (typeof window.stage5o13SyncHeaderNavActiveState === "function") {
