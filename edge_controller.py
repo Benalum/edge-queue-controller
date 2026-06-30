@@ -6864,10 +6864,32 @@ def _auth_current_user_from_request(request: Request):
     return row
 
 
+
+APC_CLOSED_BETA_SIGNUP_DISABLED_STAGE_17K_Z_R8D = True
+APC_CLOSED_BETA_SIGNUP_MESSAGE_STAGE_17K_Z_R8D = "Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study."
+
+
+def _closed_beta_signup_disabled_response():
+    raise HTTPException(
+        status_code=403,
+        detail={
+            "ok": False,
+            "code": "closed_beta_signup_disabled",
+            "message": APC_CLOSED_BETA_SIGNUP_MESSAGE_STAGE_17K_Z_R8D,
+            "brand": "Buddies Who Study",
+            "product_domain": "buddieswhostudy.com",
+            "public_signup_enabled": False,
+            "existing_user_signin_enabled": True,
+        },
+    )
+
 @app.post("/public/auth/register")
 async def public_auth_register(request: Request):
     _auth_init_tables()
 
+
+    if APC_CLOSED_BETA_SIGNUP_DISABLED_STAGE_17K_Z_R8D:
+        _closed_beta_signup_disabled_response()
     try:
         payload = await request.json()
     except Exception:
@@ -12922,6 +12944,9 @@ async def system_session_login(request: Request):
 async def system_session_register(request: Request):
     _auth_init_tables()
 
+
+    if APC_CLOSED_BETA_SIGNUP_DISABLED_STAGE_17K_Z_R8D:
+        _closed_beta_signup_disabled_response()
     try:
         payload = await request.json()
     except Exception:

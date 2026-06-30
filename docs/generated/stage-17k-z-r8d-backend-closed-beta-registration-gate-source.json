@@ -1,0 +1,39 @@
+{
+  "stage": "17K-Z-R8D",
+  "status": "backend_closed_beta_registration_gate_source_only",
+  "brand_name": "Buddies Who Study",
+  "product_domain": "buddieswhostudy.com",
+  "public_signup_enabled": false,
+  "existing_user_signin_enabled": true,
+  "source_file": "edge_controller.py",
+  "gated_routes": [
+    "/public/auth/register",
+    "/api/auth/register",
+    "/system/session/register"
+  ],
+  "preserved_routes": [
+    "/public/auth/login",
+    "/api/auth/login",
+    "/public/auth/resend-verification",
+    "/api/auth/resend-verification",
+    "/public/auth/verify-email",
+    "/api/auth/verify-email"
+  ],
+  "refusal": {
+    "status_code": 403,
+    "code": "closed_beta_signup_disabled",
+    "message": "Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study."
+  },
+  "not_performed": {
+    "deploy": true,
+    "ct203_write": true,
+    "backend_restart": true,
+    "db_write": true,
+    "registration_post": true,
+    "email_send": true,
+    "dns_cloudflare_mutation": true,
+    "google_cloud_mutation": true,
+    "email_provider_mutation": true
+  },
+  "next_required_stage": "R8E deploy/restart CT203 controller and verify live registration returns 403 while login remains available"
+}
