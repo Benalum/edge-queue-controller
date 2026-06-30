@@ -1,0 +1,61 @@
+=== stage-17k-z-r9q-verify-browser-brand-label-deploy ===
+created_utc=20260630T185121Z
+repo_head_short=20d7a05
+repo_head_full=20d7a054516403f9526b6fc3594743a8aac8e229
+
+Scope:
+- verify-only public browser brand label deploy
+- repo docs/smoke commit/tag/push
+- no runtime mutation
+- no deploy
+- no CT/VM/service restart
+- no backend deploy
+- no DB write
+- no email send
+- no signup open
+- no password reset request
+
+Verification:
+- root_code=200
+- public_title=Buddies Who Study
+- public_old_brand_hits=0
+- public_buddies_hits=2
+- register_code=403
+- register_marker=closed_beta_signup_disabled
+
+Evidence:
+- public_body=docs/smoke/generated/stage-17k-z-r9q-verify-browser-brand-label-deploy/public-root.20260630T185121Z.html
+- public_headers=docs/smoke/generated/stage-17k-z-r9q-verify-browser-brand-label-deploy/public-root-headers.20260630T185121Z.txt
+- remote_report=docs/smoke/generated/stage-17k-z-r9q-verify-browser-brand-label-deploy/remote-live-static.20260630T185121Z.txt
+- register_body=docs/smoke/generated/stage-17k-z-r9q-verify-browser-brand-label-deploy/register-body.20260630T185121Z.json
+- register_headers=docs/smoke/generated/stage-17k-z-r9q-verify-browser-brand-label-deploy/register-headers.20260630T185121Z.txt
+
+Decision:
+- Browser title/public root brand label deploy is verified only if title is Buddies Who Study and old Alex/Hartel labels are gone from public root.
+- Registration must remain blocked.
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9q-verify-browser-brand-label-deploy",
+  "created_utc": "20260630T185121Z",
+  "mutation_scope": "verify_only_public_brand_labels_plus_repo_docs_smoke_commit_tag_push",
+  "runtime_mutation": false,
+  "deploy": false,
+  "service_restart": false,
+  "backend_deploy": false,
+  "db_write": false,
+  "email_send": false,
+  "signup_opened": false,
+  "password_reset_request": false,
+  "repo_head_short": "20d7a05",
+  "repo_head_full": "20d7a054516403f9526b6fc3594743a8aac8e229",
+  "prior_checkpoint": "20d7a05",
+  "root_code": "200",
+  "public_title": "Buddies Who Study",
+  "public_old_brand_hits": "0",
+  "public_buddies_hits": "2",
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "remote_report": "docs/smoke/generated/stage-17k-z-r9q-verify-browser-brand-label-deploy/remote-live-static.20260630T185121Z.txt",
+  "pass": true
+}

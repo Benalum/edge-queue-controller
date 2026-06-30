@@ -1,0 +1,55 @@
+remote_user=jkg76nid
+remote_host=website-edge
+live_index_title:
+94:  <title>Buddies Who Study</title>
+128:    <strong>Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.</strong>   
+live_old_brand_hits:
+/var/www/apc-wrapper-local/index.html.before-browser-voice-r3d-20260628T001609Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-browser-only-voice-r3m-20260628T012114Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-browser-voice-r3-20260627T235109Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/apc-r8g-r2-qga-backup-20260630T012641Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-study-command-router-r2-20260627T234337Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-auth-gate-r3r-20260628T163736Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-intro-copy-r3n-20260628T012940Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-conversation-mode-r3g-20260628T004358Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-voice-ui-r3l-20260628T011735Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/apc-r8f-qga-backup-20260630T012147Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-standalone-auth-20260626T221554Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-browser-voice-r3b-20260627T235355Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/privatepages/privatepages.js.before-remove-duplicate-private-topbar-20260626T235234Z.bak:297:    document.title = `${TITLE_BY_PAGE[page] || "Private"} | AlexHartel AI Platform`;
+/var/www/apc-wrapper-local/privatepages/privatepages.js.before-private-header-click-capture-20260627T000008Z.bak:297:    document.title = `${TITLE_BY_PAGE[page] || "Private"} | AlexHartel AI Platform`;
+/var/www/apc-wrapper-local/privatepages/privatepages.js.before-study-render-event-20260626T234914Z.bak:297:    document.title = `${TITLE_BY_PAGE[page] || "Private"} | AlexHartel AI Platform`;
+/var/www/apc-wrapper-local/privatepages/privatepages.js.before-header-admin-support-sync-20260626T233811Z.bak:268:    document.title = `${TITLE_BY_PAGE[page] || "Private"} | AlexHartel AI Platform`;
+/var/www/apc-wrapper-local/index.html.before-sol-css-r3-20260627T011822Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-browser-only-notice-r3m-20260628T012433Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-privatepages-20260626T232834Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-browser-voice-r3c-20260627T235633Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/header/header.html:2:<a class="brand" href="/" aria-label="Go to AlexHartel AI Platform homepage">
+/var/www/apc-wrapper-local/header/header.html:4:      <svg viewBox="0 0 64 64" role="img" aria-label="AlexHartel AI Platform logo">
+/var/www/apc-wrapper-local/index.html.before-study-session-v2-20260627T013752Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-browser-listen-r3f-20260628T004003Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-sol-css-20260627T011548Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-listen-ui-r3h-20260628T005211Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/apc-r7d-qga-backup-20260629T211348Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-listen-r3j-20260628T010438Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-listen-ui-r3i-20260628T005519Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-local-first-drive-r3o-20260628T021104Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/auth/reset.js.before-new-password-payload-fix-20260626T230628Z.bak:60:    document.title = "Reset Password | AlexHartel AI Platform";
+/var/www/apc-wrapper-local/auth/reset.js:60:    document.title = "Reset Password | AlexHartel AI Platform";
+/var/www/apc-wrapper-local/index.html.before-study-cards-lite-cachebust-20260627T020219Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-global-drive-banner-r3p-20260628T021439Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/backups/admin-folder-r3u4-contrast-20260628T191620Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/backups/app-js-quarantine-20260628T193103Z/app.js:6401:  document.title = `${page.title} | AlexHartel AI Platform`;
+/var/www/apc-wrapper-local/backups/admin-folder-r3u10-uncached-script-20260629T182655Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/backups/admin-folder-r3u2-index-20260628T191031Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/backups/admin-folder-r3u3-token-20260628T191406Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/backups/admin-folder-r3u6-remove-old-page-20260628T192104Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/backups/admin-folder-r3u4-contrast-20260628T191636Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/backups/admin-folder-r3u9-route-retry-20260629T182348Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/backups/admin-folder-r3u8-privatepages-loader-20260628T192505Z/privatepages.js:297:    document.title = `${TITLE_BY_PAGE[page] || "Private"} | AlexHartel AI Platform`;
+/var/www/apc-wrapper-local/backups/admin-folder-r3u8-privatepages-loader-20260628T192505Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/backups/admin-folder-r3u-safe-20260628T190720Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/index.html.before-toggle-ui-r3k-20260628T011247Z.bak:6:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/apc-r8g-r3-qga-backup-20260630T013049Z/index.html:94:  <title>AlexHartel AI Platform</title>
+/var/www/apc-wrapper-local/app.js.disabled-20260628T193103Z:6401:  document.title = `${page.title} | AlexHartel AI Platform`;
+/var/www/apc-wrapper-local/index.html.before-browser-listen-r3e-20260628T002434Z.bak:6:  <title>AlexHartel AI Platform</title>
