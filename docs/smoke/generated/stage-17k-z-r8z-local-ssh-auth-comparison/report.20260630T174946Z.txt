@@ -1,0 +1,56 @@
+=== ssh effective config: pvew ===
+user root
+hostname 100.127.73.75
+identitiesonly no
+passwordauthentication yes
+pubkeyauthentication true
+bindaddress 100.108.171.94
+identityfile ~/.ssh/id_rsa
+identityfile ~/.ssh/id_ecdsa
+identityfile ~/.ssh/id_ecdsa_sk
+identityfile ~/.ssh/id_ed25519
+identityfile ~/.ssh/id_ed25519_sk
+identityfile ~/.ssh/id_xmss
+identityfile ~/.ssh/id_dsa
+
+=== ssh effective config: website-edge ===
+user root
+hostname 100.105.133.69
+identitiesonly no
+passwordauthentication yes
+pubkeyauthentication true
+bindaddress 100.108.171.94
+identityfile ~/.ssh/id_rsa
+identityfile ~/.ssh/id_ecdsa
+identityfile ~/.ssh/id_ecdsa_sk
+identityfile ~/.ssh/id_ed25519
+identityfile ~/.ssh/id_ed25519_sk
+identityfile ~/.ssh/id_xmss
+identityfile ~/.ssh/id_dsa
+
+=== local agent keys ===
+256 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc alex@alex-Latitude-3540 (ED25519)
+256 SHA256:BD62ct4y1GHb5+yOi0ubovGtz+ikYVOHjkANPCgujWg benalum@laptop (ED25519)
+256 SHA256:EKf2C2mUdz7rJakG88PWlaXeparz6AadmPCGk2qMwC8 edge-queue-controller (ED25519)
+256 SHA256:2FiWhJxI17nlObf5c1947vuu3kCMedepKozaJzSWppY alex@laptop (ED25519)
+256 SHA256:nq7ro9dJdKuaku8v1yhuUkJbFKlx9Q+i1Mc45Y29Sqg raul@laptop (ED25519)
+
+=== pvew verbose auth summary ===
+debug1: Authentications that can continue: publickey
+debug1: Offering public key: /home/alex/.ssh/id_ed25519 ED25519 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc agent
+debug1: Server accepts key: /home/alex/.ssh/id_ed25519 ED25519 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc agent
+Authenticated to 100.127.73.75 ([100.127.73.75]:22) using "publickey".
+
+=== website-edge verbose auth summary ===
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+debug1: Offering public key: /home/alex/.ssh/id_ed25519 ED25519 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc agent
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+debug1: Offering public key: benalum@laptop ED25519 SHA256:BD62ct4y1GHb5+yOi0ubovGtz+ikYVOHjkANPCgujWg agent
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+debug1: Offering public key: edge-queue-controller ED25519 SHA256:EKf2C2mUdz7rJakG88PWlaXeparz6AadmPCGk2qMwC8 agent
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+debug1: Offering public key: alex@laptop ED25519 SHA256:2FiWhJxI17nlObf5c1947vuu3kCMedepKozaJzSWppY agent
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+debug1: Offering public key: raul@laptop ED25519 SHA256:nq7ro9dJdKuaku8v1yhuUkJbFKlx9Q+i1Mc45Y29Sqg agent
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+root@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).

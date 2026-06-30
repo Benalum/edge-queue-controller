@@ -1,0 +1,95 @@
+=== stage-17k-z-r8za-local-management-network-baseline ===
+MUTATION_SCOPE=local_laptop_read_only_diagnostics_only
+NO remote mutation
+NO VPN restart
+NO service restart
+NO deploy
+NO DB write
+NO email send
+
+=== utc ===
+2026-06-30T17:51:24Z
+
+=== repo ===
+0ff584e
+?? docs/smoke/
+
+=== tailscale self ===
+100.108.171.94  alex-latitude-3540  alexhartel179@  linux  -                          
+100.97.163.99   iphone-14           alexhartel179@  iOS    offline, last seen 5d ago  
+100.88.245.33   llms                alexhartel179@  linux  offline, last seen 3d ago  
+100.88.194.19   pveso               alexhartel179@  linux  offline, last seen 3d ago  
+100.127.73.75   pvew                alexhartel179@  linux  idle, tx 24820 rx 25492    
+100.105.133.69  website-edge        alexhartel179@  linux  idle, tx 21900 rx 19252    
+
+=== tailscale ipv4 ===
+100.108.171.94
+
+=== wireguard home interface ===
+enp1s0           DOWN           
+enx8a1e5a1050a6  DOWN           
+
+=== tailscale interface ===
+tailscale0       UNKNOWN        100.108.171.94/32 fd7a:115c:a1e0::6901:ab94/128 fe80::69c1:640f:142d:4707/64 
+
+=== route checks from tailscale self ===
+--- route to 100.127.73.75 from 100.108.171.94 ---
+100.127.73.75 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+--- route to 100.105.133.69 from 100.108.171.94 ---
+100.105.133.69 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+--- route to 100.88.194.19 from 100.108.171.94 ---
+100.88.194.19 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+--- route to 100.88.245.33 from 100.108.171.94 ---
+100.88.245.33 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+
+=== ssh effective config: pvew ===
+user root
+hostname 100.127.73.75
+identitiesonly no
+passwordauthentication yes
+pubkeyauthentication true
+bindaddress 100.108.171.94
+identityfile ~/.ssh/id_rsa
+identityfile ~/.ssh/id_ecdsa
+identityfile ~/.ssh/id_ecdsa_sk
+identityfile ~/.ssh/id_ed25519
+identityfile ~/.ssh/id_ed25519_sk
+identityfile ~/.ssh/id_xmss
+identityfile ~/.ssh/id_dsa
+
+=== ssh effective config: website-edge ===
+user root
+hostname 100.105.133.69
+identitiesonly no
+passwordauthentication yes
+pubkeyauthentication true
+bindaddress 100.108.171.94
+identityfile ~/.ssh/id_rsa
+identityfile ~/.ssh/id_ecdsa
+identityfile ~/.ssh/id_ecdsa_sk
+identityfile ~/.ssh/id_ed25519
+identityfile ~/.ssh/id_ed25519_sk
+identityfile ~/.ssh/id_xmss
+identityfile ~/.ssh/id_dsa
+
+=== agent keys ===
+The agent has no identities.
+
+=== pvew ssh smoke ===
+pvew
+root
+
+=== website-edge ssh smoke ===
+root@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
+
+=== website-edge verbose auth summary ===
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+debug1: Offering public key: /home/alex/.ssh/id_ed25519 ED25519 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+root@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
+
+=== wireguard config section map, redacted ===
