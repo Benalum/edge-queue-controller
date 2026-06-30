@@ -1,0 +1,77 @@
+=== stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix ===
+created_utc=20260630T185522Z
+repo_head_short=552f192
+repo_head_full=552f1923d31f50373cbb26d6a975034d863635d6
+
+Scope:
+- verify live manual header/reset brand patch
+- pull fixed active VM200 files into source mirror
+- repo docs/smoke commit/tag/push
+- no runtime mutation
+- no deploy
+- no CT/VM/service restart
+- no backend deploy
+- no DB write
+- no email send
+- no signup open
+- no password reset request
+
+Source mirror recorded:
+- frontend/wrapper-ui/apc-wrapper-local/header/header.html
+- frontend/wrapper-ui/apc-wrapper-local/auth/reset.js
+
+Verification:
+- remote_old_hits=0
+- source_old_hits=0
+- root_code=200
+- root_title=Buddies Who Study
+- reset_code=200
+- reset_old_hits=0
+- reset_buddies_hits=2
+- register_code=403
+- register_marker=closed_beta_signup_disabled
+
+Evidence:
+- remote_report=docs/smoke/generated/stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix/remote-active-header-reset.20260630T185522Z.txt
+- source_scan=docs/smoke/generated/stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix/source-targeted-scan.20260630T185522Z.txt
+- public_root_body=docs/smoke/generated/stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix/public-root.20260630T185522Z.html
+- public_reset_body=docs/smoke/generated/stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix/public-reset.20260630T185522Z.html
+- register_body=docs/smoke/generated/stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix/register-body.20260630T185522Z.json
+
+Decision:
+- Active VM200 header/reset brand leftovers are verified fixed when remote_old_hits=0 and reset_old_hits=0.
+- Source now records the active VM200 split files to prevent drift.
+- Registration remains blocked.
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix",
+  "created_utc": "20260630T185522Z",
+  "mutation_scope": "verify_live_header_reset_patch_plus_record_active_source_files",
+  "runtime_mutation": false,
+  "deploy": false,
+  "service_restart": false,
+  "backend_deploy": false,
+  "db_write": false,
+  "email_send": false,
+  "signup_opened": false,
+  "password_reset_request": false,
+  "repo_head_short": "552f192",
+  "repo_head_full": "552f1923d31f50373cbb26d6a975034d863635d6",
+  "prior_checkpoint": "552f192",
+  "source_files_recorded": [
+    "frontend/wrapper-ui/apc-wrapper-local/header/header.html",
+    "frontend/wrapper-ui/apc-wrapper-local/auth/reset.js"
+  ],
+  "remote_old_hits": "0",
+  "source_old_hits": "0",
+  "root_code": "200",
+  "root_title": "Buddies Who Study",
+  "reset_code": "200",
+  "reset_old_hits": "0",
+  "reset_buddies_hits": "2",
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "remote_report": "docs/smoke/generated/stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix/remote-active-header-reset.20260630T185522Z.txt",
+  "pass": true
+}

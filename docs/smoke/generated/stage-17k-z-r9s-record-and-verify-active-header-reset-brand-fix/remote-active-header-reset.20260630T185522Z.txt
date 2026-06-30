@@ -1,0 +1,8 @@
+remote_user=jkg76nid
+remote_host=website-edge
+active_buddies_labels:
+/var/www/apc-wrapper-local/header/header.html:2:<a class="brand" href="/" aria-label="Go to Buddies Who Study homepage">
+/var/www/apc-wrapper-local/header/header.html:4:      <svg viewBox="0 0 64 64" role="img" aria-label="Buddies Who Study logo">
+/var/www/apc-wrapper-local/header/header.html:14:  <nav class="nav" aria-label="Main navigation">
+/var/www/apc-wrapper-local/auth/reset.js:60:    document.title = "Reset Password | Buddies Who Study";
+active_old_brand_hits:

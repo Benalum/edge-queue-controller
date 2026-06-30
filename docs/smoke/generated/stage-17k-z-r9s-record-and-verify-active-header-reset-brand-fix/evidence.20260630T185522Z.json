@@ -1,0 +1,31 @@
+{
+  "stage": "stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix",
+  "created_utc": "20260630T185522Z",
+  "mutation_scope": "verify_live_header_reset_patch_plus_record_active_source_files",
+  "runtime_mutation": false,
+  "deploy": false,
+  "service_restart": false,
+  "backend_deploy": false,
+  "db_write": false,
+  "email_send": false,
+  "signup_opened": false,
+  "password_reset_request": false,
+  "repo_head_short": "552f192",
+  "repo_head_full": "552f1923d31f50373cbb26d6a975034d863635d6",
+  "prior_checkpoint": "552f192",
+  "source_files_recorded": [
+    "frontend/wrapper-ui/apc-wrapper-local/header/header.html",
+    "frontend/wrapper-ui/apc-wrapper-local/auth/reset.js"
+  ],
+  "remote_old_hits": "0",
+  "source_old_hits": "0",
+  "root_code": "200",
+  "root_title": "Buddies Who Study",
+  "reset_code": "200",
+  "reset_old_hits": "0",
+  "reset_buddies_hits": "2",
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "remote_report": "docs/smoke/generated/stage-17k-z-r9s-record-and-verify-active-header-reset-brand-fix/remote-active-header-reset.20260630T185522Z.txt",
+  "pass": true
+}
