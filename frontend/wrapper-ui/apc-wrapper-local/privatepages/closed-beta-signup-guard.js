@@ -49,39 +49,6 @@
     }
   }
 
-  document.addEventListener("click", function (event) {
-    const target = event.target;
-    if (!target) return;
-
-    const closest = typeof target.closest === "function" ? target.closest.bind(target) : null;
-    const registerTab = closest ? closest("#registerTabBtn") : null;
-    const registerAction = closest
-      ? closest('[data-auth-mode="register"], [data-auth-action="register"], a[href*="/register"], a[href*="/signup"]')
-      : null;
-
-    const text = String(target.textContent || target.value || "")
-      .toLowerCase()
-      .replace(/\s+/g, " ")
-      .trim();
-    const href = String(target.getAttribute && target.getAttribute("href") || "").toLowerCase();
-
-    const explicitRegisterLabel =
-      text === "register" ||
-      text === "sign up" ||
-      text === "signup" ||
-      text === "create account" ||
-      text === "send verification email";
-
-    const explicitRegisterHref =
-      href.includes("/register") || href.includes("/signup");
-
-    if (registerTab || registerAction || explicitRegisterLabel || explicitRegisterHref) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      showMessage();
-    }
-  }, true);
-
   const nativeFetch = window.fetch ? window.fetch.bind(window) : null;
   if (nativeFetch) {
     window.fetch = function closedBetaFetchGuard(input, init) {
