@@ -1,0 +1,13 @@
+# Stage 17K-Z-R8L public DNS/email observation
+timestamp_utc=2026-06-30T16:28:18Z
+
+## buddieswhostudy.com TXT
+
+## buddieswhostudy.com MX
+
+## _dmarc.buddieswhostudy.com TXT
+
+## common Resend DKIM selector checks
+--- TXT resend.buddieswhostudy.com ---
+--- TXT resend._domainkey.buddieswhostudy.com ---
+"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCuLO+BtyTjWqk6Ck/WhSq7NYLpqFH7WupCn4JuT85I2moJqA7b+EyIKUHzur88aEDhQu2ORhChm2FGkiSPn39ZiokYRi+A69bcIbKjC3xDySGQ4cZk4xNLkH70I4RxrhHtM3qInHkJSng2qBTAvvgYVyjTlNtxDxty1f39pqQ3/wIDAQAB"

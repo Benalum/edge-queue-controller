@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://alexhartel.com/sitemap.xml
+Sitemap: https://buddieswhostudy.com/sitemap.xml
