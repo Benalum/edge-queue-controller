@@ -1,0 +1,113 @@
+=== stage-17k-z-r9e-read-only-ssh-route-interface-proof ===
+MUTATION_SCOPE=local_laptop_read_only_ssh_route_interface_proof
+NO remote mutation
+NO VPN restart
+NO service restart
+NO deploy
+NO DB write
+NO email send
+
+=== utc ===
+2026-06-30T18:04:40Z
+
+=== repo ===
+613d867
+?? docs/smoke/generated/stage-17k-z-r9e-read-only-ssh-route-interface-proof/
+
+=== tailscale self ===
+100.108.171.94
+
+=== wireguard interfaces ===
+home
+
+
+==============================
+=== alias: pvew ===
+==============================
+--- ssh effective target ---
+alias=pvew
+user=root
+hostname=100.127.73.75
+bindaddress=100.108.171.94
+user root
+hostname 100.127.73.75
+identitiesonly no
+passwordauthentication yes
+pubkeyauthentication true
+bindaddress 100.108.171.94
+identityfile ~/.ssh/id_rsa
+identityfile ~/.ssh/id_ecdsa
+identityfile ~/.ssh/id_ecdsa_sk
+identityfile ~/.ssh/id_ed25519
+identityfile ~/.ssh/id_ed25519_sk
+identityfile ~/.ssh/id_xmss
+identityfile ~/.ssh/id_dsa
+
+--- kernel route decision for this SSH flow ---
+100.127.73.75 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+
+--- interface counters before ssh ---
+before tailscale0 rx_bytes=149285 tx_bytes=143569
+before home rx_bytes=180905060 tx_bytes=56510640
+
+--- ssh smoke ---
+pvew
+root
+
+--- interface counters after ssh ---
+after tailscale0 rx_bytes=154602 tx_bytes=148480
+after home rx_bytes=180931988 tx_bytes=56560552
+
+
+==============================
+=== alias: website-edge ===
+==============================
+--- ssh effective target ---
+alias=website-edge
+user=root
+hostname=100.105.133.69
+bindaddress=100.108.171.94
+user root
+hostname 100.105.133.69
+identitiesonly no
+passwordauthentication yes
+pubkeyauthentication true
+bindaddress 100.108.171.94
+identityfile ~/.ssh/id_rsa
+identityfile ~/.ssh/id_ecdsa
+identityfile ~/.ssh/id_ecdsa_sk
+identityfile ~/.ssh/id_ed25519
+identityfile ~/.ssh/id_ed25519_sk
+identityfile ~/.ssh/id_xmss
+identityfile ~/.ssh/id_dsa
+
+--- kernel route decision for this SSH flow ---
+100.105.133.69 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+
+--- interface counters before ssh ---
+before tailscale0 rx_bytes=154706 tx_bytes=148532
+before home rx_bytes=180932308 tx_bytes=56560712
+
+--- ssh smoke ---
+root@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
+
+--- interface counters after ssh ---
+after tailscale0 rx_bytes=158360 tx_bytes=152383
+after home rx_bytes=180941396 tx_bytes=56570792
+
+
+=== direct route checks for known management IPs ===
+--- 100.127.73.75 from 100.108.171.94 ---
+100.127.73.75 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+--- 100.105.133.69 from 100.108.171.94 ---
+100.105.133.69 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+--- 100.88.194.19 from 100.108.171.94 ---
+100.88.194.19 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+--- 100.88.245.33 from 100.108.171.94 ---
+100.88.245.33 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 

@@ -1,0 +1,21 @@
+=== stage-17k-z-r9f-local-website-edge-alias-user-repair ===
+MUTATION_SCOPE=local_laptop_ssh_alias_only
+NO remote mutation
+NO VPN restart
+NO service restart
+NO deploy
+NO DB write
+NO email send
+
+=== utc ===
+2026-06-30T18:05:34Z
+
+=== repo ===
+613d867
+?? docs/smoke/generated/stage-17k-z-r9e-read-only-ssh-route-interface-proof/
+?? docs/smoke/generated/stage-17k-z-r9f-local-website-edge-alias-user-repair/
+
+=== locate R9C3 selected user from logs ===
+r9c3_log=docs/smoke/generated/stage-17k-z-r9c3-vm200-normal-user-ssh-key-repair/remote.20260630T180301Z.txt
+selected_user=missing
+Could not find selected_user in docs/smoke/generated/stage-17k-z-r9c3-vm200-normal-user-ssh-key-repair/remote.20260630T180301Z.txt

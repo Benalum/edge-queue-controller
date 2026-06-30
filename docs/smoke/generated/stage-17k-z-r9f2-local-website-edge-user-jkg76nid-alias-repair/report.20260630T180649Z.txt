@@ -1,0 +1,72 @@
+=== stage-17k-z-r9f2-local-website-edge-user-jkg76nid-alias-repair ===
+MUTATION_SCOPE=local_laptop_ssh_alias_only
+NO remote mutation
+NO VPN restart
+NO service restart
+NO deploy
+NO DB write
+NO email send
+
+=== utc ===
+2026-06-30T18:06:49Z
+
+=== repo ===
+613d867
+?? docs/smoke/generated/stage-17k-z-r9e-read-only-ssh-route-interface-proof/
+?? docs/smoke/generated/stage-17k-z-r9f-local-website-edge-alias-user-repair/
+?? docs/smoke/generated/stage-17k-z-r9f2-local-website-edge-user-jkg76nid-alias-repair/
+
+=== route proof before alias patch ===
+100.127.73.75 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+100.105.133.69 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+
+=== current website-edge effective config ===
+user root
+hostname 100.105.133.69
+identitiesonly no
+passwordauthentication yes
+pubkeyauthentication true
+bindaddress 100.108.171.94
+identityfile ~/.ssh/id_rsa
+identityfile ~/.ssh/id_ecdsa
+identityfile ~/.ssh/id_ecdsa_sk
+identityfile ~/.ssh/id_ed25519
+identityfile ~/.ssh/id_ed25519_sk
+identityfile ~/.ssh/id_xmss
+identityfile ~/.ssh/id_dsa
+
+=== patch local website-edge/vm200 alias to User jkg76nid ===
+backup=/home/alex/.ssh/config.d/apc-tailscale-management.conf.r9f2.20260630T180649Z.bak
+
+=== final website-edge effective config ===
+user jkg76nid
+hostname 100.105.133.69
+identitiesonly no
+passwordauthentication yes
+pubkeyauthentication true
+bindaddress 100.108.171.94
+identityfile ~/.ssh/id_rsa
+identityfile ~/.ssh/id_ecdsa
+identityfile ~/.ssh/id_ecdsa_sk
+identityfile ~/.ssh/id_ed25519
+identityfile ~/.ssh/id_ed25519_sk
+identityfile ~/.ssh/id_xmss
+identityfile ~/.ssh/id_dsa
+
+=== direct smoke as jkg76nid ===
+website-edge
+jkg76nid
+
+=== alias smokes ===
+pvew
+root
+website-edge
+jkg76nid
+
+=== final route proof ===
+100.127.73.75 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
+100.105.133.69 from 100.108.171.94 dev tailscale0 table 51820 uid 1000 
+    cache 
