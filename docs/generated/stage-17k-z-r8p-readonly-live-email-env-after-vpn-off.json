@@ -1,0 +1,20 @@
+{
+  "alexhartel_redirect_301_observed": true,
+  "buddieswhostudy_http_200_observed": true,
+  "controller_service_active_observed": true,
+  "expected_email_from": "no-reply@buddieswhostudy.com",
+  "expected_email_from_name": "Buddies Who Study",
+  "expected_public_base_url": "https://buddieswhostudy.com",
+  "live_env_inventory_available": true,
+  "live_env_mentions_new_base_url": false,
+  "live_env_mentions_new_sender": false,
+  "live_env_mentions_old_base_url": false,
+  "live_env_mentions_old_sender": true,
+  "pvew_alias_ssh_ok": true,
+  "pvew_direct_ssh_ok": false,
+  "read_only": true,
+  "recommended_next_stage": "If old live sender/base URL is present, run approved live env patch + backend restart. If new values are already live, run a test-email readiness stage.",
+  "secrets_printed": false,
+  "stage": "17K-Z-R8P",
+  "www_buddieswhostudy_http_200_observed": true
+}
