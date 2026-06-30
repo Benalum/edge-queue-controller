@@ -52,17 +52,30 @@
   document.addEventListener("click", function (event) {
     const target = event.target;
     if (!target) return;
-    const text = String(target.textContent || target.value || "").toLowerCase();
-    const id = String(target.id || "").toLowerCase();
+
+    const closest = typeof target.closest === "function" ? target.closest.bind(target) : null;
+    const registerTab = closest ? closest("#registerTabBtn") : null;
+    const registerAction = closest
+      ? closest('[data-auth-mode="register"], [data-auth-action="register"], a[href*="/register"], a[href*="/signup"]')
+      : null;
+
+    const text = String(target.textContent || target.value || "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
     const href = String(target.getAttribute && target.getAttribute("href") || "").toLowerCase();
 
-    if (
-      id.includes("register") ||
-      text.includes("register") ||
-      text.includes("create account") ||
-      href.includes("/register") ||
-      href.includes("/signup")
-    ) {
+    const explicitRegisterLabel =
+      text === "register" ||
+      text === "sign up" ||
+      text === "signup" ||
+      text === "create account" ||
+      text === "send verification email";
+
+    const explicitRegisterHref =
+      href.includes("/register") || href.includes("/signup");
+
+    if (registerTab || registerAction || explicitRegisterLabel || explicitRegisterHref) {
       event.preventDefault();
       event.stopImmediatePropagation();
       showMessage();
@@ -96,10 +109,8 @@
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
       disableRegister();
-      showMessage();
     });
   } else {
     disableRegister();
-    showMessage();
   }
 })();
