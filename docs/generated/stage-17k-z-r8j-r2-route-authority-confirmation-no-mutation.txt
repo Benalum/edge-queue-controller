@@ -1,0 +1,127 @@
+# Stage 17K-Z-R8J-R2 route authority confirmation raw inventory
+timestamp_utc=2026-06-30T15:51:45Z
+product_domain=buddieswhostudy.com
+www_domain=www.buddieswhostudy.com
+current_domain=alexhartel.com
+provider_api_inventory=skipped_no_token_usage
+
+## public DNS comparison
+--- domain=alexhartel.com ---
+A:
+104.21.55.197
+172.67.172.161
+AAAA:
+2606:4700:3030::6815:37c5
+2606:4700:3036::ac43:aca1
+CNAME:
+NS:
+dakota.ns.cloudflare.com.
+bingo.ns.cloudflare.com.
+
+--- domain=www.alexhartel.com ---
+A:
+172.67.172.161
+104.21.55.197
+AAAA:
+2606:4700:3030::6815:37c5
+2606:4700:3036::ac43:aca1
+CNAME:
+NS:
+
+--- domain=buddieswhostudy.com ---
+A:
+AAAA:
+CNAME:
+NS:
+bingo.ns.cloudflare.com.
+dakota.ns.cloudflare.com.
+
+--- domain=www.buddieswhostudy.com ---
+A:
+AAAA:
+CNAME:
+NS:
+
+## public HTTP/headers comparison
+--- HEAD https://alexhartel.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 15:51:46 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=3YM%2BHd2a%2FCQheG4wH51%2BJn%2BqrEt77vn4d6R%2FvuuoYMatfm8pWvhBLDNZldv7e2guYAWLM18%2Bjiy0T0OUnXK%2FQeD0npA%2Blhi%2F1CKdaDcxXiUSHU2ufZQBENpcK41q0Ab%2FbQ%3D%3D"}]}
+cf-ray: a13e5594fd87c03b-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://www.alexhartel.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 15:51:46 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=KlWo0jXkJFTKhX02EHsyajztO6xytsYvzs4ZWvpgLSAUWJn2mp%2FhzUzfyxNVjGPY4QVqGwQ%2BjmAr194fCEigXkglYAun73zdczcGveecBsFB%2BhtPqonHN%2FsnZ8MYqsTUzL94hro%3D"}]}
+cf-ray: a13e5595ea94ceb9-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://buddieswhostudy.com/ ---
+
+--- HEAD https://www.buddieswhostudy.com/ ---
+
+--- HEAD https://alexhartel.com/api/me ---
+HTTP/2 405 
+date: Tue, 30 Jun 2026 15:51:47 GMT
+content-type: application/json
+content-length: 31
+allow: GET
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=lJJBXR6lfi0%2B60WnMz94ZxAxdgq931CIHqiaZawPAEaPSoypOqnstMC62XPZFd3YWYIMBbv%2BXdPkPEhMRFp1JVvx9PT6%2BGhGn0Ib4WjeLGH9gZVwja%2BUWfW8NtlYTW8OTg%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+cf-ray: a13e5597bdd3e652-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://buddieswhostudy.com/api/me ---
+
+--- HEAD https://www.buddieswhostudy.com/api/me ---
+
+## public content markers
+--- GET markers https://alexhartel.com/ ---
+<body><a href="https://alexhartel.com/cdn-cgi/content?id=WtiXGbav2JRR28UeaxGstz5XW4nDgLxMeGV7zrrbsHo-1782834707.447111-1.2.1.1-_hYH7USs.eLWkdqFSVtHlGDKEMd8uUnR03pIcAbyTeY" aria-hidden="true" rel="nofollow noopener" style="display: none !important; visibility: hidden !important"></a>
+    <strong>Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.</strong>   
+  <section id="authModal" class="auth-modal hidden" aria-label="Login dialog; account creation closed for beta">
+        <button id="registerTabBtn" class="ghost-btn apc-closed-beta-register-disabled" type="button" disabled hidden aria-disabled="true" data-closed-beta-disabled="true">Beta closed</button>
+  <script src="/privatepages/google-sync-config.js?v=20260629-stage17k-z-r7d-appdata-vm200"></script>
+  <script src="/privatepages/closed-beta-signup-guard.js?v=20260629-stage17k-z-r8b-closed-beta"></script>
+
+--- GET markers https://buddieswhostudy.com/ ---
+
+--- GET markers https://www.buddieswhostudy.com/ ---
+
+## registration gate comparison
+--- POST https://alexhartel.com/api/auth/register ---
+register_http=403
+{"detail":{"ok":false,"code":"closed_beta_signup_disabled","message":"Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.","brand":"Buddies Who Study","product_domain":"buddieswhostudy.com","public_signup_enabled":false,"existing_user_signin_enabled":true}}
+--- POST https://buddieswhostudy.com/api/auth/register ---
+register_http=000
+
+--- POST https://www.buddieswhostudy.com/api/auth/register ---
+register_http=000
+
+## VM200 optional read-only route config inventory
+vm200_ssh=failed_or_timed_out
+
+## PVEW optional read-only route hints
+pvew_ssh=failed_or_timed_out
