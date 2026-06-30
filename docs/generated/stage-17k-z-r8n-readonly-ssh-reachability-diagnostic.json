@@ -1,0 +1,17 @@
+{
+  "alexhartel_redirect_observed": true,
+  "buddieswhostudy_http_200_observed": true,
+  "pvew_host": "pvew",
+  "pvew_name_resolved": true,
+  "pvew_ssh_hostname_ok": true,
+  "pvew_ssh_timeout_or_failed": false,
+  "read_only": true,
+  "recommended_next_stage": "If SSH still fails, fix local Tailscale/LAN SSH reachability before live CT203 env patch; if SSH works, run read-only live env inventory again.",
+  "stage": "17K-Z-R8N",
+  "tailscale_command_available": true,
+  "vm200_host": "website-edge",
+  "vm200_name_resolved": true,
+  "vm200_ssh_hostname_ok": true,
+  "vm200_ssh_timeout_or_failed": false,
+  "www_buddieswhostudy_http_200_observed": true
+}

@@ -1,0 +1,103 @@
+# Stage 17K-Z-R8N read-only SSH reachability diagnostic
+timestamp_utc=2026-06-30T16:33:03Z
+pvew_host=pvew
+vm200_host=website-edge
+
+## local host
+alex-Latitude-3540
+2026-06-30T16:33:03Z
+
+## name resolution
+--- getent hosts pvew ---
+
+--- getent hosts website-edge ---
+
+## local ip route
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp1s0           DOWN           
+wlp0s20f3        UP             192.168.0.147/24 2601:8c0:800:7627:67fb:56ec:b725:9f90/64 2601:8c0:800:7627:2e46:8e4d:17d:8c13/64 fe80::ac3:3bd7:b72e:a8d1/64 
+tailscale0       UNKNOWN        100.108.171.94/32 fd7a:115c:a1e0::6901:ab94/128 fe80::33c3:f095:f4dd:3353/64 
+home             UNKNOWN        10.5.5.2/32 fd3f:2234:7a29:2800::2/128 
+
+default via 192.168.0.1 dev wlp0s20f3 proto dhcp src 192.168.0.147 metric 600 
+192.168.0.0/24 dev wlp0s20f3 proto kernel scope link src 192.168.0.147 metric 600 
+
+## tailscale status, if available
+100.108.171.94  alex-latitude-3540  alexhartel179@  linux  -                          
+100.97.163.99   iphone-14           alexhartel179@  iOS    offline, last seen 5d ago  
+100.88.245.33   llms                alexhartel179@  linux  offline, last seen 3d ago  
+100.88.194.19   pveso               alexhartel179@  linux  offline, last seen 3d ago  
+100.127.73.75   pvew                alexhartel179@  linux  -                          
+100.105.133.69  website-edge        alexhartel179@  linux  -                          
+
+--- tailscale ip ---
+100.108.171.94
+
+## TCP reachability checks
+--- pvew:22 nc ---
+nc: getaddrinfo for host "pvew" port 22: Temporary failure in name resolution
+
+--- pvew ssh batch hostname ---
+ssh: connect to host 100.127.73.75 port 22: Connection timed out
+
+--- website-edge:22 nc ---
+nc: getaddrinfo for host "website-edge" port 22: Temporary failure in name resolution
+
+--- website-edge ssh batch hostname ---
+ssh: connect to host 100.105.133.69 port 22: Connection timed out
+
+## public route still healthy
+--- HEAD https://buddieswhostudy.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 16:33:18 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Cml%2FNMvhIA491dIbOJwi40bTJZsp8jDY0xDiJEg6JAAGEfObXUtdH1paQz61oZmYYpe%2BcW6G0yYqVQUGylQ%2FT0XaCnoOaMEOJ5REjXsAvQzOqAqBua8sVA1a%2Bcj0Gv5Yr63RevjQ"}]}
+cf-ray: a13e926a0b3ba5f9-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://www.buddieswhostudy.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 16:33:18 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=i2fsgXrjejEyWrRZ9yj%2FSHOVgVDMJ24lkRVGCBlMuYXn2Ffeb6brjHJgqwwSf7QqIpCka74cB0yArddP4y6fkDxhN5X%2B7XxVeEeBmyW0Z%2FxWgImVfyOfhdW2fZoeG0RBi7UePZzYgKJZWA%3D%3D"}]}
+cf-ray: a13e926afe85b3ad-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://alexhartel.com/ ---
+HTTP/2 301 
+date: Tue, 30 Jun 2026 16:33:18 GMT
+content-type: text/html; charset=UTF-8
+location: https://buddieswhostudy.com/
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=JOtL64%2F8UeMk36pkpwC%2Fs5BNznzcRLSa9UoWPn8Pom9%2BpUdcr7V0gHT4rUS7Ba9IavpsVjBJEqv8WDnCfmGWYVLz9FSZEFrt8Batni0aTLqmN1UMULGcuQr3enX%2F8AschA%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a13e926bcaf551e2-DEN
+
+
+--- HEAD https://www.alexhartel.com/ ---
+HTTP/2 301 
+date: Tue, 30 Jun 2026 16:33:18 GMT
+content-type: text/html; charset=UTF-8
+location: https://buddieswhostudy.com/
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=XdL%2BEdu8%2BJXjHH6ONQXevN2oTPe41LKyw9kek8tGB4Ar8pbfqPhoo5BW%2FsYlwrhykAPLmagyqG%2FgBrpJB3ELbMzyVusU2DqykfzxZ5cTNZ00qnlBX6tgwgru95qKYPhKhGGXJWA%3D"}]}
+report-to: {"group":"cf-csp-endpoint","max_age":86400,"endpoints":[{"url":"https://csp-reporting.cloudflare.com/cdn-cgi/script_monitor/report?m=bbcdV46keA_rn8AHdUqEFMme8D3cYJIcrpePRg1J4nA-1782837198.7939222-1.0.1.1-GMvhl0Q0xcRVop7PaZSlE_wJ9y27qlJSTWHzJC5Bdc_x4lxezbWvCHM6fAKz3ClaJkqmBh86No7Usl.tidouxfWiC7CbWNBfKigVrmIyhvZGEM5jCH3txlsFmHopqo.1e4cHXc460FnLTbcvSLx0brvMFe4zTDB01b0RsyCSxx58iNv7s9hE1Taes2lSQsmQ"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+content-security-policy-report-only: script-src 'unsafe-inline' 'unsafe-eval'; connect-src 'none'; report-uri https://csp-reporting.cloudflare.com/cdn-cgi/script_monitor/report?m=bbcdV46keA_rn8AHdUqEFMme8D3cYJIcrpePRg1J4nA-1782837198.7939222-1.0.1.1-GMvhl0Q0xcRVop7PaZSlE_wJ9y27qlJSTWHzJC5Bdc_x4lxezbWvCHM6fAKz3ClaJkqmBh86No7Usl.tidouxfWiC7CbWNBfKigVrmIyhvZGEM5jCH3txlsFmHopqo.1e4cHXc460FnLTbcvSLx0brvMFe4zTDB01b0RsyCSxx58iNv7s9hE1Taes2lSQsmQ; report-to cf-csp-endpoint
+server: cloudflare
+cf-ray: a13e926c79b6c703-DEN
+
+
