@@ -1,0 +1,57 @@
+=== stage-17k-z-r9j-r2-resend-dns-timeout-recovery-no-email ===
+created_utc=20260630T182604Z
+repo_head_short=b26960b
+repo_head_full=b26960b14c96c633ef81d66f7c8c699a5894b0dd
+
+Scope:
+- repo docs/smoke only
+- no runtime mutation
+- no CT/VM/service restart
+- no backend/frontend deploy
+- no DB write
+- no email send
+- no Resend API call
+
+Prior attempt:
+- R9J timed out under PPB before final state could be confirmed.
+- Any partial R9J artifacts, if present, are preserved in the repo evidence commit.
+
+root_code=200
+register_code=403
+register_marker=closed_beta_signup_disabled
+dns_txt=status=0 answers=0
+dns_mx=status=0 answers=0
+dns_dkim_cname=status=0 answers=0
+
+=== register body ===
+{"detail":{"ok":false,"code":"closed_beta_signup_disabled","message":"Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.","brand":"Buddies Who Study","product_domain":"buddieswhostudy.com","public_signup_enabled":false,"existing_user_signin_enabled":true}}
+
+=== DNS TXT raw path ===
+docs/smoke/generated/stage-17k-z-r9j-r2-resend-dns-timeout-recovery-no-email/dns-buddieswhostudy.com-TXT.20260630T182604Z.json
+=== DNS MX raw path ===
+docs/smoke/generated/stage-17k-z-r9j-r2-resend-dns-timeout-recovery-no-email/dns-buddieswhostudy.com-MX.20260630T182604Z.json
+=== DNS DKIM raw path ===
+docs/smoke/generated/stage-17k-z-r9j-r2-resend-dns-timeout-recovery-no-email/dns-resend-domainkey-CNAME.20260630T182604Z.json
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9j-r2-resend-dns-timeout-recovery-no-email",
+  "created_utc": "20260630T182604Z",
+  "mutation_scope": "repo_docs_smoke_commit_tag_push_only",
+  "runtime_mutation": false,
+  "email_send": false,
+  "resend_api_call": false,
+  "prior_r9j_timeout": true,
+  "resend_dashboard_status": "MANUAL_CHECK_REQUIRED",
+  "resend_gate": "Do not send production or beta email until Resend dashboard says buddieswhostudy.com is Verified.",
+  "repo_head_short": "b26960b",
+  "repo_head_full": "b26960b14c96c633ef81d66f7c8c699a5894b0dd",
+  "root_code": "200",
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "dns_txt_status": "status=0 answers=0",
+  "dns_mx_status": "status=0 answers=0",
+  "dns_dkim_cname_status": "status=0 answers=0",
+  "report": "docs/smoke/generated/stage-17k-z-r9j-r2-resend-dns-timeout-recovery-no-email/report.20260630T182604Z.txt",
+  "pass": true
+}

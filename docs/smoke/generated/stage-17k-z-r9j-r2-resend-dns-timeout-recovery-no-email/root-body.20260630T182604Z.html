@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Stage 16 R3R signed-in auth gate -->
+  <script>
+    (function stage16R3RSignedInAuthGate() {
+      try { document.documentElement.classList.add('apc-auth-checking'); } catch (_) {}
+      window.APC_AUTH_GATE_STATUS = 'checking';
+      window.APC_AUTH_GATE_R3R = { installed: true, status: 'checking' };
+      function setGateStatus(status) {
+        window.APC_AUTH_GATE_STATUS = status;
+        window.APC_AUTH_GATE_R3R.status = status;
+        document.documentElement.setAttribute('data-apc-auth-status', status);
+      }
+      function releaseGate(status) {
+        setGateStatus(status);
+        document.documentElement.classList.remove('apc-auth-checking');
+      }
+      function rememberUser(data) {
+        try {
+          var email = '';
+          if (data && data.email) email = data.email;
+          if (!email && data && data.user && data.user.email) email = data.user.email;
+          if (!email && data && data.account && data.account.email) email = data.account.email;
+          if (email && window.localStorage) window.localStorage.setItem('apcLastKnownSignedInEmail', String(email));
+        } catch (_) {}
+      }
+      function looksSignedIn(data) {
+        if (!data) return false;
+        if (data.authenticated === true || data.signed_in === true || data.ok === true) return true;
+        if (data.email || data.id || data.user_id) return true;
+        if (data.user && (data.user.email || data.user.id || data.user.user_id)) return true;
+        if (data.account && (data.account.email || data.account.id || data.account.user_id)) return true;
+        return false;
+      }
+      document.addEventListener('apc-private-page-rendered', function () {
+        releaseGate('signed_in');
+      }, false);
+      if (typeof fetch === 'function') {
+        fetch('/api/me', { credentials: 'include', cache: 'no-store', headers: { 'Accept': 'application/json' } })
+          .then(function (response) {
+            if (!response || !response.ok) return null;
+            return response.json().catch(function () { return null; });
+          })
+          .then(function (data) {
+            if (looksSignedIn(data)) {
+              rememberUser(data);
+              setGateStatus('signed_in');
+              setTimeout(function () { releaseGate('signed_in'); }, 1400);
+            } else {
+              releaseGate('signed_out');
+            }
+          })
+          .catch(function () { releaseGate('signed_out'); });
+      } else {
+        releaseGate('signed_out');
+      }
+      setTimeout(function () {
+        if (document.documentElement.classList.contains('apc-auth-checking')) {
+          releaseGate(window.APC_AUTH_GATE_STATUS === 'signed_in' ? 'signed_in' : 'signed_out');
+        }
+      }, 3800);
+      document.addEventListener('click', function (event) {
+        if (window.APC_AUTH_GATE_STATUS !== 'signed_in') return;
+        var target = event.target && event.target.closest ? event.target.closest('a,button,[role="tab"],[data-tab],[data-page],[data-route]') : null;
+        if (!target) return;
+        var marker = String(target.textContent || '') + ' ' + String(target.getAttribute('href') || '') + ' ' + String(target.getAttribute('data-tab') || '') + ' ' + String(target.getAttribute('data-page') || '') + ' ' + String(target.getAttribute('data-route') || '');
+        if (!/(study|companion|profile|calendar|account|dashboard|private)/i.test(marker)) return;
+        document.documentElement.classList.add('apc-auth-checking');
+        setGateStatus('checking');
+        setTimeout(function () { releaseGate('signed_in'); }, 1200);
+      }, true);
+    })();
+  </script>
+  <style>
+    html.apc-auth-checking body > * { visibility: hidden !important; }
+    html.apc-auth-checking body::before {
+      content: 'Checking session...';
+      position: fixed;
+      z-index: 2147483647;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+      color: #0f172a;
+      font: 600 1rem system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      visibility: visible !important;
+    }
+  </style>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AlexHartel AI Platform</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link id="studyPreviewStyles" rel="stylesheet" href="/study/styles.css?v=20260612000409" disabled />
+  <link rel="stylesheet" href="./styles.css?v=20260614214f" />
+  <link rel="stylesheet" href="/header/header.css?v=spa-active-tabs-20260626" />
+<link rel="stylesheet" href="/auth/auth.css?v=reset-password-page-20260626" />
+  <link rel="stylesheet" href="/publicpages/publicpages.css?v=lavender-deep-green-20260626" />
+  <link rel="stylesheet" href="/privatepages/sol.css?v=hide-companion-study-box-20260627" />
+  <link rel="stylesheet" href="/privatepages/study-session.css?v=study-session-v2-20260626" />
+  <link rel="stylesheet" href="/privatepages/admin/admin-users.css?v=20260629-admin-users-r3u12" />
+<style>
+
+  /* Global Drive Banner R3P */
+  .apc-global-drive-banner {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 18px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.35);
+    background: rgba(219, 234, 254, 0.95);
+    color: #0f172a;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  .apc-global-drive-banner strong {
+    font-weight: 700;
+  }
+
+</style>
+</head>
+<body>
+<!-- Global Drive Banner R3P -->
+  <div class="apc-global-drive-banner" role="status">
+    <strong>Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.</strong>   
+  </div>
+  <!-- APC_HEADER_COMPONENT_MOUNT -->
+  <div id="apcHeaderMount" data-apc-header-mount="true"></div>
+  <script src="/header/header.js?v=spa-active-tabs-20260626"></script>
+  <!-- /APC_HEADER_COMPONENT_MOUNT -->
+  <main id="app" class="app-shell">
+  <p>loading..</p>
+  </main>
+  <aside id="systemDrawer" class="system-drawer hidden" aria-label="System status drawer">
+    <div class="drawer-head">
+      <div>
+        <h2>System Status</h2>
+        <p id="drawerSummary">Checking system...</p>
+      </div>
+
+      <button id="drawerCloseBtn" class="ghost-btn" type="button">
+        Close
+      </button>
+    </div>
+
+    <div class="status-grid">
+      <section>
+        <h3>Infrastructure</h3>
+        <div id="drawerNodes" class="status-list"></div>
+      </section>
+
+      <section>
+        <h3>APIs</h3>
+        <div id="drawerServices" class="status-list"></div>
+      </section>
+    </div>
+  </aside>
+
+  <section id="authModal" class="auth-modal hidden" aria-label="Login dialog; account creation closed for beta">
+    <div class="auth-card">
+      <div class="drawer-head">
+        <div>
+          <h2 id="authTitle">Login</h2>
+          <p id="authSubtitle">Sign in to access your dashboard and future live services.</p>
+        </div>
+
+        <button id="authCloseBtn" class="ghost-btn" type="button">
+          Close
+        </button>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="loginTabBtn" class="ghost-btn active" type="button">Login</button>
+        <button id="registerTabBtn" class="ghost-btn apc-closed-beta-register-disabled" type="button" disabled hidden aria-disabled="true" data-closed-beta-disabled="true">Beta closed</button>
+      </div>
+
+      <form id="authForm" class="auth-form">
+        <label>
+          Email
+          <input id="authEmail" type="email" autocomplete="email" required />
+        </label>
+
+        <label>
+          Password
+          <input id="authPassword" type="password" autocomplete="current-password" required />
+        </label>
+
+        <button id="authSubmitBtn" class="primary-btn" type="submit">
+          Login
+        </button>
+      </form>
+
+      <div id="authMessage" class="notice hidden"></div>
+    </div>
+  </section>
+
+  <script src="/queued_chat_config.js"></script>
+  <script src="/router_shadow_read_stub.js?v=2026061208k"></script>
+  <script src="/auth/auth.js?v=force-hard-logout-reload-20260626"></script>
+  <script src="/auth/recover.js?v=recover-click-fix-20260626"></script>
+  <script src="/auth/reset.js?v=reset-new-password-payload-fix-20260626"></script>
+  <!-- <script src="/app.js?v=20260628-admin-users-r3s"></script> -->
+  <script src="/publicpages/publicpages.js?v=stage17i-public-private-route-20260628"></script>
+  <script src="/privatepages/privatepages.js?v=stage17j-r3-profile-fragment-cache-20260628"></script>
+  <script src="/privatepages/study-store.js?v=crud-writeback-r2-ui-args-20260627"></script>
+  <script src="/privatepages/study.js?v=session-label-polish-20260627"></script>
+  <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_START -->
+  <script src="/privatepages/google-sync-config.js?v=20260629-stage17k-z-r7d-appdata-vm200"></script>
+  <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_END -->
+  <script src="/privatepages/anki-manifest-panel.js?v=stage17kyr2-profile-anki-dropdown-stable-20260629"></script>
+  <script src="/privatepages/study-source-selector.js?v=stage17kwr4-study-source-panel-removed-20260629"></script>
+  <script src="/privatepages/anki-readonly-session.js?v=stage17kxr2-local-card-session-ui-removed-20260629"></script>
+  <script src="/privatepages/companion-local-anki-bridge.js?v=stage17kxr2-companion-local-card-ui-removed-20260629"></script>
+  <script src="/privatepages/companion.js?v=auth-gate-r3r-20260628"></script>
+  <script src="/privatepages/admin/admin-users.js?v=20260629-admin-users-r3u12"></script>
+
+<script>
+(function loadQueuedChatStatusAfterInitialPageLoad() {
+  const scriptId = "stage10hDeferredQueuedChatStatusScript";
+  const scriptSrc = "/queued_chat_status.js";
+
+  function injectQueuedChatStatusScript() {
+    if (document.getElementById(scriptId)) return;
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = scriptSrc;
+    script.dataset.stage10hDeferredQueuedStatus = "true";
+    document.head.appendChild(script);
+  }
+
+  if (document.readyState === "complete") {
+    window.setTimeout(injectQueuedChatStatusScript, 0);
+  } else {
+    window.addEventListener("load", function onStage10hWindowLoad() {
+      window.setTimeout(injectQueuedChatStatusScript, 0);
+    }, { once: true });
+  }
+})();
+</script>
+  <script src="/privatepages/closed-beta-signup-guard.js?v=20260629-stage17k-z-r8b-closed-beta"></script>
+</body>
+</html>
