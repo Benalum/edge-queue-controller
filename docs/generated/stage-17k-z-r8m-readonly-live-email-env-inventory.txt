@@ -1,0 +1,72 @@
+# Stage 17K-Z-R8M read-only live email/domain env inventory
+timestamp_utc=2026-06-30T16:30:40Z
+expected_public_base_url=https://buddieswhostudy.com
+expected_email_from=no-reply@buddieswhostudy.com
+expected_email_from_name=Buddies Who Study
+
+## repo defaults
+64:PUBLIC_BASE_URL=https://buddieswhostudy.com
+72:EMAIL_FROM=no-reply@buddieswhostudy.com
+73:EMAIL_FROM_NAME=Buddies Who Study
+
+## local known systemd unit templates
+.env.example:64:PUBLIC_BASE_URL=https://buddieswhostudy.com
+.env.example:72:EMAIL_FROM=no-reply@buddieswhostudy.com
+.env.example:73:EMAIL_FROM_NAME=Buddies Who Study
+
+## live CT203 env via PVEW read-only
+pvew_or_ct203_env_inventory=failed_or_timed_out
+
+## public endpoint posture
+--- HEAD https://buddieswhostudy.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 16:30:50 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=j9XmSNOcr%2FsWByqvJkW9FbN%2BtAd%2B5TdQqdQZAv%2Bu1sy04zXRnzngP8rUy2ZQcjn7StppO1IlNwGCpAv7iuRd6nRHuGP5uK3XOyvuffREyTzmceKFk9cm6nHZAD3tJ411Pin0jLlX"}]}
+cf-ray: a13e8ecd6a0ee671-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://www.buddieswhostudy.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 16:30:50 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=HNfBmL8lWSkzdA7GVWwQxE%2FigF4aseGrSvTdnjOZq0wlT31hiISwAAsz9tnWJZCgGnkwFAg%2FdFqTbn9pfNQEQ%2FtNz%2FVIeFNXpi4nWq6LeEPwmE7d1kvPPpKNikeVZ%2BhN2berj5eRkuGl7w%3D%3D"}]}
+cf-ray: a13e8ececacc7b00-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://alexhartel.com/ ---
+HTTP/2 301 
+date: Tue, 30 Jun 2026 16:30:50 GMT
+content-type: text/html; charset=UTF-8
+location: https://buddieswhostudy.com/
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=CbNAjyiSi4MrHOwxeTWzpE1i6xLSvDSv5qkj96L7sc%2FR1%2FU6DcJIM1uu5LgHhA%2BV5D2h9%2BGGswy89wx38iDEFxSHs01LuMhwIydMbK18a1RBsIUN4Q1TfL%2FJ7fj9MxQYEw%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a13e8ed03be5e66b-DEN
+
+
+--- HEAD https://www.alexhartel.com/ ---
+HTTP/2 301 
+date: Tue, 30 Jun 2026 16:30:51 GMT
+content-type: text/html; charset=UTF-8
+location: https://buddieswhostudy.com/
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=YWHsowr6%2FqdQ8QQRhq6MvJiYNk1x%2FlPaxzYsti9m3hMzImBjZFHZbzb7qECIBo3fzpYJSkDvCI5riZGZG8zGzgbMTWZMSl0rB7tSNsKpg5RreJgo89ihGsaWC9K70kKZsGRP2Zc%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a13e8ed1699ce669-DEN
+
+

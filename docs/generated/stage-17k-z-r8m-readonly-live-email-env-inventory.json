@@ -1,0 +1,22 @@
+{
+  "alexhartel_redirect_301_observed": true,
+  "controller_service_active_observed": false,
+  "correction_of": "17K-Z-R8M",
+  "expected_email_from": "no-reply@buddieswhostudy.com",
+  "expected_email_from_name": "Buddies Who Study",
+  "expected_public_base_url": "https://buddieswhostudy.com",
+  "live_env_inventory_available": false,
+  "live_env_mentions_new_base_url": false,
+  "live_env_mentions_new_sender": false,
+  "live_env_mentions_old_base_url": false,
+  "live_env_mentions_old_sender": false,
+  "public_buddieswhostudy_http_200_observed": true,
+  "public_www_buddieswhostudy_http_200_observed": true,
+  "pvew_or_ct203_inventory_failed_or_timed_out": true,
+  "read_only": true,
+  "recommended_next_stage": "R8N restore PVEW/CT203 SSH inventory or perform approved live env patch only after exact live env path is reachable",
+  "repo_defaults_updated": true,
+  "secrets_printed": false,
+  "stage": "17K-Z-R8M-R2",
+  "www_alexhartel_redirect_301_observed": true
+}
