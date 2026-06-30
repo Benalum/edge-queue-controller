@@ -123,6 +123,10 @@
 </style>
 </head>
 <body>
+  <!-- APC_CLOSED_BETA_BANNER_STAGE_17K_Z_R8B_START -->
+  <div id="apcClosedBetaBanner" role="status" aria-live="polite" data-closed-beta="true">Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.</div>
+  <!-- APC_CLOSED_BETA_BANNER_STAGE_17K_Z_R8B_END -->
+
 
   <!-- Global Drive Banner R3P -->
   <div class="apc-global-drive-banner" role="status">
@@ -160,7 +164,7 @@
     </div>
   </aside>
 
-  <section id="authModal" class="auth-modal hidden" aria-label="Login and register dialog">
+  <section id="authModal" class="auth-modal hidden" aria-label="Login dialog; account creation closed for beta">
     <div class="auth-card">
       <div class="drawer-head">
         <div>
@@ -175,7 +179,7 @@
 
       <div class="auth-tabs">
         <button id="loginTabBtn" class="ghost-btn active" type="button">Login</button>
-        <button id="registerTabBtn" class="ghost-btn" type="button">Register</button>
+        <button id="registerTabBtn" class="ghost-btn apc-closed-beta-register-disabled" type="button" disabled hidden aria-disabled="true" data-closed-beta-disabled="true">Beta closed</button>
       </div>
 
       <form id="authForm" class="auth-form">
@@ -241,5 +245,6 @@
   }
 })();
 </script>
+  <script src="/privatepages/closed-beta-signup-guard.js?v=20260629-stage17k-z-r8b-closed-beta"></script>
 </body>
 </html>

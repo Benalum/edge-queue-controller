@@ -1,0 +1,25 @@
+{
+  "stage": "17K-Z-R8B",
+  "status": "frontend_closed_beta_gate_plus_backend_gate_contract",
+  "brand_name": "Buddies Who Study",
+  "product_domain": "buddieswhostudy.com",
+  "public_signup_enabled": false,
+  "existing_user_signin_enabled": true,
+  "frontend_gate": {
+    "active_index": "frontend/wrapper-ui/apc-wrapper-local/index.html",
+    "guard_script": "frontend/wrapper-ui/apc-wrapper-local/privatepages/closed-beta-signup-guard.js",
+    "register_button_disabled": true,
+    "browser_fetch_register_guard": true
+  },
+  "backend_gate": {
+    "source_route_found_in_r8b_source_map": false,
+    "required_before_dns_cutover": true,
+    "cutover_blocked_until_confirmed": true
+  },
+  "migration_boundary": {
+    "dns_cloudflare_cutover_allowed": false,
+    "google_cloud_domain_change_allowed": false,
+    "email_provider_change_allowed": false,
+    "deploy_allowed_in_this_stage": false
+  }
+}
