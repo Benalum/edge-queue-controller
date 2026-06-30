@@ -1,0 +1,18 @@
+{
+  "active_env_has_new_public_base_url": true,
+  "active_env_has_new_sender": true,
+  "active_env_has_new_sender_name": true,
+  "alexhartel_redirect_301_observed": true,
+  "backup_file_recorded": true,
+  "controller_restart_performed": true,
+  "controller_service_active_after_restart": true,
+  "ct203_env_file": "/etc/edge-queue-controller/edge-queue-controller.env",
+  "live_env_mutation": true,
+  "old_sender_absent_from_active_env": true,
+  "public_buddieswhostudy_http_200_observed": true,
+  "public_www_buddieswhostudy_http_200_observed": true,
+  "recommended_next_stage": "R8R verify Resend DNS/domain status and optionally send one approved test email",
+  "register_gate_403_preserved": true,
+  "secrets_printed": false,
+  "stage": "17K-Z-R8Q"
+}

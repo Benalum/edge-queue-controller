@@ -1,0 +1,86 @@
+# Stage 17K-Z-R8Q live CT203 email/domain env patch
+timestamp_utc=2026-06-30T16:42:26Z
+expected_public_base_url=https://buddieswhostudy.com
+expected_email_from=no-reply@buddieswhostudy.com
+expected_email_from_name=Buddies Who Study
+
+ct203_host=edge-controller-pvew
+env_file=/etc/edge-queue-controller/edge-queue-controller.env
+--- before file non-secret keys ---
+EMAIL_FROM=no-reply@alexhartel.com
+EMAIL_FROM_NAME="Study Companion"
+backup_file=/var/lib/edge-queue-controller/stage17k-z-r8q-email-env-backups/edge-queue-controller.env.20260630T164226Z.bak
+--- after file non-secret keys ---
+EMAIL_FROM=no-reply@buddieswhostudy.com
+EMAIL_FROM_NAME="Buddies Who Study"
+PUBLIC_BASE_URL=https://buddieswhostudy.com
+--- restart controller ---
+active
+--- active service env non-secret keys ---
+EMAIL_FROM=no-reply@buddieswhostudy.com
+EMAIL_FROM_NAME=Buddies Who Study
+PUBLIC_BASE_URL=https://buddieswhostudy.com
+PASS_CT203_R8Q_EMAIL_ENV_PATCH_ACTIVE
+
+## public smoke
+--- HEAD https://buddieswhostudy.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 16:42:29 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=XDL282HhGpR5S9dpHxf6WkQ6d9Va3NPU5dQiHNABNOKebxRY6%2BQHVsWJcsyHNyzmIM8V3w6BI2g9KPawl2zhLCw52Tyj1FVMempxT4ZqQ0N0jKZuExha4n8%2FicShL1Vfkp%2BCa6oI"}]}
+cf-ray: a13e9fdc9fe4b188-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://www.buddieswhostudy.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 16:42:29 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=8IAyj9t%2FkN8HEwyxTLO17nqZRfTKm4QYiswWhfD5jX3xS7xi%2FTf4A2SZyquKETUjehTL5v3CjMz%2Bq3TUr%2BmsxUmfbLdendbjBzx8%2BGqDGMBRPp0c9MmMc6YOn2Xz8ScJ7bxCPCxB%2F%2FAFmw%3D%3D"}]}
+cf-ray: a13e9fddbf59e775-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://alexhartel.com/ ---
+HTTP/2 301 
+date: Tue, 30 Jun 2026 16:42:29 GMT
+content-type: text/html; charset=UTF-8
+location: https://buddieswhostudy.com/
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=YeT3Lpgcpiq5Rb2BWYpBRd0cUrw0%2BydedCWCPaR%2FhDbpdBkLXe9a27eRhrBS39fQlMQOk06SC31HrOlWj3yu6zCo2PkpJoVFSu7eF4D%2FB3hMVcNWSK6aEMEMHSyFSf8x8g%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a13e9fdec85eeccf-DEN
+
+
+--- HEAD https://www.alexhartel.com/ ---
+HTTP/2 301 
+date: Tue, 30 Jun 2026 16:42:29 GMT
+content-type: text/html; charset=UTF-8
+location: https://buddieswhostudy.com/
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=8vd0KJ1KJOG%2FVjq9FZIcR%2FUd%2FkWlPCEQCusJ05%2BMp2FxeYJ6wYwIknZDkNGd3wCd%2F0%2BtrxjMI5kRihefWu1CSthFyIN4wnQFtW6tAmKcwq%2FZT1talHR%2FmCR5ryF11ko%2B0ugqsnI%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a13e9fdfae67fa0d-DEN
+
+
+--- buddieswhostudy closed beta markers ---
+    <strong>Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.</strong>   
+  <section id="authModal" class="auth-modal hidden" aria-label="Login dialog; account creation closed for beta">
+        <button id="registerTabBtn" class="ghost-btn apc-closed-beta-register-disabled" type="button" disabled hidden aria-disabled="true" data-closed-beta-disabled="true">Beta closed</button>
+  <script src="/privatepages/closed-beta-signup-guard.js?v=20260629-stage17k-z-r8b-closed-beta"></script>
+
+--- buddieswhostudy register gate ---
+register_http=403
+{"detail":{"ok":false,"code":"closed_beta_signup_disabled","message":"Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.","brand":"Buddies Who Study","product_domain":"buddieswhostudy.com","public_signup_enabled":false,"existing_user_signin_enabled":true}}
