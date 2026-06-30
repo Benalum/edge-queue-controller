@@ -1,0 +1,201 @@
+name=root
+url=https://buddieswhostudy.com/
+method=GET
+http_code=200
+final_url=https://buddieswhostudy.com/
+--- headers ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 18:20:29 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=f%2FoJMsqFC%2FDbqVJibQziITj%2F9rzfHEE%2BwLRpwhFGRZn9W3GcnWdC8aQvmK6%2BOhlIV9ysR0wBw0FYf7uEdH8XJjo0B1xc2rqqB5X7%2F3TP3MAT2eATZGLxEp1KWAz5k3gRdaYOz0Pe"}]}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+vary: accept-encoding
+cf-ray: a13f2f6d8bb89940-DEN
+alt-svc: h3=":443"; ma=86400
+
+--- body first 500 ---
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Stage 16 R3R signed-in auth gate -->
+  <script>
+    (function stage16R3RSignedInAuthGate() {
+      try { document.documentElement.classList.add('apc-auth-checking'); } catch (_) {}
+      window.APC_AUTH_GATE_STATUS = 'checking';
+      window.APC_AUTH_GATE_R3R = { installed: true, status: 'checking' };
+      function setGateStatus(status) {
+        window.APC_AUTH_GATE_STATUS = status;
+        window.APC_AUTH_GATE_R3R.status = status;
+        documen
+
+name=www
+url=https://www.buddieswhostudy.com/
+method=GET
+http_code=200
+final_url=https://www.buddieswhostudy.com/
+--- headers ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 18:20:30 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=1Cagxd9HKWryVZ6NQkPXS%2BNLsvIyA%2Fygl%2BWjuuLJdNDoej3H%2Byfug3fsRd3sfB4Ytl3uV4R7EZzDgn9dTX%2FIWCCJOdEEDay8wG5RvDEsuhojqlXRl4wJeyredbe7K0OmBvvOnM1rssfkag%3D%3D"}]}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+vary: accept-encoding
+cf-ray: a13f2f709bf3fa0d-DEN
+alt-svc: h3=":443"; ma=86400
+
+--- body first 500 ---
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Stage 16 R3R signed-in auth gate -->
+  <script>
+    (function stage16R3RSignedInAuthGate() {
+      try { document.documentElement.classList.add('apc-auth-checking'); } catch (_) {}
+      window.APC_AUTH_GATE_STATUS = 'checking';
+      window.APC_AUTH_GATE_R3R = { installed: true, status: 'checking' };
+      function setGateStatus(status) {
+        window.APC_AUTH_GATE_STATUS = status;
+        window.APC_AUTH_GATE_R3R.status = status;
+        documen
+
+name=alex_redirect
+url=http://alexhartel.com/
+method=GET
+http_code=200
+final_url=https://buddieswhostudy.com/
+--- headers ---
+HTTP/1.1 301 Moved Permanently
+Date: Tue, 30 Jun 2026 18:20:30 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Location: https://buddieswhostudy.com/
+Speculation-Rules: "/cdn-cgi/speculation"
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=iUG3pBU1BQUAPg%2F6JXRJsVxN5Gei1pfnFUFJeYB%2BIp7Lfh%2F0WIrXtUk2T7n5FxPvQ2cHh3AsvLRMzQTEAF0Sn8FR1KyQUgWYjTldWfnapG780eUbBDzJZQBOz2rQmkZWcQ%3D%3D"}]}
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Server: cloudflare
+CF-RAY: a13f2f739dd59da4-DEN
+
+HTTP/2 200 
+date: Tue, 30 Jun 2026 18:20:30 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=AhgO6hdWbF1bZ6r8Bqty8KrZ%2BrdtdhAofqCxfxo7F%2BvDfIROVLUty8tW8RZ4xNeKFwYNHcVyCzHFZbcGe2419ci8ROUc83vnjoPQ9bLMTEABmavi2OSPtsmkM8acxo5uC4LGMIx7"}]}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+vary: accept-encoding
+cf-ray: a13f2f749b8a8e0e-DEN
+alt-svc: h3=":443"; ma=86400
+
+--- body first 500 ---
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Stage 16 R3R signed-in auth gate -->
+  <script>
+    (function stage16R3RSignedInAuthGate() {
+      try { document.documentElement.classList.add('apc-auth-checking'); } catch (_) {}
+      window.APC_AUTH_GATE_STATUS = 'checking';
+      window.APC_AUTH_GATE_R3R = { installed: true, status: 'checking' };
+      function setGateStatus(status) {
+        window.APC_AUTH_GATE_STATUS = status;
+        window.APC_AUTH_GATE_R3R.status = status;
+        documen
+
+name=alex_www_redirect
+url=http://www.alexhartel.com/
+method=GET
+http_code=200
+final_url=https://buddieswhostudy.com/
+--- headers ---
+HTTP/1.1 301 Moved Permanently
+Date: Tue, 30 Jun 2026 18:20:31 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Location: https://buddieswhostudy.com/
+Speculation-Rules: "/cdn-cgi/speculation"
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=RzTp1zSnI3LbHq7I%2F6E6wyd6fHCUM6ahfoL6lt3bmXQUebESxHkecNljt7uGg%2BARffjLGiQJ%2FGRUGwnfPP7GoL61hZXm2WKeQPY%2FU8HPyXQ%2BiDg8V4wa8iYt%2FTDfxfAzyhWAojA%3D"}]}
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Server: cloudflare
+CF-RAY: a13f2f780f53193a-DEN
+
+HTTP/2 200 
+date: Tue, 30 Jun 2026 18:20:31 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=MXZDxE%2BM%2BVTvPQBvwG%2Be40oNpLVsTRMRgESjxu9jxJgXft96E6WVoyAkccw33OEZPqOjagqdWqMtHDnevX3cV4z3Di3pqE76bSlsFNGSGtE2CqG7hA%2Ba6WihWJMlTYXxqUmKUMX1"}]}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+vary: accept-encoding
+cf-ray: a13f2f7908944828-DEN
+alt-svc: h3=":443"; ma=86400
+
+--- body first 500 ---
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Stage 16 R3R signed-in auth gate -->
+  <script>
+    (function stage16R3RSignedInAuthGate() {
+      try { document.documentElement.classList.add('apc-auth-checking'); } catch (_) {}
+      window.APC_AUTH_GATE_STATUS = 'checking';
+      window.APC_AUTH_GATE_R3R = { installed: true, status: 'checking' };
+      function setGateStatus(status) {
+        window.APC_AUTH_GATE_STATUS = status;
+        window.APC_AUTH_GATE_R3R.status = status;
+        documen
+
+name=register_blocked
+url=https://buddieswhostudy.com/api/auth/register
+method=POST
+http_code=403
+final_url=https://buddieswhostudy.com/api/auth/register
+--- headers ---
+HTTP/2 403 
+date: Tue, 30 Jun 2026 18:20:32 GMT
+content-type: application/json
+content-length: 310
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=n9vAeaQvkYmVQX2pg%2BjtdiDXbP%2Bs5i5QDqfJ%2Fo7llLXp%2F%2BXBtRAWhCPqxacX1GxEefonCTCVkUpQVZIvA8GhJ6dABOVal6G9LwnJkmoCWYW8qQjPSjg3wp%2Bj1EkUKVQdYeiRvEBQ"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+cf-ray: a13f2f7c5ccce661-DEN
+alt-svc: h3=":443"; ma=86400
+
+--- body first 500 ---
+{"detail":{"ok":false,"code":"closed_beta_signup_disabled","message":"Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.","brand":"Buddies Who Study","product_domain":"buddieswhostudy.com","public_signup_enabled":false,"existing_user_signin_enabled":true}}
+
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9i-resend-verification-gate-and-closed-beta-public-smoke",
+  "created_utc": "20260630T182027Z",
+  "mutation_scope": "repo_docs_smoke_commit_tag_push_only",
+  "runtime_mutation": false,
+  "email_send": false,
+  "resend_api_call": false,
+  "resend_dashboard_status": "MANUAL_CHECK_REQUIRED",
+  "resend_gate": "Do not send production or beta email until Resend dashboard says buddieswhostudy.com is Verified.",
+  "repo_head_short": "dc17dff",
+  "repo_head_full": "dc17dff934d161167973a4ba6327119d5428061a",
+  "root_result": "root|GET|200|https://buddieswhostudy.com/",
+  "www_result": "www|GET|200|https://www.buddieswhostudy.com/",
+  "alex_redirect_result": "alex_redirect|GET|200|https://buddieswhostudy.com/",
+  "alex_www_redirect_result": "alex_www_redirect|GET|200|https://buddieswhostudy.com/",
+  "register_block_result": "register_blocked|POST|403|https://buddieswhostudy.com/api/auth/register",
+  "pass": true
+}

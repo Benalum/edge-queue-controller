@@ -1,0 +1,18 @@
+{
+  "stage": "stage-17k-z-r9i-resend-verification-gate-and-closed-beta-public-smoke",
+  "created_utc": "20260630T182027Z",
+  "mutation_scope": "repo_docs_smoke_commit_tag_push_only",
+  "runtime_mutation": false,
+  "email_send": false,
+  "resend_api_call": false,
+  "resend_dashboard_status": "MANUAL_CHECK_REQUIRED",
+  "resend_gate": "Do not send production or beta email until Resend dashboard says buddieswhostudy.com is Verified.",
+  "repo_head_short": "dc17dff",
+  "repo_head_full": "dc17dff934d161167973a4ba6327119d5428061a",
+  "root_result": "root|GET|200|https://buddieswhostudy.com/",
+  "www_result": "www|GET|200|https://www.buddieswhostudy.com/",
+  "alex_redirect_result": "alex_redirect|GET|200|https://buddieswhostudy.com/",
+  "alex_www_redirect_result": "alex_www_redirect|GET|200|https://buddieswhostudy.com/",
+  "register_block_result": "register_blocked|POST|403|https://buddieswhostudy.com/api/auth/register",
+  "pass": true
+}
