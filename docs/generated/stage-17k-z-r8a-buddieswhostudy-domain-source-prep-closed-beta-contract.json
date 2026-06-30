@@ -1,0 +1,41 @@
+{
+  "stage": "17K-Z-R8A",
+  "status": "source_prep_contract_only",
+  "old_public_domain": "alexhartel.com",
+  "new_product_domain": "buddieswhostudy.com",
+  "brand_name": "Buddies Who Study",
+  "account_creation_policy": {
+    "mode": "closed_beta",
+    "public_signup_enabled": false,
+    "existing_user_signin_enabled": true,
+    "admin_or_invite_creation_future_allowed": true,
+    "required_public_copy": "Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study."
+  },
+  "domain_migration_policy": {
+    "do_not_cut_dns_in_this_stage": true,
+    "do_not_change_cloudflare_in_this_stage": true,
+    "do_not_change_google_cloud_in_this_stage": true,
+    "do_not_change_email_provider_in_this_stage": true,
+    "prepare_source_before_dns": true
+  },
+  "google_oauth_future_changes": {
+    "authorized_javascript_origins": [
+      "https://buddieswhostudy.com",
+      "https://www.buddieswhostudy.com"
+    ],
+    "keep_alexhartel_origin_during_transition": true,
+    "scope": "https://www.googleapis.com/auth/drive.appdata",
+    "storage": "appDataFolder"
+  },
+  "email_future_changes": {
+    "from_domain": "buddieswhostudy.com",
+    "reply_to_domain": "buddieswhostudy.com",
+    "requires_spf_dkim_dmarc": true,
+    "requires_provider_side_update": true
+  },
+  "alexhartel_future_role": {
+    "purpose": "personal projects and portfolio site",
+    "separate_vm_or_static_site_later": true,
+    "not_in_this_stage": true
+  }
+}
