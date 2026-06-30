@@ -1,0 +1,166 @@
+# Stage 17K-Z-R8O read-only Tailscale/direct SSH debug
+timestamp_utc=2026-06-30T16:36:17Z
+pvew_tailscale_ip=100.127.73.75
+vm200_tailscale_ip=100.105.133.69
+
+## tailscale basic state
+100.108.171.94  alex-latitude-3540  alexhartel179@  linux  -                          
+100.97.163.99   iphone-14           alexhartel179@  iOS    offline, last seen 5d ago  
+100.88.245.33   llms                alexhartel179@  linux  offline, last seen 3d ago  
+100.88.194.19   pveso               alexhartel179@  linux  offline, last seen 3d ago  
+100.127.73.75   pvew                alexhartel179@  linux  -                          
+100.105.133.69  website-edge        alexhartel179@  linux  -                          
+
+--- tailscale netcheck ---
+2026/06/30 10:36:17 portmap: monitor: gateway and self IP changed: gw=192.168.0.1 self=192.168.0.147
+
+Report:
+	* Time: 2026-06-30T16:36:18.172930042Z
+	* UDP: true
+	* IPv4: yes, 174.62.45.164:35870
+	* IPv6: yes, [2601:8c0:800:7627:67fb:56ec:b725:9f90]:54592
+	* MappingVariesByDestIP: false
+	* PortMapping: 
+	* Nearest DERP: Denver
+	* DERP latency:
+		- den: 26.4ms  (Denver)
+		- lax: 35.5ms  (Los Angeles)
+		- dfw: 39.3ms  (Dallas)
+		- sfo: 43.2ms  (San Francisco)
+		- ord: 49.8ms  (Chicago)
+		- sea: 50.2ms  (Seattle)
+		- nyc: 65.5ms  (New York City)
+		- mia: 65.6ms  (Miami)
+		- iad: 67.6ms  (Ashburn)
+		- tor: 81.1ms  (Toronto)
+		- hnl: 94ms    (Honolulu)
+		- lhr: 137.5ms (London)
+		- par: 138.8ms (Paris)
+		- ams: 146.5ms (Amsterdam)
+		- tok: 146.8ms (Tokyo)
+		- fra: 148.4ms (Frankfurt)
+		- hel: 160ms   (Helsinki)
+		- mad: 160.6ms (Madrid)
+		- nue: 161.9ms (Nuremberg)
+		- waw: 162.4ms (Warsaw)
+		- syd: 187ms   (Sydney)
+		- hkg: 193.3ms (Hong Kong)
+		- sao: 211ms   (São Paulo)
+		- sin: 213.5ms (Singapore)
+		- dbi: 238.4ms (Dubai)
+		- blr:         (Bengaluru)
+		- jnb:         (Johannesburg)
+		- nai:         (Nairobi)
+
+--- tailscale ping pvew ip ---
+pong from pvew (100.127.73.75) via 192.168.0.11:41641 in 10ms
+
+--- tailscale ping vm200 ip ---
+pong from website-edge (100.105.133.69) via 192.168.0.144:41641 in 7ms
+
+## direct TCP port checks
+--- pvew nc 100.127.73.75:22 ---
+nc: connect to 100.127.73.75 port 22 (tcp) timed out: Operation now in progress
+
+--- vm200 nc 100.105.133.69:22 ---
+nc: connect to 100.105.133.69 port 22 (tcp) timed out: Operation now in progress
+
+## direct ssh concise checks
+--- pvew ssh direct 100.127.73.75 ---
+alex@100.127.73.75: Permission denied (publickey).
+
+--- vm200 ssh direct 100.105.133.69 ---
+alex@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
+
+## direct ssh verbose handshake summary
+--- pvew ssh verbose 100.127.73.75 ---
+debug2: resolve_canonicalize: hostname 100.127.73.75 is address
+debug1: Connecting to 100.127.73.75 [100.127.73.75] port 22.
+debug1: Local version string SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.16
+debug1: Remote protocol version 2.0, remote software version OpenSSH_10.0p2 Debian-7
+debug1: Authenticating to 100.127.73.75:22 as 'alex'
+debug2: host key algorithms: ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256
+debug2: host key algorithms: rsa-sha2-512,rsa-sha2-256,ecdsa-sha2-nistp256,ssh-ed25519
+debug1: kex: host key algorithm: ssh-ed25519
+debug1: Server host key: ssh-ed25519 SHA256:9EJgwFzFTvH/2DQK0sMmDYbEc1hvWtYL4mqdoF4Q+E4
+debug1: Host '100.127.73.75' is known and matches the ED25519 host key.
+debug1: Authentications that can continue: publickey
+debug1: Offering public key: /home/alex/.ssh/id_ed25519 ED25519 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc
+debug1: Authentications that can continue: publickey
+alex@100.127.73.75: Permission denied (publickey).
+
+--- vm200 ssh verbose 100.105.133.69 ---
+debug2: resolve_canonicalize: hostname 100.105.133.69 is address
+debug1: Connecting to 100.105.133.69 [100.105.133.69] port 22.
+debug1: Local version string SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.16
+debug1: Remote protocol version 2.0, remote software version OpenSSH_10.2p1 Ubuntu-2ubuntu3.2
+debug1: Authenticating to 100.105.133.69:22 as 'alex'
+debug2: host key algorithms: ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256
+debug2: host key algorithms: rsa-sha2-512,rsa-sha2-256,ecdsa-sha2-nistp256,ssh-ed25519
+debug1: kex: host key algorithm: ssh-ed25519
+debug1: Server host key: ssh-ed25519 SHA256:YogOIbKu3OZPjgYMv3/LrLdSbC9vTDs0StU+dZPV/6M
+debug1: Host '100.105.133.69' is known and matches the ED25519 host key.
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+debug1: Offering public key: /home/alex/.ssh/id_ed25519 ED25519 SHA256:P8EtJEt5R+oOo0SCsq88Aw+2SqOFzMOH9HX63Wk0dZc
+debug1: Authentications that can continue: publickey,password,keyboard-interactive
+alex@100.105.133.69: Permission denied (publickey,password,keyboard-interactive).
+
+## local resolver/magicdns clues
+Global
+           Protocols: -LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+    resolv.conf mode: stub
+  Current DNS Server: 1.1.1.1
+         DNS Servers: 1.1.1.1 8.8.8.8
+Fallback DNS Servers: 1.0.0.1 8.8.4.4
+
+Link 2 (enp1s0)
+    Current Scopes: none
+         Protocols: -DefaultRoute -LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+
+Link 3 (wlp0s20f3)
+    Current Scopes: DNS
+         Protocols: +DefaultRoute -LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+Current DNS Server: 1.1.1.1
+       DNS Servers: 1.1.1.1 8.8.8.8 2606:4700:4700::1111 2001:4860:4860::8888
+
+Link 4 (tailscale0)
+    Current Scopes: none
+         Protocols: +DefaultRoute -LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+
+Link 5 (home)
+    Current Scopes: DNS
+         Protocols: +DefaultRoute -LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+Current DNS Server: 1.1.1.1
+       DNS Servers: 1.1.1.1 1.0.0.1
+        DNS Domain: ~.
+
+
+## public route still healthy
+--- HEAD https://buddieswhostudy.com/ ---
+
+--- HEAD https://www.buddieswhostudy.com/ ---
+
+--- HEAD https://alexhartel.com/ ---
+HTTP/2 301 
+date: Tue, 30 Jun 2026 16:36:55 GMT
+content-type: text/html; charset=UTF-8
+location: https://buddieswhostudy.com/
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=GHDXpEaUz9TGsww%2Bf%2F1jDXevimX%2B%2BdvSsCVTBHmUrA9P6MkriE5UZVfy4ID%2Bu6%2FgP%2BOkBq%2FQqZFPPjvQ4bbzuNJb4S2j0PAtZKMYvo0ZxVTrKzYW6sJDbMalRiIJBlwO6Q%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a13e97b8dd267241-DEN
+
+
+--- HEAD https://www.alexhartel.com/ ---
+HTTP/2 301 
+date: Tue, 30 Jun 2026 16:36:55 GMT
+content-type: text/html; charset=UTF-8
+location: https://buddieswhostudy.com/
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=SPkG4yeKzHNGEZrSW3yhXeu6rLPAyttZb3baC9UhzVZ3uVcYX32hspl3ZWmgd4iA2OQjdy10EYquPS%2FpfKQHyqcFfTxZGkKlA2nfrWTdTNDCOjc9TtwXRoqIbgiyrkx9orAm7VM%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-ray: a13e97b9d9da1f48-DEN
+
+

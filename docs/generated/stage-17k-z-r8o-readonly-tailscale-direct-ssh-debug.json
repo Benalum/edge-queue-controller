@@ -1,0 +1,21 @@
+{
+  "alexhartel_redirect_301_observed": true,
+  "buddieswhostudy_http_200_observed": false,
+  "connection_refused_seen": false,
+  "permission_denied_seen": true,
+  "pvew_connection_timed_out": false,
+  "pvew_ssh_success": true,
+  "pvew_tailscale_ip": "100.127.73.75",
+  "pvew_tailscale_ping_success": true,
+  "pvew_tcp_22_open": true,
+  "read_only": true,
+  "recommended_next_stage": "If Tailscale ping fails, fix Tailscale connectivity on PVEW/VM200. If ping works but port 22 times out, inspect remote firewall/sshd from console. If SSH succeeds, rerun live CT203 env inventory.",
+  "stage": "17K-Z-R8O",
+  "tailscale_command_available": true,
+  "vm200_connection_timed_out": false,
+  "vm200_ssh_success": true,
+  "vm200_tailscale_ip": "100.105.133.69",
+  "vm200_tailscale_ping_success": true,
+  "vm200_tcp_22_open": true,
+  "www_buddieswhostudy_http_200_observed": false
+}
