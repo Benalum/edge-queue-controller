@@ -1,0 +1,12 @@
+HTTP/2 403 
+date: Tue, 30 Jun 2026 18:32:54 GMT
+content-type: application/json
+content-length: 310
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=OBA%2BlU7Uz4leSJC%2FTLDUfugrs%2FbmubT98H%2BQGRRjm3ceOwtjAaDYiNhBHocdtPjQBS0eEuu2uVn0GL%2FZymtVGPCgHmDe0UKbRVFr0aS5A5WuvYcwYmvVIRLm71SOSoF9%2Bw6GjIMG"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+cf-ray: a13f4199eb16e749-DEN
+alt-svc: h3=":443"; ma=86400
+

@@ -1,0 +1,61 @@
+=== stage-17k-z-r9l-resend-verified-manual-checkpoint-no-email ===
+created_utc=20260630T183253Z
+repo_head_short=1b0169a
+repo_head_full=1b0169a812d21799bf085710e84193efdc5f5e33
+
+Scope:
+- repo docs/smoke only
+- no runtime mutation
+- no CT/VM/service restart
+- no backend/frontend deploy
+- no DB write
+- no email send
+- no Resend API call
+- no Cloudflare API call
+- no DNS mutation
+
+Operator verification:
+- Resend dashboard status for buddieswhostudy.com was manually checked by operator.
+- Status reported: Verified.
+
+Current live email env expected from R8Q:
+- PUBLIC_BASE_URL=https://buddieswhostudy.com
+- EMAIL_FROM=no-reply@buddieswhostudy.com
+- EMAIL_FROM_NAME=Buddies Who Study
+
+Closed-beta recheck:
+- register_code=403
+- register_marker=closed_beta_signup_disabled
+
+Decision:
+- Resend domain gate is cleared by manual dashboard verification.
+- Email is still not sent in this checkpoint.
+- Signup remains closed.
+- Next step should be a bounded email-readiness/config checkpoint before any actual test or beta email.
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9l-resend-verified-manual-checkpoint-no-email",
+  "created_utc": "20260630T183253Z",
+  "mutation_scope": "repo_docs_smoke_commit_tag_push_only",
+  "runtime_mutation": false,
+  "email_send": false,
+  "resend_api_call": false,
+  "cloudflare_api_call": false,
+  "dns_mutation": false,
+  "repo_head_short": "1b0169a",
+  "repo_head_full": "1b0169a812d21799bf085710e84193efdc5f5e33",
+  "prior_checkpoint": "1b0169a",
+  "resend_dashboard_status": "VERIFIED_MANUAL_OPERATOR_REPORT",
+  "resend_domain": "buddieswhostudy.com",
+  "expected_live_email_env": {
+    "PUBLIC_BASE_URL": "https://buddieswhostudy.com",
+    "EMAIL_FROM": "no-reply@buddieswhostudy.com",
+    "EMAIL_FROM_NAME": "Buddies Who Study"
+  },
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "email_send_allowed_by_this_checkpoint": false,
+  "next_required_gate": "bounded_email_readiness_checkpoint_before_any_email_send",
+  "pass": true
+}

@@ -1,0 +1,25 @@
+{
+  "stage": "stage-17k-z-r9l-resend-verified-manual-checkpoint-no-email",
+  "created_utc": "20260630T183253Z",
+  "mutation_scope": "repo_docs_smoke_commit_tag_push_only",
+  "runtime_mutation": false,
+  "email_send": false,
+  "resend_api_call": false,
+  "cloudflare_api_call": false,
+  "dns_mutation": false,
+  "repo_head_short": "1b0169a",
+  "repo_head_full": "1b0169a812d21799bf085710e84193efdc5f5e33",
+  "prior_checkpoint": "1b0169a",
+  "resend_dashboard_status": "VERIFIED_MANUAL_OPERATOR_REPORT",
+  "resend_domain": "buddieswhostudy.com",
+  "expected_live_email_env": {
+    "PUBLIC_BASE_URL": "https://buddieswhostudy.com",
+    "EMAIL_FROM": "no-reply@buddieswhostudy.com",
+    "EMAIL_FROM_NAME": "Buddies Who Study"
+  },
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "email_send_allowed_by_this_checkpoint": false,
+  "next_required_gate": "bounded_email_readiness_checkpoint_before_any_email_send",
+  "pass": true
+}
