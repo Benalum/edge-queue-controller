@@ -1,0 +1,77 @@
+=== stage-17k-z-r9m-forgot-password-readiness-no-email ===
+created_utc=20260630T183510Z
+repo_head_short=c42a73d
+repo_head_full=c42a73d486873d609d078c461c702d10afdb1627
+
+Scope:
+- repo docs/smoke only
+- no runtime mutation
+- no CT/VM/service restart
+- no backend/frontend deploy
+- no DB write
+- no email send
+- no Resend API call
+- no Cloudflare API call
+- no DNS mutation
+- no password reset request
+
+Intent:
+- Allow Forgot Password / reset flow for existing users.
+- Keep public registration closed.
+- Do not open signup.
+- Do not send email in this checkpoint.
+
+Resend:
+- buddieswhostudy.com was manually reported Verified in R9L.
+- This checkpoint still sends no email.
+
+Public smoke:
+- root_code=200
+- register_code=403
+- register_marker=closed_beta_signup_disabled
+
+Source evidence:
+- source_reset_reference_count=465
+- source_register_gate_reference_count=44
+- source_map=docs/smoke/generated/stage-17k-z-r9m-forgot-password-readiness-no-email/forgot-password-source-map.20260630T183510Z.txt
+
+Route probe:
+/auth/reset-password|GET|200
+/reset-password|GET|200
+/forgot-password|GET|200
+/auth/forgot-password|GET|200
+/api/auth/password-reset|GET|404
+/api/auth/request-password-reset|GET|404
+/api/auth/forgot-password|GET|405
+
+Decision:
+- Existing-user password reset is the correct path to regain access while signup remains blocked.
+- Next stage may perform one bounded Forgot Password request only for an explicitly controlled existing-user email address.
+- That next stage should still avoid opening registration.
+
+=== appended evidence summary ===
+{
+  "stage": "stage-17k-z-r9m-forgot-password-readiness-no-email",
+  "created_utc": "20260630T183510Z",
+  "mutation_scope": "repo_docs_smoke_commit_tag_push_only",
+  "runtime_mutation": false,
+  "email_send": false,
+  "resend_api_call": false,
+  "cloudflare_api_call": false,
+  "dns_mutation": false,
+  "password_reset_request": false,
+  "repo_head_short": "c42a73d",
+  "repo_head_full": "c42a73d486873d609d078c461c702d10afdb1627",
+  "prior_checkpoint": "c42a73d",
+  "resend_dashboard_status": "VERIFIED_MANUAL_OPERATOR_REPORT_FROM_R9L",
+  "intent": "forgot_password_allowed_for_existing_users_while_registration_remains_blocked",
+  "root_code": "200",
+  "register_code": "403",
+  "register_marker": "closed_beta_signup_disabled",
+  "source_reset_reference_count": "465",
+  "source_register_gate_reference_count": "44",
+  "source_map": "docs/smoke/generated/stage-17k-z-r9m-forgot-password-readiness-no-email/forgot-password-source-map.20260630T183510Z.txt",
+  "route_probe": "docs/smoke/generated/stage-17k-z-r9m-forgot-password-readiness-no-email/public-route-probe.20260630T183510Z.txt",
+  "next_required_gate": "one_bounded_forgot_password_request_for_explicit_existing_user_email",
+  "pass": true
+}

@@ -1,0 +1,7 @@
+/auth/reset-password|GET|200
+/reset-password|GET|200
+/forgot-password|GET|200
+/auth/forgot-password|GET|200
+/api/auth/password-reset|GET|404
+/api/auth/request-password-reset|GET|404
+/api/auth/forgot-password|GET|405
