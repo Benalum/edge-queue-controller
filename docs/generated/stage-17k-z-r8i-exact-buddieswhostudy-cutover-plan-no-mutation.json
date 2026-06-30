@@ -1,0 +1,131 @@
+{
+  "backend_plan": {
+    "api_routing": "Use same-origin /api routes through the same VM200 bridge to CT203.",
+    "cors": "If backend enforces allowed origins, add buddieswhostudy.com origins; otherwise same-origin /api should not require CORS.",
+    "login": "Existing login should work with host-scoped cookies on buddieswhostudy.com after cutover.",
+    "registration": "Keep /api/auth/register returning HTTP 403 closed_beta_signup_disabled."
+  },
+  "baseline_head": "cc3ad25",
+  "cloudflare_dns_plan": {
+    "apex": {
+      "hostname": "buddieswhostudy.com",
+      "note": "If using Cloudflare Tunnel public hostnames, add buddieswhostudy.com -> same service as alexhartel.com. If using DNS-only records, use the same target pattern as current public route, with Cloudflare proxy enabled if appropriate.",
+      "recommended_cloudflare_record_or_public_hostname": "Route to the same Cloudflare Tunnel/service currently serving alexhartel.com."
+    },
+    "preferred_initial_behavior": "Both apex and www serve the same closed-beta app.",
+    "www": {
+      "hostname": "www.buddieswhostudy.com",
+      "recommended_first_cutover": "Route to the same closed-beta app.",
+      "recommended_later": "After stable, optionally redirect www to apex."
+    }
+  },
+  "current_domain": "alexhartel.com",
+  "cutover_decision": {
+    "alexhartel_future_role": "portfolio_projects_site_after_product_domain_is_stable",
+    "closed_beta_required_before_cutover": true,
+    "later_www_behavior": "optional_301_redirect_to_apex_after_stable",
+    "primary_domain": "buddieswhostudy.com",
+    "www_behavior_first_cutover": "serve_same_closed_beta_app_initially"
+  },
+  "email_domain_plan": {
+    "recommendation": "Do not send beta invitations from buddieswhostudy.com until SPF/DKIM/DMARC are verified.",
+    "records_to_prepare": [
+      "SPF",
+      "DKIM",
+      "DMARC"
+    ],
+    "sender_domain": "buddieswhostudy.com"
+  },
+  "go_no_go": {
+    "go_for_r8j_read_only": true,
+    "go_for_r8k_mutation_now": false,
+    "reason_r8k_not_yet": "Need exact route authority confirmation because R8H VM200/PVEW SSH inventory timed out."
+  },
+  "google_oauth_plan": {
+    "authorized_javascript_origins_to_add": [
+      "https://buddieswhostudy.com",
+      "https://www.buddieswhostudy.com"
+    ],
+    "current_known_issue": "Google appDataFolder proof previously required adding alexhartel179@gmail.com as a test user.",
+    "testing_user_status": "Keep beta/test users configured until OAuth app publishing decision."
+  },
+  "hard_preconditions_before_any_mutation": [
+    "Closed-beta frontend banner is live.",
+    "Existing login opens and account creation is unavailable in UI.",
+    "Backend /api/auth/register returns HTTP 403 closed_beta_signup_disabled.",
+    "A rollback target for current DNS/Cloudflare records is recorded.",
+    "Current Cloudflare tunnel/public-hostname routing is confirmed, either through VM200/PVEW SSH or Cloudflare dashboard.",
+    "Google OAuth JavaScript origins are updated or a temporary no-GoogleSync warning is accepted.",
+    "Email sending domain decision is made before public invitations are sent."
+  ],
+  "inputs": {
+    "r8h_closed_beta_backend_live": true,
+    "r8h_closed_beta_frontend_live": true,
+    "r8h_json": "docs/generated/stage-17k-z-r8h-readonly-buddieswhostudy-domain-cutover-readiness.json",
+    "r8h_product_domain_resolves": true,
+    "r8h_pvew_ssh_timeout_recorded": false,
+    "r8h_raw": "docs/generated/stage-17k-z-r8h-readonly-buddieswhostudy-domain-cutover-readiness.txt",
+    "r8h_vm200_ssh_timeout_recorded": false,
+    "r8h_www_domain_resolves": true
+  },
+  "mutation_sequence_after_approval": [
+    {
+      "description": "Confirm active Cloudflare zone, DNS records, tunnel public hostnames, and VM200 nginx behavior. No mutation.",
+      "stage": "R8J",
+      "type": "read_only_or_manual_inventory"
+    },
+    {
+      "description": "Add or adjust Cloudflare DNS/public hostname routing for buddieswhostudy.com and www.buddieswhostudy.com to the same VM200 closed-beta app route as alexhartel.com.",
+      "rollback": "Restore previous DNS/public-hostname records captured in R8J.",
+      "stage": "R8K",
+      "type": "cloudflare_dns_tunnel_mutation"
+    },
+    {
+      "description": "Verify https://buddieswhostudy.com and https://www.buddieswhostudy.com serve the closed-beta app, login modal works, and /api/auth/register returns 403.",
+      "stage": "R8L",
+      "type": "public_smoke"
+    },
+    {
+      "description": "Add https://buddieswhostudy.com and https://www.buddieswhostudy.com to Google OAuth authorized JavaScript origins for Profile GoogleSync.",
+      "rollback": "Remove those origins if needed.",
+      "stage": "R8M",
+      "type": "google_oauth_update"
+    },
+    {
+      "description": "Prepare sender/reply-to domain for buddieswhostudy.com with SPF, DKIM, and DMARC before outbound beta email.",
+      "stage": "R8N",
+      "type": "email_domain_plan_or_setup"
+    },
+    {
+      "description": "Replace product-facing alexhartel.com hardcoded links with buddieswhostudy.com where appropriate, while leaving admin/internal docs alone.",
+      "stage": "R8O",
+      "type": "source_brand_domain_cleanup"
+    },
+    {
+      "description": "Plan alexhartel.com as portfolio/projects site after product domain is stable.",
+      "stage": "R8P",
+      "type": "alexhartel_portfolio_split_plan"
+    }
+  ],
+  "product_domain": "buddieswhostudy.com",
+  "r8j_recommended_read_only_step": {
+    "name": "R8J route authority confirmation",
+    "purpose": "Confirm whether buddieswhostudy cutover should be done in Cloudflare DNS records, Cloudflare Tunnel public hostnames, VM200 nginx server_name, or some combination.",
+    "why_required": "R8H public DNS/HTTP worked, but VM200/PVEW SSH timed out, so the exact active tunnel route was not confirmed from host config."
+  },
+  "read_only": true,
+  "rollback_plan": {
+    "dns_tunnel": "Remove buddieswhostudy.com and www.buddieswhostudy.com Cloudflare records/public-hostname routes or restore captured prior records.",
+    "frontend_backend": "Closed-beta gate remains safe; no rollback needed for account-creation blocking unless beta opens.",
+    "google_oauth": "Remove new authorized JavaScript origins.",
+    "vm200_nginx": "Restore previous nginx config and reload only if nginx was changed."
+  },
+  "stage": "17K-Z-R8I",
+  "status": "exact_cutover_plan_no_mutation",
+  "vm200_nginx_plan": {
+    "if_default_server_handles_all_hosts": "No nginx server_name change required for first cutover.",
+    "if_server_name_is_restrictive": "Add buddieswhostudy.com and www.buddieswhostudy.com to the wrapper UI server block, then nginx -t and reload only after approval.",
+    "must_confirm_before_mutation": true
+  },
+  "www_domain": "www.buddieswhostudy.com"
+}
