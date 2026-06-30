@@ -1,0 +1,17 @@
+{
+  "closed_beta_backend_gate_live_on_current_domain": true,
+  "closed_beta_frontend_marker_live_on_current_domain": true,
+  "current_domain": "alexhartel.com",
+  "needs_dns_cloudflare_cutover": true,
+  "needs_email_domain_plan": true,
+  "needs_google_oauth_origin_update": true,
+  "product_domain": "buddieswhostudy.com",
+  "product_domain_resolves": true,
+  "read_only": true,
+  "recommended_next_stage": "R8I prepare exact Cloudflare/DNS change plan, still no mutation unless approved",
+  "stage": "17K-Z-R8H",
+  "vm200_mentions_alexhartel": true,
+  "vm200_mentions_buddieswhostudy": true,
+  "www_domain": "www.buddieswhostudy.com",
+  "www_domain_resolves": true
+}

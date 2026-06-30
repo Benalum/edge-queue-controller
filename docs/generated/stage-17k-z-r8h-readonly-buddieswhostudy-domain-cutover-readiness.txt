@@ -1,0 +1,529 @@
+# Stage 17K-Z-R8H read-only domain cutover readiness raw inventory
+timestamp_utc=2026-06-30T15:39:23Z
+product_domain=buddieswhostudy.com
+www_domain=www.buddieswhostudy.com
+current_domain=alexhartel.com
+
+## repo heads
+e94c3cf58377fe71598aa656de9ebba070bd5a4e
+e94c3cf58377fe71598aa656de9ebba070bd5a4e
+
+## DNS: product domain
+--- domain=buddieswhostudy.com ---
+getent:
+A:
+AAAA:
+CNAME:
+NS:
+bingo.ns.cloudflare.com.
+dakota.ns.cloudflare.com.
+TXT:
+
+--- domain=www.buddieswhostudy.com ---
+getent:
+A:
+AAAA:
+CNAME:
+NS:
+TXT:
+
+--- domain=alexhartel.com ---
+getent:
+2606:4700:3030::6815:37c5 alexhartel.com
+2606:4700:3036::ac43:aca1 alexhartel.com
+A:
+172.67.172.161
+104.21.55.197
+AAAA:
+2606:4700:3030::6815:37c5
+2606:4700:3036::ac43:aca1
+CNAME:
+NS:
+bingo.ns.cloudflare.com.
+dakota.ns.cloudflare.com.
+TXT:
+
+--- domain=www.alexhartel.com ---
+getent:
+2606:4700:3030::6815:37c5 www.alexhartel.com
+2606:4700:3036::ac43:aca1 www.alexhartel.com
+A:
+172.67.172.161
+104.21.55.197
+AAAA:
+2606:4700:3036::ac43:aca1
+2606:4700:3030::6815:37c5
+CNAME:
+NS:
+TXT:
+
+## HTTP posture
+--- HEAD https://buddieswhostudy.com/ ---
+
+--- HEAD https://www.buddieswhostudy.com/ ---
+
+--- HEAD https://alexhartel.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 15:39:24 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Tft6%2BOfxsN%2BDlJh9QveOKsfEcZIxFlcgTd6q5lq05BVpkmlcZbuiXU%2FPvekUnALIMSztf0HTA5Sjum%2F31nrvZqSF7Oj0UtjMdn18RWsmXKoHgniludrfZoWvNR5hVd%2FDWA%3D%3D"}]}
+cf-ray: a13e437909c9e675-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+--- HEAD https://www.alexhartel.com/ ---
+HTTP/2 200 
+date: Tue, 30 Jun 2026 15:39:25 GMT
+content-type: text/html
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Tue, 30 Jun 2026 01:30:49 GMT
+server: cloudflare
+x-apc-phase: 14J-FH
+cf-cache-status: DYNAMIC
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=i%2FJ3My5wy1eZFjNlWyLoHbKRpWFhSLawASILcDPXSBZtfdIDrapRlRoUIrwhNnHtCVroF%2F5z8kriFNwfRLUv%2FQYYSnnssC%2FgeXC8zSHpUzgMTcJReK%2FmuykdZMpbN1bPzUNhWRE%3D"}]}
+cf-ray: a13e4379ed24557c-DEN
+alt-svc: h3=":443"; ma=86400
+
+
+## current live content markers on alexhartel.com
+    <strong>Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.</strong>   
+  <section id="authModal" class="auth-modal hidden" aria-label="Login dialog; account creation closed for beta">
+        <button id="registerTabBtn" class="ghost-btn apc-closed-beta-register-disabled" type="button" disabled hidden aria-disabled="true" data-closed-beta-disabled="true">Beta closed</button>
+  <script src="/privatepages/google-sync-config.js?v=20260629-stage17k-z-r7d-appdata-vm200"></script>
+  <script src="/privatepages/closed-beta-signup-guard.js?v=20260629-stage17k-z-r8b-closed-beta"></script>
+
+## backend closed beta gate on current domain
+register_http=403
+{"detail":{"ok":false,"code":"closed_beta_signup_disabled","message":"Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.","brand":"Buddies Who Study","product_domain":"buddieswhostudy.com","public_signup_enabled":false,"existing_user_signin_enabled":true}}
+## repo hardcoded domain references
+docs/stage-16-e3m-b1-insert-helper-test-queued-job-only.md:53:- No Cloudflare/DNS/tunnel/nginx mutation.
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:13:Cloudflare existing tunnel -> VM200 website-edge nginx/cloudflared -> VM200 nginx API bridge -> CT203 edge-controller-pvew controller service -> CT203 candidate SQLite DB
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:20:- VM200 nginx and cloudflared are active.
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:26:- No DNS, Cloudflare, or tunnel mutation was performed.
+docs/stage-16-fc-o17-bounded-ollama-concurrency-design-no-apply.md:8:- Base HEAD/origin/main: `65732c9`.
+docs/phase-14j-go-ct202-systemd-unit-static-smoke-disabled-state-regression.md:69:- no Cloudflare route mutation
+docs/stage-16-fc-i1-jobs88-91-runtime-revised-semantic-validators.md:14:- Base HEAD/origin/main: `2ad0cde`.
+docs/stage-16-e3z-ek-guarded-service-timer-persistent-worker-strategy-no-apply.md:8:- Base HEAD/origin/main: `5c89dbb`.
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:43:- no Cloudflare/DNS/tunnel mutation;
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:51:- origin_main_before: `6e6d699`
+docs/cleanup/stage-5o7-manual-browser-ui-checklist-2026-06-11.md:35:Cloudflare beacon or browser tracking-protection messages are not app failures.
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:36:frontend/wrapper-ui/app.js:6908:      const url = new URL(href, window.location.origin);
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:37:frontend/wrapper-ui/app.js:6909:      if (url.origin !== window.location.origin) return "";
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:142:6969:  const originalPushState = history.pushState;
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:144:6976:  const originalReplaceState = history.replaceState;
+docs/cleanup/stage-5j1-route-owner-snapshot-2026-06-10.md:56:495:            original_path="/api/backend/chats/_/messages/queued",
+docs/cleanup/stage-5n7-calendar-provider-only-inspection-2026-06-11.md:52:- `GET https://alexhartel.com/calendar`
+docs/cleanup/study-recovery-working-checkpoint-2026-06-10.md:25:- Recovered the original Math 316 study deck into active user `16`.
+docs/cleanup/stage-5m0b-browser-load-fast-background-api-fix-2026-06-10.md:9:/api/system/public-status, /api/presence/web, and /api/presence/apply-power-policy could route into slow gateway/controller paths and return Cloudflare-style 502 behavior after about 30 seconds.
+docs/cleanup/stage-5n10-final-recovery-checkpoint-2026-06-11.md:106:- Local branch was ahead of `origin/main` by 55 commits.
+docs/cleanup/stage-5j3-compatibility-code-audit-2026-06-10.md:37:5. Only then archive/remove inactive public gateway and Cloudflare Worker proxy source.
+docs/cleanup/stage-5j5-companion-route-smoke-audit-2026-06-10.md:20:Do not remove `/public/companion/*`, `public_gateway.py`, or Cloudflare Worker proxy source until Companion browser behavior is verified while logged in.
+docs/cleanup/stage-5j5-companion-route-smoke-audit-2026-06-10.md:33:Keep `/public/companion/*`, `public_gateway.py`, and Cloudflare Worker proxy source for now.
+docs/stage-16-fc-o45-d-c-r3-admin-users-frontend-route-repair-finalize.md:51:- No nginx/cloudflared mutation.
+docs/phase-14j-hn-ct202-backup-artifact-verification-record-no-restore-no-rebuild.md:47:- Cloudflare, DNS, or tunnel mutation;
+docs/phase-14j-hn-ct202-backup-artifact-verification-record-no-restore-no-rebuild.md:141:- local `origin/main`: `8ae8c1a`;
+docs/stage-16-fc-o45-e-cl-f-authenticated-companion-study-last-message-mvp-source-only.md:21:    HEAD/origin/main=1f2c811
+docs/phase-14j-gg-ct202-python-venv-dependency-install-default-off-no-runtime-activation.md:47:- FORBIDDEN_ABSENT=cloudflared
+docs/phase-14j-gg-ct202-python-venv-dependency-install-default-off-no-runtime-activation.md:76:- no cloudflared install
+docs/phase-14j-gg-ct202-python-venv-dependency-install-default-off-no-runtime-activation.md:77:- no Cloudflare route mutation
+docs/stage-16-e3z-f-insert-one-fresh-timer-proof-job-only.md:30:- mutate CTs, VMs, Cloudflare, DNS, tunnels, or private storage other than the approved CT203 DB insert
+docs/stage-16-e3z-f-insert-one-fresh-timer-proof-job-only.md:34:- Previous HEAD/origin/main: `07b35ac`
+docs/stage-16-e3z-ew-installed-unit-job55-compatible-marker-retry-contract-no-apply.md:8:- Base HEAD/origin/main: `dc4899a`.
+docs/stage-16-e3z-ew-installed-unit-job55-compatible-marker-retry-contract-no-apply.md:140:- repo HEAD, origin/main, and remote main match the E3Z-EW checkpoint,
+docs/stage-16-e3z-el-bounded-service-proof-acceptance-contract-no-apply.md:8:- Base HEAD/origin/main: `ec8eab8`.
+docs/stage-16-e3z-el-bounded-service-proof-acceptance-contract-no-apply.md:78:1. Repository HEAD, origin/main, and remote main match the expected E3Z-EL checkpoint.
+docs/stage-16-e3z-el-bounded-service-proof-acceptance-contract-no-apply.md:192:- repo HEAD/origin/remote check,
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:64:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/phase-14j-fu-sqlite-backup-restore-and-data-container-design-plan-no-creation.md:11:This phase does not create containers, migrate data, mutate the live DB, move controller/queue, restart or reload services, start workers, call CT101, call model endpoints, mutate Cloudflare routes, or rerun the Phase 14J-AG apply wrapper.
+docs/phase-14j-fu-sqlite-backup-restore-and-data-container-design-plan-no-creation.md:163:- Cloudflare tunnel for apex and www.
+docs/phase-14j-fu-sqlite-backup-restore-and-data-container-design-plan-no-creation.md:218:- no Cloudflare route mutation;
+docs/phase-14j-fu-sqlite-backup-restore-and-data-container-design-plan-no-creation.md:219:- no Cloudflare API token use;
+docs/stage-16-fc-o30-run-only-job107-gemma4-companion-chat-after-model-name-repair.md:14:- Base HEAD/origin/main: `a4d266f`.
+docs/stage-16-e3p-c-r2-smoke-quote-recovery-no-runtime.md:7:The original E3P-C DB insertion succeeded, but the smoke emitted harmless `command not found` lines because expected Markdown strings such as `Job ID: `27`` were placed inside double quotes. The smoke still exited successfully, but the evidence should be clean before E3P-D.
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:11:This phase does not format, mount, wipe, encrypt, create keys, create LVM, add Proxmox storage, start CT203/CT204, migrate data, mutate VM200 content, mutate Cloudflare/DNS/tunnel routes, or wake PVESO.
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:85:8. Keep encryption keys/passphrases out of ChatGPT, git, Source files, terminal output, APC_LAST_OUTPUT, website-edge, and Cloudflare/tunnel config.
+docs/phase-14j-gz-ct202-cutover-readiness-gate-and-remaining-blockers-summary-no-apply.md:16:This phase does **not** mutate CT202, systemd, Proxmox onboot/autostart, Cloudflare, DNS, tunnels, laptop controller, CT201, CT101, workers, models, or any database.
+docs/phase-14j-gz-ct202-cutover-readiness-gate-and-remaining-blockers-summary-no-apply.md:255:- no Cloudflare mutation;
+docs/phase-14j-gz-ct202-cutover-readiness-gate-and-remaining-blockers-summary-no-apply.md:257:- no tunnel mutation;
+docs/stage-16-fc-n2c1-r3-job101-recovery-decision-gate-no-apply.md:8:- Base HEAD/origin/main: `5555212`.
+docs/stage-16-fc-o43-c-r2-record-product-visible-thinking-refusal-read-only-docs-only.md:18:- Base HEAD/origin/main: `5418317`.
+docs/laptop-job-queue-facade-plan.md:48:- user can see pending/running/complete/failed state from alexhartel.com
+docs/stage-16-fc-n1-r4-job97-recovery-decision-gate-no-apply.md:8:- Base HEAD/origin/main: `35cf312`.
+docs/phase-14j-hz-read-only-bootstrap-ct202-owner-node-non-authority-evidence.md:18:- no public route, Cloudflare, DNS, or tunnel mutation;
+docs/phase-14j-bp-read-only-activation-go-no-go-readiness-review.md:93:- When the lane gate is disabled, lane filtering preserves the original worker list.
+docs/stage-16-fc-n2b1-r4-job100-recovery-decision-gate-no-apply.md:8:- Base HEAD/origin/main: `1b6ef39`.
+docs/phase-14j-gk-ct202-private-loopback-runtime-smoke-temporary-only.md:68:- no Cloudflare route mutation
+docs/stage-16-fc-o20-run-only-job114-qwen3-json-post-concurrency-one-shot.md:14:- Base HEAD/origin/main: `a27b5e4`.
+docs/stage-16-fc-o45-e-p-companion-auth-no-enqueue-validation-plan.md:95:- nginx/cloudflared mutation
+docs/stage-16-fc-o45-e-p-companion-auth-no-enqueue-validation-plan.md:103:   - repo/head/origin clean
+docs/stage-16-fc-k-model-tier-output-control-remediation-plan-no-apply.md:8:- Base HEAD/origin/main: `464e311`.
+docs/stage-16-e2o-ct203-temporary-secondary-lan-ip-candidate-plan-no-apply.md:74:- change Cloudflare/DNS/tunnels
+docs/stage-16-e3z-cw-r3-ct101-worker-bounded-one-shot-activation-plan-no-apply-recovery.md:160:- repo HEAD/origin matches the expected checkpoint
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:69:No VM200 app.js write, no qemu guest-agent operation during recovery record, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/stage-16-fc-o45-e-aa-r7-result-read-mirror-auth-header.md:24:No DB write, no job mutation, no worker/model/helper/runtime call, no scheduler/timer activation, no schema change, no CT/VM restart, no nginx/cloudflared mutation, and no storage mutation.
+docs/stage-16-e3i-run-one-shot-model-adapter-no-write.md:70:- No Cloudflare/DNS/tunnel/nginx mutation.
+docs/stage-16-e2z-model-serving-path-decision-no-model-call.md:27:- Repo HEAD/origin: `dd99327`.
+docs/stage-16-e3v-q-r2-read-only-active-generation-vs-stuck-running-classifier.md:37:- mutate services, CTs, VMs, Cloudflare, or private storage
+docs/stage-16-e3v-q-r2-read-only-active-generation-vs-stuck-running-classifier.md:43:    HEAD/origin/main/remote: 2018fd8
+docs/phase-14j-ga-private-edge-data-lxc-creation-record.md:30:- no Cloudflare tunnel recorded
+docs/phase-14j-ga-private-edge-data-lxc-creation-record.md:59:- no Cloudflare route mutation
+docs/phase-14j-gm-ct202-private-system-queue-route-runtime-smoke-temporary-only.md:96:- no Cloudflare route mutation
+docs/stage-16-fb-r5d-job-type-profile-eligibility-diagnosis-no-apply.md:8:- Base HEAD/origin/main: `b4a415e`.
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:14:This phase does **not** mutate Cloudflare, DNS, tunnels, public routes, CT202, systemd, laptop controller, or any database.
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:52:5. expected Cloudflare/tunnel/dashboard/API boundary;
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:162:## Cloudflare boundary
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:164:A future Cloudflare or route mutation must not happen from this phase.
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:166:Before any future Cloudflare mutation:
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:174:- no broad/global Cloudflare API key should be used.
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:211:- no Cloudflare mutation;
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:213:- no tunnel mutation;
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:236:No route, Cloudflare, DNS, tunnel, runtime, database, or authority mutation was performed by this phase.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-16-fc-o31-repair-gemma-llama-profile-endpoint-type-schema-no-runtime.md:14:- Base HEAD/origin/main: `c4eda7e`.
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:49:- mutate nginx/cloudflared
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:61:- No backend deploy, CT203 restart, DB write, worker/model/helper/runtime call, scheduler/timer activation, CT/VM restart, or nginx/cloudflared mutation is performed by this repo checkpoint.
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:70:No backend deploy, CT203 restart, DB write, worker/model/helper/runtime call, scheduler/timer activation, CT/VM restart, or nginx/cloudflared mutation is performed.
+docs/phase-14j-br-batched-static-contract-inventory-and-first-safe-patch-candidates.md:221:.cleanup-archive/2026-06-10-155808/bak-files/.cleanup-backups/controller-refactor-2026-06-05-102048/rewarded_ads.py.bak-match-ad-count-original-2026-06-05-102022
+docs/phase-14j-e-persistent-lane-worker-default-off-helper-skeleton.md:105:When the gate is disabled, the filter helper returns the original worker list.
+docs/stage-16-fb-r5g-a-job73-exact-runtime.md:14:- Base HEAD/origin/main: `8a842e9`.
+docs/stage-5g7-browser-cookie-frontend-helper-through-wrapper.md:23:This stage does not perform Cloudflare/public cutover.
+docs/stage-16-fb-r4a-general-queue-worker-source-contract-preflight-no-apply.md:8:- Base HEAD/origin/main: `d02eac3`.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:1:# Phase 14J-FN-R8 - Website-edge minimal cloudflared service temporary hostname
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:11:Record the successful website-edge Cloudflare Tunnel runtime setup for the temporary test hostname only.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:15:- FN initial attempt failed because the Cloudflare Linux install block was pasted instead of only the tunnel token or service-install token line.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:16:- FN-R2 successfully installed and started cloudflared but failed overly strict public root exact-hash validation, then rolled back.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:18:- FN-R4 failed cloudflared service install after residual installer state.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:19:- FN-R5 found residual cloudflared-update units.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:20:- FN-R6 cleaned the residual cloudflared-update units.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:26:Previous repo phase: Phase 14J-FM - token-safe website-edge tunnel setup plan
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:28:Previous tag: controller-phase-14j-fm-plan-token-safe-website-edge-tunnel-setup-temporary-test-hostname-2026-06-17
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:32:MUTATION_SCOPE=website_edge_vm_200_minimal_cloudflared_service_setup_temp_hostname_only
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:36:- hidden interactive tunnel token entry
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:38:- minimal cloudflared systemd service
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:39:- no-autoupdate cloudflared run mode
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:48:minimal_cloudflared_service_setup_temp_hostname=passed
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:51:temporary_test_hostname=website-edge-test.alexhartel.com
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:52:cloudflared_path=/usr/local/bin/cloudflared
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:53:cloudflared_version=cloudflared version 2026.6.0
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:54:cloudflared_service_file=/etc/systemd/system/cloudflared.service
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:55:cloudflared_service_file_mode=644
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:56:cloudflared_service_file_owner=root:root
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:57:cloudflared_service_file_content_printed=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:58:cloudflared_execstart_printed=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:59:cloudflared_service_uses_no_autoupdate=yes
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:60:cloudflared_service_uses_environment_file=yes
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:62:cloudflared_token_env_file=/etc/cloudflared/website-edge-tunnel.env
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:63:cloudflared_token_env_file_mode=600
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:64:cloudflared_token_env_file_owner=root:root
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:65:cloudflared_token_env_file_size_bytes_recorded=yes
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:66:cloudflared_token_env_file_content_printed=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:68:cloudflared_load_state=loaded
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:69:cloudflared_active_state=active
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:70:cloudflared_sub_state=running
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:71:cloudflared_unit_file_state=enabled
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:72:cloudflared_service_status_sanitized=yes
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:74:cloudflared_update_service_created=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:75:cloudflared_update_timer_created=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:133:The tunnel token was not printed, not pasted into ChatGPT, not committed, not written into source files, and not included in APC_LAST_OUTPUT.
+docs/phase-14j-nd-r2-public-authority-copy-cleanup-deploy.md:25:- No Cloudflare/DNS/tunnel mutation.
+docs/phase-14j-gr-ct202-readiness-summary-and-cutover-blocker-review.md:113:   No Cloudflare route mutation has been performed.
+docs/phase-14j-gr-ct202-readiness-summary-and-cutover-blocker-review.md:165:- no Cloudflare route mutation
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:40:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fc-o21-two-job-qwen3-parallel-proof-design-no-apply.md:14:- Base HEAD/origin/main: `c1c4ec9`.
+docs/stage-16-fc-o37-job107-prompt-result-provenance-diagnosis-read-only.md:14:- Base HEAD/origin/main: `789567c`.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:101:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fc-o45-e-bn-r2-companion-model-worker-readiness-read-only.md:7:- Expected HEAD/origin/main: `eba85d4`
+docs/stage-16-fc-o45-e-bn-r2-companion-model-worker-readiness-read-only.md:42:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-bn-r2-companion-model-worker-readiness-read-only.md:85:NO nginx/cloudflared config mutation
+docs/stage-16-fc-o45-e-bn-r2-companion-model-worker-readiness-read-only.md:97:origin_main_now=eba85d4
+docs/phase-14j-bk-runtime-activation-preflight-checklist-and-rollback-verification-plan.md:21:- `origin/main=87dad82`
+docs/phase-14j-bk-runtime-activation-preflight-checklist-and-rollback-verification-plan.md:97:4. `HEAD` matches `origin/main`.
+docs/stage-16-e3x-b0-container-docker-model-inventory-no-pull.md:19:    HEAD/origin/main/remote: 537aa37
+docs/stage-16-e3x-b0-container-docker-model-inventory-no-pull.md:133:- mutate services, CTs, VMs, Cloudflare, or private storage
+docs/stage-16-e3z-c-static-scheduler-service-timer-artifacts-no-install-no-start.md:25:- mutate CTs, VMs, Cloudflare, or private storage
+docs/stage-16-e3z-c-static-scheduler-service-timer-artifacts-no-install-no-start.md:29:- Previous HEAD/origin/main: `4ca970e`
+docs/phase-14j-mc-update-workstation-pvew-alias-to-tailscale-ip-only.md:26:No SSH connection attempt, no qemu guest-agent operation, no VM200 write, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/stage-16-fb-r5b-insert-jobs-65-72-only-no-runtime.md:14:- Base HEAD/origin/main: `829d416`.
+docs/stage-15-c-mock-queued-chat-endpoint-design-no-apply.md:151:- nginx/cloudflared mutation
+docs/stage-15-c-mock-queued-chat-endpoint-design-no-apply.md:152:- Cloudflare/DNS/tunnel mutation
+docs/stage-7c-authenticated-shadow-comparison-artifact-schema.md:45:- Cloudflare tokens
+docs/stage-16-fc-o45-e-ab-f-browser-read-proof-job-125.md:54:This proof-record phase is repo-only. It did not write the DB, mutate jobs, insert results, patch backend/frontend runtime files, deploy, restart services, call workers/models/helpers/runtime/Ollama, activate scheduler/timer/persistent workers, change schema, restart CT/VMs, mutate nginx/cloudflared, or mutate storage.
+docs/phase-14j-gj-ct202-private-controller-import-and-db-path-preflight-no-runtime-activation.md:56:- no Cloudflare route mutation
+docs/stage-16-fc-i2-jobs92-94-runtime-final-remediation-matrix.md:14:- Base HEAD/origin/main: `1fa856a`.
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:17:No live deploy, service restart, CT/VM restart, nginx/cloudflared mutation, DB write, job mutation, worker/model/runtime mutation, model call, or reset-failed was performed in R14.
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:35:    cloudflared_active=active
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:52:    public_http_code=200 url=https://alexhartel.com/?fc_o44_d_r14=1_1782269587
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:55:    public_http_code=200 url=https://alexhartel.com/app.js?fc_o44_d_r14=1_1782269588
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:58:    public_http_code=200 url=https://alexhartel.com/app.js?v=20260624fc044d&fc_o44_d_r14=1_1782269588
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:61:    public_http_code=200 url=https://alexhartel.com/api/system/status?fc_o44_d_r14=1_1782269589
+docs/stage-16-fc-o12-r2-qwen3-1-7b-profile-no-think-flags-recovery-verify-no-further-mutation.md:22:- Base HEAD/origin/main: `4fd88c4`.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:11:Plan the production cutover from the current public wrapper route to the website-edge static tunnel path without applying any Cloudflare route mutation.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:17:Previous repo phase: Phase 14J-FN-R8 - website-edge minimal cloudflared service temporary hostname
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:19:Previous tag: controller-phase-14j-fn-r8-minimal-cloudflared-service-temp-hostname-2026-06-17
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:26:- cloudflared is installed at /usr/local/bin/cloudflared.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:27:- minimal cloudflared.service is active, running, and enabled.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:28:- cloudflared.service uses --no-autoupdate.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:29:- cloudflared.service uses a root-owned 0600 EnvironmentFile.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:30:- cloudflared-update.service was not created.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:31:- cloudflared-update.timer was not created.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:32:- temporary hostname website-edge-test.alexhartel.com passed public smoke.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:49:- Route the public static wrapper/home surface to website-edge tunnel origin.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:61:- alexhartel.com
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:62:- www.alexhartel.com
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:84:6. Confirm cloudflared.service is active, running, and enabled.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:85:7. Confirm cloudflared service is minimal no-autoupdate service.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:86:8. Confirm cloudflared-update.service is absent.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:87:9. Confirm cloudflared-update.timer is absent.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:92:14. Confirm no Cloudflare apt repo/key was added.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:97:A future apply phase must use the Cloudflare dashboard or a separately approved scoped Cloudflare mechanism.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:101:- use only a dedicated Cloudflare tunnel/public hostname routing change;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:102:- target website-edge tunnel;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:103:- target origin service http://127.0.0.1:18080 inside website-edge;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:119:- production root does not contain Cloudflare error markers;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:132:- restore previous Cloudflare route target for production hostname;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:133:- keep website-edge cloudflared service untouched unless the rollback reason is website-edge service failure;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:134:- avoid deleting the tunnel token unless explicitly retiring website-edge tunnel;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:171:- the exact Cloudflare route target;
+docs/stage-16-e2m-e2l-findings-and-ct203-network-repair-plan-no-apply.md:142:- Cloudflare/DNS/tunnel mutation
+docs/failed-patches/fc-o45-e-j-failed-route-local-companion-auth-split.patch:34: # Added for always-visible alexhartel.com wrapper/header
+docs/stage-16-fc-e1-jobs81-83-runtime-semantic-validators.md:14:- Base HEAD/origin/main: `f734c49`.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:9:This phase records the read-only baseline and pre-apply validation performed after Phase 14J-FO. It does not apply any Cloudflare production route mutation and does not replace apex/root or any primary public route.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:33:No Cloudflare route mutation, Tailscale ACL/grants/tag mutation, Tailscale SSH mode enablement, website-edge service mutation, nginx config mutation, CT101 call, worker start, model call, or production DB/job mutation occurred during this repair.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:54:- local root had no Cloudflare/error markers;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:55:- `cloudflared` version observed as 2026.6.0;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:56:- `cloudflared.service` active and enabled;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:57:- `cloudflared.service` contains `--no-autoupdate`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:58:- `cloudflared.service` contains `EnvironmentFile=`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:59:- `cloudflared.service` contains `tunnel run`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:60:- `cloudflared-update.service` absent;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:61:- `cloudflared-update.timer` absent;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:64:- temporary hostname root had no Cloudflare/error markers;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:66:- production apex `alexhartel.com` returned HTTP 200;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:69:- `www.alexhartel.com` did not resolve during fingerprinting.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:87:- `cloudflared` version observed as 2026.6.0;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:88:- `cloudflared.service` active and enabled;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:89:- `cloudflared.service` contains `--no-autoupdate`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:90:- `cloudflared.service` contains `EnvironmentFile=`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:91:- `cloudflared.service` contains `tunnel run`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:94:- `cloudflared-update.service` absent;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:95:- `cloudflared-update.timer` absent.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:105:Production apex `alexhartel.com` returned the same three static asset hashes during fingerprinting.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:109:The matching production apex content is content parity, not proof that a production Cloudflare route mutation was applied.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:115:- `website-edge-test.alexhartel.com`: healthy temporary public hostname.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:116:- `alexhartel.com`: HTTP 200 with expected wrapper/public markers and matching static asset hashes during FP-R4.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:117:- `www.alexhartel.com`: did not resolve during FP-R4 fingerprinting.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:126:- `cloudflared.service` active/running/enabled: yes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:127:- `cloudflared-update.service` absent: yes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:128:- `cloudflared-update.timer` absent: yes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:138:- no Cloudflare production route mutation;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:141:- no global Cloudflare API key use;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:142:- no broad Cloudflare account token use;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:167:- exact Cloudflare route target;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:180:www.alexhartel.com did not resolve during FP-R4 fingerprinting
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:186:cloudflared-update.service absent
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:188:cloudflared-update.timer absent
+docs/stage-16-fc-c-add-semantic-probe-job-types-to-ct101-profile-only-no-runtime.md:14:- Base HEAD/origin/main: `166a213`.
+docs/phase-14j-lu-ct204-backup-data-role-no-apply.md:9:It does not start CT204, promote CT204, create backups, restore DBs, mutate storage, unlock or mount encrypted private storage, change services, change CT/VM configuration, connect over SSH, wake PVESO, or change Cloudflare/DNS/tunnels.
+docs/phase-14j-lu-ct204-backup-data-role-no-apply.md:52:- Cloudflare/DNS/tunnel mutation.
+docs/phase-14j-lu-ct204-backup-data-role-no-apply.md:76:9. Changing Cloudflare/DNS/tunnel routing to CT204.
+docs/phase-14j-lu-ct204-backup-data-role-no-apply.md:115:- the operation requires Cloudflare/DNS/tunnel mutation;
+docs/phase-14j-lu-ct204-backup-data-role-no-apply.md:136:Any CT204 start, DB backup, DB restore, storage unlock/mount, service restart, SSH config edit, SSH connection, PVESO wake, or route/tunnel mutation requires a separate explicit approval boundary.
+docs/stage-16-fc-o32-run-only-job107-gemma4-companion-chat-after-endpoint-type-repair.md:14:- Base HEAD/origin/main: `9f5e232`.
+docs/stage-16-fc-o11-qwen3-response-hygiene-diagnosis-no-apply.md:8:- Base HEAD/origin/main: `8546444`.
+docs/stage-16-fc-o11-qwen3-response-hygiene-diagnosis-no-apply.md:53:    Thinking... Okay, let's see. The user wants me to write exactly one sentence using the words worker, request, result, and default-off. The example given is: "The worker handled the request, saved the result, and returned to default-off i idle posture." First, I need to make sure all four words are included. The original senten sentence uses "worker," "request," "result," and "default-off." The example example sentence is already using those words, but the user might want a di different sentence structure or maybe a different order. Wait, the example is already a valid sentence. But the user might want a va variation. Let me check the original sentence again. The example is correct correct, but maybe the user wants a different sentence. However, the user s says "write exactly one sentence using the words," so maybe the example is acceptable. But perhaps they want a different sentence. Alternatively, maybe the example is correct, and the user is testing if I c can recognize that. But the
+docs/phase-11l-live-frontend-activation-cache-bust-verification.md:25:- `https://alexhartel.com/app.js`
+docs/frontend-chat-submit-handler-inspection.md:9:## main...origin/main
+docs/frontend-chat-submit-handler-inspection.md:26:18:    return "The companion is still working or the gateway timed out before the browser received the final response. I will not show the raw Cloudflare error page. Refresh in a moment or try again.";
+docs/frontend-chat-submit-handler-inspection.md:31:75:    return "The companion is still working or the gateway timed out before the browser received the final response. I will not show the raw Cloudflare error page. Refresh in a moment or try again.";
+docs/frontend-chat-submit-handler-inspection.md:550:174:        auth_bridge_path = original_path or upstream_path
+docs/frontend-chat-submit-handler-inspection.md:552:191:    def _proxy_to_backend(self, backend, upstream_path, query="", original_path=None):
+docs/frontend-chat-submit-handler-inspection.md:555:222:        auth_source_path = original_path or upstream_path
+docs/frontend-chat-submit-handler-inspection.md:559:289:        return self._proxy_to_backend(backend, upstream_path, parsed.query, original_path=parsed.path)
+docs/phase-14j-ly-ui-legacy-copy-source-patch-no-deploy.md:9:This phase does not deploy the frontend to VM200, write to VM200, run qemu guest-agent operations, deploy controller source, restart services, mutate DBs, mutate storage, start CT204, wake PVESO, connect over SSH, edit SSH config, or change Cloudflare/DNS/tunnels.
+docs/phase-14j-ly-ui-legacy-copy-source-patch-no-deploy.md:63:No frontend deploy, no VM200 write, no qemu guest-agent operation, no controller deploy, no CT203 source deploy, no service restart/reload/enable/start/stop, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no SSH connection attempt, no SSH config mutation, no Tailscale config/auth mutation, no PVESO wake/start, and no Cloudflare/DNS/tunnel mutation occurred.
+docs/phase-14j-ly-ui-legacy-copy-source-patch-no-deploy.md:78:8. not change Cloudflare/DNS/tunnels;
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:20:- VM200 `cloudflared.service` is active/enabled.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:37:→ VM200 cloudflared was down
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:38:→ Cloudflare returned 530 / 1033
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:137:No Cloudflare/DNS/tunnel config mutation occurred.
+docs/stage-16-fc-o45-e-ad-g-r2-end-to-end-submit-result-reader-proof-job-126.md:46:This proof-record phase is read-only against CT203 and repo-only for documentation. It did not write the DB, mutate jobs, insert result rows, patch backend/frontend runtime files, deploy, restart services, call workers/models/helpers/runtime/Ollama, activate scheduler/timer/persistent workers, change schema, restart CT/VMs, mutate nginx/cloudflared, or mutate storage.
+docs/stage-17k-d-vendor-sqljs-assets.md:33:APC should serve sql.js same-origin from the vendored path.
+docs/stage-17k-d-vendor-sqljs-assets.md:41:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-c-browser-sqlite-parser-decision.md:56:- no network fetch except same-origin static WASM load
+docs/stage-17k-c-browser-sqlite-parser-decision.md:96:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, CDN dependency, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included in this decision checkpoint.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:7:- Expected HEAD/origin/main: `7bf9bb8`
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:55:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:110:NO nginx/cloudflared config mutation
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:123:origin_main_now=7bf9bb8
+docs/stage-16-a-model-worker-reentry-plan-no-apply.md:31:- VM200 cloudflared was active.
+docs/stage-16-a-model-worker-reentry-plan-no-apply.md:69:- Cloudflare, DNS, or tunnel changes;
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:30:- no Cloudflare tunnel
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:47:- Cloudflare tunnel: none
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:73:- cloudflared
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:102:4. No Cloudflare route is created.
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:135:- no Cloudflare route mutation
+docs/stage-16-fc-o45-e-cg-b-study-companion-surface-owner.md:27:- nginx/cloudflared/sshd mutation
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:10:- HEAD/origin/main: `44e1064`
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:21:- VM200 nginx/cloudflared public path is healthy.
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:46:- Real mutations require explicit approval: PVEW reboot/shutdown, PVESO mutation, CT/VM start/stop/restart/config changes, service reload/restart, nginx/cloudflared config changes, Cloudflare/DNS/tunnel, DB migration/import/restore, private storage unlock/mount, CT204 start/authority change, worker/model/scheduler activation, live model endpoint calls, Proxmox cluster/corosync mutation.
+docs/stage-17g-vm200-app-js-quarantine.md:50:No backend deploy, DB change, nginx restart, cloudflared restart, Anki write, or service mutation was performed.
+docs/stage-16-e3d-pveso-model-inventory-manifests-no-apply.md:19:- No Cloudflare/DNS/tunnel/nginx mutation.
+docs/stage-17k-k-r2-anki-file-memory-handoff-repair.md:35:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fa-queue-breadth-model-routing-matrix-contract-no-apply.md:8:- Base HEAD/origin/main: `b0260e6`.
+docs/phase-14j-in-encrypted-at-rest-placement-design-no-apply.md:7:No CT/VM create, start, stop, clone, delete, modify, storage create, storage format, storage mount, storage resize, storage enable, storage disable, encryption setup, key generation, key installation, DB dump, DB copy, DB import, DB migration, service activation, onboot/autostart mutation, VM200 mutation, public route mutation, Cloudflare/DNS/tunnel mutation, PVESO power action, CT101/model/Ollama/worker call, laptop controller pause, laptop DB mutation, or production job mutation is approved or performed by this phase.
+docs/phase-14j-in-encrypted-at-rest-placement-design-no-apply.md:80:The disk should be treated as the future at-rest authority for private platform data. It should not be public, should not be mounted into VM200 website-edge, and should not contain public route/tunnel material.
+docs/phase-14j-in-encrypted-at-rest-placement-design-no-apply.md:94:- Do not put keys in public routes or Cloudflare tunnel config.
+docs/stage-16-fc-o39-product-result-worker-profile-remediation-implementation-contract-no-runtime.md:14:- Base HEAD/origin/main: `6753fc2`.
+docs/stage-16-e3y-g-final-one-shot-scheduler-runtime-closure-read-only.md:15:    HEAD/origin/main/remote: f54776e
+docs/stage-16-e3y-g-final-one-shot-scheduler-runtime-closure-read-only.md:131:- mutate services, CTs, VMs, Cloudflare, or private storage
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:7:- Expected HEAD/origin/main: `d4f45a7`
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:59:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:119:NO nginx/cloudflared config mutation
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:132:origin_main_now=d4f45a7
+docs/phase-14j-im-pvew-storage-identity-inspection-no-apply.md:9:No storage create, format, mount, resize, enable, disable, delete, encryption setup, key generation, DB dump, DB copy, DB import, DB migration, service activation, onboot/autostart mutation, VM200 mutation, public route mutation, Cloudflare/DNS/tunnel mutation, PVESO power action, CT101/model/Ollama/worker call, laptop controller pause, laptop DB mutation, or production job mutation is approved or performed by this phase.
+docs/phase-14j-gf-clone-controller-code-default-off-no-runtime-activation.md:40:- cloudflared absent
+docs/phase-14j-gf-clone-controller-code-default-off-no-runtime-activation.md:68:- no cloudflared install
+docs/phase-14j-gf-clone-controller-code-default-off-no-runtime-activation.md:69:- no Cloudflare route mutation
+docs/stage-16-e3u-b-read-only-runtime-preflight-result.md:16:    HEAD/origin/main/remote: 24266ef
+docs/stage-16-e3u-b-read-only-runtime-preflight-result.md:38:- no service/CT/VM/Cloudflare/private-storage mutation
+docs/stage-16-e3u-b-read-only-runtime-preflight-result.md:195:- service/CT/VM/Cloudflare/private-storage mutation
+docs/phase-14j-ev-website-edge-vm-design.md:9:This phase designs the website-edge VM for the low-power Proxmox host. It creates no VM/container, makes no Cloudflare change, makes no Tailscale ACL/grants/tag change, changes no firewall, restarts no services, starts no workers, activates no runtime behavior, and mutates no production DB/jobs.
+docs/phase-14j-ev-website-edge-vm-design.md:101:## Cloudflare migration design
+docs/phase-14j-cg-bounded-runtime-activation-gate-plan-and-smoke-artifact.md:37:- `HEAD == origin/main == eace367`
+docs/phase-14j-cg-bounded-runtime-activation-gate-plan-and-smoke-artifact.md:119:2. `HEAD == origin/main`.
+docs/phase-14j-cg-bounded-runtime-activation-gate-plan-and-smoke-artifact.md:182:- `HEAD != origin/main`
+docs/stage-16-fc-n2d1-r3-final-fc-n-matrix-stop-runtime-no-apply.md:8:- Base HEAD/origin/main: `9404727`.
+docs/stage-16-fc-o16-run-only-job106-qwen3-json-one-shot.md:14:- Base HEAD/origin/main: `89a1d98`.
+docs/stage-16-e3m-b2-r3-doc-commit-recovery.md:52:- No Cloudflare/DNS/tunnel/nginx mutation.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:45:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:7:- Expected HEAD/origin/main: `9418e4a`
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:38:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:94:NO nginx/cloudflared config mutation
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:106:origin_main_now=9418e4a
+docs/phase-14j-gc-r0-controller-data-split-pivot-plan-no-apply.md:31:- no Cloudflare tunnel
+docs/phase-14j-gc-r0-controller-data-split-pivot-plan-no-apply.md:88:- no Cloudflare cutover
+docs/phase-14j-gc-r0-controller-data-split-pivot-plan-no-apply.md:139:- no Cloudflare route mutation
+docs/stage-17k-k-r4-anki-active-status-repair.md:51:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fc-o45-c-o-polish-study-workspace-css-formatting.md:49:- No nginx/cloudflared mutation.
+docs/stage-16-fc-o45-e-bp-r3-r2-complete-companion-real-model-routing-source-no-runtime.md:7:- Expected HEAD/origin/main: `ed34ef1`
+docs/stage-16-fc-o45-e-bp-r3-r2-complete-companion-real-model-routing-source-no-runtime.md:49:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-bp-r3-r2-complete-companion-real-model-routing-source-no-runtime.md:113:NO nginx/cloudflared config mutation
+docs/stage-16-fc-o45-e-bp-r3-r2-complete-companion-real-model-routing-source-no-runtime.md:125:origin_main_now=ed34ef1
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:4:Scope: documentation-only apply runbook. No live Proxmox, corosync, guest, storage, nginx, Cloudflare, worker, scheduler, model, or DB mutation.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:54:- VM200 autostarts and serves the website/tunnel.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:59:- No Cloudflare/DNS/tunnel config mutation is bundled into quorum work.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:104:- VM200 `cloudflared`, `nginx`, `qemu-guest-agent`
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:161:- No Cloudflare/DNS/tunnel mutation.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:186:- VM200 `cloudflared.service` active/enabled.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:38:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/phase-14j-no-pvew-reboot-readiness-no-apply.md:30:This phase does not approve PVEW reboot, CT/VM start/stop/restart, service reload/restart, `pvecm expected`, `pvecm delnode`, corosync/PVE config mutation, private storage unlock/mount, CT204 start, worker/model/scheduler activation, DB mutation, or Cloudflare/DNS/tunnel mutation.
+docs/stage-16-fc-o45-e-ag-r3-exact-one-companion-model-job.md:7:- Expected HEAD/origin/main: `25d6f3f`
+docs/stage-16-fc-o45-e-ag-r3-exact-one-companion-model-job.md:57:- NO nginx/cloudflared/storage mutation.
+docs/stage-16-fc-o45-e-ag-r3-exact-one-companion-model-job.md:92:NO nginx/cloudflared/storage mutation
+docs/stage-16-fc-o45-e-ag-r3-exact-one-companion-model-job.md:100:origin_main_now=25d6f3f
+docs/stage-16-e2s-runtime-bridge-persistence-vs-cleanup-decision-plan-no-apply.md:72:- avoids Cloudflare/DNS/tunnel changes;
+docs/stage-16-e2s-runtime-bridge-persistence-vs-cleanup-decision-plan-no-apply.md:147:- Cloudflare/DNS/tunnel mutation;
+docs/stage-16-fc-o34-run-only-job107-gemma4-companion-chat-after-container-name-repair.md:14:- Base HEAD/origin/main: `6ebbdbf`.
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:9:This phase does not unlock, mount, format, write keys, edit crypttab, edit fstab, start or stop CTs/VMs, restart services, create backups, restore databases, change Cloudflare/DNS/tunnels, wake PVESO, or activate workers/models.
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:91:- change Cloudflare, DNS, tunnels, routes, or public cutover;
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:223:- no Cloudflare/DNS/tunnel mutation occurred;
+docs/stage-16-e3w-b-read-only-pveso-model-inventory-timeout-budget.md:46:    HEAD/origin/main/remote: 62c0da8
+docs/stage-16-e3w-b-read-only-pveso-model-inventory-timeout-budget.md:72:- mutate services, CTs, VMs, Cloudflare, or private storage
+docs/stage-16-fc-o40-a-worker-source-authority-implementation-preflight-read-only.md:14:- Base HEAD/origin/main: `5a2f728`.
+docs/stage-16-fc-o33-repair-gemma-llama-profile-container-name-schema-no-runtime.md:14:- Base HEAD/origin/main: `3b85d91`.
+docs/stage-16-fc-o45-e-bp-r2-companion-real-model-routing-source-no-runtime.md:7:- Expected HEAD/origin/main: `104d77a`
+docs/stage-16-fc-o45-e-bp-r2-companion-real-model-routing-source-no-runtime.md:43:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-bp-r2-companion-real-model-routing-source-no-runtime.md:105:NO nginx/cloudflared config mutation
+docs/stage-16-fc-o45-e-bp-r2-companion-real-model-routing-source-no-runtime.md:117:origin_main_now=104d77a
+docs/phase-14j-hm-ct202-guarded-backup-only-no-rebuild.md:64:- Cloudflare, DNS, or tunnel mutation;
+docs/phase-14j-hm-ct202-guarded-backup-only-no-rebuild.md:79:- local `origin/main`: `0a12db6`;
+docs/phase-14j-hm-ct202-guarded-backup-only-no-rebuild.md:156:- local `origin/main`: `0a12db6`;
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:52:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-16-e3y-c-insert-one-fresh-scheduler-selected-small-model-job.md:21:    HEAD/origin/main/remote: 5c54554
+docs/stage-16-e3y-c-insert-one-fresh-scheduler-selected-small-model-job.md:72:- mutate services, CTs, VMs, Cloudflare, or private storage
+docs/phase-14j-ic-pvew-encryption-at-rest-design-no-apply.md:34:No key in ChatGPT, repo, Source files, APC_LAST_OUTPUT, terminal output, website-edge, public route config, Cloudflare Worker code, or tunnel config.
+docs/stage-16-fc-a-productization-semantic-acceptance-gate-no-apply.md:8:- Base HEAD/origin/main: `a67648c`.
+docs/stage-16-fc-o35-r2-recover-remaining-loader-schema-repair-no-further-mutation.md:23:- Base HEAD/origin/main before this recovery: `a50cedb`.
+docs/stage-16-fc-o45-e-ca-study-companion-last-message-mvp.md:27:- nginx/cloudflared/sshd mutation
+docs/phase-14k-d-public-path-hardening-validation.md:61:- VM200 cloudflared is active.
+docs/phase-14k-d-public-path-hardening-validation.md:81:- Cloudflare/DNS/tunnel config.
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:52:- Cloudflare/DNS/tunnels were not changed.
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:57:No SSH connection, no VM200 write, no qemu guest-agent operation, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/stage-16-e3x-b-pull-one-small-proof-model-qwen25-05b.md:21:    HEAD/origin/main/remote: 64a4d5a
+docs/stage-16-e3x-b-pull-one-small-proof-model-qwen25-05b.md:110:- mutate services, CTs, VMs, Cloudflare, or private storage
+docs/phase-14j-ko-fresh-ct203-db-backup-to-encrypted-storage.md:41:- No Cloudflare, DNS, or tunnel mutation.
+docs/stage-16-fc-o5-r2-insert-replacement-jobs-105-111-only-no-runtime.md:18:- Base HEAD/origin/main: `610bc71`.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:97:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-16-e3p-d-r7-completion-recovery-docs-no-rerun.md:82:- No Cloudflare, DNS, tunnel, nginx, or public route mutation.
+docs/stage-16-fc-o45-e-ao-browser-job132-queue-worker-e2e.md:7:- Expected HEAD/origin/main: `6f9b7cd`
+docs/stage-16-fc-o45-e-ao-browser-job132-queue-worker-e2e.md:49:- NO nginx/cloudflared/storage mutation.
+docs/stage-16-fc-o45-e-ao-browser-job132-queue-worker-e2e.md:121:NO nginx/cloudflared/storage mutation
+docs/stage-16-fc-o45-e-ao-browser-job132-queue-worker-e2e.md:129:origin_main_now=6f9b7cd
+docs/stage-16-fc-o1-failed-unit-journal-diagnosis-read-only.md:8:- Base HEAD/origin/main: `4daa3bc`.
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:27:No VM200 write, qemu guest-agent mutation, frontend deploy, service restart/reload, Cloudflare/DNS/tunnel change, DB mutation, storage mutation, CT204 start, or PVESO wake/start occurred.
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:60:No VM200 write, no qemu guest-agent mutation, no guest exec mutation, no SSH config mutation, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/stage-16-fc-o45-e-bq-r3-recover-job571-via-docker-ollama-model-proof.md:7:- Expected HEAD/origin/main: `39eb929`
+docs/stage-16-fc-o45-e-bq-r3-recover-job571-via-docker-ollama-model-proof.md:60:- NO nginx/cloudflared/sshd config mutation.
+docs/stage-16-fc-o45-e-bq-r3-recover-job571-via-docker-ollama-model-proof.md:98:NO nginx/cloudflared/sshd config mutation
+docs/stage-16-fc-o45-e-bq-r3-recover-job571-via-docker-ollama-model-proof.md:107:origin_main_now=39eb929
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:7:- Expected HEAD/origin/main: `b322c80`
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:27:- NO nginx/cloudflared/storage mutation.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:185:NO nginx/cloudflared/storage mutation
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:193:origin_main_now=b322c80
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:292:frontend/study-ui/app.js:643:const originalLoadDecksForCompanion = loadDecks;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:294:frontend/study-ui/app.js:645:  await originalLoadDecksForCompanion();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:358:frontend/study-ui/app.js:1598:        safeNavigate(`${ACCOUNT_LOGIN}?next=${encodeURIComponent("https://alexhartel.com/study")}`, "window.location.href assignment");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:435:frontend/study-ui/index.html:24:        <a class="app-shell-link nav-link" href="https://alexhartel.com/study">Study</a>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:741:frontend/study-ui/app.js:643:const originalLoadDecksForCompanion = loadDecks;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:743:frontend/study-ui/app.js:645:  await originalLoadDecksForCompanion();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:842:frontend/study-ui/app.js:1217:        ? "The companion may still be working, but the gateway timed out before the browser received the final response. I did not save the raw Cloudflare error page. Refresh in a moment or try again."
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:856:frontend/study-ui/_headers:2:  Content-Security-Policy: default-src 'self'; connect-src 'self' https://alexhartel.com https://companion.alexhartel.com https://calendar.alexhartel.com https://profile.alexhartel.com; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://alexhartel.com
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:879:frontend/study-ui/study-content.partial.html:71:        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:882:frontend/study-ui/index.html:25:        <a class="app-shell-link nav-link" href="https://alexhartel.com/companion">Companion</a>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:892:frontend/study-ui/index.html:101:        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
+docs/stage-16-e3y-d-implement-one-shot-scheduler-wrapper-no-run.md:15:    HEAD/origin/main/remote: 3e7acf3
+docs/stage-16-e3y-d-implement-one-shot-scheduler-wrapper-no-run.md:124:- mutate services, CTs, VMs, Cloudflare, or private storage
+docs/stage-17e-profile-anki-manifest-paste.md:15:- restart nginx or cloudflared
+docs/phase-13e-static-study-answer-evaluation-contract-regression-smoke.md:56:Phase 13E originally protected the Phase 13D helper as uncalled.
+docs/phase-14j-mk-vm200-guest-exec-output-shape-read-only.md:56:No VM200 app.js write, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/stage-16-fc-e2-jobs84-87-runtime-semantic-validators.md:14:- Base HEAD/origin/main: `6d77c57`.
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:7:- Expected HEAD/origin/main: `74cfb00`
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:60:- NO nginx/cloudflared/sshd config mutation.
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:96:NO nginx/cloudflared/sshd config mutation
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:105:origin_main_now=74cfb00
+docs/phase-14j-ln-ct203-backup-hardening-no-apply.md:38:- Cloudflare, DNS, tunnel, nginx public route, or public cutover mutation;
+docs/phase-14j-ln-ct203-backup-hardening-no-apply.md:138:- No live infrastructure, DB, storage, service, CT/VM, route, tunnel, Cloudflare, PVESO, or CT204 mutation occurred.
+docs/stage-17k-w-remove-anki-from-study-page.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:7:- Expected HEAD/origin/main: `b779e4c`
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:34:- NO nginx/cloudflared/storage mutation.
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:120:- nginx/cloudflared/storage mutation,
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:141:NO nginx/cloudflared/storage mutation
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:149:origin_main_now=b779e4c
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:155:frontend/study-ui/app.js:643:const originalLoadDecksForCompanion = loadDecks;
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:157:frontend/study-ui/app.js:645:  await originalLoadDecksForCompanion();
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:198:frontend/study-ui/study-content.partial.html:71:        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:200:frontend/study-ui/index.html:25:        <a class="app-shell-link nav-link" href="https://alexhartel.com/companion">Companion</a>
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:207:frontend/study-ui/index.html:101:        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
+docs/stage-16-e3z-d-activation-and-rollback-plan-no-live-mutation.md:27:- mutate CTs, VMs, Cloudflare, DNS, tunnels, or private storage
+docs/stage-16-e3z-d-activation-and-rollback-plan-no-live-mutation.md:31:- Previous HEAD/origin/main: `5f8104d`
+docs/stage-16-e3z-d-activation-and-rollback-plan-no-live-mutation.md:156:- HEAD and origin/main match the expected activation checkpoint
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:40:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/phase-14j-gy-ct202-laptop-fallback-and-split-brain-prevention-plan-no-apply.md:230:- no Cloudflare mutation;
+docs/phase-14j-gy-ct202-laptop-fallback-and-split-brain-prevention-plan-no-apply.md:232:- no tunnel mutation;
+docs/stage-16-e3w-g-r1-final-timeout-safe-runtime-closure-refined-runner-check.md:19:    HEAD/origin/main/remote: fc48c23
+docs/stage-16-e3w-g-r1-final-timeout-safe-runtime-closure-refined-runner-check.md:106:- mutate services, CTs, VMs, Cloudflare, or private storage
+docs/stage-16-fc-o45-e-an-browser-job131-persona-worker-result.md:7:- Expected HEAD/origin/main: `11d780a`
+docs/stage-16-fc-o45-e-an-browser-job131-persona-worker-result.md:48:- NO nginx/cloudflared/storage mutation.
+docs/stage-16-fc-o45-e-an-browser-job131-persona-worker-result.md:116:NO nginx/cloudflared/storage mutation
+docs/stage-16-fc-o45-e-an-browser-job131-persona-worker-result.md:124:origin_main_now=11d780a
+
+## VM200 static/nginx/cloudflared read-only inventory
+
+## PVEW tunnel/vm route read-only hints
