@@ -1,0 +1,2 @@
+=== verify R11Z source state ===
+PASS R11Z source cache-bust and signed-in gate present

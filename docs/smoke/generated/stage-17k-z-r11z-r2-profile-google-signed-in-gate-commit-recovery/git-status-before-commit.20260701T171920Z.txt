@@ -1,0 +1,7 @@
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+?? docs/smoke/generated/stage-17k-z-r11z-r2-profile-google-signed-in-gate-commit-recovery/
+?? docs/smoke/generated/stage-17k-z-r11z-vm200-deploy-profile-google-signed-in-gate/
+?? docs/stage-17k-z-r11z-r2-profile-google-signed-in-gate-commit-recovery.md
+?? docs/stage-17k-z-r11z-vm200-deploy-profile-google-signed-in-gate.md
+?? ops/smoke/check-stage-17k-z-r11z-r2-profile-google-signed-in-gate-commit-recovery.sh
+?? ops/smoke/check-stage-17k-z-r11z-vm200-deploy-profile-google-signed-in-gate.sh
