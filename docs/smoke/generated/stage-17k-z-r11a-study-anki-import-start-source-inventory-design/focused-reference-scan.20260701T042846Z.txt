@@ -1,0 +1,564 @@
+=== bounded source references, no recursive docs/smoke scan ===
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:526:  const LOCAL_SAVE_DECKS_KEY = "study/decks/v1";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:527:  const LOCAL_SAVE_CARDS_KEY = "study/cards/v1";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:535:    return window.APC_LOCAL_SAVE && typeof window.APC_LOCAL_SAVE.setDoc === "function"
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:536:      ? window.APC_LOCAL_SAVE
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:614:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:623:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:632:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:642:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:647:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:666:      console.warn("[study-store] APC_LOCAL_SAVE mirror failed", error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:7: *   Google Drive appDataFolder.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:17:  if (window.APC_LOCAL_SAVE && window.APC_LOCAL_SAVE.version) return;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:38:    ankiContentServerUploadAllowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:49:    studyDecks: "study/decks/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:156:        console.warn("[APC_LOCAL_SAVE] IndexedDB open is blocked by another tab.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:206:      console.warn("[APC_LOCAL_SAVE] large document saved", { key, sizeBytes });
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:239:  async function listDocs(prefix) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:578:      docs: await listDocs(),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:659:    const docs = await listDocs();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:691:    listDocs,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:711:  window.APC_LOCAL_SAVE = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:712:  window.APC_LOCAL_SAVE_POLICY = POLICY;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:720:    console.warn("[APC_LOCAL_SAVE] manifest initialization failed", error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:725:/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:726: * Make listDocs({ namespace: "study" }) include key-prefixed docs such as:
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:727: * - study/cards/v1
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:728: * - study/decks/v1
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:736:  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:816:    const api = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:817:    if (!api || typeof api.listDocs !== "function") return false;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:818:    if (api.__listDocsNamespacePrefixPatchR10L) return true;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:820:    const originalListDocs = api.listDocs.bind(api);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:822:    api.listDocs = async function patchedListDocs(options = {}) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:863:    api.__listDocsNamespacePrefixPatchR10L = true;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:882:/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R2
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:886: *   APC_LOCAL_SAVE.listDocs({ namespace: "study" }) -> []
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:889: * - the current window.APC_LOCAL_SAVE object
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:890: * - any future reassignment of window.APC_LOCAL_SAVE
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:892: * It uses exportAll() as the authority when listDocs namespace filtering returns
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:893: * no matches, and it matches key-prefixed docs such as study/decks/v1.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:896:  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R2";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:995:    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1004:    const originalListDocs = api.listDocs.bind(api);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1006:    api.listDocs = async function patchedListDocs(options = {}) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1045:    const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1048:      const descriptor = Object.getOwnPropertyDescriptor(window, "APC_LOCAL_SAVE");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1056:      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1071:      patchApi(window.APC_LOCAL_SAVE);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1080:    patchApi(window.APC_LOCAL_SAVE);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1090:/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R3
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1093: * Browser diagnostics proved the live APC_LOCAL_SAVE object is frozen and sealed:
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1094: * - Object.isFrozen(APC_LOCAL_SAVE) === true
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1095: * - Object.isExtensible(APC_LOCAL_SAVE) === false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1097: * Therefore R10L/R10L-R2 could not attach markers or replace listDocs in place.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1099: * This patch replaces window.APC_LOCAL_SAVE with a cloned frozen API object:
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1101: * - listDocs is replaced with namespace-aware behavior
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1102: * - listDocs({ namespace: "study" }) falls back to exportAll()
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1103: * - key-prefixed docs like study/decks/v1 are returned
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1106:  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R3";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1205:    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1214:    const originalListDocs = api.listDocs.bind(api);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1220:      if (key === "listDocs" || key === PATCH_MARKER) continue;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1232:    Object.defineProperty(clone, "listDocs", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1289:    const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1293:      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1297:          return window.__APC_LOCAL_SAVE_R10L_R3_STORED__;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1300:          window.__APC_LOCAL_SAVE_R10L_R3_STORED__ = cloneWithPatchedListDocs(value);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1304:      window.__APC_LOCAL_SAVE_R10L_R3_STORED__ = cloned;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1308:      window.__APC_LOCAL_SAVE_R10L_R3_ERROR__ = String(error && error.message ? error.message : error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1319:      const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1321:        window.APC_LOCAL_SAVE = current;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1332:/* APC_LOCAL_SAVE_STRICT_STUDY_NAMESPACE_MATCHER_R10M
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1333: * Tighten listDocs({ namespace: "study" }) after R10L-R3.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1345:  const PATCH_MARKER = "APC_LOCAL_SAVE_STRICT_STUDY_NAMESPACE_MATCHER_R10M";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1430:    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1438:    const originalListDocs = api.listDocs.bind(api);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1444:      if (key === "listDocs" || key === PATCH_MARKER) continue;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1456:    Object.defineProperty(clone, "listDocs", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1515:    const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1519:      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1523:          return window.__APC_LOCAL_SAVE_R10M_STORED__;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1526:          window.__APC_LOCAL_SAVE_R10M_STORED__ = cloneWithStrictListDocs(value);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1530:      window.__APC_LOCAL_SAVE_R10M_STORED__ = cloned;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1534:      window.__APC_LOCAL_SAVE_R10M_ERROR__ = String(error && error.message ? error.message : error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1545:      const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1547:        window.APC_LOCAL_SAVE = current;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:8:  var PANEL_ID = "apc-anki-readonly-session";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:14:    document.querySelectorAll(".apc-anki-readonly-session-card, .apc-anki-memory-card").forEach(function (el) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:41:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:102:      anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:4:  var PANEL_ID = "apc-anki-manifest-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:5:  var FILE_INPUT_ID = "apc-anki-file-input";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:6:  var CLEAR_BUTTON_ID = "apc-anki-clear-file-proof";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:7:  var FILE_PROOF_KEY = "apc.profile.anki.fileProof.v2";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:8:  var DECK_SUMMARY_KEY = "apc.profile.anki.localDeckSummary.v1";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:9:  var SQLJS_SCRIPT_PATH = "/vendor/sqljs/sql-wasm.js";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:10:  var SQLJS_WASM_PATH = "/vendor/sqljs/sql-wasm.wasm";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:65:      || storageRead("apc.profile.anki.fileProof.v1")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:76:    storageRemove("apc.profile.anki.fileProof.v1");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:104:    if (headerText.indexOf("SQLite format 3") === 0) return "sqlite-anki-collection";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:134:        server_saved_anki_content: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:135:        anki_file_modified: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:173:          if (fileName === "sql-wasm.wasm") return SQLJS_WASM_PATH;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:409:        source_type: "anki_browser_local",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:436:          server_saved_anki_content: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:437:          anki_file_modified: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:453:      + '<details class="apc-anki-file-location-help">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:456:      + '    <p>Look for <code>collection.anki2</code> inside your Anki profile folder.</p>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:458:      + '      <li><strong>Windows:</strong> <code>%APPDATA%\\Anki2\\&lt;Profile&gt;\\collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:459:      + '      <li><strong>macOS:</strong> <code>~/Library/Application Support/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:460:      + '      <li><strong>Linux:</strong> <code>~/.local/share/Anki2/&lt;Profile&gt;/collection.anki2</code> or <code>$XDG_DATA_HOME/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:479:            + '<div class="profile-preference-row apc-anki-minimal-deck-row">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:487:      + '<div class="apc-anki-minimal-summary">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:497:      + '<section class="profile-card apc-anki-minimal-card" id="' + PANEL_ID + '-card">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:501:      + (message ? '<p class="apc-anki-message">' + escapeHtml(message) + '</p>' : '')
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:504:      + '    <input id="' + FILE_INPUT_ID + '" type="file" accept=".anki2,.anki21,.sqlite,.db,.colpkg,.apkg">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:541:          if (proof.header_kind !== "sqlite-anki-collection") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:548:                anki_file_modified: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:566:              anki_file_modified: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:588:    document.querySelectorAll(".apc-anki-manifest-panel, .apc-anki-local-only-panel, .apc-anki-local-card, .apc-anki-ownership-card").forEach(function (el) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:604:      panel.className = "apc-anki-manifest-panel apc-anki-local-only-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:608:    var ankiFileHelpWasOpen = Boolean(panel.querySelector(".apc-anki-file-location-help[open]"));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:610:    if (ankiFileHelpWasOpen) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:611:      var ankiFileHelp = panel.querySelector(".apc-anki-file-location-help");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:612:      if (ankiFileHelp) ankiFileHelp.setAttribute("open", "");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:625:    version: "stage17kyr2-profile-anki-dropdown-stable-20260629",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:635:      server_saved_anki_content: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:636:      anki_write_allowed: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:659:  const uiTextMovedToModule = 'Google Drive sync Not connected Connect Google Drive Sync now';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:8:  var PANEL_ID = "apc-companion-local-anki-bridge";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:14:    document.querySelectorAll(".apc-companion-local-anki-bridge-card, .apc-companion-local-anki-session-mount-output, .apc-companion-local-anki-command-output, .apc-companion-local-anki-consent-output").forEach(function (el) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:37:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:60:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:85:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:91:  function ankiSessionMountCommand() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:104:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:126:    ankiSessionMountCommand: ankiSessionMountCommand,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:133:      anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:158:typeof W||"ErrnoError"!==H.name)throw H;return H.Ja}}},Z=function(){function a(c){Z=c.exports;Ja=Z.I;Oa();X=Z.K;Qa.unshift(Z.J);Ua--;f.monitorRunDependencies?.(Ua);0==Ua&&(null!==Va&&(clearInterval(Va),Va=null),Wa&&(c=Wa,Wa=null,c()));return Z}var b={a:Vc};Ua++;f.monitorRunDependencies?.(Ua);if(f.instantiateWasm)try{return f.instantiateWasm(b,a)}catch(c){return C(`Module.instantiateWasm callback failed with error: ${c}`),!1}Ya||=Xa("sql-wasm.wasm")?"sql-wasm.wasm":f.locateFile?f.locateFile("sql-wasm.wasm",
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:159:B):B+"sql-wasm.wasm";bb(b,function(c){a(c.instance)});return{}}();f._sqlite3_free=a=>(f._sqlite3_free=Z.L)(a);f._sqlite3_value_text=a=>(f._sqlite3_value_text=Z.M)(a);f._sqlite3_prepare_v2=(a,b,c,d,e)=>(f._sqlite3_prepare_v2=Z.N)(a,b,c,d,e);f._sqlite3_step=a=>(f._sqlite3_step=Z.O)(a);f._sqlite3_reset=a=>(f._sqlite3_reset=Z.P)(a);f._sqlite3_exec=(a,b,c,d,e)=>(f._sqlite3_exec=Z.Q)(a,b,c,d,e);f._sqlite3_finalize=a=>(f._sqlite3_finalize=Z.R)(a);
+docs/stage-17k-b-r2-local-anki-summary-proof.md:11:- Path: `/home/alex/.local/share/Anki2/User 1/collection.anki2`
+docs/stage-17k-b-r2-local-anki-summary-proof.md:12:- Header: `sqlite-anki-collection`
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:11:- Path: /home/alex/.local/share/Anki2/User 1/collection.anki2
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:12:- Header: sqlite-anki-collection
+docs/stage-17k-b-readonly-anki-summary-tool.md:7:Stage 17K-B adds a local Python proof tool for reading collection.anki2 or collection.anki21 metadata before adding any browser SQLite/WASM dependency.
+docs/stage-17k-b-readonly-anki-summary-tool.md:19:python3 ops/anki/anki_collection_readonly_summary.py --collection "$HOME/.local/share/Anki2/User 1/collection.anki2" --json-out /tmp/apc-anki-collection-summary.json
+docs/stage-17k-c-browser-sqlite-parser-decision.md:15:1. User explicitly selects collection.anki2 or collection.anki21 in the browser.
+docs/stage-17k-c-browser-sqlite-parser-decision.md:40:- sql-wasm.js
+docs/stage-17k-c-browser-sqlite-parser-decision.md:41:- sql-wasm.wasm
+docs/stage-17k-c-browser-sqlite-parser-decision.md:96:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, CDN dependency, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included in this decision checkpoint.
+docs/stage-17k-d-vendor-sqljs-assets.md:15:- sql-wasm.js
+docs/stage-17k-d-vendor-sqljs-assets.md:16:- sql-wasm.wasm
+docs/stage-17k-d-vendor-sqljs-assets.md:29:These assets will allow APC to parse a user-selected collection.anki2 or collection.anki21 file in the browser, without uploading it to the backend.
+docs/stage-17k-d-vendor-sqljs-assets.md:41:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-e-anki-local-only-study-contract.md:59:- write to collection.anki2 or collection.anki21
+docs/stage-17k-e-anki-local-only-study-contract.md:73:- source type: anki_browser_local
+docs/stage-17k-e-anki-local-only-study-contract.md:123:- Google Drive sync
+docs/stage-17k-e-anki-local-only-study-contract.md:150:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:9:The Profile Anki panel now loads the same-origin vendored sql.js assets and parses the user-selected `collection.anki2` file locally in the browser.
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:14:- Tag: `controller-stage-17k-f-browser-local-anki-deck-ui-source-2026-06-28`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:20:- Backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17kf-browser-local-anki-deck-ui-r3-20260628T215339Z`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:25:- `/vendor/sqljs/sql-wasm.wasm` returned HTTP 200
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:31:Browser console proof on `/profile` after selecting `collection.anki2` showed:
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:41:- `localSummary.source_type: anki_browser_local`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:56:- `https://alexhartel.com/privatepages/anki-manifest-panel.js?v=stage17kf-browser-local-deck-ui-20260628`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:57:- `https://alexhartel.com/vendor/sqljs/sql-wasm.js`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:58:- `https://alexhartel.com/vendor/sqljs/sql-wasm.wasm`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:68:- `source_type: anki_browser_local`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:85:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:36:- source type: anki_browser_local
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:45:- frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:47:- frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:48:- frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.wasm
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:67:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:9:The Profile Anki panel can now use the vendored same-origin sql.js assets to parse a user-selected collection.anki2 or collection.anki21 file locally in the browser.
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:45:- /vendor/sqljs/sql-wasm.js
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:46:- /vendor/sqljs/sql-wasm.wasm
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:61:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-g-study-source-selector-plan.md:48:- source type: anki_browser_local
+docs/stage-17k-g-study-source-selector-plan.md:65:- Google Drive sync
+docs/stage-17k-g-study-source-selector-plan.md:117:7. Add Google Drive sync later, with separate OAuth/Drive approval.
+docs/stage-17k-g-study-source-selector-plan.md:123:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:34:- `ankiSummaryAvailable: true`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:54:- `sourceType: anki_browser_local`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:66:- `source_type: anki_browser_local`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:86:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:39:It should not start a backend job, model call, worker, scheduler, DB write, Anki write, Google Drive write, or deploy by itself.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:45:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-h-study-source-selector-ui-source.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:21:The Profile Anki picker can parse `collection.anki2` locally in the browser using same-origin vendored sql.js.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:37:- `anki_browser_local`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:95:- verify `source_type === anki_browser_local`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:170:3. a file chooser to re-select `collection.anki2`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:207:- source type: `anki_browser_local`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:240:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:23:- Tag: `controller-stage-17k-j-anki-readonly-session-skeleton-source-2026-06-28`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:28:- Live marker: `stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:29:- Backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17kj-anki-readonly-session-skeleton-20260628T221217Z`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:34:- `/privatepages/anki-readonly-session.js` contained `stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:35:- `/privatepages/anki-readonly-session.js` contained `APC_ANKI_READONLY_SESSION`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:41:- `apiVersion: stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:46:- `selection_source_type: anki_browser_local`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:53:After selecting `collection.anki2` and clicking Start local Anki skeleton session, browser snapshot showed:
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:55:- `version: stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:56:- `selection_source_type: anki_browser_local`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:61:- `selected_file_name: collection.anki2`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:63:- `selected_file_header_kind: sqlite-anki-collection`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:75:- `anki_write_allowed: false`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:80:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:22:- confirm `anki_browser_local`
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:45:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:16:- Stage 17K-K source tag: `controller-stage-17k-k-anki-basic-memory-session-source-2026-06-28`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:18:- Stage 17K-K-R2 repair tag: `controller-stage-17k-k-r2-anki-file-memory-handoff-repair-2026-06-28`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:22:- `stage17kk-anki-basic-memory-session-20260628`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:26:Browser proof on `/study` after selecting `Anki Deck1`, re-selecting `collection.anki2`, and clicking `Load selected Anki deck into memory` showed:
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:28:- `apiVersion: stage17kk-anki-basic-memory-session-20260628`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:33:- `selection_source_type: anki_browser_local`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:45:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:46:- `/vendor/sqljs/sql-wasm.js`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:47:- `/vendor/sqljs/sql-wasm.wasm`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:70:- `anki_write_allowed: false`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:75:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-k-anki-basic-memory-session-source.md:16:- requires `source_type: anki_browser_local`
+docs/stage-17k-k-anki-basic-memory-session-source.md:46:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-k-r2-anki-file-memory-handoff-repair.md:35:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-k-r3-preserve-active-anki-memory-session.md:43:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-k-r4-anki-active-status-repair.md:49:- `privatepages/anki-readonly-session.js`
+docs/stage-17k-k-r4-anki-active-status-repair.md:51:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:11:1. Re-select local `collection.anki2` through the browser file picker.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:31:- `stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:35:- `/home/jkg76nid/apc-vm200-frontend-backups/stage17kk-r4-anki-active-status-repair-20260628T223627Z`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:42:- `apiVersion: stage17kk-anki-basic-memory-session-20260628`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:92:- `anki_write_allowed: false`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:97:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:18:- Prior live proof tag: `controller-stage-17k-l-anki-local-review-loop-live-proof-2026-06-28`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:24:- local file picker reads `collection.anki2` in browser
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:44:- show that the active source is `anki_browser_local`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:68:  source_type: "anki_browser_local",
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:80:    anki_write_allowed: false
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:91:- `privatepages/companion-local-anki-bridge.js`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:112:- `/tmp/stage17k-m-companion-local-anki-bridge-inventory.txt`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:116:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:16:- Tag: `controller-stage-17k-n-companion-local-anki-bridge-source-2026-06-28`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:20:- `stage17kn-companion-local-anki-bridge-source-20260628`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:26:- `version: stage17kn-companion-local-anki-bridge-source-20260628`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:28:- `anki_adapter_present: true`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:29:- `source_type: anki_browser_local`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:64:- `anki_write_allowed: false`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:69:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-n-companion-local-anki-bridge-source.md:17:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js`
+docs/stage-17k-n-companion-local-anki-bridge-source.md:66:- `anki_write_allowed: false`
+docs/stage-17k-n-companion-local-anki-bridge-source.md:73:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:16:- Stage 17K-N source tag: `controller-stage-17k-n-companion-local-anki-bridge-source-2026-06-28`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:18:- Stage 17K-N live proof tag: `controller-stage-17k-n-companion-local-anki-bridge-live-proof-2026-06-28`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:25:- `bridgeVersion: stage17kn-companion-local-anki-bridge-source-20260628`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:30:- `state.anki_adapter_present: true`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:31:- `state.source_type: anki_browser_local`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:44:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:45:- `/privatepages/companion-local-anki-bridge.js?v=stage17kn-companion-local-anki-bridge-source-20260628`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:77:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed for this proof.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:18:- Tag: `controller-stage-17k-p-companion-local-anki-visible-privacy-copy-2026-06-28`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:22:- `/home/jkg76nid/apc-vm200-frontend-backups/stage17kp-companion-local-anki-visible-privacy-copy-20260628T225750Z`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:26:- `stage17kp-companion-local-anki-visible-privacy-copy-20260628`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:33:- `bridgeVersion: stage17kp-companion-local-anki-visible-privacy-copy-20260628`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:38:- `state.anki_adapter_present: true`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:39:- `state.source_type: anki_browser_local`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:52:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:53:- `/privatepages/companion-local-anki-bridge.js?v=stage17kp-companion-local-anki-visible-privacy-copy-20260628`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:73:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed for this proof.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:20:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:40:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:28:- Tag: `controller-stage-17k-q-companion-local-anki-card-shape-command-2026-06-28`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:32:- `stage17kq-companion-local-anki-current-card-shape-command-20260628`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:39:- `bridgeVersion: stage17kq-companion-local-anki-current-card-shape-command-20260628`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:40:- `command: current_anki_card_shape`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:54:- `source: anki_browser_local`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:85:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:86:- `/privatepages/companion-local-anki-bridge.js?v=stage17kq-companion-local-anki-current-card-shape-command-20260628`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:112:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed for this proof.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:64:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:18:- Current bridge marker: `stage17kq-companion-local-anki-current-card-shape-command-20260628`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:41:- `source_type: anki_browser_local`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:43:- `can_write_anki: false`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:44:- `can_upload_anki_content: false`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:116:- stay in `companion-local-anki-bridge.js`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:127:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included in this plan.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:70:- future Google Drive sync
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:96:## Future Google Drive direction
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:98:When Google Drive sync is implemented, APC should support push/pull of user study data.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:170:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-s-companion-local-anki-session-mount.md:11:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.ankiSessionMountCommand()`
+docs/stage-17k-s-companion-local-anki-session-mount.md:76:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:8:- Source tag: `controller-stage-17k-s-r2-companion-local-anki-session-mount-output-repair-2026-06-28`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:9:- Live marker: `stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:13:- `bridgeVersion: stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:14:- `command: mount_anki_session_adapter`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:27:- `source: anki_browser_local`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:20:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:38:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:8:- Source tag: `controller-stage-17k-s-r3-anki-readonly-renderpanel-export-2026-06-28`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:9:- VM200 backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17ks-r3-anki-readonly-renderpanel-export-20260628T234224Z`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:12:- Bridge: `stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:13:- Anki adapter: `stage17ks-r3-anki-readonly-renderpanel-export-20260628`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:17:- `bridgeVersion: stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:18:- `ankiAdapterVersion: stage17ks-r3-anki-readonly-renderpanel-export-20260628`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:20:- `command: mount_anki_session_adapter`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:33:- `source: anki_browser_local`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:51:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed for this proof.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:28:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:48:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-study-session-source-model-plan.md:12:This keeps imported/read-only Anki content separate from APC-native decks while preserving a path toward user-owned Google Drive storage.
+docs/stage-17k-study-session-source-model-plan.md:37:- `collection.anki2`
+docs/stage-17k-study-session-source-model-plan.md:38:- `collection.anki21`
+docs/stage-17k-study-session-source-model-plan.md:39:- `.apkg`
+docs/stage-17k-study-session-source-model-plan.md:75:- Link My Decks with the user's Google Drive.
+docs/stage-17k-study-session-source-model-plan.md:106:Use local Python against a selected `collection.anki2` to prove:
+docs/stage-17k-study-session-source-model-plan.md:134:### Stage 17L — Google Drive My Decks plan
+docs/stage-17k-study-session-source-model-plan.md:144:- Google OAuth change
+docs/stage-17k-study-session-source-model-plan.md:145:- Google Drive write
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:8:- Source tag: `controller-stage-17k-t-companion-anki-active-session-controls-2026-06-28`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:9:- VM200 backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17kt-companion-anki-active-session-controls-20260629T033227Z`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:12:- Bridge: `stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:13:- Anki adapter: `stage17kt-companion-anki-active-session-controls-20260628`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:32:- `command: current_anki_card_shape`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:52:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-t-companion-anki-active-session-controls.md:26:- `anki-readonly-session.js` now recognizes the Companion route.
+docs/stage-17k-t-companion-anki-active-session-controls.md:28:- Companion route mount falls back to `#apc-companion-local-anki-bridge`, `main`, or `document.body`.
+docs/stage-17k-t-companion-anki-active-session-controls.md:49:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:101:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-v-companion-anki-consented-current-card-handoff.md:1:# Stage 17K-V — Companion Anki Consented Current-Card Handoff\n\nDate: 2026-06-28\n\n## Summary\n\nStage 17K-V adds a browser-only consent command for the current in-memory Anki card.\n\nThe default Companion bridge path remains shape-only.\n\nAnki question and answer text are returned only when `consentedCurrentAnkiCardForStudyCommand(true)` is called or when the user clicks the explicit consent button.\n\n## Source changes\n\n- Adds `consentedCurrentAnkiCardForStudyCommand(consented)`.\n- Adds a Companion button: `Use current Anki card in Companion study`.\n- Adds a consent output area that reports status without printing card text into the page.\n- Exports the consented command on `window.APC_COMPANION_LOCAL_ANKI_BRIDGE`.\n- Cache-busts `companion-local-anki-bridge.js`.\n\n## Required behavior\n\nPre-consent command behavior:\n\n- `consented: false`\n- no `question` field\n- no `answer` field\n- shape and lengths only\n- no backend call\n- no model call\n- no Anki write\n\nPost-consent command behavior:\n\n- `consented: true` when a current card exists\n- `card.question` exists only in the immediate browser command result\n- `card.answer` exists only in the immediate browser command result\n- `card_text_persisted: false`\n- no backend call\n- no model call\n- no Anki write\n- no MyDecks writeback\n\n## Safety\n\nNo backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.\n\nNo Anki question text or answer text is saved to repo docs.\n
+docs/stage-17k-w-r4-clean-study-page-source-and-profile-anki-guard.md:27:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-w-remove-anki-from-study-page.md:21:- Changed `anki-readonly-session.js` so its panel mounts only on Companion, not Study.
+docs/stage-17k-w-remove-anki-from-study-page.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:13:- Replaces `companion-local-anki-bridge.js` with a no-UI compatibility module.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:14:- Replaces `anki-readonly-session.js` with a no-UI compatibility module.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:40:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-y-profile-anki-minimal-panel.md:22:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:49:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was included.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:9:Root cause: `anki-manifest-panel.js` still remounted the panel on every document click. Clicking the details arrow opened the browser-native dropdown, then the script re-rendered the panel and reset it closed.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:13:- Removes the document-wide click remount listener from `anki-manifest-panel.js`.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:15:- Cache-busts `anki-manifest-panel.js` in `index.html`.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:19:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-y-r3-global-anki-companion-banner-live-proof.md:25:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was included.
+docs/stage-17k-y-r3-global-anki-companion-banner.md:15:The previous banner focused only on future Google Drive sync. The new banner more accurately reflects the current product state:
+docs/stage-17k-y-r3-global-anki-companion-banner.md:23:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:7:Personal study/profile/deck/card data should be local-first in the user's browser. Later, the same document structure can sync to the user's Google Drive appDataFolder.
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:21:- `window.APC_LOCAL_SAVE`
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:22:- `window.APC_LOCAL_SAVE_POLICY`
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:30:- `listDocs(prefix)`
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:61:- `study/decks/v1`
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:91:- `ankiContentServerUploadAllowed: false`
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:93:R10B does not wire existing feature modules yet. Follow-up stages should migrate features onto `window.APC_LOCAL_SAVE` and remove or disable any server persistence for private decks/cards/progress.
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:95:## Google Drive
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:97:No Google OAuth or Drive API work is performed in this stage. Google sync should later mirror these same local documents to appDataFolder.
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:73:- study/decks/v1
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:75:- study/cards/v1
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:164:## Future Google Drive sync
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:166:Google Drive sync should mirror the local library documents and media to the user's Drive appDataFolder only after the local data model is proven.
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:175:- docs/design/anki-compatible-shadow-library-contract-v1.json
+docs/stage-17k-z-r10d-r2-focused-private-study-endpoint-inventory.md:13:No deploy, DB write, schema change, service restart, endpoint removal, endpoint disable, backend storage change, Anki file mutation, Google OAuth, Google Drive API, email send, or signup opening occurred.
+docs/stage-17k-z-r10d-r2-focused-private-study-endpoint-inventory.md:46:1. Patch frontend to use `window.APC_LOCAL_SAVE`.
+docs/stage-17k-z-r10d-r2-focused-private-study-endpoint-inventory.md:74:- R10E: move profile/preferences local storage to `APC_LOCAL_SAVE`, because it is lower-risk than deck/card migration.
+docs/stage-17k-z-r10d-r2-focused-private-study-endpoint-inventory.md:78:- R10F: move APC-native decks/cards to `APC_LOCAL_SAVE`.
+docs/stage-17k-z-r10d-r2-focused-private-study-endpoint-inventory.md:79:- R10G: move study sessions/progress to `APC_LOCAL_SAVE`.
+docs/stage-17k-z-r10e-study-store-local-save-cutover-no-server-persistence.md:22:The current UI still expects synchronous study-store methods. To avoid breaking the UI, R10E keeps localStorage as a short-term working cache and mirrors the same state into `window.APC_LOCAL_SAVE`.
+docs/stage-17k-z-r10e-study-store-local-save-cutover-no-server-persistence.md:26:- `APC_LOCAL_SAVE`
+docs/stage-17k-z-r10e-study-store-local-save-cutover-no-server-persistence.md:32:- `study/decks/v1`
+docs/stage-17k-z-r10e-study-store-local-save-cutover-no-server-persistence.md:33:- `study/cards/v1`
+docs/stage-17k-z-r10e-study-store-local-save-cutover-no-server-persistence.md:37:Review actions also call `APC_LOCAL_SAVE.recordCardReview()` so progress can be tracked as compact events plus rollups.
+docs/stage-17k-z-r10k-r2-record-manual-browser-local-study-proof.md:40:IndexedDB/APC_LOCAL_SAVE export contained these expected study document keys:
+docs/stage-17k-z-r10k-r2-record-manual-browser-local-study-proof.md:42:- `study/cards/v1`
+docs/stage-17k-z-r10k-r2-record-manual-browser-local-study-proof.md:43:- `study/decks/v1`
+docs/stage-17k-z-r10k-r2-record-manual-browser-local-study-proof.md:62:- IndexedDB/APC_LOCAL_SAVE contains the expected Study docs
+docs/stage-17k-z-r10k-r2-record-manual-browser-local-study-proof.md:66:A later cleanup stage can improve `APC_LOCAL_SAVE.listDocs({ namespace: "study" })` so namespace filtering returns the same study docs that `exportAll()` already exposes by key.
+docs/stage-17k-z-r10l-local-save-listdocs-namespace-fix.md:1:# Stage 17K-Z-R10L — Local Save listDocs Namespace Fix
+docs/stage-17k-z-r10l-local-save-listdocs-namespace-fix.md:10:- `APC_LOCAL_SAVE.exportAll()` showed expected study docs
+docs/stage-17k-z-r10l-local-save-listdocs-namespace-fix.md:14:    APC_LOCAL_SAVE.listDocs({ namespace: "study" })
+docs/stage-17k-z-r10l-local-save-listdocs-namespace-fix.md:18:- `study/cards/v1`
+docs/stage-17k-z-r10l-local-save-listdocs-namespace-fix.md:19:- `study/decks/v1`
+docs/stage-17k-z-r10l-local-save-listdocs-namespace-fix.md:26:`local-save-store.js` now hardens `listDocs({ namespace })` so namespace filtering also recognizes key-prefixed docs like `study/...`.
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:1:# Stage 17K-Z-R10L-R2 — Strong Local Save listDocs Namespace Patch
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:9:- `APC_LOCAL_SAVE.listDocs({ namespace: "study" })` returned `0`
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:10:- `APC_LOCAL_SAVE.exportAll()` previously confirmed the expected `study/...` docs exist
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:16:- the current `window.APC_LOCAL_SAVE` object
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:17:- any future reassignment of `window.APC_LOCAL_SAVE`
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:19:The patched `listDocs({ namespace })` falls back to `exportAll()` when the original namespace filter returns no matches.
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:23:- `study/cards/v1`
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:24:- `study/decks/v1`
+docs/stage-17k-z-r10l-r3a-diagnose-local-save-runtime-attachment.md:5:- `APC_LOCAL_SAVE.listDocs({ namespace: "study" })` returned `0`
+docs/stage-17k-z-r10l-r3a-diagnose-local-save-runtime-attachment.md:6:- R10L-R2 patch marker was not present on the live `APC_LOCAL_SAVE` object
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:1:# Stage 17K-Z-R10L-R3 — Clone Frozen Local Save API listDocs Fix
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:7:The live `APC_LOCAL_SAVE` object is frozen and sealed:
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:9:- `Object.isFrozen(APC_LOCAL_SAVE) === true`
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:10:- `Object.isExtensible(APC_LOCAL_SAVE) === false`
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:12:That explains why R10L/R10L-R2 could not attach a marker or replace `listDocs` in place.
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:16:R10L-R3 replaces `window.APC_LOCAL_SAVE` with a cloned frozen API object:
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:19:- `listDocs` is replaced with namespace-aware behavior
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:20:- `listDocs({ namespace: "study" })` falls back to `exportAll()`
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:21:- key-prefixed docs like `study/decks/v1` are returned
+docs/stage-17k-z-r10l-r4-record-browser-listdocs-proof.md:1:# Stage 17K-Z-R10L-R4 — Browser listDocs Namespace Proof
+docs/stage-17k-z-r10l-r4-record-browser-listdocs-proof.md:19:`APC_LOCAL_SAVE.listDocs({ namespace: "study" })` returned all expected Study keys:
+docs/stage-17k-z-r10l-r4-record-browser-listdocs-proof.md:21:- `study/cards/v1`
+docs/stage-17k-z-r10l-r4-record-browser-listdocs-proof.md:22:- `study/decks/v1`
+docs/stage-17k-z-r10m-strict-local-save-study-namespace-matcher.md:7:R10L-R3 successfully made `APC_LOCAL_SAVE.listDocs({ namespace: "study" })` return the expected Study docs, but it also returned:
+docs/stage-17k-z-r10m-strict-local-save-study-namespace-matcher.md:17:`listDocs({ namespace: "study" })` should now match only:
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:17:## Exact docs returned by listDocs
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:19:`APC_LOCAL_SAVE.listDocs({ namespace: "study" })` returned exactly:
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:21:- `study/cards/v1`
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:22:- `study/decks/v1`
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:37:- `APC_LOCAL_SAVE` is live
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:38:- `APC_LOCAL_SAVE.listDocs({ namespace: "study" })` returns the expected Study docs
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:46:1. Browser-local file picker for `.apkg`, `.anki2`, or exported Anki-like test fixtures.
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:47:2. Read-only parsing/import into Buddies local IndexedDB/APC_LOCAL_SAVE.
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:70:Do not add Google Drive sync yet.
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:21:This keeps Companion simple, safer, and easier to extend to future sources such as Anki, local APC decks, Google Drive synced decks, or another supported platform.
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:30:- anki_local_browser
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:45:Companion should not care whether the deck came from Anki, APC local cards, Google Drive, or a future integration. It should only care whether the deck can be studied.
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:106:Current local card data only supports limited stats. More complete stats can be added after Google Drive sync supports durable user-owned study history.
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:168:- queue or prepare Google Drive sync when enabled
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:202:## Google Drive sync sequencing decision
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:204:Google Drive sync does not need to be fully working before defining Companion study workflow.
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:210:3. Define Google Drive sync data contract for decks, cards, session stats, and user study history.
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:211:4. Add Google Drive sync writeback for ended sessions.
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:214:Before implementing final end-session stat persistence, the Google Drive sync contract should be defined so the data model does not need to be rewritten later.
+docs/stage-17k-z-r2-companion-study-source-workflow-plan.md:231:No source patch, frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:1:# Stage 17K-Z-R3 — Google Drive and Companion Two-Chat Handoff
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:13:Chat 1 should focus on the Google Drive sync contract plan.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:15:Chat 2 should focus on Companion source adapters and workflow implementation after the Google Drive sync contract is defined.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:42:Google Drive sync should get a data contract before final Companion end-session stat writeback is implemented.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:46:AI Platform Control — Google Drive Sync Contract Plan
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:50:Continue AI Platform Control from Stage 17K-Z-R3. We need a Google Drive sync contract plan before final Companion stat writeback.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:63:Create a Google Drive sync contract plan for user-owned personal data.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:67:- Define what data belongs in Google Drive.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:72:- Define OAuth/scopes direction.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:74:- Define how end-session stats will later be queued or written to Google Drive.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:82:- No Google OAuth activation.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:98:Continue AI Platform Control after the Google Drive sync contract plan. We need to implement Companion source adapters and the Companion study workflow.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:111:- anki_local_browser
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:145:- Use the Google Drive sync contract for future stat persistence.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:150:- No backend deploy, DB write, Google Drive write, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation without explicit approval.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:158:1. Open the Google Drive sync contract plan chat first.
+docs/stage-17k-z-r3-google-drive-and-companion-two-chat-handoff.md:169:No source runtime patch, frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:1:# Stage 17K-Z-R3 Google Drive Sync Contract Plan
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:10:Define the Google Drive sync contract for user-owned personal study data before final Companion stat writeback.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:12:This stage is source-only planning. It does not activate OAuth, Drive sync, backend writes, frontend deployment, workers, schedulers, or model calls.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:19:- No Google OAuth activation.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:20:- No Google Drive writes.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:36:Google Drive is for user-owned personal study data created in AI Platform Control or explicitly imported into APC-native data.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:38:Belongs in Google Drive after consent:
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:54:Does not belong in Google Drive by default:
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:61:- OAuth tokens.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:75:Primary personal study data should live in a visible user-owned Google Drive folder.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:379:- Google Drive sync is opt-in.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:381:- User must connect Google Drive before any Drive read or write.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:393:- OAuth tokens must not be stored in Drive files.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:406:- Do not activate OAuth in this stage.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:413:OAuth architecture direction:
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:425:- Study works without Google Drive.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:426:- Companion study works without Google Drive after local source selection.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:437:- Do not store OAuth tokens in localStorage.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:471:- End-session UI must not wait for Google Drive.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:473:- Show Synced to Google Drive after sync succeeds.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:474:- Show Pending Google Drive sync when queued.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:489:- Phase E: dev-only OAuth setup docs only.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:503:- No OAuth or Drive calls happen.
+docs/stage-17k-z-r3-google-drive-sync-contract-plan.md:509:- Stage 17K-Z-R4 local Drive sync schema validators, no OAuth, no Drive writes.
+docs/stage-17k-z-r8a-buddieswhostudy-domain-source-prep-closed-beta-contract.md:55:- No browsing normal Google Drive files/folders.
+docs/stage-17k-z-r8a-buddieswhostudy-domain-source-prep-closed-beta-contract.md:62:- Update OAuth app branding to Buddies Who Study.
+docs/stage-17k-z-r8a-buddieswhostudy-domain-source-prep-closed-beta-contract.md:86:4. Add Google OAuth authorized origin.
+docs/stage-17k-z-r8h-readonly-buddieswhostudy-domain-cutover-readiness.md:45:- Google OAuth origin update is still needed;
+docs/stage-17k-z-r8h-readonly-buddieswhostudy-domain-cutover-readiness.md:73:3. Google OAuth JavaScript origin updates;
+docs/stage-17k-z-r8i-exact-buddieswhostudy-cutover-plan-no-mutation.md:21:- Google OAuth origins are still not changed;
+docs/stage-17k-z-r8i-exact-buddieswhostudy-cutover-plan-no-mutation.md:74:### R8M — Google OAuth Origin Update
+docs/stage-17k-z-r8i-exact-buddieswhostudy-cutover-plan-no-mutation.md:81:Keep beta/test users configured until the OAuth app publishing decision is made.
+docs/stage-17k-z-r9aa-record-live-header-auth-and-pending-signup-cleanup.md:30:No deploy, DB write, schema change, service restart, email send, signup opening, Google OAuth, or Google Drive API work was performed by this checkpoint.
+docs/design/anki-compatible-shadow-library-contract-v1.json:2:  "contract_name": "anki_compatible_shadow_library_contract",
+docs/design/anki-compatible-shadow-library-contract-v1.json:7:    "anki_readonly_study": {
+docs/design/anki-compatible-shadow-library-contract-v1.json:9:      "writes_to_original_anki": false,
+docs/design/anki-compatible-shadow-library-contract-v1.json:15:      "writes_to_original_anki": false,
+docs/design/anki-compatible-shadow-library-contract-v1.json:34:    "Google Drive sync before local schema is proven",
+docs/design/anki-compatible-shadow-library-contract-v1.json:38:    "preserve_anki_note_guid": true,
+docs/design/anki-compatible-shadow-library-contract-v1.json:39:    "preserve_anki_card_ordinal": true,
+docs/design/anki-compatible-shadow-library-contract-v1.json:40:    "preserve_anki_deck_path": true,
+docs/design/anki-compatible-shadow-library-contract-v1.json:41:    "preserve_anki_note_type_name": true,
+docs/design/anki-compatible-shadow-library-contract-v1.json:42:    "preserve_anki_template_name": true,
+docs/design/anki-compatible-shadow-library-contract-v1.json:48:    "note_match_order": ["ankiGuid", "contentHash", "normalized fields + note type", "user-selected match"],
+docs/design/anki-compatible-shadow-library-contract-v1.json:49:    "card_match_order": ["note match + template ordinal", "ankiCardId", "contentHash", "user-selected match"],
+docs/design/anki-compatible-shadow-library-contract-v1.json:55:    "supports_anki_like_buttons": ["again", "hard", "good", "easy"],
+docs/design/buddies-local-library-schema-v1.json:18:    "study/decks/v1": {
+docs/design/buddies-local-library-schema-v1.json:26:    "study/cards/v1": {
+docs/design/buddies-local-library-schema-v1.json:58:        "sourceType": "apc_native | anki_import | anki_readonly",
+docs/design/buddies-local-library-schema-v1.json:83:        "sourceType": "apc_native | anki_import | anki_readonly",
+docs/design/buddies-local-library-schema-v1.json:85:        "ankiGuid": "preserved when imported/read from Anki",
+docs/design/buddies-local-library-schema-v1.json:86:        "ankiNoteId": "optional numeric source id",
+docs/design/buddies-local-library-schema-v1.json:104:        "sourceType": "apc_native | anki_import | anki_readonly",
+docs/design/buddies-local-library-schema-v1.json:106:        "ankiCardId": "optional source id",
+docs/design/buddies-local-library-schema-v1.json:107:        "ankiCardOrd": 0,
+ops/anki/anki_collection_readonly_summary.py:32:        "header_kind": "sqlite-anki-collection" if header.startswith(b"SQLite format 3") else "unknown",
+ops/anki/anki_collection_readonly_summary.py:124:    if header["header_kind"] != "sqlite-anki-collection":
+ops/anki/anki_collection_readonly_summary.py:270:                "anki_file_modified": False,
+ops/anki/anki_collection_readonly_summary.py:279:    parser.add_argument("--collection", required=True, help="Path to collection.anki2 or collection.anki21")
+ops/anki/anki_collection_readonly_summary.py:288:    if collection.suffix.lower() not in {".anki2", ".anki21"}:
+ops/anki/anki_collection_readonly_summary.py:289:        raise SystemExit("This proof supports collection.anki2 / collection.anki21 only")
+ops/anki/anki_discovery_manifest.py:12:TOOL_NAME = "apc_anki_discovery_manifest"
+ops/anki/anki_discovery_manifest.py:117:    if discovery.get("tool") != "apc_anki_readonly_discovery":
+ops/anki/anki_discovery_manifest.py:118:        warnings.append("input tool was not apc_anki_readonly_discovery")
+ops/anki/anki_discovery_manifest.py:147:            "anki_running": as_bool(discovery.get("anki_running")),
+ops/anki/anki_discovery_manifest.py:159:            "anki_writes_allowed": False,
+ops/anki/anki_discovery_manifest.py:166:            "apkg_import_performed": False,
+ops/anki/anki_readonly_discovery.py:5:closed, reads deck/card/note metadata from collection.anki2 using SQLite
+ops/anki/anki_readonly_discovery.py:23:TOOL_NAME = "apc_anki_readonly_discovery"
+ops/anki/anki_readonly_discovery.py:27:    "anki",
+ops/anki/anki_readonly_discovery.py:28:    "anki-bin",
+ops/anki/anki_readonly_discovery.py:29:    "anki.exe",
+ops/anki/anki_readonly_discovery.py:30:    "anki-console",
+ops/anki/anki_readonly_discovery.py:31:    "anki-console.exe",
+ops/anki/anki_readonly_discovery.py:34:    "anki_readonly_discovery.py",
+ops/anki/anki_readonly_discovery.py:35:    "check-stage-17b-anki2-read-only-discovery.sh",
+ops/anki/anki_readonly_discovery.py:69:def candidate_anki_roots(extra_roots: Optional[Sequence[str]] = None) -> List[Path]:
+ops/anki/anki_readonly_discovery.py:79:        anki_base = os.environ.get("ANKI_BASE")
+ops/anki/anki_readonly_discovery.py:80:        if anki_base:
+ops/anki/anki_readonly_discovery.py:81:            roots.append(Path(anki_base))
+ops/anki/anki_readonly_discovery.py:90:                home / ".var" / "app" / "net.ankiweb.Anki" / "data" / "Anki2",
+ops/anki/anki_readonly_discovery.py:94:        anki_base = os.environ.get("ANKI_BASE")
+ops/anki/anki_readonly_discovery.py:95:        if anki_base:
+ops/anki/anki_readonly_discovery.py:96:            roots.append(Path(anki_base))
+ops/anki/anki_readonly_discovery.py:99:        anki_base = os.environ.get("ANKI_BASE")
+ops/anki/anki_readonly_discovery.py:100:        if anki_base:
+ops/anki/anki_readonly_discovery.py:101:            roots.append(Path(anki_base))
+ops/anki/anki_readonly_discovery.py:110:        anki_base = os.environ.get("ANKI_BASE")
+ops/anki/anki_readonly_discovery.py:111:        if anki_base:
+ops/anki/anki_readonly_discovery.py:112:            roots.append(Path(anki_base))
+ops/anki/anki_readonly_discovery.py:160:def command_looks_like_anki(comm: str, cmdline_parts: Sequence[str]) -> bool:
+ops/anki/anki_readonly_discovery.py:176:        "net.ankiweb.anki",
+ops/anki/anki_readonly_discovery.py:177:        "/anki.app/",
+ops/anki/anki_readonly_discovery.py:178:        "\\anki.exe",
+ops/anki/anki_readonly_discovery.py:179:        "/bin/anki",
+ops/anki/anki_readonly_discovery.py:180:        "/app/bin/anki",
+ops/anki/anki_readonly_discovery.py:185:def detect_anki_running_linux() -> Tuple[bool, List[Dict[str, Any]], List[str]]:
+ops/anki/anki_readonly_discovery.py:206:        if command_looks_like_anki(comm, cmdline_parts):
+ops/anki/anki_readonly_discovery.py:217:def detect_anki_running_ps() -> Tuple[bool, List[Dict[str, Any]], List[str]]:
+ops/anki/anki_readonly_discovery.py:247:        if command_looks_like_anki(comm, args.split() if args else [comm]):
+ops/anki/anki_readonly_discovery.py:256:def detect_anki_running_windows() -> Tuple[bool, List[Dict[str, Any]], List[str]]:
+ops/anki/anki_readonly_discovery.py:284:def detect_anki_running() -> Tuple[bool, List[Dict[str, Any]], List[str]]:
+ops/anki/anki_readonly_discovery.py:287:        return detect_anki_running_linux()
+ops/anki/anki_readonly_discovery.py:289:        return detect_anki_running_ps()
+ops/anki/anki_readonly_discovery.py:291:        return detect_anki_running_windows()
+ops/anki/anki_readonly_discovery.py:301:    if (root / "collection.anki2").is_file():
+ops/anki/anki_readonly_discovery.py:308:            if child.is_dir() and (child / "collection.anki2").is_file():
+ops/anki/anki_readonly_discovery.py:410:        warnings.append(f"unable to open collection.anki2 read-only: {exc}")
+ops/anki/anki_readonly_discovery.py:489:def build_profile_record(profile_path: Path, anki_running: bool, allow_sqlite: bool) -> Dict[str, Any]:
+ops/anki/anki_readonly_discovery.py:490:    collection_path = profile_path / "collection.anki2"
+ops/anki/anki_readonly_discovery.py:515:        if anki_running:
+ops/anki/anki_readonly_discovery.py:516:            record["sqlite_blocked_reason"] = "Anki appears to be running; close Anki before reading collection.anki2."
+ops/anki/anki_readonly_discovery.py:529:    anki_running, process_matches, process_warnings = detect_anki_running()
+ops/anki/anki_readonly_discovery.py:530:    roots = candidate_anki_roots(extra_roots)
+ops/anki/anki_readonly_discovery.py:553:            profiles.append(build_profile_record(profile_path, anki_running, allow_sqlite=not anki_running))
+ops/anki/anki_readonly_discovery.py:556:    if anki_running:
+ops/anki/anki_readonly_discovery.py:559:    status = "blocked" if anki_running else "ok"
+ops/anki/anki_readonly_discovery.py:561:        status = "not_found" if not anki_running else "blocked"
+ops/anki/anki_readonly_discovery.py:569:        "anki_running": anki_running,
+ops/anki/anki_readonly_discovery.py:570:        "anki_process_matches": process_matches,

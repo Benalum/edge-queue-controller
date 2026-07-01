@@ -1,0 +1,4 @@
+=== R11A source-only preflight ===
+=== Study / local save / Anki source inventory ===
+=== run no-runtime smoke ===
+=== R11A source-only stage prepared; no deploy, no commit, no runtime mutation ===
