@@ -1,0 +1,4 @@
+=== public static smoke ===
+root_code=200 root_bytes=11342
+js_code=200 js_bytes=19329
+PASS public static R12B smoke

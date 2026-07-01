@@ -1,0 +1,6 @@
+=== backup and install two files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r12b-profile-google-private-event-gate-backup-20260701T194523Z
+8ec0a1bae62a336536ce7ca8098b6863f8fa711048f79ccceaf51bbcceb7c0b0  /var/www/apc-wrapper-local/index.html
+e97fc93a0f071321c2f34a6047641d42cfff7f6f8a45698132e8f7f27ff073a4  /var/www/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+R12B_VM200_TWO_FILE_DEPLOY_DONE

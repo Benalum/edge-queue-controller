@@ -1,0 +1,2 @@
+=== upload two-file bundle ===
+bundle=/tmp/apc-r12b-20260701T194523Z

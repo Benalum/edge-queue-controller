@@ -1,0 +1,4 @@
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+?? docs/smoke/generated/stage-17k-z-r12b-vm200-deploy-profile-google-private-event-gate/
+?? docs/stage-17k-z-r12b-vm200-deploy-profile-google-private-event-gate.md
+?? ops/smoke/check-stage-17k-z-r12b-vm200-deploy-profile-google-private-event-gate.sh
