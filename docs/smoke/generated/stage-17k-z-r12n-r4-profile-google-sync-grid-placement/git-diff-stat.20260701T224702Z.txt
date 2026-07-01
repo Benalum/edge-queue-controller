@@ -1,0 +1,4 @@
+ frontend/wrapper-ui/apc-wrapper-local/index.html   |  4 ++--
+ .../privatepages/profile-google-sync-panel.js      | 28 ++++++++--------------
+ .../privatepages/profile-private-polish.css        | 21 ++++++++++++++++
+ 3 files changed, 33 insertions(+), 20 deletions(-)

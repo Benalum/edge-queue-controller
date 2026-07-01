@@ -77,6 +77,7 @@
   }
 
   const PRIVATE_RENDER_EVENT_ONLY_MARKER = "PROFILE_GOOGLE_SYNC_PRIVATE_RENDER_EVENT_ONLY_R12A_R3";
+  const GRID_PLACEMENT_MARKER_R12N_R4 = "APC_PROFILE_GOOGLE_SYNC_GRID_PLACEMENT_R12N_R4";
 
   function isPrivateProfileRenderEvent(event) {
     const detail = event && event.detail ? event.detail : null;
@@ -122,23 +123,9 @@
   }
 
   function findProfileAnchor() {
-    const selectors = [
-      '[data-apc-profile-root]',
-      '[data-profile-root]',
-      '[data-page="profile"]',
-      '[data-route="profile"]',
-      '.profile-page',
-      '#profile',
-      '#profile-page',
-      'main',
-      '#app',
-      'body'
-    ];
-    for (const selector of selectors) {
-      const node = document.querySelector(selector);
-      if (node) return node;
-    }
-    return document.body;
+    return document.querySelector('.private-shell[data-private-page="profile"] .private-grid')
+      || document.querySelector('.private-shell[data-private-page="profile"]')
+      || null;
   }
 
   function setStatus(message, detail) {
@@ -388,7 +375,12 @@
       '<pre data-apc-google-sync-proof-detail></pre>'
     ].join('');
 
-    findProfileAnchor().appendChild(panel);
+    const host = findProfileAnchor();
+    if (!host) {
+      removePanel();
+      return;
+    }
+    host.appendChild(panel);
     panel.querySelector('[data-apc-google-sync-explicit-consent]').addEventListener('change', updateButtons);
     panel.querySelector('[data-apc-google-sync-connect]').addEventListener('click', () => connectGoogleDrive().catch((err) => setStatus('Google connection error', err.message || String(err))));
     panel.querySelector('[data-apc-google-sync-bootstrap-appdata]').addEventListener('click', () => bootstrapHiddenAppDatabase().catch((err) => setStatus('Hidden app data create error', err.message || String(err))));

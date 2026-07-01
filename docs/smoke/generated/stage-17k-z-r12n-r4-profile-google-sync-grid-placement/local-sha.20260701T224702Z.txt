@@ -1,0 +1,4 @@
+=== local shas ===
+7709ec2b5577a975fe6103fef826d041bce99b6ffe1b4a17bf35a97084475150  frontend/wrapper-ui/apc-wrapper-local/index.html
+bdb4229fa3fe4e4470bd4eeb5a697513a5ac244a1381f074cb74311bcc6fae0a  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+039cb74115350596cbb911fcb088cd0034037ddd42debfc17e38db50fac9bd5f  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css

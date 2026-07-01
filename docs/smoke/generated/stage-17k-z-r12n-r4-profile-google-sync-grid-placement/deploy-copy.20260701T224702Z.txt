@@ -1,0 +1,2 @@
+=== upload three-file grid placement bundle ===
+bundle=/tmp/apc-r12n-r4-20260701T224702Z

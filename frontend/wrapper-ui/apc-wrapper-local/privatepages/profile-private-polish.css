@@ -389,3 +389,24 @@
 }
 
 /* APC_PRIVATE_PROFILE_GOOGLE_SYNC_VISUAL_POLISH_R12M_END */
+
+
+/* APC_PRIVATE_PROFILE_GOOGLE_SYNC_GRID_CARD_R12N_R4_START */
+.private-shell[data-private-page="profile"] .private-grid > [data-apc-google-sync-profile-panel="true"],
+.private-shell[data-private-page="profile"] .private-grid > .apc-google-sync-profile-panel {
+  grid-column: auto !important;
+  align-self: start !important;
+  margin: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+.private-shell[data-private-page="profile"] [data-apc-google-sync-proof-detail]:empty {
+  display: none !important;
+}
+
+.private-shell[data-private-page="profile"] [data-apc-google-sync-proof-detail] {
+  max-height: 14rem !important;
+  overflow: auto !important;
+}
+/* APC_PRIVATE_PROFILE_GOOGLE_SYNC_GRID_CARD_R12N_R4_END */
