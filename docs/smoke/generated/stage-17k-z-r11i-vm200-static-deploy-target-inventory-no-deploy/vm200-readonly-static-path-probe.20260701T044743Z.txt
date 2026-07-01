@@ -1,0 +1,32 @@
+=== VM200 read-only static path probe, best effort ===
+SSH_OK
+host=website-edge
+user=jkg76nid
+pwd=/home/jkg76nid
+--- candidate static dirs ---
+drwxr-xr-x 4 root root 4096 Jun 17 21:04 /var/www
+drwxr-xr-x 2 root root 4096 Jun 17 20:37 /var/www/html
+drwxrwxr-x 25 jkg76nid jkg76nid 4096 Jul  1 04:13 /var/www/apc-wrapper-local
+drwxr-xr-x 2 root root 4096 Apr 20 18:05 /srv
+--- candidate index files ---
+2026-06-25 03:16 4793 /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T032729Z/index.html
+2026-06-28 19:04 9756 /var/www/apc-wrapper-local/backups/admin-folder-r3u-safe-20260628T190720Z/index.html
+2026-06-28 19:07 9756 /var/www/apc-wrapper-local/backups/admin-folder-r3u2-index-20260628T191031Z/index.html
+2026-06-28 19:10 9758 /var/www/apc-wrapper-local/backups/admin-folder-r3u3-token-20260628T191406Z/index.html
+2026-06-28 19:14 9758 /var/www/apc-wrapper-local/backups/admin-folder-r3u4-contrast-20260628T191620Z/index.html
+2026-06-28 19:16 9758 /var/www/apc-wrapper-local/backups/admin-folder-r3u4-contrast-20260628T191636Z/index.html
+2026-06-28 19:16 9758 /var/www/apc-wrapper-local/backups/admin-folder-r3u6-remove-old-page-20260628T192104Z/index.html
+2026-06-28 19:21 9758 /var/www/apc-wrapper-local/backups/admin-folder-r3u8-privatepages-loader-20260628T192505Z/index.html
+2026-06-29 04:40 10096 /var/www/apc-wrapper-local/backups/admin-folder-r3u9-route-retry-20260629T182348Z/index.html
+2026-06-29 18:23 10096 /var/www/apc-wrapper-local/backups/admin-folder-r3u10-uncached-script-20260629T182655Z/index.html
+2026-06-29 18:26 10104 /var/www/apc-wrapper-local/apc-r7d-qga-backup-20260629T211348Z/index.html
+2026-06-29 21:13 10336 /var/www/apc-wrapper-local/apc-r8f-qga-backup-20260630T012147Z/index.html
+2026-06-30 01:21 10881 /var/www/apc-wrapper-local/apc-r8g-r2-qga-backup-20260630T012641Z/index.html
+2026-06-30 01:26 10647 /var/www/apc-wrapper-local/apc-r8g-r3-qga-backup-20260630T013049Z/index.html
+2026-06-30 01:30 10471 /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260630T184707Z/index.html
+2026-07-01 00:03 10466 /var/www/apc-wrapper-local/apc-r9w-vm200-auth-cachebust-backup-20260701T000333Z/index.html
+2026-07-01 00:08 10473 /var/www/apc-wrapper-local/apc-r9x-restore-header-login-brand-backup-20260701T000823Z/index.html
+2026-07-01 04:13 10611 /var/www/apc-wrapper-local/index.html
+--- nginx snippets mentioning static roots ---
+/etc/nginx/sites-enabled/default:41:	root /var/www/html;
+/etc/nginx/sites-enabled/default:85:#	root /var/www/example.com;

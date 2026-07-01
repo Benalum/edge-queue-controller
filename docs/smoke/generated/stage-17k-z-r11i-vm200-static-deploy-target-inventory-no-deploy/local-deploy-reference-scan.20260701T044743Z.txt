@@ -1,0 +1,1001 @@
+=== local deploy reference scan ===
+docs/stage-16-e3m-b1-insert-helper-test-queued-job-only.md:53:- No Cloudflare/DNS/tunnel/nginx mutation.
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:13:Cloudflare existing tunnel -> VM200 website-edge nginx/cloudflared -> VM200 nginx API bridge -> CT203 edge-controller-pvew controller service -> CT203 candidate SQLite DB
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:20:- VM200 nginx and cloudflared are active.
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:21:- VM200 bridges API/controller paths to CT203.
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:23:- Public /public/status reaches CT203 through VM200.
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:24:- Public /system/local-health reaches CT203 through VM200.
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:33:- VM200 still has construction/offline wrapper copy.
+docs/phase-14j-ka-pvew-contained-bridge-checkpoint-no-apply.md:42:3. Patch VM200 wrapper text for PVEW-contained mode.
+docs/stage-17k-z-r10l-local-save-listdocs-namespace-fix.md:30:Only VM200 frontend static files were deployed:
+docs/stage-17k-z-r10l-local-save-listdocs-namespace-fix.md:33:- `privatepages/local-save-store.js`
+docs/phase-14j-go-ct202-systemd-unit-static-smoke-disabled-state-regression.md:21:PHASE_14J_GO_DB_PATH=/srv/edge-controller/data/edge_queue.sqlite3
+docs/phase-14j-go-ct202-systemd-unit-static-smoke-disabled-state-regression.md:34:- unit WorkingDirectory was /srv/edge-controller/app/current
+docs/phase-14j-go-ct202-systemd-unit-static-smoke-disabled-state-regression.md:35:- unit PYTHONPATH was /srv/edge-controller/app/current
+docs/phase-14j-go-ct202-systemd-unit-static-smoke-disabled-state-regression.md:36:- unit DB environment paths pointed to /srv/edge-controller/data/edge_queue.sqlite3
+docs/phase-14j-go-ct202-systemd-unit-static-smoke-disabled-state-regression.md:39:- unit ExecStart used /srv/edge-controller/venv/bin/python -m uvicorn edge_controller:app
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:31:- unmount `/srv/apc-private-data`;
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:63:- private_storage_mountpoint_before: `/srv/apc-private-data`
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:80:- backup bundle path: `/srv/apc-private-data/backups/ct203/ct203-backup-20260619T002628Z`
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:81:- unmount result: `/srv/apc-private-data` not mounted
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:85:- VM200 remained running
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:100:- private_storage_mountpoint_after: `/srv/apc-private-data`
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:109:- `/srv/apc-private-data` is not mounted.
+docs/phase-14j-mw-r1-lock-pvew-private-storage-lsof-exit-repair-no-service-restart-no-ct-change.md:112:- VM200 remains public/static only.
+docs/cleanup/stage-5l4i-queued-chat-real-user-smoke-fix-2026-06-10.md:17:Updated frontend/wrapper-ui/dev_server.py so direct browser calls to /api/chat/queued receive server-derived trusted identity headers.
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:5:frontend/wrapper-ui/styles.css:1419:body:not([data-current-route="/credits"]) header a[href="/credits"]:not([aria-current="page"]),
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:6:frontend/wrapper-ui/styles.css:1421:body:not([data-current-route="/credits"]) .topbar a[href="/credits"]:not([aria-current="page"]),
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:7:frontend/wrapper-ui/styles.css:1423:body:not([data-current-route="/credits"]) .main-nav a[href="/credits"]:not([aria-current="page"]),
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:8:frontend/wrapper-ui/styles.css:1425:body:not([data-current-route="/credits"]) .route-nav a[href="/credits"]:not([aria-current="page"]),
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:9:frontend/wrapper-ui/index.html:7:  <link rel="stylesheet" href="./styles.css" />
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:10:frontend/wrapper-ui/index.html:8:  <link id="studyPreviewStyles" rel="stylesheet" href="/study/styles.css" disabled />
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:11:frontend/wrapper-ui/index.html:12:    <a class="brand logo-only" href="/" data-route="/" aria-label="AlexHartel AI Platform home">
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:12:frontend/wrapper-ui/index.html:24:      <a href="/study" data-route="/study">Study</a>
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:13:frontend/wrapper-ui/index.html:25:      <a href="/companion" data-route="/companion">Companion</a>
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:14:frontend/wrapper-ui/index.html:26:      <a href="/profile" data-route="/profile">Profile</a>
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:15:frontend/wrapper-ui/index.html:27:      <a href="/support" data-route="/support">Support</a>
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:16:frontend/wrapper-ui/index.html:28:      <a id="adminNavLink" class="hidden" href="/admin" data-route="/admin">Admin</a>
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:17:frontend/wrapper-ui/index.html:29:      <a href="/system" data-route="/system" id="systemNavLink">
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:18:frontend/wrapper-ui/app.js:134:  // invalidation/refresh layer, not by adding ?fresh= timestamps to URLs.
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:19:frontend/wrapper-ui/app.js:136:    const cleanPath = String(window.location.pathname || "/").split("?")[0].split("#")[0] || "/";
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:20:frontend/wrapper-ui/app.js:288:  const path = window.location.pathname || "/";
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:21:frontend/wrapper-ui/app.js:2628:      <p>This shared-layout preview is read-only. Use <a href="/study">the live Study page</a> to create decks, add cards, or review cards.</p>
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:22:frontend/wrapper-ui/app.js:3200:  const isLiveStudyRoute = window.location.pathname === "/study";
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:23:frontend/wrapper-ui/app.js:3229:            <a class="primary-btn" href="/study">Open Live Study</a>
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:24:frontend/wrapper-ui/app.js:3230:            <a class="secondary" href="/study-standalone">Open Standalone Fallback</a>
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:25:frontend/wrapper-ui/app.js:3943:  const url = new URL(window.location.href);
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:26:frontend/wrapper-ui/app.js:3976:        window.location.href = "/";
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:27:frontend/wrapper-ui/app.js:4555:      <a class="feature-card" href="/support" data-route="/support">
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:28:frontend/wrapper-ui/app.js:4560:      <a class="feature-card" href="/support" data-route="/support">
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:29:frontend/wrapper-ui/app.js:4565:      <a class="feature-card" href="/support" data-route="/support">
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:30:frontend/wrapper-ui/app.js:4570:      <a class="feature-card" href="/support" data-route="/support">
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:31:frontend/wrapper-ui/app.js:5802:  const href = link.getAttribute("href");
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:32:frontend/wrapper-ui/app.js:5821:  location.href = target.toString();
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:33:frontend/wrapper-ui/app.js:5904:  const url = new URL(window.location.href);
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:34:frontend/wrapper-ui/app.js:6895:    return normalizeRoute(window.location.pathname || "/");
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:35:frontend/wrapper-ui/app.js:6904:    const href = anchor.getAttribute("href") || "";
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:36:frontend/wrapper-ui/app.js:6908:      const url = new URL(href, window.location.origin);
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:37:frontend/wrapper-ui/app.js:6909:      if (url.origin !== window.location.origin) return "";
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:38:frontend/wrapper-ui/app.js:7015:    const current = cleanRoute(window.location.pathname || "/");
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:39:frontend/wrapper-ui/app.js:7055:// Defensive cleanup for old/stale links that still include ?fresh=.
+docs/cleanup/stage-5o11-deep-route-reload-inventory-2026-06-11.md:40:frontend/wrapper-ui/app.js:7060:      const url = new URL(window.location.href);
+docs/cleanup/stage-5j8-finish-active-wrapper-stale-reference-cleanup-2026-06-10.md:9:- Removed the unused `GATEWAY = EDGE_PUBLIC_GATEWAY_URL -> 7071` line from `frontend/wrapper-ui/dev_server.py`.
+docs/cleanup/stage-5m0c-browser-asset-cache-buster-2026-06-10.md:15:- Updated frontend/wrapper-ui/index.html from app.js?v=20260609200419 to app.js?v=20260610225000.
+docs/cleanup/stage-5o5-frontend-static-route-smoke-2026-06-11.md:23:- `edge-wrapper-ui.service` active
+docs/cleanup/stage-5j9-final-active-wrapper-stale-comment-sweep-2026-06-10.md:9:- Cleaned remaining stale comment text in `frontend/wrapper-ui/app.js`.
+docs/cleanup/stage-5n7-calendar-provider-only-inspection-2026-06-11.md:43:`edge-wrapper-ui.service` was active and restarted successfully.
+docs/cleanup/stage-5n7-calendar-provider-only-inspection-2026-06-11.md:52:- `GET https://alexhartel.com/calendar`
+docs/cleanup/stage-5n10-final-recovery-checkpoint-2026-06-11.md:17:- `edge-wrapper-ui.service`
+docs/cleanup/stage-5j7-active-wrapper-gateway-reference-cleanup-2026-06-10.md:9:- Removed unused `GATEWAY` / `EDGE_PUBLIC_GATEWAY_URL` reference from `frontend/wrapper-ui/dev_server.py` if no longer referenced.
+docs/cleanup/stage-5o6-logged-in-core-feature-smoke-2026-06-11.md:27:- `edge-wrapper-ui.service` active
+docs/cleanup/stage-5o4-basic-site-metadata-2026-06-11.md:9:- `frontend/wrapper-ui/sitemap.xml`
+docs/cleanup/stage-5o4-basic-site-metadata-2026-06-11.md:10:- `frontend/wrapper-ui/robots.txt`
+docs/stage-16-fc-o45-d-c-r3-admin-users-frontend-route-repair-finalize.md:11:The D-C-R2 source patch passed source checks, but the generated focused smoke script failed on a brittle documentation string check before commit/tag/push and before VM200 deployment.
+docs/stage-16-fc-o45-d-c-r3-admin-users-frontend-route-repair-finalize.md:28:- performs no backend, database, service, nginx, CT/VM, job, worker, helper, runtime, scheduler, or model mutation.
+docs/stage-16-fc-o45-d-c-r3-admin-users-frontend-route-repair-finalize.md:32:VM200 `/var/www/apc-wrapper-local/app.js` is backed up and replaced from repo source with SHA verification.
+docs/stage-16-fc-o45-d-c-r3-admin-users-frontend-route-repair-finalize.md:34:VM200 `/var/www/apc-wrapper-local/index.html` is backed up and cache-bust updated from:
+docs/stage-16-fc-o45-d-c-r3-admin-users-frontend-route-repair-finalize.md:51:- No nginx/cloudflared mutation.
+docs/stage-16-fc-o45-e-ck-l-read-only-reporter-install.md:115:No frontend patch, no frontend deploy, no public /var/www mutation, no backend deploy, no CT203 backend runtime patch, no systemd install, no daemon-reload, no service start, no service stop, no service restart, no service enable, no timer install, no timer enable/start, no DB write, no schema migration, no job mutation, no result insert, no selector/manual-wrapper/helper invocation, no model/helper/Ollama call, no scheduler/timer/persistent-worker activation, no CT/VM restart, no package install, and no secret values printed.
+docs/stage-16-fc-o45-e-cl-f-authenticated-companion-study-last-message-mvp-source-only.md:15:No frontend patch, no frontend deploy, no public /var/www mutation, no backend deploy, no CT203 runtime patch, no DB write, no schema migration, no job mutation, no result insert, no service start/stop/restart, no service enable, no timer install/enable/start, no selector/manual-wrapper/helper invocation, no model/helper/Ollama call, no PVESO call, no scheduler/timer/persistent-worker activation, no CT/VM restart, no package install, and no secret values printed.
+docs/stage-16-global-drive-banner-r3p.md:20:  - `frontend/wrapper-ui/apc-wrapper-local/index.html`
+docs/stage-16-global-drive-banner-r3p.md:21:  - `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js`
+docs/stage-16-global-drive-banner-r3p.md:22:- VM200 static file deploy only.
+docs/phase-14j-gg-ct202-python-venv-dependency-install-default-off-no-runtime-activation.md:25:PHASE_14J_GG_VENV_PATH=/srv/edge-controller/venv
+docs/phase-14j-gg-ct202-python-venv-dependency-install-default-off-no-runtime-activation.md:46:- FORBIDDEN_ABSENT=nginx
+docs/phase-14j-gg-ct202-python-venv-dependency-install-default-off-no-runtime-activation.md:47:- FORBIDDEN_ABSENT=cloudflared
+docs/phase-14j-gg-ct202-python-venv-dependency-install-default-off-no-runtime-activation.md:75:- no nginx install
+docs/phase-14j-gg-ct202-python-venv-dependency-install-default-off-no-runtime-activation.md:76:- no cloudflared install
+docs/stage-17k-z-r11e-profile-anki-apkg-preview-bridge-no-ui.md:31:- frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js
+docs/phase-14j-ie-pvew-target-candidate-layout-no-apply.md:15:- VM 200 `website-edge`: public/static edge only.
+docs/phase-14j-ie-pvew-target-candidate-layout-no-apply.md:27:`website-edge` must not contain user DB files, controller DB files, controller secrets, encryption keys, private data mounts, Proxmox management credentials, model secrets, worker secrets, or queue/controller authority.
+docs/stage-17k-z-r8p-readonly-live-email-env-after-vpn-off.md:14:- `PUBLIC_BASE_URL=https://buddieswhostudy.com`
+docs/stage-17k-z-r8p-readonly-live-email-env-after-vpn-off.md:15:- `EMAIL_FROM=no-reply@buddieswhostudy.com`
+docs/stage-17k-z-r8p-readonly-live-email-env-after-vpn-off.md:42:R8P does not mutate live env, Resend, DNS, Cloudflare, VM200, CT203, backend, DB, nginx/cloudflared, models, workers, or schedulers.
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:31:Only VM200 frontend static files were deployed:
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:34:- `privatepages/local-save-store.js`
+docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md:26:- frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:64:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/phase-13n-disabled-study-review-ui-support-contract.md:22:- frontend/wrapper-ui/app.js
+docs/phase-13n-disabled-study-review-ui-support-contract.md:23:- frontend/wrapper-ui/styles.css
+docs/phase-14j-fu-sqlite-backup-restore-and-data-container-design-plan-no-creation.md:157:### website-edge VM
+docs/phase-14j-fu-sqlite-backup-restore-and-data-container-design-plan-no-creation.md:162:- nginx static runtime;
+docs/phase-14j-fu-sqlite-backup-restore-and-data-container-design-plan-no-creation.md:223:- no website-edge mutation;
+docs/phase-14j-fu-sqlite-backup-restore-and-data-container-design-plan-no-creation.md:224:- no nginx config mutation;
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:11:This phase does not format, mount, wipe, encrypt, create keys, create LVM, add Proxmox storage, start CT203/CT204, migrate data, mutate VM200 content, mutate Cloudflare/DNS/tunnel routes, or wake PVESO.
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:19:- Phase 14J-IW: PVEW temporary expected votes set to 1 and VM200 started/onboot enabled.
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:20:- Phase 14J-IX-R2: VM200 website-edge read-only verification passed.
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:22:- VM200 website-edge is running and onboot 1.
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:84:7. Mount under a private PVEW path not exposed by VM200.
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:85:8. Keep encryption keys/passphrases out of ChatGPT, git, Source files, terminal output, APC_LAST_OUTPUT, website-edge, and Cloudflare/tunnel config.
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:99:- verification that VM200 remains public/static only;
+docs/phase-14j-iy-pvew-hdd-encrypted-storage-prep-plan-no-apply.md:107:- Do not place private DBs, controller DBs, keys, private mounts, or controller authority inside VM200.
+docs/phase-14j-gz-ct202-cutover-readiness-gate-and-remaining-blockers-summary-no-apply.md:30:- VM 200 `website-edge` remains public/static website edge only.
+docs/laptop-job-queue-facade-plan.md:48:- user can see pending/running/complete/failed state from alexhartel.com
+docs/phase-14j-hz-read-only-bootstrap-ct202-owner-node-non-authority-evidence.md:44:- `edge-wrapper-ui.service`: `active`;
+docs/phase-14j-hz-read-only-bootstrap-ct202-owner-node-non-authority-evidence.md:56:- `website-edge` was reachable over SSH, but it had no `pct` or `pvesh`;
+docs/phase-14j-hz-read-only-bootstrap-ct202-owner-node-non-authority-evidence.md:85:- DB path present: `/srv/edge-controller/data/edge_queue.sqlite3`;
+docs/phase-14j-id-pvew-encryption-implementation-comparison-no-apply.md:71:- harder to apply safely to an existing always-on host with VM200 running.
+docs/phase-14j-id-pvew-encryption-implementation-comparison-no-apply.md:90:- no keys in website-edge;
+docs/phase-14j-id-pvew-encryption-implementation-comparison-no-apply.md:91:- no user data inside website-edge;
+docs/stage-16-fc-o45-e-cj-y-systemd-one-shot-deterministic-companion-worker-proof.md:104:No frontend patch, no frontend deploy, no public /var/www mutation, no source mutation during runtime proof, no backend deploy, no CT203 backend runtime patch, no schema migration, no service enable, no timer install, no timer enable/start, no persistent-worker activation, no CT/VM restart, no package install, no model pull/download, no PVESO call, no Ollama/model endpoint call, and no secret values printed.
+docs/phase-14j-gk-ct202-private-loopback-runtime-smoke-temporary-only.md:19:PHASE_14J_GK_DB_PATH=/srv/edge-controller/data/edge_queue.sqlite3
+docs/phase-11j-study-answer-judge-router-source-inspection.md:15:- `frontend/wrapper-ui/app.js`
+docs/phase-11j-study-answer-judge-router-source-inspection.md:50:- It searches the current runtime file only: `frontend/wrapper-ui/app.js`
+docs/phase-11j-study-answer-judge-router-source-inspection.md:59:Phase 11K should implement the deterministic answer normalizer in `frontend/wrapper-ui/app.js`.
+docs/stage-16-fc-o45-e-p-companion-auth-no-enqueue-validation-plan.md:95:- nginx/cloudflared mutation
+docs/stage-16-fc-o45-e-ck-w-guarded-mock-companion-backlog-cleanup.md:19:No frontend patch, no frontend deploy, no public /var/www mutation, no source mutation, no commit, no tag, no push, no backend deploy, no CT203 backend runtime patch, no schema migration, no job insert, no result insert, no service start/stop/restart, no service enable, no timer install/enable/start, no selector/manual-wrapper/helper invocation, no model/helper/Ollama call, no scheduler/timer/persistent-worker activation, no CT/VM restart, no package install, and no secret values printed.
+docs/stage-16-e2o-ct203-temporary-secondary-lan-ip-candidate-plan-no-apply.md:15:- VM200 running
+docs/stage-16-e2o-ct203-temporary-secondary-lan-ip-candidate-plan-no-apply.md:46:- avoid changing VM200 nginx upstreams
+docs/stage-16-e2o-ct203-temporary-secondary-lan-ip-candidate-plan-no-apply.md:73:- change VM200 nginx
+docs/stage-16-e2o-ct203-temporary-secondary-lan-ip-candidate-plan-no-apply.md:112:VM200 remains running
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:1:# Phase 14J-MM — VM200 Webroot App Path Read-Only Diagnostic
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:7:This phase records the failed Phase 14J-ML deployment attempt and the recovered read-only VM200 path diagnostic evidence.
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:15:- Phase: 14J-MK — VM200 Guest Exec Output Shape Read-Only.
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:18:- Result: `PASS_PHASE_14J_MK_VM200_GUEST_EXEC_OUTPUT_SHAPE_READ_ONLY_DONE`.
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:27:No VM200 app.js write occurred in ML.
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:44:## Recovered VM200 path diagnostic evidence
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:53:- `wrapper_source_path=/home/jkg76nid/apc-website-edge/source/edge-queue-controller/frontend/wrapper-ui/app.js`
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:54:- `study_source_path=/home/jkg76nid/apc-website-edge/source/edge-queue-controller/frontend/study-ui/app.js`
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:55:- `live_wrapper_path=/var/www/apc-wrapper-local/app.js`
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:56:- `live_index_path=/var/www/apc-wrapper-local/index.html`
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:59:The correct live VM200 wrapper target is:
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:61:`/var/www/apc-wrapper-local/app.js`
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:65:`/var/www/apc-wrapper-local/index.html`
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:69:No VM200 app.js write, no qemu guest-agent operation during recovery record, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/phase-14j-mm-vm200-webroot-app-path-read-only-diagnostic.md:73:`PASS_PHASE_14J_MM_VM200_WEBROOT_APP_PATH_READ_ONLY_DIAGNOSTIC_DONE`
+docs/stage-16-fc-o45-e-aa-r7-result-read-mirror-auth-header.md:18:- VM200 app.js and index.html deployed through chunked static realign.
+docs/stage-16-fc-o45-e-aa-r7-result-read-mirror-auth-header.md:24:No DB write, no job mutation, no worker/model/helper/runtime call, no scheduler/timer activation, no schema change, no CT/VM restart, no nginx/cloudflared mutation, and no storage mutation.
+docs/stage-17k-z-r8q-live-email-env-patch-ct203.md:8:Update live CT203 runtime sender/domain configuration after the Resend sender domain moved from `alexhartel.com` to `buddieswhostudy.com`.
+docs/stage-17k-z-r8q-live-email-env-patch-ct203.md:18:- `PUBLIC_BASE_URL=https://buddieswhostudy.com`
+docs/stage-17k-z-r8q-live-email-env-patch-ct203.md:19:- `EMAIL_FROM=no-reply@buddieswhostudy.com`
+docs/stage-17k-z-r8q-live-email-env-patch-ct203.md:30:- `buddieswhostudy.com` remains HTTP 200;
+docs/stage-17k-z-r8q-live-email-env-patch-ct203.md:31:- `www.buddieswhostudy.com` remains HTTP 200;
+docs/stage-17k-z-r8q-live-email-env-patch-ct203.md:32:- `alexhartel.com` redirects to `https://buddieswhostudy.com/`;
+docs/stage-17k-z-r8q-live-email-env-patch-ct203.md:37:R8Q does not mutate Resend, DNS, Cloudflare, VM200, DB, nginx/cloudflared, models, workers, or schedulers.
+docs/stage-16-e3i-run-one-shot-model-adapter-no-write.md:70:- No Cloudflare/DNS/tunnel/nginx mutation.
+docs/stage-16-e2z-model-serving-path-decision-no-model-call.md:32:- VM200 running.
+docs/phase-14j-gm-ct202-private-system-queue-route-runtime-smoke-temporary-only.md:19:PHASE_14J_GM_DB_PATH=/srv/edge-controller/data/edge_queue.sqlite3
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:30:- VM 200 `website-edge` remains public/static website edge only.
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:36:- VM 200 `website-edge` is the public/static website edge role only;
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:37:- website-edge must not host controller/queue/worker/model authority;
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:38:- website-edge must not expose Proxmox management;
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:39:- website-edge must not expose direct model endpoints;
+docs/phase-14j-gx-ct202-public-route-and-rollback-plan-no-apply.md:40:- website-edge must not become DB authority.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:4:Scope: VM200/public app UI static assets plus repo commit/tag/push  
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:49:- mutate nginx/cloudflared
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:53:The FC-O45-E-S UI source patch is committed as a repo checkpoint before VM200 live deployment because PVEW SSH access timed out during recovery.
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:60:- VM200 static deployment is pending.
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:61:- No backend deploy, CT203 restart, DB write, worker/model/helper/runtime call, scheduler/timer activation, CT/VM restart, or nginx/cloudflared mutation is performed by this repo checkpoint.
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:63:Next live step should deploy the already-committed wrapper UI assets to `/var/www/apc-wrapper-local` once PVEW access is healthy.
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:68:VM200 accepted the FC-O45-E-S inline Companion UI helper, but the public edge had already cached `/app.js?v=20260624fc045es` before the marker was present. R20 advances the wrapper UI cache-bust to `/app.js?v=20260624fc045esr20` and verifies the marker through the fresh public URL.
+docs/stage-16-fc-o45-e-s-companion-ui-auth-validation-test.md:70:No backend deploy, CT203 restart, DB write, worker/model/helper/runtime call, scheduler/timer activation, CT/VM restart, or nginx/cloudflared mutation is performed.
+docs/stage-16-fc-o45-e-ck-n-r2-live-read-only-reporter-proof.md:105:No frontend patch, no frontend deploy, no public /var/www mutation, no source mutation during runtime proof, no backend deploy, no CT203 runtime patch, no DB write, no schema migration, no job mutation, no result insert, no service start, no service stop, no service restart, no service enable, no timer install, no timer enable/start, no selector/manual-wrapper/helper invocation, no model/helper/Ollama call, no scheduler/timer/persistent-worker activation, no CT/VM restart, no package install, and no secret values printed.
+docs/stage-16-companion-browser-voice-r3c-real.md:17:- Repo mirror patch: `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js`
+docs/stage-16-companion-browser-voice-r3c-real.md:18:- Repo mirror cachebust: `frontend/wrapper-ui/apc-wrapper-local/index.html`
+docs/stage-16-companion-browser-voice-r3c-real.md:19:- Live VM200 static patch only
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:1:# Phase 14J-FN-R8 - Website-edge minimal cloudflared service temporary hostname
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:11:Record the successful website-edge Cloudflare Tunnel runtime setup for the temporary test hostname only.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:16:- FN-R2 successfully installed and started cloudflared but failed overly strict public root exact-hash validation, then rolled back.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:18:- FN-R4 failed cloudflared service install after residual installer state.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:19:- FN-R5 found residual cloudflared-update units.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:20:- FN-R6 cleaned the residual cloudflared-update units.
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:26:Previous repo phase: Phase 14J-FM - token-safe website-edge tunnel setup plan
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:28:Previous tag: controller-phase-14j-fm-plan-token-safe-website-edge-tunnel-setup-temporary-test-hostname-2026-06-17
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:30:## Runtime mutation scope actually performed on website-edge
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:32:MUTATION_SCOPE=website_edge_vm_200_minimal_cloudflared_service_setup_temp_hostname_only
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:38:- minimal cloudflared systemd service
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:39:- no-autoupdate cloudflared run mode
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:43:- nginx local health before and after
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:48:minimal_cloudflared_service_setup_temp_hostname=passed
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:51:temporary_test_hostname=website-edge-test.alexhartel.com
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:52:cloudflared_path=/usr/local/bin/cloudflared
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:53:cloudflared_version=cloudflared version 2026.6.0
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:54:cloudflared_service_file=/etc/systemd/system/cloudflared.service
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:55:cloudflared_service_file_mode=644
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:56:cloudflared_service_file_owner=root:root
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:57:cloudflared_service_file_content_printed=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:58:cloudflared_execstart_printed=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:59:cloudflared_service_uses_no_autoupdate=yes
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:60:cloudflared_service_uses_environment_file=yes
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:62:cloudflared_token_env_file=/etc/cloudflared/website-edge-tunnel.env
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:63:cloudflared_token_env_file_mode=600
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:64:cloudflared_token_env_file_owner=root:root
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:65:cloudflared_token_env_file_size_bytes_recorded=yes
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:66:cloudflared_token_env_file_content_printed=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:68:cloudflared_load_state=loaded
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:69:cloudflared_active_state=active
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:70:cloudflared_sub_state=running
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:71:cloudflared_unit_file_state=enabled
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:72:cloudflared_service_status_sanitized=yes
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:74:cloudflared_update_service_created=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:75:cloudflared_update_timer_created=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:85:nginx_config_test_before_fn_r8=passed
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:86:nginx_config_test_after_fn_r8=passed
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:117:nginx_config_mutation_performed=no
+docs/phase-14j-fn-r8-website-edge-minimal-cloudflared-service-temp-hostname.md:135:The token exists only in the root-owned env file on website-edge:
+docs/phase-14j-nd-r2-public-authority-copy-cleanup-deploy.md:11:Patched stale public static UI copy in `frontend/wrapper-ui/app.js` from `laptop controller-owned` to `CT203/controller-owned`.
+docs/phase-14j-nd-r2-public-authority-copy-cleanup-deploy.md:13:Deployed updated app asset to VM200 path:
+docs/phase-14j-nd-r2-public-authority-copy-cleanup-deploy.md:15:`/var/www/apc-wrapper-local/app.js`
+docs/phase-14j-gr-ct202-readiness-summary-and-cutover-blocker-review.md:29:PHASE_14J_GR_DB_PATH=/srv/edge-controller/data/edge_queue.sqlite3
+docs/phase-14j-gr-ct202-readiness-summary-and-cutover-blocker-review.md:49:- unit DB path points to /srv/edge-controller/data/edge_queue.sqlite3
+docs/phase-14j-gr-ct202-readiness-summary-and-cutover-blocker-review.md:70:- controller app copied to /srv/edge-controller/app/current
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:40:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-companion-listen-ui-r3h-silence-setting.md:19:- Repo mirror patch: `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js`
+docs/stage-16-companion-listen-ui-r3h-silence-setting.md:20:- Repo mirror cachebust: `frontend/wrapper-ui/apc-wrapper-local/index.html`
+docs/stage-16-companion-listen-ui-r3h-silence-setting.md:21:- Live VM200 static patch only
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:101:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fc-o45-e-bn-r2-companion-model-worker-readiness-read-only.md:33:- NO public `/var/www` mutation.
+docs/stage-16-fc-o45-e-bn-r2-companion-model-worker-readiness-read-only.md:42:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-bn-r2-companion-model-worker-readiness-read-only.md:76:NO public /var/www mutation
+docs/stage-16-fc-o45-e-bn-r2-companion-model-worker-readiness-read-only.md:85:NO nginx/cloudflared config mutation
+docs/phase-14j-ew-record-website-edge-vm-create.md:9:This phase records the approved website-edge VM creation on the low-power Proxmox host. The infrastructure mutation already occurred on the Proxmox host after explicit approval. This repo phase only records the result and safety boundaries.
+docs/phase-14j-ew-record-website-edge-vm-create.md:20:WEBSITE_EDGE_VM_NAME=website-edge
+docs/phase-14j-ew-record-website-edge-vm-create.md:60:WEBSITE_EDGE_VM_NAME=website-edge
+docs/phase-14j-mc-update-workstation-pvew-alias-to-tailscale-ip-only.md:26:No SSH connection attempt, no qemu guest-agent operation, no VM200 write, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/phase-14j-mc-update-workstation-pvew-alias-to-tailscale-ip-only.md:62:The VM200 wrapper app asset deploy can be retried only with a separate explicit approval phrase:
+docs/phase-14j-mc-update-workstation-pvew-alias-to-tailscale-ip-only.md:64:`APPROVE_PHASE_14J_MD_RETRY_DEPLOY_VM200_WRAPPER_APP_ASSET_ONLY`
+docs/stage-15-c-mock-queued-chat-endpoint-design-no-apply.md:15:The VM200 frontend references:
+docs/stage-15-c-mock-queued-chat-endpoint-design-no-apply.md:151:- nginx/cloudflared mutation
+docs/stage-16-fc-o45-e-ab-f-browser-read-proof-job-125.md:54:This proof-record phase is repo-only. It did not write the DB, mutate jobs, insert results, patch backend/frontend runtime files, deploy, restart services, call workers/models/helpers/runtime/Ollama, activate scheduler/timer/persistent workers, change schema, restart CT/VMs, mutate nginx/cloudflared, or mutate storage.
+docs/phase-14j-gj-ct202-private-controller-import-and-db-path-preflight-no-runtime-activation.md:17:PHASE_14J_GJ_DB_PATH=/srv/edge-controller/data/edge_queue.sqlite3
+docs/phase-14j-gj-ct202-private-controller-import-and-db-path-preflight-no-runtime-activation.md:24:- edge_controller.DB_PATH resolved to /srv/edge-controller/data/edge_queue.sqlite3
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:17:No live deploy, service restart, CT/VM restart, nginx/cloudflared mutation, DB write, job mutation, worker/model/runtime mutation, model call, or reset-failed was performed in R14.
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:21:R12B successfully patched VM200 public static authority:
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:23:    app_target=/var/www/apc-wrapper-local/app.js
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:24:    index_target=/var/www/apc-wrapper-local/index.html
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:29:    app_backup=/var/www/apc-wrapper-local/app.js.stage16-fc-o44-d-r12b-pre-public-study-banner.20260624T024708Z.bak
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:30:    index_backup=/var/www/apc-wrapper-local/index.html.stage16-fc-o44-d-r12b-pre-public-study-banner.20260624T024708Z.bak
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:32:R13 confirmed VM200 local state:
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:34:    nginx_active=active
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:35:    cloudflared_active=active
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:52:    public_http_code=200 url=https://alexhartel.com/?fc_o44_d_r14=1_1782269587
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:55:    public_http_code=200 url=https://alexhartel.com/app.js?fc_o44_d_r14=1_1782269588
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:58:    public_http_code=200 url=https://alexhartel.com/app.js?v=20260624fc044d&fc_o44_d_r14=1_1782269588
+docs/stage-16-fc-o44-d-r14-record-vm200-public-study-signed-out-view-and-banner-copy.md:61:    public_http_code=200 url=https://alexhartel.com/api/system/status?fc_o44_d_r14=1_1782269589
+docs/frontend-queued-chat-status-helper.md:13:- frontend/wrapper-ui/queued_chat_status.js
+docs/stage-16-fc-o45-e-ch-c-backend-companion-study-action-endpoint.md:9:No frontend patch. No frontend deploy. No public `/var/www` mutation. No backend deploy. No CT203 runtime patch. No DB write by this checkpoint. No job mutation. No result insert. No model/helper/Ollama call. No scheduler/timer/persistent-worker activation. No service change. No CT/VM restart.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:11:Plan the production cutover from the current public wrapper route to the website-edge static tunnel path without applying any Cloudflare route mutation.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:17:Previous repo phase: Phase 14J-FN-R8 - website-edge minimal cloudflared service temporary hostname
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:19:Previous tag: controller-phase-14j-fn-r8-minimal-cloudflared-service-temp-hostname-2026-06-17
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:23:FN-R8 proved the following on website-edge:
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:25:- website-edge VM 200 serves the static wrapper locally through nginx on loopback port 18080.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:26:- cloudflared is installed at /usr/local/bin/cloudflared.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:27:- minimal cloudflared.service is active, running, and enabled.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:28:- cloudflared.service uses --no-autoupdate.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:29:- cloudflared.service uses a root-owned 0600 EnvironmentFile.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:30:- cloudflared-update.service was not created.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:31:- cloudflared-update.timer was not created.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:32:- temporary hostname website-edge-test.alexhartel.com passed public smoke.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:49:- Route the public static wrapper/home surface to website-edge tunnel origin.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:61:- alexhartel.com
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:62:- www.alexhartel.com
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:81:3. Confirm website-edge nginx is active.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:82:4. Confirm website-edge nginx config test passes.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:84:6. Confirm cloudflared.service is active, running, and enabled.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:85:7. Confirm cloudflared service is minimal no-autoupdate service.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:86:8. Confirm cloudflared-update.service is absent.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:87:9. Confirm cloudflared-update.timer is absent.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:91:13. Confirm no Docker, Node, or npm was installed on website-edge.
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:102:- target website-edge tunnel;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:103:- target origin service http://127.0.0.1:18080 inside website-edge;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:109:- avoid nginx config mutation unless separately planned;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:120:- production /app.js returns 200 and exact hash matches website-edge local file;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:121:- production /styles.css returns 200 and exact hash matches website-edge local file;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:122:- production /queued_chat_config.js returns 200 and exact hash matches website-edge local file;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:133:- keep website-edge cloudflared service untouched unless the rollback reason is website-edge service failure;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:134:- avoid deleting the tunnel token unless explicitly retiring website-edge tunnel;
+docs/phase-14j-fo-plan-website-edge-production-cutover-no-apply.md:152:nginx_config_mutation=no
+docs/stage-16-e2m-e2l-findings-and-ct203-network-repair-plan-no-apply.md:19:- VM200: running
+docs/stage-16-e2m-e2l-findings-and-ct203-network-repair-plan-no-apply.md:104:The likely repair is to realign CT203 networking to the same LAN/subnet as PVEW, VM200, and PVESO, then update CT203’s PVESO inventory target to PVESO’s current reachable LAN address.
+docs/stage-16-e2m-e2l-findings-and-ct203-network-repair-plan-no-apply.md:113:- current VM200/PVEW/PVESO LAN pattern
+docs/stage-16-e2m-e2l-findings-and-ct203-network-repair-plan-no-apply.md:120:  - VM200 `/system/status`
+docs/stage-16-e2m-e2l-findings-and-ct203-network-repair-plan-no-apply.md:121:  - VM200 `/api/system/status`
+docs/failed-patches/fc-o45-e-j-failed-route-local-companion-auth-split.patch:34: # Added for always-visible alexhartel.com wrapper/header
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:15:- Phase: 14J-FO - website-edge production cutover plan only
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:17:- Tag: controller-phase-14j-fo-plan-website-edge-production-cutover-no-apply-2026-06-17
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:23:The first FP attempts found that the laptop did not have a resolvable `website-edge` SSH alias. The following support repair was completed before the final preflight:
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:25:- Tailscale peer for `website-edge` was online.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:26:- Local laptop SSH alias `Host website-edge` was added/updated in `~/.ssh/config`.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:27:- The laptop public SSH key was installed for the website-edge user.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:29:- Remote hostname validated as `website-edge`.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:33:No Cloudflare route mutation, Tailscale ACL/grants/tag mutation, Tailscale SSH mode enablement, website-edge service mutation, nginx config mutation, CT101 call, worker start, model call, or production DB/job mutation occurred during this repair.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:43:- website-edge hostname guard passed;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:44:- website-edge OS: Ubuntu 26.04 LTS;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:48:- nginx service active;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:55:- `cloudflared` version observed as 2026.6.0;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:56:- `cloudflared.service` active and enabled;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:57:- `cloudflared.service` contains `--no-autoupdate`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:58:- `cloudflared.service` contains `EnvironmentFile=`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:59:- `cloudflared.service` contains `tunnel run`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:60:- `cloudflared-update.service` absent;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:61:- `cloudflared-update.timer` absent;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:65:- temporary hostname asset hashes matched website-edge loopback asset hashes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:66:- production apex `alexhartel.com` returned HTTP 200;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:68:- production apex asset hashes matched website-edge loopback asset hashes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:69:- `www.alexhartel.com` did not resolve during fingerprinting.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:73:- no-sudo `nginx -t` could not read a root-protected nginx site file;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:83:- sudo identity/location guard passed on website-edge;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:85:- `nginx -t` syntax was OK;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:86:- `nginx -t` config test was successful;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:87:- `cloudflared` version observed as 2026.6.0;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:88:- `cloudflared.service` active and enabled;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:89:- `cloudflared.service` contains `--no-autoupdate`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:90:- `cloudflared.service` contains `EnvironmentFile=`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:91:- `cloudflared.service` contains `tunnel run`;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:94:- `cloudflared-update.service` absent;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:95:- `cloudflared-update.timer` absent.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:105:Production apex `alexhartel.com` returned the same three static asset hashes during fingerprinting.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:115:- `website-edge-test.alexhartel.com`: healthy temporary public hostname.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:116:- `alexhartel.com`: HTTP 200 with expected wrapper/public markers and matching static asset hashes during FP-R4.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:117:- `www.alexhartel.com`: did not resolve during FP-R4 fingerprinting.
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:121:Gate B website-edge static runtime validation:
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:123:- nginx active: yes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:124:- nginx config test passes: yes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:126:- `cloudflared.service` active/running/enabled: yes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:127:- `cloudflared-update.service` absent: yes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:128:- `cloudflared-update.timer` absent: yes;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:148:- no nginx config mutation;
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:180:www.alexhartel.com did not resolve during FP-R4 fingerprinting
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:182:nginx -t config test was successful
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:186:cloudflared-update.service absent
+docs/phase-14j-fp-read-only-website-edge-production-cutover-preflight.md:188:cloudflared-update.timer absent
+docs/phase-14j-lu-ct204-backup-data-role-no-apply.md:22:- VM200 remains public/static only.
+docs/phase-11l-live-frontend-activation-cache-bust-verification.md:17:- `frontend/wrapper-ui/app.js`
+docs/phase-11l-live-frontend-activation-cache-bust-verification.md:25:- `https://alexhartel.com/app.js`
+docs/phase-14j-ly-ui-legacy-copy-source-patch-no-deploy.md:9:This phase does not deploy the frontend to VM200, write to VM200, run qemu guest-agent operations, deploy controller source, restart services, mutate DBs, mutate storage, start CT204, wake PVESO, connect over SSH, edit SSH config, or change Cloudflare/DNS/tunnels.
+docs/phase-14j-ly-ui-legacy-copy-source-patch-no-deploy.md:22:- `frontend/wrapper-ui/app.js`
+docs/phase-14j-ly-ui-legacy-copy-source-patch-no-deploy.md:63:No frontend deploy, no VM200 write, no qemu guest-agent operation, no controller deploy, no CT203 source deploy, no service restart/reload/enable/start/stop, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no SSH connection attempt, no SSH config mutation, no Tailscale config/auth mutation, no PVESO wake/start, and no Cloudflare/DNS/tunnel mutation occurred.
+docs/phase-14j-ly-ui-legacy-copy-source-patch-no-deploy.md:67:A later frontend deployment to VM200 requires a separate explicit approval boundary.
+docs/phase-14j-ly-ui-legacy-copy-source-patch-no-deploy.md:72:2. parse qemu guest-agent JSON exitcode for VM200 operations;
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:11:2. VM200 nginx CT203 upstream snippets were patched from a stale CT203 DHCP address to CT203's current address, then nginx was reloaded after `nginx -t` passed.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:16:- VM200 `website-edge` is running.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:20:- VM200 `cloudflared.service` is active/enabled.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:21:- VM200 `nginx.service` is active/enabled.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:36:→ CT203 and VM200 did not start at boot
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:37:→ VM200 cloudflared was down
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:39:→ after temporary quorum and guest start, VM200 nginx still pointed at a stale CT203 DHCP address
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:41:→ nginx upstream patch + nginx reload restored public statusRun with Project Pilot
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:54:Once quorum was available, pve-guests.service proceeded to start VM200.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:55:Therefore VM200/CT203 autostart is not the primary root cause; missing quorum is.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:86:VM200 nginx active snippets now point to CT203's current address.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:91:This is still fragile because a future DHCP address change can break VM200 nginx again.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:109:Useful only if VM200 can reliably resolve CT203's hostname.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:110:Requires resolver/hosts strategy and nginx reload.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:122:preferred: PVEW can boot and manage VM200/CT203 without PVESO being online.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:123:Stabilize CT203 addressing before relying on VM200 nginx upstream long-term.
+docs/phase-14j-nh-pvew-quorum-and-ct203-upstream-durable-root-cause-no-apply.md:128:VM200 autostarts.
+docs/stage-17k-z-r9aa-record-live-header-auth-and-pending-signup-cleanup.md:3:This checkpoint captures the current good VM200 state into source before starting the local-save work.
+docs/stage-17k-z-r9aa-record-live-header-auth-and-pending-signup-cleanup.md:23:- `alexhartel179@gmail.com`
+docs/stage-16-fc-o45-e-ad-g-r2-end-to-end-submit-result-reader-proof-job-126.md:46:This proof-record phase is read-only against CT203 and repo-only for documentation. It did not write the DB, mutate jobs, insert result rows, patch backend/frontend runtime files, deploy, restart services, call workers/models/helpers/runtime/Ollama, activate scheduler/timer/persistent workers, change schema, restart CT/VMs, mutate nginx/cloudflared, or mutate storage.
+docs/stage-17k-d-vendor-sqljs-assets.md:11:frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/
+docs/stage-17k-d-vendor-sqljs-assets.md:41:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-16-e2h-pveso-lan-inventory-path-runtime-firewall.md:14:- VM200 remains the public website edge.
+docs/stage-17k-c-browser-sqlite-parser-decision.md:36:- frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/
+docs/stage-17k-c-browser-sqlite-parser-decision.md:96:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, CDN dependency, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included in this decision checkpoint.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:23:cat package.tgz | ssh apcdeploy@website-edge 'deploy sha256=<sha256> bust=20260624fc045eay'
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:32:- Packaged repo `frontend/wrapper-ui/app.js` and `frontend/wrapper-ui/styles.css`.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:34:- PVEW sent the package to VM200 over Tailscale/OpenSSH as `apcdeploy@website-edge`.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:35:- VM200 restricted helper verified package SHA-256 and required markers.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:36:- VM200 restricted helper backed up current live `app.js`, `styles.css`, and `index.html`.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:37:- VM200 restricted helper replaced only `app.js` and `styles.css`.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:38:- VM200 restricted helper updated only the `index.html` app.js cache-bust.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:55:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:93:ALLOWED: package repo frontend/wrapper-ui app.js and styles.css
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:95:ALLOWED: PVEW sends package to VM200 over Tailscale/OpenSSH as apcdeploy@website-edge
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:96:ALLOWED: VM200 restricted helper verifies package SHA-256 and markers
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:97:ALLOWED: VM200 restricted helper backs up current live app.js/styles.css/index.html
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:98:ALLOWED: VM200 restricted helper replaces only app.js and styles.css
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:99:ALLOWED: VM200 restricted helper updates only index.html app.js cache bust
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:110:NO nginx/cloudflared config mutation
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:154:=== deploy over Tailscale restricted path from PVEW to VM200 ===
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:172:backup_sha256 4c4ca9db2fc88abeaf6442ee7ada3efbb88c9b2a2436f175c7442720e5daf8e7  /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T004247Z/app.js
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:173:backup_sha256 c1e629398a7bb15ae9735fdb287cc0636cd36504031a93605783a45b12b55d19  /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T004247Z/styles.css
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:174:backup_sha256 fc0225078cb046bb4f058a3705afbb1866508b643ac15587fc57849e274e82ba  /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T004247Z/index.html
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:175:backup_dir=/var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T004247Z
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:176:live_sha256 44ce4c74c19f392e6a5058702c730b59dea5ef29717442c2c31dffe8cc2854ba  /var/www/apc-wrapper-local/app.js
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:177:live_sha256 ce08d885ecc8e943746a6fac738f278f1e2b0c6dbdf493ca92cee3aa55bfaaa3  /var/www/apc-wrapper-local/styles.css
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:178:live_sha256 7ebf1b11609f50a33ebad88c84f4c1ee1e83882d3b93e3573950121b867eafa8  /var/www/apc-wrapper-local/index.html
+docs/stage-16-fc-o45-e-ay-deploy-companion-immersion-ui-over-tailscale-restricted-path.md:179:APC_VM200_STATIC_DEPLOY_WRAPPER_UI_PASS cache_bust=20260624fc045eay
+docs/stage-16-a-model-worker-reentry-plan-no-apply.md:24:- VM200 was running.
+docs/stage-16-a-model-worker-reentry-plan-no-apply.md:30:- VM200 nginx was active.
+docs/stage-16-a-model-worker-reentry-plan-no-apply.md:31:- VM200 cloudflared was active.
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:53:- initial backup path: /srv/edge-data/sqlite-backups
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:54:- restore drill path: /srv/edge-data/restore-drills
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:55:- live SQLite path, later only: /srv/edge-data/live/edge_queue.sqlite3
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:63:- rsync
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:73:- cloudflared
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:74:- nginx
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:83:- /srv/edge-data
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:84:- /srv/edge-data/sqlite-backups
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:85:- /srv/edge-data/restore-drills
+docs/phase-14j-fz-data-lxc-creation-plan-no-apply.md:86:- /srv/edge-data/live
+docs/stage-16-fc-o45-e-cg-b-study-companion-surface-owner.md:17:- public `/var/www` mutation
+docs/stage-16-fc-o45-e-cg-b-study-companion-surface-owner.md:27:- nginx/cloudflared/sshd mutation
+docs/stage-16-fc-o45-e-cj-c-r2-exact-job573-repair-outcome.md:90:No frontend patch, no frontend deploy, no public /var/www mutation, no source mutation, no backend deploy, no service mutation, no CT203 runtime patch, no scheduler/timer/persistent-worker activation, no CT/VM restart, no package install, and no model pull/download occurred.
+docs/phase-11b-admin-system-dashboard-polish-inspection.md:115:323331 frontend/wrapper-ui/app.js
+docs/phase-11b-admin-system-dashboard-polish-inspection.md:116:10393 frontend/wrapper-ui/app.js
+docs/phase-11b-admin-system-dashboard-polish-inspection.md:117:57138 frontend/wrapper-ui/styles.css
+docs/phase-11b-admin-system-dashboard-polish-inspection.md:118:2724 frontend/wrapper-ui/styles.css
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:18:- VM200 `website-edge` is running and onboot=1.
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:21:- VM200 nginx/cloudflared public path is healthy.
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:26:- VM200 local wrapper `127.0.0.1:18080/api/system/status` is HTTP 200.
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:28:- CT203 direct `/api/system/status` is HTTP 404; compatibility is intentionally handled by VM200 nginx.
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:30:- Private storage `/srv/apc-private-data` remains locked/unmounted and `/dev/mapper/apc_private_data` is absent.
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:38:- 14K-C applied CT203 static network + VM200 `/api/system/status` compatibility under explicit approval.
+docs/new-chat-prompt-after-phase-14k-e-public-path-hardening.md:46:- Real mutations require explicit approval: PVEW reboot/shutdown, PVESO mutation, CT/VM start/stop/restart/config changes, service reload/restart, nginx/cloudflared config changes, Cloudflare/DNS/tunnel, DB migration/import/restore, private storage unlock/mount, CT204 start/authority change, worker/model/scheduler activation, live model endpoint calls, Proxmox cluster/corosync mutation.
+docs/frontend-queued-chat-config-flag.md:15:- frontend/wrapper-ui/queued_chat_config.js
+docs/frontend-queued-chat-config-flag.md:16:- frontend/wrapper-ui/index.html
+docs/stage-17g-vm200-app-js-quarantine.md:1:# Stage 17G — VM200 app.js Quarantine
+docs/stage-17g-vm200-app-js-quarantine.md:7:The legacy live VM200 `/var/www/apc-wrapper-local/app.js` file was quarantined after confirming the current split frontend no longer actively loads it.
+docs/stage-17g-vm200-app-js-quarantine.md:9:## VM200 live path
+docs/stage-17g-vm200-app-js-quarantine.md:11:- Webroot: `/var/www/apc-wrapper-local`
+docs/stage-17g-vm200-app-js-quarantine.md:12:- Quarantined file: `/var/www/apc-wrapper-local/app.js.disabled-20260628T193103Z`
+docs/stage-17g-vm200-app-js-quarantine.md:13:- Backup copy: `/var/www/apc-wrapper-local/backups/app-js-quarantine-20260628T193103Z/app.js`
+docs/stage-17g-vm200-app-js-quarantine.md:31:- Active `/var/www/apc-wrapper-local/app.js` file is absent.
+docs/stage-17g-vm200-app-js-quarantine.md:43:On VM200:
+docs/stage-17g-vm200-app-js-quarantine.md:46:cd /var/www/apc-wrapper-local
+docs/stage-17g-vm200-app-js-quarantine.md:50:No backend deploy, DB change, nginx restart, cloudflared restart, Anki write, or service mutation was performed.
+docs/stage-16-e3d-pveso-model-inventory-manifests-no-apply.md:19:- No Cloudflare/DNS/tunnel/nginx mutation.
+docs/stage-17k-k-r2-anki-file-memory-handoff-repair.md:35:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/frontend-chat-submit-insertion-marker.md:17:- frontend/wrapper-ui/app.js
+docs/phase-14j-in-encrypted-at-rest-placement-design-no-apply.md:7:No CT/VM create, start, stop, clone, delete, modify, storage create, storage format, storage mount, storage resize, storage enable, storage disable, encryption setup, key generation, key installation, DB dump, DB copy, DB import, DB migration, service activation, onboot/autostart mutation, VM200 mutation, public route mutation, Cloudflare/DNS/tunnel mutation, PVESO power action, CT101/model/Ollama/worker call, laptop controller pause, laptop DB mutation, or production job mutation is approved or performed by this phase.
+docs/phase-14j-in-encrypted-at-rest-placement-design-no-apply.md:80:The disk should be treated as the future at-rest authority for private platform data. It should not be public, should not be mounted into VM200 website-edge, and should not contain public route/tunnel material.
+docs/phase-14j-in-encrypted-at-rest-placement-design-no-apply.md:93:- Do not put keys in VM200 website-edge.
+docs/stage-17d-study-ui-anki-manifest-display.md:25:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js`
+docs/stage-17d-study-ui-anki-manifest-display.md:26:- `frontend/wrapper-ui/apc-wrapper-local/index.html`
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:24:cat package.tgz | ssh apcdeploy@website-edge 'deploy sha256=<sha256> bust=20260624fc045ebk'
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:33:- Packaged repo `frontend/wrapper-ui/app.js` and `frontend/wrapper-ui/styles.css`.
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:35:- PVEW sent the package to VM200 over Tailscale/OpenSSH as `apcdeploy@website-edge`.
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:36:- VM200 restricted helper verified package SHA-256 and required markers.
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:37:- VM200 restricted helper backed up current live `app.js`, `styles.css`, and `index.html`.
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:38:- VM200 restricted helper replaced only `app.js` and `styles.css`.
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:39:- VM200 restricted helper updated only the `index.html` app.js cache-bust.
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:59:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:102:ALLOWED: package repo frontend/wrapper-ui app.js and styles.css
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:104:ALLOWED: PVEW sends package to VM200 over Tailscale/OpenSSH as apcdeploy@website-edge
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:105:ALLOWED: VM200 restricted helper verifies package SHA-256 and markers
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:106:ALLOWED: VM200 restricted helper backs up current live app.js/styles.css/index.html
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:107:ALLOWED: VM200 restricted helper replaces only app.js and styles.css
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:108:ALLOWED: VM200 restricted helper updates only index.html app.js cache bust
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:119:NO nginx/cloudflared config mutation
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:178:=== deploy over Tailscale restricted path from PVEW to VM200 ===
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:196:backup_sha256 26deb9eff933624f3f68593d84181d6d4857a3ae91d2f77fc782b80391cdc3bb  /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T013445Z/app.js
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:197:backup_sha256 1d01fdc9ecba9b50649e0ee3c0a223aed655a0959fba995d011523a7d7547cd6  /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T013445Z/styles.css
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:198:backup_sha256 0aa67177b7c53a4c588d8bdbe7b808e9c68108025ca805cf8e211093426c2425  /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T013445Z/index.html
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:199:backup_dir=/var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T013445Z
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:200:live_sha256 eb5f3fd81760668d31687971703e65c67b02d7ab8907ceee2eda422670aac2f3  /var/www/apc-wrapper-local/app.js
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:201:live_sha256 03b1e3e152b7ba70364e515096c079b61572d23f12ae626436296ee8f6714081  /var/www/apc-wrapper-local/styles.css
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:202:live_sha256 78a16e25cd96a25586caf36806b0c30ecdadcfa10d8bbf2f95b27b4ea0f7abeb  /var/www/apc-wrapper-local/index.html
+docs/stage-16-fc-o45-e-bk-deploy-companion-structural-minimal-over-tailscale-restricted-path.md:203:APC_VM200_STATIC_DEPLOY_WRAPPER_UI_PASS cache_bust=20260624fc045ebk
+docs/phase-14j-im-pvew-storage-identity-inspection-no-apply.md:9:No storage create, format, mount, resize, enable, disable, delete, encryption setup, key generation, DB dump, DB copy, DB import, DB migration, service activation, onboot/autostart mutation, VM200 mutation, public route mutation, Cloudflare/DNS/tunnel mutation, PVESO power action, CT101/model/Ollama/worker call, laptop controller pause, laptop DB mutation, or production job mutation is approved or performed by this phase.
+docs/phase-14j-im-pvew-storage-identity-inspection-no-apply.md:16:- VM200 website-edge was running.
+docs/phase-14j-gf-clone-controller-code-default-off-no-runtime-activation.md:27:- /srv/edge-controller/app/releases/controller-da0dc2c
+docs/phase-14j-gf-clone-controller-code-default-off-no-runtime-activation.md:28:- /srv/edge-controller/app/current
+docs/phase-14j-gf-clone-controller-code-default-off-no-runtime-activation.md:39:- nginx absent
+docs/phase-14j-gf-clone-controller-code-default-off-no-runtime-activation.md:40:- cloudflared absent
+docs/phase-14j-gf-clone-controller-code-default-off-no-runtime-activation.md:67:- no nginx install
+docs/phase-14j-gf-clone-controller-code-default-off-no-runtime-activation.md:68:- no cloudflared install
+docs/phase-14j-ev-website-edge-vm-design.md:9:This phase designs the website-edge VM for the low-power Proxmox host. It creates no VM/container, makes no Cloudflare change, makes no Tailscale ACL/grants/tag change, changes no firewall, restarts no services, starts no workers, activates no runtime behavior, and mutates no production DB/jobs.
+docs/phase-14j-ev-website-edge-vm-design.md:39:WEBSITE_EDGE_VM_NAME=website-edge
+docs/stage-16-e3m-b2-r3-doc-commit-recovery.md:52:- No Cloudflare/DNS/tunnel/nginx mutation.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:45:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:20:- `frontend/wrapper-ui/app.js`
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:21:- `frontend/wrapper-ui/styles.css`
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:28:- NO public `/var/www` mutation.
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:38:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:75:cat package.tgz | ssh apcdeploy@website-edge 'deploy sha256=<sha256> bust=<cache-bust-token>'
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:84:NO public /var/www mutation
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:94:NO nginx/cloudflared config mutation
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:124:diff --git a/frontend/wrapper-ui/app.js b/frontend/wrapper-ui/app.js
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:126:--- a/frontend/wrapper-ui/app.js
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:127:+++ b/frontend/wrapper-ui/app.js
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:304:diff --git a/frontend/wrapper-ui/styles.css b/frontend/wrapper-ui/styles.css
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:306:--- a/frontend/wrapper-ui/styles.css
+docs/stage-16-fc-o45-e-az-companion-immersion-primary-workspace-source.md:307:+++ b/frontend/wrapper-ui/styles.css
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:11:This phase does not mutate CT config, add a bind mount, start CT204, restore/import any DB, move controller authority, expose private data to VM200, mutate Proxmox storage, mutate persistence, or wake PVESO.
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:21:- PVEW encrypted storage is active at /srv/apc-private-data.
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:23:- CT204 private scaffold exists at /srv/apc-private-data/ct204.
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:24:- Controller backup exists under /srv/apc-private-data/ct204/backups/controller-laptop.
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:29:- VM200 remains public/static only and has no private data access.
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:37:- Host path: /srv/apc-private-data/ct204
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:52:- VM200 has no access to /srv/apc-private-data;
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:66:- add VM200 access;
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:89:- /srv/apc-private-data/ct204 is missing or not private;
+docs/phase-14j-jl-ct204-bind-mount-design-no-apply.md:91:- VM200 has private data access;
+docs/phase-14j-gc-r0-controller-data-split-pivot-plan-no-apply.md:15:VM 200 website-edge:
+docs/stage-17k-k-r4-anki-active-status-repair.md:49:- `privatepages/anki-readonly-session.js`
+docs/stage-17k-k-r4-anki-active-status-repair.md:51:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fc-o45-c-o-polish-study-workspace-css-formatting.md:21:`frontend/wrapper-ui/app.js` now adds scoped CSS for the canonical Study workspace panel and safe display formatting:
+docs/stage-16-fc-o45-c-o-polish-study-workspace-css-formatting.md:33:VM200 `/var/www/apc-wrapper-local/app.js` is backed up and replaced from repo source with SHA verification.
+docs/stage-16-fc-o45-c-o-polish-study-workspace-css-formatting.md:35:VM200 `/var/www/apc-wrapper-local/index.html` is backed up and cache-bust updated from:
+docs/stage-16-fc-o45-c-o-polish-study-workspace-css-formatting.md:49:- No nginx/cloudflared mutation.
+docs/stage-16-fc-o45-e-bp-r3-r2-complete-companion-real-model-routing-source-no-runtime.md:40:- NO public `/var/www` mutation.
+docs/stage-16-fc-o45-e-bp-r3-r2-complete-companion-real-model-routing-source-no-runtime.md:49:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-bp-r3-r2-complete-companion-real-model-routing-source-no-runtime.md:104:NO public /var/www mutation
+docs/stage-16-fc-o45-e-bp-r3-r2-complete-companion-real-model-routing-source-no-runtime.md:113:NO nginx/cloudflared config mutation
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:4:Scope: documentation-only apply runbook. No live Proxmox, corosync, guest, storage, nginx, Cloudflare, worker, scheduler, model, or DB mutation.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:13:2. Starting VM200 and CT203.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:14:3. Patching VM200 nginx CT203 upstream snippets to CT203's current address.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:15:4. Reloading nginx after config test passed.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:31:- VM200 `website-edge` is running and onboot=1.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:42:> Make PVEW independent enough to boot and operate VM200/CT203 without requiring PVESO quorum.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:54:- VM200 autostarts and serves the website/tunnel.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:88:- status for VM200/CT203/CT204
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:98:- confirmation `/srv/apc-private-data` is not mounted
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:104:- VM200 `cloudflared`, `nginx`, `qemu-guest-agent`
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:130:9. Verify VM200 and CT203 can start/autostart.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:146:- verify VM200/CT203 autostart behavior
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:171:- VM200/CT203 status check
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:181:- VM200 running.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:186:- VM200 `cloudflared.service` active/enabled.
+docs/phase-14j-nj-pvew-quorum-apply-runbook-no-apply.md:187:- VM200 `nginx.service` active/enabled.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:19:- `frontend/wrapper-ui/apc-wrapper-local/index.html`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:20:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:38:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/phase-14j-no-pvew-reboot-readiness-no-apply.md:17:- VM200 is running and onboot=1.
+docs/stage-16-fc-o45-e-ag-r3-exact-one-companion-model-job.md:57:- NO nginx/cloudflared/storage mutation.
+docs/stage-16-fc-o45-e-ag-r3-exact-one-companion-model-job.md:92:NO nginx/cloudflared/storage mutation
+docs/stage-16-e2s-runtime-bridge-persistence-vs-cleanup-decision-plan-no-apply.md:71:- avoids changing VM200 nginx;
+docs/stage-16-e2s-runtime-bridge-persistence-vs-cleanup-decision-plan-no-apply.md:110:- may disrupt VM200 → CT203 public/API route;
+docs/stage-16-e2s-runtime-bridge-persistence-vs-cleanup-decision-plan-no-apply.md:111:- likely requires VM200 nginx and route validation work;
+docs/stage-16-e2s-runtime-bridge-persistence-vs-cleanup-decision-plan-no-apply.md:146:- VM200 nginx mutation;
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:23:- `/srv/apc-private-data` is not mounted.
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:27:- VM200 remains running and public/static only.
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:63:3. Confirm `/srv/apc-private-data` is not mounted.
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:69:9. Mount `/dev/mapper/apc_private_data` at `/srv/apc-private-data` as ext4.
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:73:13. Verify VM200 remains running.
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:87:- start, stop, restart, or reconfigure CT203, CT204, VM200, or PVESO;
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:107:- `private_storage_status.mountpoint=/srv/apc-private-data`;
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:119:- `/srv/apc-private-data` is not mounted;
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:125:- VM200 is running;
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:149:- `/srv/apc-private-data` is already mounted unexpectedly.
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:166:12. `mount -t ext4 /dev/mapper/apc_private_data /srv/apc-private-data`
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:167:13. verify `findmnt /srv/apc-private-data`
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:182:`/srv/apc-private-data/backups/ct203/ct203-backup-20260619T002628Z`
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:198:- `/srv/apc-private-data` is already mounted unexpectedly;
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:202:- VM200 is not running;
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:213:- `/srv/apc-private-data` is mounted;
+docs/phase-14j-mx-pvew-private-storage-reopen-procedure-plan-no-apply.md:219:- VM200 remains running;
+docs/stage-16-companion-browser-voice-r3d-simplified-ui.md:24:- Repo mirror patch: `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js`
+docs/stage-16-companion-browser-voice-r3d-simplified-ui.md:25:- Repo mirror cachebust: `frontend/wrapper-ui/apc-wrapper-local/index.html`
+docs/stage-16-companion-browser-voice-r3d-simplified-ui.md:26:- Live VM200 static patch only
+docs/stage-17k-z-r9q-verify-browser-brand-label-deploy.md:5:This checkpoint verifies the public browser-label deploy after the manual interactive sudo update on website-edge.
+docs/stage-17k-z-r9q-verify-browser-brand-label-deploy.md:23:- Previous tag: `controller-stage-17k-z-r9p-r2-website-edge-brand-deploy-recovery-2026-06-30`
+docs/stage-16-fc-o45-e-cj-f-backend-companion-prompt-wrapper-live-deploy.md:76:No frontend patch, no frontend deploy, no public /var/www mutation, no DB write, no schema migration, no job mutation, no result insert, no model/helper/Ollama call, no worker/timer activation, and no CT/VM restart occurred.
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:1:# Stage 17K-Z-R9D — VM200 Normal-User SSH Repair Record
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:5:This checkpoint records the VM200 / website-edge SSH authentication repair after local VPN/Tailscale routing was fixed.
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:7:VM200 is the Proxmox VM ID for the Tailscale node named `website-edge`.
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:18:- `ssh website-edge 'hostname; whoami'` reached TCP/22 but failed with `Permission denied (publickey,password,keyboard-interactive)`.
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:22:A controlled VM200 repair attempt refused to mutate root SSH authorization because VM200 sshd reported:
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:30:VM200 was repaired through PVEW using Proxmox `qm guest exec` without `--capture-output`, because this PVEW `qm` version does not support `--capture-output`.
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:34:- Adding the laptop public key to the selected normal VM200 user's `authorized_keys`.
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:35:- Updating the local laptop `website-edge` / `vm200` SSH alias to use that normal user.
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:42:- nginx/cloudflared
+docs/stage-17k-z-r9d-record-vm200-normal-user-ssh-repair.md:50:- `ssh website-edge 'hostname; whoami'` returns `website-edge` and the selected normal user.
+docs/stage-16-fc-o45-e-bp-r2-companion-real-model-routing-source-no-runtime.md:34:- NO public `/var/www` mutation.
+docs/stage-16-fc-o45-e-bp-r2-companion-real-model-routing-source-no-runtime.md:43:- NO nginx/cloudflared config mutation.
+docs/stage-16-fc-o45-e-bp-r2-companion-real-model-routing-source-no-runtime.md:96:NO public /var/www mutation
+docs/stage-16-fc-o45-e-bp-r2-companion-real-model-routing-source-no-runtime.md:105:NO nginx/cloudflared config mutation
+docs/phase-14j-hm-ct202-guarded-backup-only-no-rebuild.md:95:- source path: `/srv/edge-controller/data/edge_queue.sqlite3`;
+docs/phase-14j-hm-ct202-guarded-backup-only-no-rebuild.md:101:- `/srv/edge-controller/app/current`.
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:9:- VM200 backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17kt-companion-anki-active-session-controls-20260629T033227Z`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:52:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-16-fc-o45-e-cj-v-disabled-one-shot-deterministic-companion-worker-service-template.md:9:No frontend patch. No frontend deploy. No public /var/www mutation. No backend deploy. No CT203 runtime patch. No systemd install. No service start/stop/restart. No service enable. No DB write. No schema migration. No job mutation. No result insert. No model/helper/Ollama call. No scheduler/timer/persistent-worker activation. No CT/VM restart. No secret values printed.
+docs/phase-14j-ic-pvew-encryption-at-rest-design-no-apply.md:21:- PVEW: website-edge plus private controller/data candidates.
+docs/phase-14j-ic-pvew-encryption-at-rest-design-no-apply.md:23:- website-edge: public/static edge only.
+docs/phase-14j-ic-pvew-encryption-at-rest-design-no-apply.md:28:website-edge must not contain user DB files, controller DB files, controller secrets, encryption keys, Proxmox management credentials, private data mounts, model secrets, worker secrets, or queue/controller authority.
+docs/phase-14j-ic-pvew-encryption-at-rest-design-no-apply.md:30:If website-edge is exploited, the intended blast radius is public/static edge only, not user data or platform authority.
+docs/phase-14j-ic-pvew-encryption-at-rest-design-no-apply.md:34:No key in ChatGPT, repo, Source files, APC_LAST_OUTPUT, terminal output, website-edge, public route config, Cloudflare Worker code, or tunnel config.
+docs/phase-14j-ic-pvew-encryption-at-rest-design-no-apply.md:44:Before real migration, define target CT IDs, storage volume, encryption method, unlock procedure, encrypted backup behavior, restore rehearsal, website-edge isolation checks, rollback path, exact mutation commands, and an explicit real-mutation approval boundary.
+docs/stage-8l-disabled-study-router-shadow-read-observation-call.md:7:- `frontend/wrapper-ui/app.js`
+docs/stage-8l-disabled-study-router-shadow-read-observation-call.md:8:- `frontend/wrapper-ui/index.html`
+docs/stage-16-fc-o45-e-ca-study-companion-last-message-mvp.md:17:- public /var/www mutation
+docs/stage-16-fc-o45-e-ca-study-companion-last-message-mvp.md:27:- nginx/cloudflared/sshd mutation
+docs/stage-16-fc-o45-e-ca-study-companion-last-message-mvp.md:59:frontend/wrapper-ui/app.js
+docs/phase-14k-d-public-path-hardening-validation.md:9:Phase 14K-C applied the approved VM200 -> CT203 public-path hardening.
+docs/phase-14k-d-public-path-hardening-validation.md:16:- VM200 remained running.
+docs/phase-14k-d-public-path-hardening-validation.md:20:- VM200 local wrapper route `/system/status` is healthy on `127.0.0.1:18080`.
+docs/phase-14k-d-public-path-hardening-validation.md:21:- VM200 local wrapper route `/api/system/status` is healthy on `127.0.0.1:18080`.
+docs/phase-14k-d-public-path-hardening-validation.md:35:The public `/api/system/status` route now returns platform status JSON with overall state `online` and node entries including PVEW, VM200, CT203, and CT204.
+docs/phase-14k-d-public-path-hardening-validation.md:37:## VM200 route-map note
+docs/phase-14k-d-public-path-hardening-validation.md:41:Validated on VM200:
+docs/phase-14k-d-public-path-hardening-validation.md:48:Local port 80 on VM200 is not the route used for the wrapper validation and may return default-site 404 responses. That is not treated as the public wrapper path.
+docs/phase-14k-d-public-path-hardening-validation.md:60:- VM200 nginx is active and config test passes.
+docs/phase-14k-d-public-path-hardening-validation.md:61:- VM200 cloudflared is active.
+docs/phase-14k-d-public-path-hardening-validation.md:62:- VM200 compatibility snippet contains `location = /api/system/status`.
+docs/phase-14k-d-public-path-hardening-validation.md:64:- `/srv/apc-private-data` is not mounted.
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:1:# Phase 14J-MO — Post-Targeted VM200 Wrapper App Deploy Public Regression Read-Only
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:7:This phase records a read-only public regression checkpoint after Phase 14J-MN targeted VM200 wrapper `app.js` deployment.
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:11:- Phase: 14J-MN — Targeted VM200 Wrapper App Asset Deploy.
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:13:- Tag: `controller-phase-14j-mn-retry-deploy-vm200-wrapper-app-asset-only-target-var-www-apc-wrapper-local-2026-06-18`.
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:14:- Result: `PASS_PHASE_14J_MN_RETRY_DEPLOY_VM200_WRAPPER_APP_ASSET_ONLY_TARGET_VAR_WWW_APC_WRAPPER_LOCAL_DONE`.
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:35:- `storage_mountpoint=/srv/apc-private-data`
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:41:- VM200 live wrapper app path: `/var/www/apc-wrapper-local/app.js`
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:42:- VM200 live wrapper index path: `/var/www/apc-wrapper-local/index.html`
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:47:- VM200 remains public/static only.
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:57:No SSH connection, no VM200 write, no qemu guest-agent operation, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/phase-14j-mo-post-targeted-vm200-wrapper-app-deploy-public-regression-read-only.md:61:`PASS_PHASE_14J_MO_POST_TARGETED_VM200_WRAPPER_APP_DEPLOY_PUBLIC_REGRESSION_READ_ONLY_DONE`
+docs/phase-14j-ko-fresh-ct203-db-backup-to-encrypted-storage.md:19:- `/srv/apc-private-data/ct204/backups/ct203-controller/edge_queue_ct203_backup_20260618T185019Z_head-8044621.sqlite3`
+docs/phase-14j-ko-fresh-ct203-db-backup-to-encrypted-storage.md:23:- `/srv/apc-private-data/ct204/backups/ct203-controller/edge_queue_ct203_backup_20260618T185019Z_head-8044621.sqlite3.manifest`
+docs/phase-14j-ko-fresh-ct203-db-backup-to-encrypted-storage.md:30:- Encrypted storage mount was present at `/srv/apc-private-data`.
+docs/phase-14j-ko-fresh-ct203-db-backup-to-encrypted-storage.md:31:- VM200 remained running.
+docs/stage-17k-z-r8j-r2-route-authority-confirmation-no-mutation.md:8:Confirm which layer should control the `buddieswhostudy.com` cutover before any DNS, tunnel, nginx, or app mutation.
+docs/stage-17k-z-r8j-r2-route-authority-confirmation-no-mutation.md:15:- optional VM200 SSH read-only config inspection;
+docs/stage-17k-z-r8j-r2-route-authority-confirmation-no-mutation.md:28:- write VM200 files;
+docs/stage-17k-z-r8j-r2-route-authority-confirmation-no-mutation.md:32:- restart nginx/cloudflared;
+docs/stage-17k-z-r8j-r2-route-authority-confirmation-no-mutation.md:48:If `buddieswhostudy.com` and `www.buddieswhostudy.com` already serve the closed-beta app and return `403 closed_beta_signup_disabled` for registration, then DNS mutation may already be unnecessary.
+docs/stage-17k-z-r8j-r2-route-authority-confirmation-no-mutation.md:54:- adding VM200 nginx server names;
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:33:## VM200 backup
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:97:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-16-e3p-d-r7-completion-recovery-docs-no-rerun.md:82:- No Cloudflare, DNS, tunnel, nginx, or public route mutation.
+docs/stage-16-fc-o45-e-ao-browser-job132-queue-worker-e2e.md:49:- NO nginx/cloudflared/storage mutation.
+docs/stage-16-fc-o45-e-ao-browser-job132-queue-worker-e2e.md:121:NO nginx/cloudflared/storage mutation
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:1:# Phase 14J-MG — VM200 QGA Preflight Blocker Read-Only Diagnostic
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:7:This phase records the blocked Phase 14J-MF deployment retry and performs a read-only PVEW/VM200 diagnostic to identify why the VM200 qemu guest-agent preflight failed.
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:18:The approved Phase 14J-MF deploy retry reached PVEW as root, but stopped before VM200 mutation:
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:24:- `pvew_ssh_preflight_stderr=FAIL: qm/qemu guest-agent preflight failed for VM200`
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:27:No VM200 write, qemu guest-agent mutation, frontend deploy, service restart/reload, Cloudflare/DNS/tunnel change, DB mutation, storage mutation, CT204 start, or PVESO wake/start occurred.
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:43:## Read-only PVEW/VM200 diagnostic evidence
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:60:No VM200 write, no qemu guest-agent mutation, no guest exec mutation, no SSH config mutation, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/phase-14j-mg-vm200-qga-preflight-blocker-read-only-diagnostic.md:64:`PASS_PHASE_14J_MG_VM200_QGA_PREFLIGHT_BLOCKER_READ_ONLY_DIAGNOSTIC_DONE`
+docs/stage-16-fc-o45-e-bq-r3-recover-job571-via-docker-ollama-model-proof.md:51:- NO public `/var/www` mutation.
+docs/stage-16-fc-o45-e-bq-r3-recover-job571-via-docker-ollama-model-proof.md:60:- NO nginx/cloudflared/sshd config mutation.
+docs/stage-16-fc-o45-e-bq-r3-recover-job571-via-docker-ollama-model-proof.md:89:NO public /var/www mutation
+docs/stage-16-fc-o45-e-bq-r3-recover-job571-via-docker-ollama-model-proof.md:98:NO nginx/cloudflared/sshd config mutation
+docs/stage-16-companion-browser-voice-r3b-fix.md:21:- Repo mirror patch: `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js`
+docs/stage-16-companion-browser-voice-r3b-fix.md:22:- Repo mirror cachebust: `frontend/wrapper-ui/apc-wrapper-local/index.html`
+docs/stage-16-companion-browser-voice-r3b-fix.md:23:- Live VM200 static patch only
+docs/stage-16-fc-o45-e-ck-u-read-only-cleanup-status-taxonomy.md:15:No frontend patch, no frontend deploy, no public /var/www mutation, no source mutation, no commit, no tag, no push, no backend deploy, no CT203 runtime patch, no DB write, no schema migration, no job mutation, no result insert, no service start/stop/restart, no service enable, no timer install/enable/start, no selector/manual-wrapper/helper invocation, no model/helper/Ollama call, no scheduler/timer/persistent-worker activation, no CT/VM restart, no package install, and no secret values printed.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:27:- NO nginx/cloudflared/storage mutation.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:185:NO nginx/cloudflared/storage mutation
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:358:frontend/study-ui/app.js:1598:        safeNavigate(`${ACCOUNT_LOGIN}?next=${encodeURIComponent("https://alexhartel.com/study")}`, "window.location.href assignment");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:435:frontend/study-ui/index.html:24:        <a class="app-shell-link nav-link" href="https://alexhartel.com/study">Study</a>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:469:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:8:  <link id="studyPreviewStyles" rel="stylesheet" href="/study/styles.css?v=20260611121619" disabled />
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:470:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:14:      <span class="brand-mark helper-logo" title="Study Companion Helper">
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:471:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:15:        <svg viewBox="0 0 64 64" role="img" aria-label="Study Companion Helper logo">
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:472:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:25:      <a href="/study" data-route="/study">Study</a>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:473:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1364:   Keeps Study/Admin/System/Credits route styling consistent.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:474:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1487:body:not([data-current-route="/study"]) header a[data-route="/study"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:475:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1488:body:not([data-current-route="/study"]) .topbar a[data-route="/study"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:476:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1489:body:not([data-current-route="/study"]) .main-nav a[data-route="/study"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:477:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1490:body:not([data-current-route="/study"]) .route-nav a[data-route="/study"] {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:478:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1532:   Study should visually match the shared wrapper pages.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:479:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1533:   This overrides old Study-preview-only visual drift without
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:480:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1534:   introducing a separate Study page theme.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:481:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1537:body[data-current-route="/study"] .brand-mark,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:482:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1538:body[data-current-route="/study"] .helper-logo,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:483:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1539:body[data-current-route="/study"] .logo-only .brand-mark {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:484:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1544:body[data-current-route="/study"] .system-section,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:485:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1545:body[data-current-route="/study"] .summary-box,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:486:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1546:body[data-current-route="/study"] .summary-card,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:487:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1547:body[data-current-route="/study"] .feature-card {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:488:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1551:body[data-current-route="/study"] .summary-box,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:489:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1552:body[data-current-route="/study"] .summary-card,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:490:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1553:body[data-current-route="/study"] .feature-card,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:491:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1554:body[data-current-route="/study"] .clean-card,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:492:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1555:body[data-current-route="/study"] .study-card {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:493:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1561:body[data-current-route="/study"] h1,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:494:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1562:body[data-current-route="/study"] h2,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:495:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1563:body[data-current-route="/study"] h3,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:496:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1564:body[data-current-route="/study"] .eyebrow {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:497:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1571:   Study partial must not override shared wrapper logo/header color.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:498:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1574:body[data-current-route="/study"] .brand,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:499:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1575:body[data-current-route="/study"] .brand *,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:500:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1576:body[data-current-route="/study"] .brand-mark,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:501:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1577:body[data-current-route="/study"] .brand-logo,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:502:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1578:body[data-current-route="/study"] .brand-logo *,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:503:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1579:body[data-current-route="/study"] .logo-only,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:504:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1580:body[data-current-route="/study"] .logo-only *,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:505:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1581:body[data-current-route="/study"] .helper-logo,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:506:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1582:body[data-current-route="/study"] .helper-logo *,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:507:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1583:body[data-current-route="/study"] svg {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:508:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1593:   Study uses the same single wrapper stylesheet as every page.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:509:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1594:   Force any Study-rendered/logo-adjacent elements back to the
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:510:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1598:body[data-current-route="/study"] .topbar,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:511:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1599:body[data-current-route="/study"] .topbar *,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:512:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1600:body[data-current-route="/study"] .brand,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:513:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1601:body[data-current-route="/study"] .brand *,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:514:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1602:body[data-current-route="/study"] .logo-only,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:515:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1603:body[data-current-route="/study"] .logo-only *,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:516:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1604:body[data-current-route="/study"] .brand-mark,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:517:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1605:body[data-current-route="/study"] .brand-logo,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:518:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1606:body[data-current-route="/study"] .helper-logo {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:519:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1614:body[data-current-route="/study"] .topbar svg,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:520:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1615:body[data-current-route="/study"] .brand svg,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:521:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1616:body[data-current-route="/study"] .logo-only svg,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:522:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1617:body[data-current-route="/study"] .brand-mark svg,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:523:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1618:body[data-current-route="/study"] .brand-logo svg {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:524:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1666:body[data-current-route="/study"] .topbar,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:525:frontend/wrapper-ui/styles.css.bak-stage5o17-study-shared-style-2026-06-11-120210:1364:   Keeps Study/Admin/System/Credits route styling consistent.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:526:frontend/wrapper-ui/styles.css.bak-stage5o17-study-shared-style-2026-06-11-120210:1487:body:not([data-current-route="/study"]) header a[data-route="/study"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:527:frontend/wrapper-ui/styles.css.bak-stage5o17-study-shared-style-2026-06-11-120210:1488:body:not([data-current-route="/study"]) .topbar a[data-route="/study"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:528:frontend/wrapper-ui/styles.css.bak-stage5o17-study-shared-style-2026-06-11-120210:1489:body:not([data-current-route="/study"]) .main-nav a[data-route="/study"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:529:frontend/wrapper-ui/styles.css.bak-stage5o17-study-shared-style-2026-06-11-120210:1490:body:not([data-current-route="/study"]) .route-nav a[data-route="/study"] {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:530:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:33:let gpuSessions = null;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:531:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:50:  token: localStorage.getItem("edgeStudyToken") || "",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:532:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:56:// can decide whether /study, /chat, /companion, /calendar, and /profile should proxy
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:533:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:118:      `edgeStudyToken=${encodeURIComponent(authState.token)}; Path=/; Max-Age=2592000; SameSite=Lax${secure}`;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:534:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:121:      `edgeStudyToken=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:535:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:129:const PRIVATE_APP_ROUTE_SET = new Set(["/study-wrapper-preview", "/study", "/chat", "/companion", "/calendar", "/profile"]);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:536:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:155:      "Practice smarter with study tools, guided review, and an AI companion designed to help you focus on what matters most.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:537:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:157:      ["Study", "Create decks, review cards, track progress, and focus on cards that need more practice.", "/study"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:538:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:158:      ["Companion", "Use Companion for general conversation, study help, explanations, and supportive conversation.", "/companion"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:539:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:164:      ["AI support", "The companion can eventually use study history, profile settings, and calendar context to support learning."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:540:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:170:  "/study-wrapper-preview": {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:541:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:172:    title: "Study Wrapper Preview",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:542:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:173:    subtitle: "Preview of the Study dashboard inside the shared wrapper layout. Study behavior is not wired here yet.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:543:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:177:  "/study": {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:544:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:179:    title: "Study",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:545:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:181:      "Study helps users create decks, add cards, review material, track progress, and prioritize what needs more practice.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:546:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:183:      ["Decks and cards", "Create study decks and add questions, answers, and explanations."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:547:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:186:      ["Future companion support", "The companion can help grade answers and explain difficult concepts."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:548:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:195:      "Chat remains a compatibility alias while Companion becomes the main AI surface for conversation, study help, explanations, and supportive support.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:549:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:198:      ["Study-aware direction", "Future stages will add study session controls, deck/card tools, and answer checking."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:550:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:208:      "Companion is the main AI surface for conversation, studying, explanations, practice, and future personalized support.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:551:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:211:      ["Study helper", "Future stages will let Companion start study sessions, select decks, read questions, and grade answers."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:552:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:212:      ["Context aware", "Future versions can use profile, calendar, study, and file context with permission."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:553:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:310: * - /me = controller-owned current user/session
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:554:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:312: * - /api/study/* = laptop controller-owned Study API
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:555:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:317: * - /gpu/* = controller-owned GPU credit reservation and session management
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:556:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:524:  if (p.includes("/session/presence")) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:557:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:543:      "/gpu/sessions",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:558:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:550:    p.includes("/session/") ||
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:559:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:873:  const study = serviceById("study-api");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:560:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:877:      id: "study-api",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:561:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:878:      name: "Study API",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:562:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:879:      state: normalizeApiState(study, "online"),
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:563:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:880:      detail: normalizeApiDetail(study, "Decks, cards, reviews, stats, and study progress are active."),
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:564:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:886:      detail: "Companion chat, study grading, and context support are active.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:565:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1059:// sessions, start/stop/cleanup.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:566:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1137:          <p>Quotes expire before any real provider session starts.</p>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:567:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1169:        id="gpuStartSessionBtn"
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:568:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1175:        Start mock session
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:569:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1218:async function quoteMockGpuSession() {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:570:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1304:async function loadGpuSessions() {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:571:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1305:  gpuSessions = null;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:572:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1312:    gpuSessions = await api("/gpu/sessions", {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:573:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1316:    gpuSessions = null;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:574:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1320:function renderGpuSessionsList() {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:575:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1321:  const sessions = gpuSessions?.sessions || [];
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:576:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1323:  if (!sessions.length) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:577:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1324:    return `<div class="empty-list">No GPU sessions yet.</div>`;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:578:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1329:      ${sessions.slice(0, 8).map((session) => `
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:579:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1332:            <strong>${safeText(session.gpu_name || session.gpu_id || "GPU session")}</strong>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:580:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1334:              ${safeText(session.status)} ·
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:581:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1335:              reserved ${formatNumber(session.credits_reserved || 0)} paid credits ·
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:582:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1336:              charged ${formatNumber(session.final_credits_charged || 0)} ·
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:583:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1337:              billable ${formatNumber(session.billable_minutes || 0)} min
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:584:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1342:            <b>${safeText(session.status)}</b>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:585:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1343:            ${session.status === "running" ? `
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:586:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1347:                data-stop-gpu-session="${safeText(session.session_token || "")}"
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:587:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1355:                data-cleanup-gpu-session="${safeText(session.session_token || "")}"
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:588:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1367:async function startMockGpuSession(quoteToken, reservationToken) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:589:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1391:    await loadGpuSessions();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:590:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1393:    alert(result.detail || "Mock GPU session started.");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:591:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1394:    forceRefreshAfterOperation("gpu-session-started");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:592:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1401:async function cleanupMockGpuSession(sessionToken) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:593:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1407:  if (!sessionToken) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:594:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1408:    alert("Missing session token.");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:595:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1412:  const ok = confirm("Force-clean this stuck mock GPU session? This is for development testing only.");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:596:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1416:    const result = await api("/gpu/cleanup-mock-session", {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:597:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1419:        session_token: sessionToken,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:598:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1425:    await loadGpuSessions();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:599:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1431:    alert(result.gpu_session_cleanup?.detail || "Mock GPU session cleaned up.");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:600:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1432:    forceRefreshAfterOperation("gpu-session-cleaned");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:601:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1439:async function stopMockGpuSession(sessionToken) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:602:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1445:  if (!sessionToken) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:603:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1446:    alert("Missing session token.");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:604:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1450:  const ok = confirm("Stop this mock GPU session and commit actual used credits?");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:605:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1454:    const result = await api("/gpu/stop-session", {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:606:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1457:        session_token: sessionToken,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:607:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1463:    await loadGpuSessions();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:608:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1469:    alert(result.gpu_session?.detail || "Mock GPU session stopped.");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:609:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1470:    forceRefreshAfterOperation("gpu-session-stopped");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:610:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1738:        <p>Study, Companion, Profile, Calendar, Images, and related APIs.</p>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:611:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2257:          image generation, and future cloud GPU sessions.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:612:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2427:      <h2>External GPU sessions</h2>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:613:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2429:        Quote mock cloud GPU sessions and reserve paid credits. Free/local credits cannot be used here.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:614:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2456:          Log in to quote and reserve external GPU sessions.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:615:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2462:      <h2>GPU session history</h2>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:616:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2464:        Mock GPU session history. Running sessions can be stopped to commit actual used credits and release unused paid credits.
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:617:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2466:      ${loggedIn ? renderGpuSessionsList() : `<div class="notice">Log in to view GPU sessions.</div>`}
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:618:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2483:            <li>Study summaries</li>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:619:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2492:          <p>For regular study and companion use.</p>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:620:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2586:function setStudyWrapperPreviewReadOnly() {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:621:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2587:  const root = document.querySelector(".study-wrapper-preview");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:622:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2591:    const isSafePreviewSelect = el.id === "deckSelect";
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:623:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2592:    const isCreateDeckControl =
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:624:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2593:      el.id === "deckTitleInput" ||
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:625:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2594:      el.id === "deckDescriptionInput" ||
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:626:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2595:      el.closest?.("#deckForm");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:627:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2599:      el.id === "answerInput" ||
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:628:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2609:    if (isSafePreviewSelect || isCreateDeckControl || isCreateCardControl || isReviewQueueControl) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:629:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2612:      el.title = "Preview-only deck switching. Editing and review actions are still disabled.";
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:630:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2618:    el.title = "Preview only. Use the live Study page for editing and review actions.";
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:631:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2622:  if (firstPanel && !root.querySelector("[data-study-preview-notice]")) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:632:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2625:    notice.setAttribute("data-study-preview-notice", "true");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:633:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2628:      <p>This shared-layout preview is read-only. Use <a href="/study">the live Study page</a> to create decks, add cards, or review cards.</p>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:634:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2635:function studyPreviewSetText(id, value) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:635:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2640:function studyPreviewEscape(value) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:636:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2650:function studyPreviewNormalizeDifficulty(card) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:637:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2664:  const wrongStreak = Number(card?.wrong_streak ?? card?.wrongStreak ?? 0);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:638:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2668:  if (wrongStreak >= 2) return "hard";
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:639:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2674:function studyPreviewPercent(value) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:640:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2678:function studyPreviewCardArray(data) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:641:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2687:function renderStudyWrapperPreviewDeckSummary(deck) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:642:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2688:  const deckSummary = document.getElementById("deckSummary");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:643:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2689:  if (!deckSummary) return;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:644:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2691:  if (!deck) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:645:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2692:    deckSummary.textContent = "No deck selected.";
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:646:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2696:  const deckAccuracy = typeof deck.accuracy === "number"
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:647:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2697:    ? `${Math.round(deck.accuracy * 100)}% accuracy`
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:648:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2700:  deckSummary.innerHTML = `
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:649:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2701:    <strong>${studyPreviewEscape(deck.title)}</strong>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:650:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2702:    <p>${studyPreviewEscape(deck.description || "")}</p>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:651:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2703:    <small>${Number(deck.card_count || 0)} cards · ${Number(deck.total_reviews || 0)} reviews · ${deckAccuracy}</small>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:652:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2708:async function createStudyWrapperPreviewDeck(event) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:653:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2711:  const titleInput = document.getElementById("deckTitleInput");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:654:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2712:  const descriptionInput = document.getElementById("deckDescriptionInput");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:655:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2719:    alert("Enter a deck title first.");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:656:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2724:    if (statusText) statusText.textContent = "Creating deck...";
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:657:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2726:    const res = await fetch("/api/study/decks", {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:658:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2734:    if (!res.ok) throw new Error(`/api/study/decks HTTP ${res.status}: ${text.slice(0, 160)}`);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:659:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2737:    const newDeckId = data?.deck?.id;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:660:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2742:    await hydrateStudyWrapperPreview(newDeckId);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:661:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2744:    if (statusText) statusText.textContent = "Deck created";
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:662:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2746:    console.error("[study-wrapper-preview] create deck failed", error);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:663:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2747:    if (statusText) statusText.textContent = "Could not create deck";
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:664:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2748:    alert(`Could not create deck: ${error.message || error}`);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:665:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2754:const studyPreviewReviewState = {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:666:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2761:async function submitStudyWrapperPreviewReview(cardId, wasCorrect) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:667:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2763:  const deckSelect = document.getElementById("deckSelect");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:668:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2764:  const deckId = String(deckSelect?.value || "").trim();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:669:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2769:    const res = await fetch(`/api/study/cards/${encodeURIComponent(cardId)}/reviews`, {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:670:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2774:        was_correct: Boolean(wasCorrect),
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:671:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2781:      throw new Error(`/api/study/cards/${cardId}/reviews HTTP ${res.status}: ${text.slice(0, 160)}`);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:672:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2784:    studyPreviewReviewState.currentIndex += 1;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:673:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2785:    studyPreviewReviewState.showingAnswer = false;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:674:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2787:    if (deckId) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:675:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2788:      await hydrateStudyWrapperPreview(deckId);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:676:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2791:    renderStudyWrapperPreviewReviewCard();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:677:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2795:    console.error("[study-wrapper-preview] review submit failed", error);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:678:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2802:function renderStudyWrapperPreviewReviewCard() {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:679:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2806:  const card = studyPreviewReviewState.queue[studyPreviewReviewState.currentIndex];
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:680:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2817:  const answerBlock = studyPreviewReviewState.showingAnswer
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:681:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2821:        <p>${studyPreviewEscape(card.answer || "No answer saved.")}</p>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:682:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2822:        ${card.explanation ? `<p class="muted">${studyPreviewEscape(card.explanation)}</p>` : ""}
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:683:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2829:      <strong>${studyPreviewEscape(card.question || "Untitled card")}</strong>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:684:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2831:        ${studyPreviewEscape(card.performance_bucket || card.difficulty || "new")}
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:685:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2837:    ${answerBlock}
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:686:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2840:      ${studyPreviewReviewState.showingAnswer ? `
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:687:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2841:        <button class="secondary" type="button" id="studyPreviewWrongBtn">Wrong</button>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:688:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2842:        <button class="primary-btn" type="button" id="studyPreviewCorrectBtn">Correct</button>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:689:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2844:        <button class="primary-btn" type="button" id="studyPreviewShowAnswerBtn">Show Answer</button>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:690:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2846:      <button class="secondary" type="button" id="studyPreviewSkipCardBtn">Skip</button>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:691:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2850:  document.getElementById("studyPreviewShowAnswerBtn")?.addEventListener("click", () => {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:692:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2851:    studyPreviewReviewState.showingAnswer = true;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:693:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2852:    renderStudyWrapperPreviewReviewCard();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:694:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2855:  document.getElementById("studyPreviewSkipCardBtn")?.addEventListener("click", () => {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:695:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2856:    studyPreviewReviewState.currentIndex += 1;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:696:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2857:    studyPreviewReviewState.showingAnswer = false;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:697:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2858:    renderStudyWrapperPreviewReviewCard();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:698:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2861:  document.getElementById("studyPreviewWrongBtn")?.addEventListener("click", () => {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:699:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2862:    submitStudyWrapperPreviewReview(card.id, false);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:700:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2865:  document.getElementById("studyPreviewCorrectBtn")?.addEventListener("click", () => {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:701:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2866:    submitStudyWrapperPreviewReview(card.id, true);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:702:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2870:async function loadStudyWrapperPreviewReviewQueue() {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:703:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2871:  const deckSelect = document.getElementById("deckSelect");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:704:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2875:  const deckId = String(deckSelect?.value || "").trim();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:705:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2876:  if (!deckId) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:706:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2877:    alert("Select or create a deck first.");
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:707:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2886:    const res = await fetch(`/api/study/decks/${encodeURIComponent(deckId)}/review-queue?mode=${encodeURIComponent(mode)}&limit=10`, {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:708:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2893:      throw new Error(`/api/study/decks/${deckId}/review-queue HTTP ${res.status}: ${text.slice(0, 160)}`);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:709:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2897:    studyPreviewReviewState.queue = Array.isArray(data.cards) ? data.cards : [];
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:710:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2898:    studyPreviewReviewState.currentIndex = 0;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:711:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2899:    studyPreviewReviewState.showingAnswer = false;
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:712:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2902:    studyPreviewSetText("bucketNew", String(buckets.new || 0));
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:713:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2903:    studyPreviewSetText("bucketHard", String(buckets.hard || 0));
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:714:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2904:    studyPreviewSetText("bucketMedium", String(buckets.medium || 0));
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:715:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2905:    studyPreviewSetText("bucketEasy", String(buckets.easy || 0));
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:716:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2907:    renderStudyWrapperPreviewReviewCard();
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:856:frontend/study-ui/_headers:2:  Content-Security-Policy: default-src 'self'; connect-src 'self' https://alexhartel.com https://companion.alexhartel.com https://calendar.alexhartel.com https://profile.alexhartel.com; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://alexhartel.com
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:879:frontend/study-ui/study-content.partial.html:71:        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:882:frontend/study-ui/index.html:25:        <a class="app-shell-link nav-link" href="https://alexhartel.com/companion">Companion</a>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:892:frontend/study-ui/index.html:101:        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:895:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:14:      <span class="brand-mark helper-logo" title="Study Companion Helper">
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:896:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:15:        <svg viewBox="0 0 64 64" role="img" aria-label="Study Companion Helper logo">
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:897:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:26:      <a href="/companion" data-route="/companion">Companion</a>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:898:frontend/wrapper-ui/styles.css.bak-stage5o33-profile-route-fix-2026-06-11-123729:1667:body[data-current-route="/companion"] .topbar,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:899:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:15:function cleanCompanionErrorMessage(value) {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:900:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:56:// can decide whether /study, /chat, /companion, /calendar, and /profile should proxy
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:901:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:62:  if (typeof cleanCompanionErrorMessage === "function") {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:902:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:63:    return cleanCompanionErrorMessage(text);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:903:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:129:const PRIVATE_APP_ROUTE_SET = new Set(["/study-wrapper-preview", "/study", "/chat", "/companion", "/calendar", "/profile"]);
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:904:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:155:      "Practice smarter with study tools, guided review, and an AI companion designed to help you focus on what matters most.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:905:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:158:      ["Companion", "Use Companion for general conversation, study help, explanations, and supportive conversation.", "/companion"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:906:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:159:      ["Profile", "Manage preferences, permissions, account settings, and future companion personalization.", "/profile"],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:907:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:164:      ["AI support", "The companion can eventually use study history, profile settings, and calendar context to support learning."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:908:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:186:      ["Future companion support", "The companion can help grade answers and explain difficult concepts."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:909:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:193:    title: "Companion",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:910:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:195:      "Chat remains a compatibility alias while Companion becomes the main AI surface for conversation, study help, explanations, and supportive support.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:911:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:197:      ["Companion", "General local-first AI conversation through the existing queued worker path."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:912:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:199:      ["Compatibility", "/chat stays available for old links while /companion is the primary route."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:913:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:204:  "/companion": {
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:914:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:206:    title: "Companion",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:915:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:208:      "Companion is the main AI surface for conversation, studying, explanations, practice, and future personalized support.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:916:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:210:      ["General conversation", "Use Companion for normal local-first AI conversation."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:917:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:211:      ["Study helper", "Future stages will let Companion start study sessions, select decks, read questions, and grade answers."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:918:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:213:      ["Helpful boundaries", "Companion should stay supportive, ask when unsure, and use safety-aware boundaries."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:919:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:239:      ["Permissions", "Control what data the companion and tools are allowed to use."],
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:920:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:249:      "Credits control access to higher-cost features like AI jobs, companion usage, image generation, storage, and future premium tools.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:921:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:313: * - /api/companion/* = laptop controller-owned Companion API
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:922:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:883:      id: "companion-api",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:923:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:884:      name: "Companion API",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:924:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:886:      detail: "Companion chat, study grading, and context support are active.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:925:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:904:      detail: "Future ComfyUI-backed image generation for companion images and user-requested visuals.",
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:926:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:1738:        <p>Study, Companion, Profile, Calendar, Images, and related APIs.</p>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:927:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2256:          Credits are the platform currency for companion usage, AI jobs, storage, RAG indexing,
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:928:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2300:            <p>Used for uploaded files, future RAG data, generated assets, and companion memory.</p>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:929:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2484:            <li>Basic companion usage</li>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:930:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2492:          <p>For regular study and companion use.</p>
+docs/stage-16-fc-o45-e-aq-companion-study-tools-endpoint-routing-contract.md:931:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:2496:            <li>More companion messages</li>
+docs/stage-17e-profile-anki-manifest-paste.md:13:- deploy to VM200
+docs/stage-17e-profile-anki-manifest-paste.md:14:- mutate `/var/www`
+docs/stage-17e-profile-anki-manifest-paste.md:15:- restart nginx or cloudflared
+docs/stage-17e-profile-anki-manifest-paste.md:29:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js`
+docs/stage-17e-profile-anki-manifest-paste.md:30:- `frontend/wrapper-ui/apc-wrapper-local/index.html`
+docs/stage-16-fc-o45-e-ck-r-guarded-mock-companion-backlog-cleanup-plan.md:84:No frontend patch, no frontend deploy, no public /var/www mutation, no backend deploy, no CT203 runtime patch, no systemd install, no service start/stop/restart, no service enable, no timer install/enable/start, no DB write, no schema migration, no job mutation, no result insert, no model/helper/Ollama call, no selector/manual-wrapper/helper invocation, no scheduler/timer/persistent-worker activation, no CT/VM restart, and no secret values printed.
+docs/stage-16-fc-o45-e-ck-k-read-only-eligible-companion-job-reporter.md:9:No frontend patch. No frontend deploy. No public /var/www mutation. No backend deploy. No CT203 runtime patch. No systemd install. No service start/stop/restart. No service enable. No timer install/enable/start. No DB write. No job mutation. No result insert. No model/helper/Ollama call. No scheduler/timer/persistent-worker activation. No CT/VM restart. No secret values printed.
+docs/phase-14j-mk-vm200-guest-exec-output-shape-read-only.md:1:# Phase 14J-MK — VM200 Guest Exec Output Shape Read-Only
+docs/phase-14j-mk-vm200-guest-exec-output-shape-read-only.md:7:This phase inspects the output shape of VM200 qemu guest exec using only `/bin/true`.
+docs/phase-14j-mk-vm200-guest-exec-output-shape-read-only.md:56:No VM200 app.js write, no frontend deploy, no index.html mutation, no nginx config mutation, no cloudflared config mutation, no Cloudflare/DNS/tunnel mutation, no service restart/reload/enable/start/stop, no controller deploy, no CT203 source deploy, no DB mutation, no DB backup creation, no DB restore/import/migration, no storage mutation, no storage unlock/mount/format/key/crypttab/fstab mutation, no CT204 start, no CT204 data authority change, no CT/VM config mutation, no Tailscale config/auth mutation, and no PVESO wake/start occurred.
+docs/phase-14j-mk-vm200-guest-exec-output-shape-read-only.md:60:`PASS_PHASE_14J_MK_VM200_GUEST_EXEC_OUTPUT_SHAPE_READ_ONLY_DONE`
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:20:BW deploys the BV stable Companion result poller to the public VM200 wrapper UI.
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:37:- Deployed `frontend/wrapper-ui/app.js` to VM200 public static `app.js` over the existing restricted static deploy path.
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:60:- NO nginx/cloudflared/sshd config mutation.
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:61:- NO storage mutation outside approved VM200 static deploy backup/write.
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:79:ALLOWED: deploy frontend/wrapper-ui/app.js to VM200 public static app.js
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:82:ALLOWED: VM200 static backup created by restricted deploy helper
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:96:NO nginx/cloudflared/sshd config mutation
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:97:NO storage mutation outside approved VM200 static deploy backup/write
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:120:=== deploy over PVEW -> VM200 restricted static path ===
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:130:backup_sha256 aac02cc376e6daaa8ac21b52e84ff21f46878500b420c55e71418e5d2a621e9e  /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T031651Z/app.js
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:131:backup_sha256 03b1e3e152b7ba70364e515096c079b61572d23f12ae626436296ee8f6714081  /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T031651Z/styles.css
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:132:backup_sha256 582c9f60fc5da276bee8594aea6a958fdb3602cd8fa37bd66ee3540aeb618cff  /var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T031651Z/index.html
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:133:backup_dir=/var/www/apc-wrapper-local/apc-vm200-static-deploy-backup-20260625T031651Z
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:134:live_sha256 42d323a42c1f3213129b5454edfc986062c1838e86ae37c48743cf50199687b8  /var/www/apc-wrapper-local/app.js
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:135:live_sha256 03b1e3e152b7ba70364e515096c079b61572d23f12ae626436296ee8f6714081  /var/www/apc-wrapper-local/styles.css
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:136:live_sha256 21ff9e3ceefc41a52714e7996420edb054c946fdfc797d36b72c3ff735dd77f5  /var/www/apc-wrapper-local/index.html
+docs/stage-16-fc-o45-e-bw-deploy-companion-stable-result-poller-over-restricted-static-path.md:137:APC_VM200_STATIC_DEPLOY_WRAPPER_UI_PASS cache_bust=20260624fc045ebw
+docs/phase-14j-ln-ct203-backup-hardening-no-apply.md:20:- VM200 `website-edge` is public/static only.
+docs/phase-14j-ln-ct203-backup-hardening-no-apply.md:38:- Cloudflare, DNS, tunnel, nginx public route, or public cutover mutation;
+docs/phase-14j-ln-ct203-backup-hardening-no-apply.md:43:The near-term goal is to make CT203 recoverable without accidentally promoting CT204, weakening encrypted storage policy, or mixing public/static VM200 with private/controller data.
+docs/phase-14j-ln-ct203-backup-hardening-no-apply.md:100:- PVEW encrypted private storage mountpoint policy is `/srv/apc-private-data`.
+docs/stage-16-fc-o45-e-ck-i-selector-wrapper-runtime-proof.md:151:No frontend patch, no frontend deploy, no public /var/www mutation, no source mutation during runtime proof, no backend deploy, no CT203 backend runtime patch, no schema migration, no service enable, no timer install, no timer enable/start, no persistent-worker activation, no CT/VM restart, no package install, no model pull/download, no PVESO call, no Ollama/model endpoint call, and no secret values printed.
+docs/stage-17k-w-remove-anki-from-study-page.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:34:- NO nginx/cloudflared/storage mutation.
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:120:- nginx/cloudflared/storage mutation,
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:141:NO nginx/cloudflared/storage mutation
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:198:frontend/study-ui/study-content.partial.html:71:        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:200:frontend/study-ui/index.html:25:        <a class="app-shell-link nav-link" href="https://alexhartel.com/companion">Companion</a>
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:207:frontend/study-ui/index.html:101:        <a class="primary" href="https://alexhartel.com/companion">Open Full Companion</a>
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:209:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:14:      <span class="brand-mark helper-logo" title="Study Companion Helper">
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:210:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:15:        <svg viewBox="0 0 64 64" role="img" aria-label="Study Companion Helper logo">
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:211:frontend/wrapper-ui/index.html.bak-stage5o27-generic-public-gates-2026-06-11-121802:26:      <a href="/companion" data-route="/companion">Companion</a>
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:212:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:15:function cleanCompanionErrorMessage(value) {
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:213:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:62:  if (typeof cleanCompanionErrorMessage === "function") {
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:214:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:63:    return cleanCompanionErrorMessage(text);
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:215:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:158:      ["Companion", "Use Companion for general conversation, study help, explanations, and supportive conversation.", "/companion"],
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:216:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:159:      ["Profile", "Manage preferences, permissions, account settings, and future companion personalization.", "/profile"],
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:217:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:193:    title: "Companion",
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:218:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:195:      "Chat remains a compatibility alias while Companion becomes the main AI surface for conversation, study help, explanations, and supportive support.",
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:219:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:197:      ["Companion", "General local-first AI conversation through the existing queued worker path."],
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:220:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:206:    title: "Companion",
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:221:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:208:      "Companion is the main AI surface for conversation, studying, explanations, practice, and future personalized support.",
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:222:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:210:      ["General conversation", "Use Companion for normal local-first AI conversation."],
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:223:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:211:      ["Study helper", "Future stages will let Companion start study sessions, select decks, read questions, and grade answers."],
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:224:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:213:      ["Helpful boundaries", "Companion should stay supportive, ask when unsure, and use safety-aware boundaries."],
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:225:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:236:      "Profile will manage account settings, preferences, permissions, and personalization for the platform.",
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:226:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:313: * - /api/companion/* = laptop controller-owned Companion API
+docs/stage-16-fc-o45-e-ai-companion-persona-wrapper-contract.md:227:frontend/wrapper-ui/app.js.bak-stage5o33-profile-route-fix-2026-06-11-123729:884:      name: "Companion API",

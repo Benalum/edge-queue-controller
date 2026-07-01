@@ -1,0 +1,6 @@
+=== public live static pre-deploy probe ===
+200 / bytes=10611
+200 /privatepages/anki-import-local.js?v=stage17k-z-r11g-profile-anki-apkg-preview-source-20260701 bytes=10611
+200 /privatepages/profile-anki-import-bridge.js?v=stage17k-z-r11g-profile-anki-apkg-preview-source-20260701 bytes=10611
+200 /privatepages/profile-anki-preview-panel.js?v=stage17k-z-r11g-profile-anki-apkg-preview-source-20260701 bytes=10611
+200 /privatepages/profile-anki-preview-mount.js?v=stage17k-z-r11g-profile-anki-apkg-preview-source-20260701 bytes=10611

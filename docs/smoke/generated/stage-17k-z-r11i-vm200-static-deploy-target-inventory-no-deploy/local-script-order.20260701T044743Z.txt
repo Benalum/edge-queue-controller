@@ -1,0 +1,3 @@
+=== local index script load order ===
+{'/privatepages/anki-import-local.js': 10706, '/privatepages/profile-anki-import-bridge.js': 10827, '/privatepages/profile-anki-preview-panel.js': 10957, '/privatepages/profile-anki-preview-mount.js': 11087}
+PASS script order
