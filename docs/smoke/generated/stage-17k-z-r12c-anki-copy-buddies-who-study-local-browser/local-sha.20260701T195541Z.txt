@@ -1,0 +1,3 @@
+=== local shas ===
+e5785ae10397675d28c7eb8ad4b930768ea0502ad1451e8e7619295e86458bec  frontend/wrapper-ui/apc-wrapper-local/index.html
+a5362f70318ed84cf348e5568da1991c320708ed4de440ba47f73617c099e718  frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js

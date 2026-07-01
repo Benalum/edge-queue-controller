@@ -1,0 +1,6 @@
+=== backup and install two files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r12c-anki-copy-buddies-backup-20260701T195541Z
+e5785ae10397675d28c7eb8ad4b930768ea0502ad1451e8e7619295e86458bec  /var/www/apc-wrapper-local/index.html
+a5362f70318ed84cf348e5568da1991c320708ed4de440ba47f73617c099e718  /var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js
+R12C_VM200_TWO_FILE_DEPLOY_DONE

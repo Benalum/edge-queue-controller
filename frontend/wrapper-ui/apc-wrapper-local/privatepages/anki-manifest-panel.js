@@ -496,7 +496,7 @@
     return ''
       + '<section class="profile-card apc-anki-minimal-card" id="' + PANEL_ID + '-card">'
       + '  <h3>Anki</h3>'
-      + '  <p class="study-muted">Choose your Anki collection file. APC reads deck names and card counts locally in this browser.</p>'
+      + '  <p class="study-muted">Choose your Anki collection file. Buddies Who Study reads deck names and card counts locally in this browser.</p>'
       + renderAnkiFileHelpHtml()
       + (message ? '<p class="apc-anki-message">' + escapeHtml(message) + '</p>' : '')
       + '  <div class="profile-preference-row">'

@@ -1,0 +1,1 @@
+=== patch Anki card copy and index cache-bust ===

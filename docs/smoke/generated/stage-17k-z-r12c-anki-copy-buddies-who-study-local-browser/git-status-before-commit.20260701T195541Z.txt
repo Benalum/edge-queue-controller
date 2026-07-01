@@ -1,0 +1,5 @@
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+?? docs/smoke/generated/stage-17k-z-r12c-anki-copy-buddies-who-study-local-browser/
+?? docs/stage-17k-z-r12c-anki-copy-buddies-who-study-local-browser.md
+?? ops/smoke/check-stage-17k-z-r12c-anki-copy-buddies-who-study-local-browser.sh
