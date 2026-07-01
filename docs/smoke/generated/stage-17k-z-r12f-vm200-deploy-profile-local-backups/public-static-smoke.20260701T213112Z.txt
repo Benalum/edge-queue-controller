@@ -1,0 +1,5 @@
+=== public static smoke ===
+root_code=200 root_bytes=11585
+panel_code=200 panel_bytes=7735
+mount_code=200 mount_bytes=5956
+PASS public static R12F smoke

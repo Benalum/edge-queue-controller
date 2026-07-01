@@ -1,0 +1,7 @@
+=== backup and install three files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r12f-profile-local-backups-backup-20260701T213112Z
+428f771c102ed15f76adde13d0fb6a1ca468058175d96f992235d5f66a677020  /var/www/apc-wrapper-local/index.html
+91b4be60999be7656eab07b72beda1c04a9498a237255d9b80f4484b0f66aaae  /var/www/apc-wrapper-local/privatepages/profile-local-backups-panel.js
+3dab11d80d251a1193b1454b1112a3853712156dacc1535479d40392d29f97db  /var/www/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+R12F_VM200_THREE_FILE_DEPLOY_DONE
