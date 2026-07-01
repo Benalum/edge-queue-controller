@@ -1,0 +1,43 @@
+=== stage-17k-z-r9aa-record-live-header-auth-and-pending-signup-cleanup ===
+created_utc=20260701T003239Z
+local_head_before=ab1c60d
+origin_main_before=ab1c60d
+
+Scope:
+- Pulled current good VM200 static files into source.
+- Recorded R9W auth logout URL removal.
+- Recorded R9X header/login/brand repair.
+- Recorded R9Z-R2 pending signup cleanup verification.
+- No deploy.
+- No DB write.
+- No schema change.
+- No service restart.
+- No email send.
+- No signup open.
+- No Google OAuth.
+- No Google Drive API.
+
+Source verification:
+- index_auth_line=202:  <script src="/auth/auth.js?v=r9w-remove-logout-url-generator-20260701"></script>
+- index_header_line=132:  <script src="/header/header.js?v=r9x-restore-header-login-brand-20260701"></script>
+- auth_bad_logout_count=0
+- auth_clean_replace_count=1
+- header_r9v_count=0
+- brand_home_link_count=1
+- brand_static_div_count=0
+- old_brand_count=0
+
+DB verification:
+- route=direct_pvew
+- db_integrity=ok
+- pending_total=1
+- pending_target_remaining=0
+- app_users_total=2
+- app_user_alex=1
+- app_user_mirella=1
+
+Closed signup smoke:
+- register_code=403
+- register_marker=closed_beta_signup_disabled
+
+pass=true

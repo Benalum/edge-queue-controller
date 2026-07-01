@@ -1,0 +1,7 @@
+15000
+integrity=ok
+pending_total=1
+pending_target_remaining=0
+app_users_total=2
+app_user_alex=1
+app_user_mirella=1
