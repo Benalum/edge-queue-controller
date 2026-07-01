@@ -1,0 +1,44 @@
+{
+  "collectionSchema": "anki2",
+  "collectionModified": 1782880000,
+  "decks": [
+    {
+      "deckId": 111,
+      "name": "Biology",
+      "deckPath": "Biology::Chapter 1"
+    }
+  ],
+  "notes": [
+    {
+      "ankiNoteId": 123,
+      "guid": "r11b-guid-001",
+      "modelId": 456,
+      "noteTypeName": "Basic",
+      "fields": ["What is ATP?", "Energy currency of the cell"],
+      "tags": ["chapter1"],
+      "sortField": "What is ATP?",
+      "contentSha256": "fixture-note-hash"
+    }
+  ],
+  "cards": [
+    {
+      "ankiCardId": 789,
+      "ankiNoteId": 123,
+      "deckId": 111,
+      "deckPath": "Biology::Chapter 1",
+      "ordinal": 0,
+      "templateName": "Card 1",
+      "queue": 0,
+      "due": 0
+    }
+  ],
+  "media": [
+    {
+      "packageMediaKey": "0",
+      "originalFilename": "cell.png",
+      "mimeType": "image/png",
+      "sizeBytes": 12345,
+      "contentSha256": "fixture-media-hash"
+    }
+  ]
+}

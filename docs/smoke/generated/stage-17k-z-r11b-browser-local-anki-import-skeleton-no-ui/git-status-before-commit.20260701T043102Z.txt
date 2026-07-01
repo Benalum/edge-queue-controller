@@ -1,0 +1,5 @@
+?? docs/smoke/generated/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui/
+?? docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js
+?? ops/smoke/check-stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.sh
+?? ops/smoke/fixtures/
