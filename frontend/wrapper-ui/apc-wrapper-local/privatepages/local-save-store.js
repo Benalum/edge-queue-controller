@@ -1086,3 +1086,245 @@
   window[PATCH_MARKER] = true;
 })();
 
+
+/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R3
+ * R10L-R3 fix.
+ *
+ * Browser diagnostics proved the live APC_LOCAL_SAVE object is frozen and sealed:
+ * - Object.isFrozen(APC_LOCAL_SAVE) === true
+ * - Object.isExtensible(APC_LOCAL_SAVE) === false
+ *
+ * Therefore R10L/R10L-R2 could not attach markers or replace listDocs in place.
+ *
+ * This patch replaces window.APC_LOCAL_SAVE with a cloned frozen API object:
+ * - all existing methods/properties are preserved
+ * - listDocs is replaced with namespace-aware behavior
+ * - listDocs({ namespace: "study" }) falls back to exportAll()
+ * - key-prefixed docs like study/decks/v1 are returned
+ */
+(() => {
+  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R3";
+
+  function namespaceFromOptions(options) {
+    if (typeof options === "string") return options.trim();
+    if (!options || typeof options !== "object") return "";
+    return String(options.namespace || options.ns || options.scope || "").trim();
+  }
+
+  function docsFromPayload(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (!payload || typeof payload !== "object") return [];
+
+    const candidates = [
+      payload.docs,
+      payload.records,
+      payload.items,
+      payload.data && payload.data.docs,
+      payload.data && payload.data.records,
+      payload.data && payload.data.items,
+      payload.payload && payload.payload.docs,
+      payload.payload && payload.payload.records,
+      payload.payload && payload.payload.items
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) return candidate;
+    }
+
+    return [];
+  }
+
+  function collectStrings(value, out, depth = 0) {
+    if (depth > 8 || value === undefined || value === null) return;
+
+    if (typeof value === "string" || typeof value === "number") {
+      const text = String(value).trim();
+      if (text) out.push(text);
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => collectStrings(item, out, depth + 1));
+      return;
+    }
+
+    if (typeof value === "object") {
+      Object.keys(value).forEach((key) => {
+        out.push(String(key).trim());
+        collectStrings(value[key], out, depth + 1);
+      });
+    }
+  }
+
+  function docKey(doc) {
+    if (!doc || typeof doc !== "object") return "";
+    return String(
+      doc.key ||
+      doc.id ||
+      doc.name ||
+      doc.path ||
+      (doc.record && (doc.record.key || doc.record.id || doc.record.name || doc.record.path)) ||
+      (doc.meta && (doc.meta.key || doc.meta.id || doc.meta.name || doc.meta.path)) ||
+      ""
+    ).trim();
+  }
+
+  function docMatchesNamespace(doc, namespace) {
+    if (!doc || !namespace) return false;
+
+    const key = docKey(doc);
+    if (key === namespace) return true;
+    if (key.startsWith(`${namespace}/`)) return true;
+    if (key.startsWith(`${namespace}:`)) return true;
+
+    const strings = [];
+    collectStrings(doc, strings);
+
+    return strings.some((text) => (
+      text === namespace ||
+      text.startsWith(`${namespace}/`) ||
+      text.startsWith(`${namespace}:`)
+    ));
+  }
+
+  function uniqueDocs(docs) {
+    const seen = new Set();
+    const out = [];
+
+    for (const doc of docs || []) {
+      const key = docKey(doc) || JSON.stringify(doc);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(doc);
+    }
+
+    return out;
+  }
+
+  function cloneWithPatchedListDocs(api) {
+    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+      return api;
+    }
+
+    if (api[PATCH_MARKER]) {
+      return api;
+    }
+
+    const originalApi = api;
+    const originalListDocs = api.listDocs.bind(api);
+    const originalExportAll = typeof api.exportAll === "function" ? api.exportAll.bind(api) : null;
+
+    const clone = Object.create(Object.getPrototypeOf(api) || Object.prototype);
+
+    for (const key of Reflect.ownKeys(api)) {
+      if (key === "listDocs" || key === PATCH_MARKER) continue;
+      const descriptor = Object.getOwnPropertyDescriptor(api, key);
+      if (!descriptor) continue;
+      try {
+        Object.defineProperty(clone, key, descriptor);
+      } catch (_) {
+        try {
+          clone[key] = api[key];
+        } catch (_) {}
+      }
+    }
+
+    Object.defineProperty(clone, "listDocs", {
+      enumerable: true,
+      configurable: false,
+      writable: false,
+      value: async function patchedListDocs(options = {}) {
+        const namespace = namespaceFromOptions(options);
+
+        let originalDocs = [];
+        let originalError = null;
+
+        try {
+          const originalPayload = await originalListDocs(options);
+          originalDocs = docsFromPayload(originalPayload);
+        } catch (error) {
+          originalError = error;
+          if (!namespace) throw error;
+        }
+
+        if (!namespace) {
+          if (originalError) throw originalError;
+          return originalDocs;
+        }
+
+        const originalMatches = uniqueDocs(originalDocs.filter((doc) => docMatchesNamespace(doc, namespace)));
+        if (originalMatches.length > 0) {
+          return originalMatches;
+        }
+
+        if (originalExportAll) {
+          const exportPayload = await originalExportAll();
+          const exportDocs = docsFromPayload(exportPayload);
+          const exportMatches = uniqueDocs(exportDocs.filter((doc) => docMatchesNamespace(doc, namespace)));
+          if (exportMatches.length > 0) {
+            return exportMatches;
+          }
+        }
+
+        if (originalError) throw originalError;
+        return [];
+      }
+    });
+
+    Object.defineProperty(clone, PATCH_MARKER, {
+      enumerable: true,
+      configurable: false,
+      writable: false,
+      value: true
+    });
+
+    try {
+      Object.freeze(clone);
+    } catch (_) {}
+
+    return clone;
+  }
+
+  function installCloneReplacement() {
+    const current = window.APC_LOCAL_SAVE;
+    const cloned = cloneWithPatchedListDocs(current);
+
+    try {
+      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return window.__APC_LOCAL_SAVE_R10L_R3_STORED__;
+        },
+        set(value) {
+          window.__APC_LOCAL_SAVE_R10L_R3_STORED__ = cloneWithPatchedListDocs(value);
+        }
+      });
+
+      window.__APC_LOCAL_SAVE_R10L_R3_STORED__ = cloned;
+      window[PATCH_MARKER] = true;
+      return true;
+    } catch (error) {
+      window.__APC_LOCAL_SAVE_R10L_R3_ERROR__ = String(error && error.message ? error.message : error);
+      window[PATCH_MARKER] = true;
+      return false;
+    }
+  }
+
+  installCloneReplacement();
+
+  const start = Date.now();
+  const timer = setInterval(() => {
+    try {
+      const current = window.APC_LOCAL_SAVE;
+      if (current && !current[PATCH_MARKER]) {
+        window.APC_LOCAL_SAVE = current;
+      }
+    } catch (_) {}
+
+    if (Date.now() - start > 15000) {
+      clearInterval(timer);
+    }
+  }, 100);
+})();
+

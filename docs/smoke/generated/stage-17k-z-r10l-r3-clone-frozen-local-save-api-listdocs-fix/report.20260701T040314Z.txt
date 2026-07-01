@@ -1,0 +1,34 @@
+=== stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix ===
+created_utc=20260701T040314Z
+head_before=62a0b4a
+
+Scope:
+- Patched local-save-store.js with frozen API clone replacement.
+- Patched index.html local-save-store.js cache bust.
+- Deployed VM200 frontend static index.html + local-save-store.js only.
+- No backend deploy.
+- No DB write.
+- No DB table drop.
+- No schema change.
+- No service restart.
+- No live backend mutation.
+- No server deck/card/session/progress persistence.
+
+Source smoke:
+- local_save_r10l_r3_marker_count=2
+- index_r10l_r3_version_count=1
+- study_store_api_ref_count=0
+
+Live smoke:
+- public_root_status=200
+- public_system_status_code=200
+- public_me_code=401
+- public_signup_code=403
+- removed_study_decks_code=404
+- static_local_save_code=200
+- static_index_code=200
+- static_study_store_code=200
+- static_local_save_r10l_r3_marker_count=2
+- static_index_r10l_r3_version_count=1
+- static_study_store_api_ref_count=0
+- pass=true
