@@ -1,0 +1,11 @@
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/study-source-selector.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/index.html

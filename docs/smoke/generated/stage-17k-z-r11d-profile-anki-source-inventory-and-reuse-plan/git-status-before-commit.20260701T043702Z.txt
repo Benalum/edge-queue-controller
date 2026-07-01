@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-z-r11d-profile-anki-source-inventory-and-reuse-plan/
+?? docs/stage-17k-z-r11d-profile-anki-source-inventory-and-reuse-plan.md
+?? ops/smoke/check-stage-17k-z-r11d-profile-anki-source-inventory-and-reuse-plan.sh

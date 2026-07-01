@@ -1,0 +1,1201 @@
+=== focused Profile/Anki source references ===
+frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html:2:  <h1>Your profile</h1>
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:2:(function apcProfileGoogleSyncPanelStage17kZr7cAppdata() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:5:  const panelId = 'apc-google-sync-profile-panel-stage-17k-z-r7c-appdata';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:6:  const styleId = 'apc-google-sync-profile-style-stage-17k-z-r7c-appdata';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:17:    drive: 'Google Drive REST API',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:24:    profileOnly: true,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:32:  let manifestFileId = '';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:60:  function isProfileSurface() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:65:    const profileHints = [
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:66:      '[data-apc-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:67:      '[data-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:68:      '[data-page="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:69:      '[data-route="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:70:      '.profile-page',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:71:      '#profile',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:72:      '#profile-page'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:74:    const hasProfileNode = profileHints.some((selector) => Boolean(document.querySelector(selector)));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:75:    const bodyLooksProfile = body && String(body.getAttribute('data-page') || body.className || '').toLowerCase().includes('profile');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:76:    return path.includes('profile') || hash.includes('profile') || title.includes('profile') || hasProfileNode || bodyLooksProfile;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:84:      '.apc-google-sync-profile-panel { margin-top: 16px; padding: 16px; border: 1px solid rgba(148,163,184,.35); border-radius: 14px; background: rgba(15,23,42,.04); }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:85:      '.apc-google-sync-profile-panel h3 { margin: 0 0 8px; font-size: 1.05rem; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:86:      '.apc-google-sync-profile-panel p { margin: 6px 0; line-height: 1.45; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:87:      '.apc-google-sync-profile-panel label { display: block; margin: 10px 0; line-height: 1.35; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:88:      '.apc-google-sync-profile-panel input[type="checkbox"] { margin-right: 8px; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:89:      '.apc-google-sync-profile-panel .apc-google-sync-status { display: inline-flex; align-items: center; gap: 8px; margin: 8px 0 12px; font-weight: 700; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:90:      '.apc-google-sync-profile-panel .apc-google-sync-dot { width: 9px; height: 9px; border-radius: 999px; background: #94a3b8; display: inline-block; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:91:      '.apc-google-sync-profile-panel .apc-google-sync-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:92:      '.apc-google-sync-profile-panel button { border: 0; border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: pointer; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:93:      '.apc-google-sync-profile-panel button:disabled { cursor: not-allowed; opacity: .55; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:94:      '.apc-google-sync-profile-panel small { display: block; margin-top: 10px; opacity: .8; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:95:      '.apc-google-sync-profile-panel pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 10px; border-radius: 10px; background: rgba(15,23,42,.08); }'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:100:  function findProfileAnchor() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:102:      '[data-apc-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:103:      '[data-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:104:      '[data-page="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:105:      '[data-route="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:106:      '.profile-page',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:107:      '#profile',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:108:      '#profile-page',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:142:    if (rollback) rollback.disabled = !(configured && consent && accessToken && (manifestFileId || databaseFileId));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:251:    setStatus('Creating hidden APC app data...', 'Creating manifest and database bootstrap in Google Drive appDataFolder.');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:253:    const manifest = await createAppDataJsonFile('apc-google-sync-manifest.json', {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:254:      record_type: 'apc_google_sync_manifest',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:276:      anki_upload_default: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:279:    manifestFileId = manifest.id;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:281:    writeSessionState({ manifestFileId, databaseFileId, lastBootstrapAt: createdAt });
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:283:    setStatus('Hidden APC app data created', JSON.stringify({ manifest, database }, null, 2));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:308:    const ids = [manifestFileId || state.manifestFileId, databaseFileId || state.databaseFileId].filter(Boolean);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:323:    manifestFileId = '';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:325:    writeSessionState({ manifestFileId: '', databaseFileId: '', lastRollbackAt: new Date().toISOString() });
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:331:    if (!document.body || !isProfileSurface()) return;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:336:    manifestFileId = state.manifestFileId || manifestFileId || '';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:342:    panel.className = 'apc-google-sync-profile-panel';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:343:    panel.setAttribute('data-apc-google-sync-profile-panel', 'true');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:344:    panel.setAttribute('data-apc-google-sync-profile-only', 'true');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:353:      '<h3>Google Drive sync</h3>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:354:      '<p>Buddies Who Study will only create and manage its own hidden Google Drive app data. It will not browse, read, or modify your other Drive files or folders.</p>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:356:      '<label><input type="checkbox" data-apc-google-sync-explicit-consent> I understand APC will create hidden app data in my Google Drive for APC-native decks, sessions, history, and stats. APC will not upload Anki files unless I explicitly choose an import/convert option later.</label>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:358:      '<button type="button" data-apc-google-sync-connect>Connect Google Drive</button>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:367:    findProfileAnchor().appendChild(panel);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:390:    profileOnly: true,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:4:  var PANEL_ID = "apc-anki-manifest-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:5:  var FILE_INPUT_ID = "apc-anki-file-input";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:6:  var CLEAR_BUTTON_ID = "apc-anki-clear-file-proof";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:7:  var FILE_PROOF_KEY = "apc.profile.anki.fileProof.v2";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:8:  var DECK_SUMMARY_KEY = "apc.profile.anki.localDeckSummary.v1";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:65:      || storageRead("apc.profile.anki.fileProof.v1")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:66:      || storageRead("apcAnkiFileProof")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:67:      || storageRead("apcAnkiFileProof.v1");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:76:    storageRemove("apc.profile.anki.fileProof.v1");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:77:    storageRemove("apcAnkiFileProof");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:78:    storageRemove("apcAnkiFileProof.v1");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:104:    if (headerText.indexOf("SQLite format 3") === 0) return "sqlite-anki-collection";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:117:    var sample = new Uint8Array(await file.slice(0, 1024 * 1024).arrayBuffer());
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:134:        server_saved_anki_content: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:135:        anki_file_modified: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:246:  async function extractLocalAnkiSummary(file) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:248:    var buffer = await file.arrayBuffer();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:256:        throw new Error("Selected file is SQLite but does not look like an Anki collection.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:409:        source_type: "anki_browser_local",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:436:          server_saved_anki_content: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:437:          anki_file_modified: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:451:  function renderAnkiFileHelpHtml() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:453:      + '<details class="apc-anki-file-location-help">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:454:      + '  <summary>Where is my Anki file?</summary>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:456:      + '    <p>Look for <code>collection.anki2</code> inside your Anki profile folder.</p>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:458:      + '      <li><strong>Windows:</strong> <code>%APPDATA%\\Anki2\\&lt;Profile&gt;\\collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:459:      + '      <li><strong>macOS:</strong> <code>~/Library/Application Support/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:460:      + '      <li><strong>Linux:</strong> <code>~/.local/share/Anki2/&lt;Profile&gt;/collection.anki2</code> or <code>$XDG_DATA_HOME/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:461:      + '      <li><strong>Android / AnkiDroid:</strong> check AnkiDroid Settings → Advanced → Collection path. If the browser cannot open that folder, export/copy the collection file to Downloads first.</li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:462:      + '      <li><strong>iPhone / iPad:</strong> export or transfer from AnkiMobile using Add/Export, AirDrop, Finder, or iTunes, then choose the exported file from this browser.</li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:471:      return '<p class="study-muted">Choose an Anki file to show deck and card counts.</p>';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:479:            + '<div class="profile-preference-row apc-anki-minimal-deck-row">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:487:      + '<div class="apc-anki-minimal-summary">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:488:      + '  <div class="profile-preference-row"><span>Decks</span><strong>' + escapeHtml(summary.deck_count_with_cards || decks.length || 0) + '</strong></div>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:489:      + '  <div class="profile-preference-row"><span>Total cards</span><strong>' + escapeHtml(summary.card_count || 0) + '</strong></div>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:497:      + '<section class="profile-card apc-anki-minimal-card" id="' + PANEL_ID + '-card">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:498:      + '  <h3>Anki</h3>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:499:      + '  <p class="study-muted">Choose your Anki collection file. APC reads deck names and card counts locally in this browser.</p>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:500:      + renderAnkiFileHelpHtml()
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:501:      + (message ? '<p class="apc-anki-message">' + escapeHtml(message) + '</p>' : '')
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:502:      + '  <div class="profile-preference-row">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:503:      + '    <label for="' + FILE_INPUT_ID + '"><strong>Choose Anki file</strong></label>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:504:      + '    <input id="' + FILE_INPUT_ID + '" type="file" accept=".anki2,.anki21,.sqlite,.db,.colpkg,.apkg">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:510:  function isProfileRoute() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:512:    if (routeText.indexOf("profile") !== -1) return true;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:513:    return Boolean(document.querySelector("[data-page='profile'], #profilePrivateApp, .apc-profile-root"));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:519:    return document.querySelector("[data-page='profile']")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:520:      || document.querySelector(".profile-grid")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:521:      || document.querySelector(".private-profile-grid")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:536:          renderPanel("Reading local Anki file proof…");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:541:          if (proof.header_kind !== "sqlite-anki-collection") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:544:              message: "This file does not look like an Anki SQLite collection.",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:548:                anki_file_modified: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:556:          var summary = await extractLocalAnkiSummary(file);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:558:          renderPanel("Local Anki deck extraction complete. No Anki content was uploaded.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:566:              anki_file_modified: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:569:          renderPanel("Local Anki deck extraction failed.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:578:        renderPanel("Local Anki proof cleared.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:588:    document.querySelectorAll(".apc-anki-manifest-panel, .apc-anki-local-only-panel, .apc-anki-local-card, .apc-anki-ownership-card").forEach(function (el) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:595:    if (!isProfileRoute()) { removeManifestPanel(); return; }
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:604:      panel.className = "apc-anki-manifest-panel apc-anki-local-only-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:608:    var ankiFileHelpWasOpen = Boolean(panel.querySelector(".apc-anki-file-location-help[open]"));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:610:    if (ankiFileHelpWasOpen) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:611:      var ankiFileHelp = panel.querySelector(".apc-anki-file-location-help");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:612:      if (ankiFileHelp) ankiFileHelp.setAttribute("open", "");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:624:  window.APC_ANKI_LOCAL = {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:625:    version: "stage17kyr2-profile-anki-dropdown-stable-20260629",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:630:    extractLocalAnkiSummary: extractLocalAnkiSummary,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:635:      server_saved_anki_content: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:636:      anki_write_allowed: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:653:(function apcGoogleSyncProfileOnlyStage17kZr6cLoader() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:657:  const moduleScriptId = 'apc-profile-google-sync-panel-script-stage-17k-z-r6c';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:658:  const modulePath = '/privatepages/profile-google-sync-panel.js?v=20260629-stage17k-z-r7c-appdata';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:659:  const uiTextMovedToModule = 'Google Drive sync Not connected Connect Google Drive Sync now';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:661:  function isProfileSurface() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:666:    const profileHints = [
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:667:      '[data-apc-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:668:      '[data-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:669:      '[data-page="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:670:      '[data-route="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:671:      '.profile-page',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:672:      '#profile',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:673:      '#profile-page'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:675:    const hasProfileNode = profileHints.some((selector) => Boolean(document.querySelector(selector)));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:676:    const bodyLooksProfile = body && String(body.getAttribute('data-page') || body.className || '').toLowerCase().includes('profile');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:677:    return path.includes('profile') || hash.includes('profile') || title.includes('profile') || hasProfileNode || bodyLooksProfile;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:690:    if (!document.body || !isProfileSurface()) return;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:697:    script.setAttribute('data-apc-google-sync-profile-loader', 'true');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:698:    script.setAttribute('data-apc-google-sync-profile-only', 'true');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:8:  var PANEL_ID = "apc-anki-readonly-session";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:14:    document.querySelectorAll(".apc-anki-readonly-session-card, .apc-anki-memory-card").forEach(function (el) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:41:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:86:  window.APC_ANKI_READONLY_SESSION = {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:102:      anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-source-selector.js:7:  var VERSION = "stage17kwr4-study-source-panel-removed-20260629";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-source-selector.js:8:  var PANEL_ID = "apc-study-source-selector";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:8:  var PANEL_ID = "apc-companion-local-anki-bridge";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:14:    document.querySelectorAll(".apc-companion-local-anki-bridge-card, .apc-companion-local-anki-session-mount-output, .apc-companion-local-anki-command-output, .apc-companion-local-anki-consent-output").forEach(function (el) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:37:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:60:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:66:  function consentedCurrentAnkiCardForStudyCommand() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:85:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:91:  function ankiSessionMountCommand() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:104:        anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:120:  window.APC_COMPANION_LOCAL_ANKI_BRIDGE = {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:125:    consentedCurrentAnkiCardForStudyCommand: consentedCurrentAnkiCardForStudyCommand,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:126:    ankiSessionMountCommand: ankiSessionMountCommand,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:133:      anki_write_allowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:1:(function attachApcAnkiImportLocal(root) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:4:  const PATCH_MARKER = "APC_ANKI_IMPORT_LOCAL_DISABLED_SKELETON_R11B";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:5:  const APKG_INSPECTOR_MARKER = "APC_ANKI_IMPORT_LOCAL_APKG_CONTAINER_INSPECTOR_R11C";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:9:    ankiPackages: "study/anki-packages/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:10:    ankiNotes: "study/anki-notes/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:11:    ankiCards: "study/anki-cards/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:12:    ankiMedia: "study/anki-media/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:16:  const SUPPORTED_EXTENSIONS = Object.freeze([".apkg"]);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:49:      throw new Error("Anki import source requires a display filename.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:52:      throw new Error("Only .apkg files are supported by the disabled R11B skeleton.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:62:      kind: "anki-apkg",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:108:      throw new Error(`Invalid Anki package summary: ${validation.errors.join("; ")}`);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:111:    const packageId = makeLocalId("anki_pkg", [
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:122:      const noteLocalId = makeLocalId("anki_note", [packageId, note.ankiNoteId, note.guid]);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:123:      noteLocalIdBySourceId.set(String(note.ankiNoteId), noteLocalId);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:127:        ankiNoteId: note.ankiNoteId == null ? null : Number(note.ankiNoteId),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:139:      const noteLocalId = noteLocalIdBySourceId.get(String(card.ankiNoteId)) || "";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:141:        id: makeLocalId("anki_card", [packageId, card.ankiCardId, card.ankiNoteId, card.ordinal]),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:144:        ankiCardId: card.ankiCardId == null ? null : Number(card.ankiCardId),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:145:        ankiNoteId: card.ankiNoteId == null ? null : Number(card.ankiNoteId),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:156:      id: makeLocalId("anki_media", [packageId, item.packageMediaKey, item.originalFilename, item.contentSha256]),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:166:      id: makeLocalId("anki_deck", [packageId, deck.deckId, deck.deckPath || deck.name]),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:177:      collectionSchema: safeString(summary.collectionSchema || "anki2"),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:207:      writesOriginalAnki: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:212:        [DOC_KEYS.ankiPackages]: { packages: [packageRecord] },
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:213:        [DOC_KEYS.ankiNotes]: { notes },
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:214:        [DOC_KEYS.ankiCards]: { cards },
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:215:        [DOC_KEYS.ankiMedia]: { media },
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:328:      hasCollectionAnki2: entries.some((entry) => entry.name === "collection.anki2"),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:329:      hasCollectionAnki21: entries.some((entry) => entry.name === "collection.anki21"),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:337:    const displayName = normalizeFilename(fileName || "package.apkg");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:339:      throw new Error("APKG container inspector only accepts .apkg filenames.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:345:      isApkgContainer: inspected.isZip && (inspected.hasCollectionAnki2 || inspected.hasCollectionAnki21)
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:350:    if (!fileLike || typeof fileLike.arrayBuffer !== "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:351:      throw new Error("inspectApkgFile requires a browser File-like object with arrayBuffer().");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:354:    const buffer = await fileLike.arrayBuffer();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:361:      writesOriginalAnki: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:368:    return Promise.reject(new Error("R11B is a disabled skeleton. Real apkg parsing is intentionally not active."));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:379:    apkgInspectorMarker: APKG_INSPECTOR_MARKER,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:386:  root.APC_ANKI_IMPORT_LOCAL = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:4: * - Keep private user study/profile/deck/card data browser-local first.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:7: *   Google Drive appDataFolder.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:12: * - media: de-duplicated blobs by SHA-256, similar to Anki-style media refs.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:38:    ankiContentServerUploadAllowed: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:47:    manifest: "sync/manifest/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:48:    profilePreferences: "profile/preferences/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:467:    if (input instanceof Blob) return input.arrayBuffer();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:623:    const existing = await getDoc(DEFAULT_DOC_KEYS.manifest, null);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:626:    const manifest = {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:649:    await setDoc(DEFAULT_DOC_KEYS.manifest, manifest, {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:651:      recordType: "apc_local_manifest",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:655:    return manifest;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:720:    console.warn("[APC_LOCAL_SAVE] manifest initialization failed", error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1335: * R10L-R3 correctly returned all Study docs but also returned sync/manifest/v1
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1336: * because the broad matcher scanned nested manifest content.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1342: * It intentionally does not match nested manifest payload values.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:16:    "/profile",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:28:    "/profile": "profile",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:38:    profile: "Profile",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:233:      ["/profile", "Profile", "profile"],
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:255:    const response = await fetch(`/privatepages/pages/${page}.html?v=stage17j-r3-profile-fragment-cache-20260628`, {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:315:      // Let publicpages render signed-out public pages like /study, /companion, /profile, /system, /support.
+frontend/wrapper-ui/apc-wrapper-local/index.html:68:        if (!/(study|companion|profile|calendar|account|dashboard|private)/i.test(marker)) return;
+frontend/wrapper-ui/apc-wrapper-local/index.html:207:  <script src="/privatepages/privatepages.js?v=stage17j-r3-profile-fragment-cache-20260628"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:214:  <script src="/privatepages/anki-manifest-panel.js?v=stage17kyr2-profile-anki-dropdown-stable-20260629"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:215:  <script src="/privatepages/study-source-selector.js?v=stage17kwr4-study-source-panel-removed-20260629"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:216:  <script src="/privatepages/anki-readonly-session.js?v=stage17kxr2-local-card-session-ui-removed-20260629"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:217:  <script src="/privatepages/companion-local-anki-bridge.js?v=stage17kxr2-companion-local-card-ui-removed-20260629"></script>
+docs/stage-17b-anki2-read-only-discovery.md:1:# Stage 17B — Cross-Platform Anki2 Read-Only Discovery Helper
+docs/stage-17b-anki2-read-only-discovery.md:5:Stage 17B adds a local, read-only Anki2 discovery helper for APC Study/Companion planning.
+docs/stage-17b-anki2-read-only-discovery.md:10:- Where would Anki normally keep its `Anki2` data root?
+docs/stage-17b-anki2-read-only-discovery.md:11:- Which profiles contain `collection.anki2`?
+docs/stage-17b-anki2-read-only-discovery.md:12:- Is Anki currently open?
+docs/stage-17b-anki2-read-only-discovery.md:13:- If Anki is closed, what decks/card counts/note counts/media presence can be read without writing?
+docs/stage-17b-anki2-read-only-discovery.md:21:- No live Anki profile mutation.
+docs/stage-17b-anki2-read-only-discovery.md:22:- No `collection.anki2` write.
+docs/stage-17b-anki2-read-only-discovery.md:24:- No APKG import into live Anki.
+docs/stage-17b-anki2-read-only-discovery.md:26:- No AnkiConnect call.
+docs/stage-17b-anki2-read-only-discovery.md:31:- No Google Drive write/sync.
+docs/stage-17b-anki2-read-only-discovery.md:43:- the user's Anki profile folders,
+docs/stage-17b-anki2-read-only-discovery.md:44:- or the user's `collection.anki2` SQLite database.
+docs/stage-17b-anki2-read-only-discovery.md:50:3. or a user-uploaded package such as `.apkg`.
+docs/stage-17b-anki2-read-only-discovery.md:61:- `$XDG_DATA_HOME/Anki2` when set.
+docs/stage-17b-anki2-read-only-discovery.md:62:- `~/.local/share/Anki2`.
+docs/stage-17b-anki2-read-only-discovery.md:63:- `~/.var/app/net.ankiweb.Anki/data/Anki2` for Flatpak Anki.
+docs/stage-17b-anki2-read-only-discovery.md:68:- `~/Library/Application Support/Anki2`.
+docs/stage-17b-anki2-read-only-discovery.md:73:- `%APPDATA%\Anki2`.
+docs/stage-17b-anki2-read-only-discovery.md:74:- `%LOCALAPPDATA%\Anki2` as an unusual-install fallback.
+docs/stage-17b-anki2-read-only-discovery.md:76:The helper also accepts `--root PATH`, which may point either at an Anki2 root containing profiles or directly at a profile folder containing `collection.anki2`.
+docs/stage-17b-anki2-read-only-discovery.md:78:## Closed-Anki gate
+docs/stage-17b-anki2-read-only-discovery.md:80:Before reading any SQLite collection, the helper checks whether Anki appears to be running:
+docs/stage-17b-anki2-read-only-discovery.md:86:If Anki appears open, the helper returns profile/file metadata only and blocks SQLite reads:
+docs/stage-17b-anki2-read-only-discovery.md:91:  "anki_running": true,
+docs/stage-17b-anki2-read-only-discovery.md:92:  "profiles": [
+docs/stage-17b-anki2-read-only-discovery.md:95:      "sqlite_blocked_reason": "Anki appears to be running; close Anki before reading collection.anki2."
+docs/stage-17b-anki2-read-only-discovery.md:101:This is intentionally conservative. APC may discover paths while Anki is open, but it must not open `collection.anki2` until Anki is closed.
+docs/stage-17b-anki2-read-only-discovery.md:105:When Anki is closed, the helper opens `collection.anki2` with SQLite URI `mode=ro` and sets `PRAGMA query_only=ON`.
+docs/stage-17b-anki2-read-only-discovery.md:123:Anki media detected
+docs/stage-17b-anki2-read-only-discovery.md:141:      "src": "/api/study/media/local/abc123",
+docs/stage-17b-anki2-read-only-discovery.md:152:The current Companion default remains Sol. A later profile checkpoint should move companion choice into a profile preference:
+docs/stage-17b-anki2-read-only-discovery.md:169:1. **Stage 17C — APC Anki discovery manifest**  
+docs/stage-17b-anki2-read-only-discovery.md:170:   Store helper JSON as a local APC manifest only. No media copy and no deck import yet.
+docs/stage-17b-anki2-read-only-discovery.md:176:   Support user-selected `.apkg` workflows with preview and APC-local card creation.
+docs/stage-17b-anki2-read-only-discovery.md:178:4. **Stage 17F — AnkiConnect opt-in live bridge**  
+docs/stage-17b-anki2-read-only-discovery.md:179:   Add local Anki operations through AnkiConnect only after explicit user opt-in, backup prompts, dry-run previews, and destructive-action gates.
+docs/stage-17b-anki2-read-only-discovery.md:187:python3 ops/anki/anki_readonly_discovery.py --json-only
+docs/stage-17b-anki2-read-only-discovery.md:190:Custom root/profile:
+docs/stage-17b-anki2-read-only-discovery.md:193:python3 ops/anki/anki_readonly_discovery.py --json-only --root /path/to/Anki2
+docs/stage-17b-anki2-read-only-discovery.md:194:python3 ops/anki/anki_readonly_discovery.py --json-only --root '/path/to/Anki2/User 1'
+docs/stage-17b-anki2-read-only-discovery.md:202:  "tool": "apc_anki_readonly_discovery",
+docs/stage-17b-anki2-read-only-discovery.md:205:  "anki_running": false,
+docs/stage-17b-anki2-read-only-discovery.md:208:      "path": "/home/user/.local/share/Anki2",
+docs/stage-17b-anki2-read-only-discovery.md:211:      "profile_count": 1
+docs/stage-17b-anki2-read-only-discovery.md:214:  "profiles": [
+docs/stage-17b-anki2-read-only-discovery.md:217:      "collection_path": "/home/user/.local/share/Anki2/User 1/collection.anki2",
+docs/stage-17b-anki2-read-only-discovery.md:230:          "media_present_in_profile": true
+docs/stage-17b-anki2-read-only-discovery.md:247:Modern Anki collections may keep deck names in the normalized `decks` table instead of the older `col.decks` JSON blob. The read-only discovery helper now prefers `decks.id` and `decks.name`, then falls back to `col.decks` for older collections. This preserves the Anki-closed safety gate and does not change the no-write boundary.
+docs/stage-17c-anki-discovery-manifest.md:1:# Stage 17C — Anki Discovery Manifest for APC Study
+docs/stage-17c-anki-discovery-manifest.md:3:Stage 17C converts Stage 17B read-only Anki discovery JSON into an APC-owned manifest that Study and Companion can display later.
+docs/stage-17c-anki-discovery-manifest.md:7:This stage does not mutate Anki.
+docs/stage-17c-anki-discovery-manifest.md:11:- write to `collection.anki2`
+docs/stage-17c-anki-discovery-manifest.md:13:- import `.apkg`
+docs/stage-17c-anki-discovery-manifest.md:15:- call AnkiConnect
+docs/stage-17c-anki-discovery-manifest.md:21:The manifest builder only transforms JSON already produced by the read-only discovery helper.
+docs/stage-17c-anki-discovery-manifest.md:25:- `ops/anki/anki_discovery_manifest.py`
+docs/stage-17c-anki-discovery-manifest.md:26:- `ops/smoke/check-stage-17c-anki-discovery-manifest.py`
+docs/stage-17c-anki-discovery-manifest.md:27:- `ops/smoke/check-stage-17c-anki-discovery-manifest.sh`
+docs/stage-17c-anki-discovery-manifest.md:31:By default, the manifest omits local filesystem paths. This prevents accidental storage of user-specific paths.
+docs/stage-17c-anki-discovery-manifest.md:36:python3 ops/anki/anki_discovery_manifest.py \
+docs/stage-17c-anki-discovery-manifest.md:37:  --input /tmp/anki-discovery.json \
+docs/stage-17c-anki-discovery-manifest.md:38:  --output /tmp/apc-anki-manifest.json \
+docs/stage-17c-anki-discovery-manifest.md:45:python3 ops/anki/anki_readonly_discovery.py --json-only > /tmp/anki-discovery.json
+docs/stage-17c-anki-discovery-manifest.md:47:python3 ops/anki/anki_discovery_manifest.py \
+docs/stage-17c-anki-discovery-manifest.md:48:  --input /tmp/anki-discovery.json \
+docs/stage-17c-anki-discovery-manifest.md:49:  --output /tmp/apc-anki-manifest.json
+docs/stage-17c-anki-discovery-manifest.md:52:The website can later use the manifest to show discovered profiles, deck names, card counts, note counts, media presence, and import availability.
+docs/stage-17c-anki-discovery-manifest.md:60:1. Stage 17D: APC Study UI deck-discovery display from manifest.
+docs/stage-17c-anki-discovery-manifest.md:63:4. Stage 17G: optional AnkiConnect live integration.
+docs/stage-17d-study-ui-anki-manifest-display.md:1:# Stage 17D — Study UI Anki Manifest Display
+docs/stage-17d-study-ui-anki-manifest-display.md:3:Stage 17D adds a read-only Anki discovery panel to the Study page.
+docs/stage-17d-study-ui-anki-manifest-display.md:5:The panel displays a Stage 17C APC Anki discovery manifest from browser localStorage. It is intentionally a display-only bridge between local read-only discovery and future Study import flows.
+docs/stage-17d-study-ui-anki-manifest-display.md:9:This stage does not mutate Anki.
+docs/stage-17d-study-ui-anki-manifest-display.md:13:- write to `collection.anki2`
+docs/stage-17d-study-ui-anki-manifest-display.md:15:- import `.apkg`
+docs/stage-17d-study-ui-anki-manifest-display.md:17:- call AnkiConnect
+docs/stage-17d-study-ui-anki-manifest-display.md:18:- create Study cards from Anki
+docs/stage-17d-study-ui-anki-manifest-display.md:25:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js`
+docs/stage-17d-study-ui-anki-manifest-display.md:27:- `ops/smoke/check-stage-17d-study-ui-anki-manifest-display.sh`
+docs/stage-17d-study-ui-anki-manifest-display.md:31:Generate a manifest locally:
+docs/stage-17d-study-ui-anki-manifest-display.md:34:python3 ops/anki/anki_readonly_discovery.py --json-only > /tmp/anki-discovery.json
+docs/stage-17d-study-ui-anki-manifest-display.md:36:python3 ops/anki/anki_discovery_manifest.py \
+docs/stage-17d-study-ui-anki-manifest-display.md:37:  --input /tmp/anki-discovery.json \
+docs/stage-17d-study-ui-anki-manifest-display.md:38:  --output /tmp/apc-anki-manifest.json
+docs/stage-17d-study-ui-anki-manifest-display.md:41:Open `/study`, expand **Paste/update discovery manifest**, paste `/tmp/apc-anki-manifest.json`, and click **Load manifest**.
+docs/stage-17d-study-ui-anki-manifest-display.md:43:The page should show profile/deck/card/note/media counts while continuing to report:
+docs/stage-17d-study-ui-anki-manifest-display.md:47:- no Anki writes
+docs/stage-17d-study-ui-anki-manifest-display.md:56:3. Stage 17G: optional AnkiConnect live integration.
+docs/stage-17e-profile-anki-manifest-paste.md:1:# Stage 17E — Profile Anki Manifest Paste Source
+docs/stage-17e-profile-anki-manifest-paste.md:3:Stage 17E moves the Anki manifest paste/display surface to the logged-in Profile page.
+docs/stage-17e-profile-anki-manifest-paste.md:5:The Anki discovery manifest is a user/profile-level setting first. Study can later read the saved profile manifest and offer deck import or review flows in a separate, explicitly approved stage.
+docs/stage-17e-profile-anki-manifest-paste.md:16:- call AnkiConnect
+docs/stage-17e-profile-anki-manifest-paste.md:17:- write to `collection.anki2`
+docs/stage-17e-profile-anki-manifest-paste.md:19:- import `.apkg`
+docs/stage-17e-profile-anki-manifest-paste.md:25:The browser stores the pasted manifest in `localStorage` by signed-in profile key so the UI can render discovered Anki profiles and decks later.
+docs/stage-17e-profile-anki-manifest-paste.md:29:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js`
+docs/stage-17e-profile-anki-manifest-paste.md:31:- `ops/smoke/check-stage-17e-profile-anki-manifest-paste.sh`
+docs/stage-17e-profile-anki-manifest-paste.md:32:- `docs/stage-17e-profile-anki-manifest-paste.md`
+docs/stage-17e-profile-anki-manifest-paste.md:36:Generate a local discovery manifest:
+docs/stage-17e-profile-anki-manifest-paste.md:39:python3 ops/anki/anki_readonly_discovery.py --json-only > /tmp/anki-discovery.json
+docs/stage-17e-profile-anki-manifest-paste.md:40:python3 ops/anki/anki_discovery_manifest.py \
+docs/stage-17e-profile-anki-manifest-paste.md:41:  --input /tmp/anki-discovery.json \
+docs/stage-17e-profile-anki-manifest-paste.md:42:  --output /tmp/apc-anki-manifest.json
+docs/stage-17e-profile-anki-manifest-paste.md:45:Open `/profile`, expand **Paste/update discovery manifest**, paste `/tmp/apc-anki-manifest.json`, and click **Save manifest to profile**.
+docs/stage-17e-profile-anki-manifest-paste.md:49:- profile name
+docs/stage-17e-profile-anki-manifest-paste.md:54:- safety text: no Anki writes, no import, no media copy
+docs/stage-17e-profile-anki-manifest-paste.md:58:- Stage 17F: Study reads the profile-saved Anki manifest and shows available decks.
+docs/stage-17e-profile-anki-manifest-paste.md:61:- Stage 17I: optional AnkiConnect live integration.
+docs/stage-17g-vm200-app-js-quarantine.md:23:  - `/profile`
+docs/stage-17g-vm200-app-js-quarantine.md:35:  - `/profile`
+docs/stage-17g-vm200-app-js-quarantine.md:50:No backend deploy, DB change, nginx restart, cloudflared restart, Anki write, or service mutation was performed.
+docs/stage-17i-profile-render-authority-live-proof.md:1:# Stage 17I — Profile Render Authority Live Proof
+docs/stage-17i-profile-render-authority-live-proof.md:7:Stage 17I fixed duplicate Profile rendering by making signed-in private-capable routes owned by `privatepages`, not `publicpages`, and by stopping the Anki Profile panel MutationObserver from observing its own subtree mutations.
+docs/stage-17i-profile-render-authority-live-proof.md:12:- Tag: `controller-stage-17i-profile-render-authority-2026-06-28`
+docs/stage-17i-profile-render-authority-live-proof.md:20:- `/var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js`
+docs/stage-17i-profile-render-authority-live-proof.md:24:- `/home/jkg76nid/apc-vm200-frontend-backups/stage17i-profile-render-20260628T194236Z`
+docs/stage-17i-profile-render-authority-live-proof.md:29:- `index.html` loads `anki-manifest-panel.js?v=stage17i-profile-mount-loop-20260628`
+docs/stage-17i-profile-render-authority-live-proof.md:31:- `anki-manifest-panel.js` shows `Stage 17I · Anki Manifest`
+docs/stage-17i-profile-render-authority-live-proof.md:32:- `anki-manifest-panel.js` uses `subtree: false`
+docs/stage-17i-profile-render-authority-live-proof.md:33:- `anki-manifest-panel.js` listens for `apc-private-page-rendered`
+docs/stage-17i-profile-render-authority-live-proof.md:39:- `publicProfileFetches: 0`
+docs/stage-17i-profile-render-authority-live-proof.md:40:- `privateProfileFetches: 1`
+docs/stage-17i-profile-render-authority-live-proof.md:44:- `ankiPanelCount: 1`
+docs/stage-17i-profile-render-authority-live-proof.md:45:- `privateProfileTextCount: 1`
+docs/stage-17i-profile-render-authority-live-proof.md:46:- `publicProfileTextCount: 0`
+docs/stage-17i-profile-render-authority-live-proof.md:50:No backend deploy, DB change, nginx restart, cloudflared restart, Anki write, model call, worker activation, scheduler activation, or service mutation was performed.
+docs/stage-17j-r3-profile-fragment-cache-live-proof.md:1:# Stage 17J-R3 — Profile Fragment Cache Live Proof
+docs/stage-17j-r3-profile-fragment-cache-live-proof.md:7:Stage 17J-R3 fixed stale Profile page content by cache-busting the private page fragment loader and adding `cache: "no-store"` to private fragment fetches.
+docs/stage-17j-r3-profile-fragment-cache-live-proof.md:12:- Tag: `controller-stage-17j-r3-profile-fragment-cache-2026-06-28`
+docs/stage-17j-r3-profile-fragment-cache-live-proof.md:16:- `/home/jkg76nid/apc-vm200-frontend-backups/stage17j-r3-profile-fragment-cache-20260628T200027Z`
+docs/stage-17j-r3-profile-fragment-cache-live-proof.md:20:Browser check on `/profile` showed:
+docs/stage-17j-r3-profile-fragment-cache-live-proof.md:24:- `hasPrivateProfile: false`
+docs/stage-17j-r3-profile-fragment-cache-live-proof.md:30:The active Profile fragment URL was:
+docs/stage-17j-r3-profile-fragment-cache-live-proof.md:32:- `/privatepages/pages/profile.html?v=stage17j-r3-profile-fragment-cache-20260628`
+docs/stage-17j-r3-profile-fragment-cache-live-proof.md:36:No backend deploy, DB change, nginx restart, cloudflared restart, Anki write, model call, worker activation, scheduler activation, or service mutation was performed.
+docs/stage-17j-r4c-file-proof-visible-live-proof.md:1:# Stage 17J-R4C — Anki File Picker Only Live Proof
+docs/stage-17j-r4c-file-proof-visible-live-proof.md:7:Stage 17J-R4C finalized the Profile Anki file picker UI by keeping only the user-selected Anki file picker/proof flow and removing the old manual manifest paste/status UI.
+docs/stage-17j-r4c-file-proof-visible-live-proof.md:21:Browser check on `/profile` showed:
+docs/stage-17j-r4c-file-proof-visible-live-proof.md:28:- `hasOldProfiles: false`
+docs/stage-17j-r4c-file-proof-visible-live-proof.md:31:The selected Anki file proof is visible, including:
+docs/stage-17j-r4c-file-proof-visible-live-proof.md:42:No backend deploy, DB change, nginx restart, cloudflared restart, Anki write, full-file storage, model call, worker activation, scheduler activation, or service mutation was performed.
+docs/stage-17k-b-r2-local-anki-summary-proof.md:1:# Stage 17K-B-R2 — Local Anki Summary Proof
+docs/stage-17k-b-r2-local-anki-summary-proof.md:7:Stage 17K-B-R2 successfully read the user's selected Anki collection with SQLite read-only mode and produced deck/card/note metadata without uploading or modifying the Anki file.
+docs/stage-17k-b-r2-local-anki-summary-proof.md:11:- Path: `/home/alex/.local/share/Anki2/User 1/collection.anki2`
+docs/stage-17k-b-r2-local-anki-summary-proof.md:12:- Header: `sqlite-anki-collection`
+docs/stage-17k-b-r2-local-anki-summary-proof.md:51:- Anki file modified: `false`
+docs/stage-17k-b-r2-local-anki-summary-proof.md:53:No frontend deploy, backend deploy, DB write, Anki write, full-file storage, model call, worker activation, scheduler activation, or service restart was performed.
+docs/stage-17k-b-r2-tolerant-readonly-anki-summary.md:1:# Stage 17K-B-R2 — Tolerant Read-only Anki Summary
+docs/stage-17k-b-r2-tolerant-readonly-anki-summary.md:7:Stage 17K-B-R2 makes the local Anki summary tool tolerant when Anki collection metadata fields such as decks or models are not parseable JSON.
+docs/stage-17k-b-r2-tolerant-readonly-anki-summary.md:13:No Anki write, file upload, full-file storage, frontend deploy, backend deploy, DB migration, model call, worker activation, scheduler activation, or service restart is performed.
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:1:# Stage 17K-B-R3 — Table-name Anki Summary Proof
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:7:Stage 17K-B-R3 successfully read the user's selected Anki collection using SQLite read-only mode and extracted real deck, note type, field, and template names from the newer Anki table-based schema.
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:11:- Path: /home/alex/.local/share/Anki2/User 1/collection.anki2
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:12:- Header: sqlite-anki-collection
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:27:- Anki Deck1: 2 cards, 2 notes
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:28:- Anki Deck2: 1 card, 1 note
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:52:- Anki file modified: false
+docs/stage-17k-b-r3-table-name-anki-summary-proof.md:54:No frontend deploy, backend deploy, DB write, Anki write, full-file storage, model call, worker activation, scheduler activation, or service restart was performed.
+docs/stage-17k-b-r3-table-name-readonly-anki-summary.md:1:# Stage 17K-B-R3 — Table-name Read-only Anki Summary
+docs/stage-17k-b-r3-table-name-readonly-anki-summary.md:7:Stage 17K-B-R3 updates the local read-only Anki summary tool to use newer Anki table-based schema names.
+docs/stage-17k-b-r3-table-name-readonly-anki-summary.md:20:The tool still opens SQLite using URI mode=ro and does not write to Anki, upload the file, save full file contents, deploy frontend/backend code, run a model, or activate workers/schedulers.
+docs/stage-17k-b-readonly-anki-summary-tool.md:1:# Stage 17K-B — Read-only Anki Collection Summary Tool
+docs/stage-17k-b-readonly-anki-summary-tool.md:7:Stage 17K-B adds a local Python proof tool for reading collection.anki2 or collection.anki21 metadata before adding any browser SQLite/WASM dependency.
+docs/stage-17k-b-readonly-anki-summary-tool.md:15:It does not write to Anki, upload the Anki file, save full file contents, modify the database, deploy frontend/backend code, run a model, or activate workers/schedulers.
+docs/stage-17k-b-readonly-anki-summary-tool.md:19:python3 ops/anki/anki_collection_readonly_summary.py --collection "$HOME/.local/share/Anki2/User 1/collection.anki2" --json-out /tmp/apc-anki-collection-summary.json
+docs/stage-17k-c-browser-sqlite-parser-decision.md:7:Stage 17K-C records the browser SQLite parser decision for APC Anki deck extraction.
+docs/stage-17k-c-browser-sqlite-parser-decision.md:9:Decision: use a locally vendored, pinned sql.js asset set for the first browser-local Anki metadata extraction proof.
+docs/stage-17k-c-browser-sqlite-parser-decision.md:15:1. User explicitly selects collection.anki2 or collection.anki21 in the browser.
+docs/stage-17k-c-browser-sqlite-parser-decision.md:20:6. APC does not upload, persist, or write the Anki file.
+docs/stage-17k-c-browser-sqlite-parser-decision.md:28:For the first Anki extraction proof, it is broader than needed. The first proof only needs temporary in-memory read-only inspection of a user-selected file.
+docs/stage-17k-c-browser-sqlite-parser-decision.md:57:- no upload of selected Anki files
+docs/stage-17k-c-browser-sqlite-parser-decision.md:58:- no Anki write behavior
+docs/stage-17k-c-browser-sqlite-parser-decision.md:64:- Anki Deck1: 2 cards, 2 notes
+docs/stage-17k-c-browser-sqlite-parser-decision.md:65:- Anki Deck2: 1 card, 1 note
+docs/stage-17k-c-browser-sqlite-parser-decision.md:74:The browser extractor should prefer the newer table-based Anki schema:
+docs/stage-17k-c-browser-sqlite-parser-decision.md:87:Stage 17K-E should add browser-local SQLite metadata extraction to the existing Profile Anki file picker.
+docs/stage-17k-c-browser-sqlite-parser-decision.md:91:- Study with Anki
+docs/stage-17k-c-browser-sqlite-parser-decision.md:96:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, CDN dependency, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included in this decision checkpoint.
+docs/stage-17k-d-vendor-sqljs-assets.md:7:Stage 17K-D vendors pinned sql.js browser SQLite assets for the future browser-local Anki metadata extraction proof.
+docs/stage-17k-d-vendor-sqljs-assets.md:29:These assets will allow APC to parse a user-selected collection.anki2 or collection.anki21 file in the browser, without uploading it to the backend.
+docs/stage-17k-d-vendor-sqljs-assets.md:41:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-e-anki-local-only-study-contract.md:1:# Stage 17K-E — Anki Local-only Study Contract
+docs/stage-17k-e-anki-local-only-study-contract.md:7:Stage 17K-E records the product and safety contract for using Anki decks inside APC Study and Companion.
+docs/stage-17k-e-anki-local-only-study-contract.md:9:Anki decks are a browser-local, read-only study source.
+docs/stage-17k-e-anki-local-only-study-contract.md:17:1. Study with Anki
+docs/stage-17k-e-anki-local-only-study-contract.md:20:## Anki source boundary
+docs/stage-17k-e-anki-local-only-study-contract.md:22:When the user chooses Study with Anki:
+docs/stage-17k-e-anki-local-only-study-contract.md:24:- The Anki file is selected by the user in the browser.
+docs/stage-17k-e-anki-local-only-study-contract.md:25:- The Anki file is parsed in the browser.
+docs/stage-17k-e-anki-local-only-study-contract.md:27:- The user selects which Anki deck to study.
+docs/stage-17k-e-anki-local-only-study-contract.md:29:- APC does not upload Anki deck names, card text, answers, note fields, tags, or media to the server.
+docs/stage-17k-e-anki-local-only-study-contract.md:30:- APC does not write to the Anki collection.
+docs/stage-17k-e-anki-local-only-study-contract.md:32:## Allowed Anki session behavior
+docs/stage-17k-e-anki-local-only-study-contract.md:34:For Anki decks, Companion/Study may:
+docs/stage-17k-e-anki-local-only-study-contract.md:46:## Forbidden Anki session behavior
+docs/stage-17k-e-anki-local-only-study-contract.md:48:For Anki decks, Companion/Study must not:
+docs/stage-17k-e-anki-local-only-study-contract.md:50:- edit Anki cards
+docs/stage-17k-e-anki-local-only-study-contract.md:51:- create Anki cards
+docs/stage-17k-e-anki-local-only-study-contract.md:52:- delete Anki cards
+docs/stage-17k-e-anki-local-only-study-contract.md:53:- flag Anki cards
+docs/stage-17k-e-anki-local-only-study-contract.md:54:- suspend Anki cards
+docs/stage-17k-e-anki-local-only-study-contract.md:55:- bury Anki cards
+docs/stage-17k-e-anki-local-only-study-contract.md:56:- create Anki decks
+docs/stage-17k-e-anki-local-only-study-contract.md:57:- delete Anki decks
+docs/stage-17k-e-anki-local-only-study-contract.md:58:- rename Anki decks
+docs/stage-17k-e-anki-local-only-study-contract.md:59:- write to collection.anki2 or collection.anki21
+docs/stage-17k-e-anki-local-only-study-contract.md:61:- upload Anki card text
+docs/stage-17k-e-anki-local-only-study-contract.md:62:- upload Anki answers
+docs/stage-17k-e-anki-local-only-study-contract.md:63:- upload Anki deck names
+docs/stage-17k-e-anki-local-only-study-contract.md:64:- upload Anki note fields
+docs/stage-17k-e-anki-local-only-study-contract.md:65:- upload Anki tags
+docs/stage-17k-e-anki-local-only-study-contract.md:66:- upload Anki media
+docs/stage-17k-e-anki-local-only-study-contract.md:67:- save per-card Anki study history server-side
+docs/stage-17k-e-anki-local-only-study-contract.md:71:For now, APC may send only aggregate Anki session metrics to the server:
+docs/stage-17k-e-anki-local-only-study-contract.md:73:- source type: anki_browser_local
+docs/stage-17k-e-anki-local-only-study-contract.md:80:- total Anki sessions
+docs/stage-17k-e-anki-local-only-study-contract.md:81:- total Anki session time
+docs/stage-17k-e-anki-local-only-study-contract.md:82:- total Anki cards reviewed
+docs/stage-17k-e-anki-local-only-study-contract.md:107:Right/wrong marking for Anki sessions is local-only in the initial version.
+docs/stage-17k-e-anki-local-only-study-contract.md:109:It may be used to guide the active browser session, but it must not be written to Anki or saved server-side until a later explicit subscription/privacy design is approved.
+docs/stage-17k-e-anki-local-only-study-contract.md:123:- Google Drive sync
+docs/stage-17k-e-anki-local-only-study-contract.md:126:MyDecks permissions must stay separate from Anki permissions.
+docs/stage-17k-e-anki-local-only-study-contract.md:128:Anki read-only limitations must not leak into MyDecks, and MyDecks edit permissions must not leak into Anki.
+docs/stage-17k-e-anki-local-only-study-contract.md:132:The admin page should eventually show aggregate totals only for the initial Anki implementation:
+docs/stage-17k-e-anki-local-only-study-contract.md:138:These totals should not expose private Anki content.
+docs/stage-17k-e-anki-local-only-study-contract.md:150:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:1:# Stage 17K-F — Browser-local Anki Deck UI Live Proof
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:7:Stage 17K-F successfully deployed the browser-local Anki deck extraction UI to VM200 static frontend and proved it live in the browser.
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:9:The Profile Anki panel now loads the same-origin vendored sql.js assets and parses the user-selected `collection.anki2` file locally in the browser.
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:14:- Tag: `controller-stage-17k-f-browser-local-anki-deck-ui-source-2026-06-28`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:20:- Backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17kf-browser-local-anki-deck-ui-r3-20260628T215339Z`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:24:- `/profile` returned HTTP 200
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:31:Browser console proof on `/profile` after selecting `collection.anki2` showed:
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:37:- `hasAnkiDeck1: true`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:38:- `hasAnkiDeck2: true`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:41:- `localSummary.source_type: anki_browser_local`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:43:The visible Profile text showed:
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:45:- `Local Anki decks`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:46:- `Anki Deck1`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:48:- `Anki Deck2`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:56:- `https://alexhartel.com/privatepages/anki-manifest-panel.js?v=stage17kf-browser-local-deck-ui-20260628`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:64:The live UI states that Anki is browser-local and read-only.
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:68:- `source_type: anki_browser_local`
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:73:- no server-saved Anki content
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:74:- no Anki file modification
+docs/stage-17k-f-browser-local-anki-deck-ui-live-proof.md:85:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:1:# Stage 17K-F — Browser-local Anki Deck UI Preflight
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:7:Stage 17K-F preflight confirms that the repo is ready for browser-local Anki deck extraction UI work.
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:9:The next source patch should use the existing Profile Anki file picker and the vendored sql.js assets to parse deck names locally in the browser.
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:13:Anki remains browser-local and read-only.
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:26:- Anki deck names
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:27:- Anki card text
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:28:- Anki answers
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:29:- Anki tags
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:30:- Anki media
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:34:The only future server metric allowed for initial Anki sessions is aggregate session data:
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:36:- source type: anki_browser_local
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:45:- frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:46:- frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:53:Stage 17K-F should add browser-only extraction to the existing Anki panel:
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:56:2. Read the user-selected Anki SQLite file into browser memory.
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:60:6. Render local deck choices without uploading Anki content.
+docs/stage-17k-f-browser-local-anki-deck-ui-preflight.md:67:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:1:# Stage 17K-F — Browser-local Anki Deck UI Source Patch
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:7:Stage 17K-F adds source support for browser-local Anki deck extraction in the Profile Anki panel.
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:9:The Profile Anki panel can now use the vendored same-origin sql.js assets to parse a user-selected collection.anki2 or collection.anki21 file locally in the browser.
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:26:The Anki file remains local to the browser.
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:39:The initial Anki implementation remains read-only and local-only.
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:48:The parser prefers newer Anki schema tables:
+docs/stage-17k-f-browser-local-anki-deck-ui-source.md:61:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-g-study-source-selector-plan.md:7:Stage 17K-G records the Study and Companion source selector plan after browser-local Anki deck extraction was proven live.
+docs/stage-17k-g-study-source-selector-plan.md:11:1. Study with Anki
+docs/stage-17k-g-study-source-selector-plan.md:16:### Study with Anki
+docs/stage-17k-g-study-source-selector-plan.md:18:Anki is a browser-local, read-only source.
+docs/stage-17k-g-study-source-selector-plan.md:22:- load the user-selected Anki file
+docs/stage-17k-g-study-source-selector-plan.md:32:- upload Anki deck names
+docs/stage-17k-g-study-source-selector-plan.md:33:- upload Anki card text
+docs/stage-17k-g-study-source-selector-plan.md:34:- upload Anki answers
+docs/stage-17k-g-study-source-selector-plan.md:35:- upload Anki tags
+docs/stage-17k-g-study-source-selector-plan.md:36:- upload Anki media
+docs/stage-17k-g-study-source-selector-plan.md:37:- write to Anki
+docs/stage-17k-g-study-source-selector-plan.md:38:- edit Anki cards
+docs/stage-17k-g-study-source-selector-plan.md:39:- create Anki cards
+docs/stage-17k-g-study-source-selector-plan.md:40:- delete Anki cards
+docs/stage-17k-g-study-source-selector-plan.md:41:- flag Anki cards
+docs/stage-17k-g-study-source-selector-plan.md:42:- suspend Anki cards
+docs/stage-17k-g-study-source-selector-plan.md:43:- bury Anki cards
+docs/stage-17k-g-study-source-selector-plan.md:44:- save per-card Anki history server-side
+docs/stage-17k-g-study-source-selector-plan.md:46:Initial server metrics allowed for Anki are aggregate-only:
+docs/stage-17k-g-study-source-selector-plan.md:48:- source type: anki_browser_local
+docs/stage-17k-g-study-source-selector-plan.md:61:- imports from Anki
+docs/stage-17k-g-study-source-selector-plan.md:65:- Google Drive sync
+docs/stage-17k-g-study-source-selector-plan.md:68:MyDecks permissions must remain separate from Anki permissions.
+docs/stage-17k-g-study-source-selector-plan.md:76:- selected source: Anki or MyDecks
+docs/stage-17k-g-study-source-selector-plan.md:82:For Anki sessions, Companion must operate in read-only/local-only mode.
+docs/stage-17k-g-study-source-selector-plan.md:90:- Start Study Session with Anki
+docs/stage-17k-g-study-source-selector-plan.md:93:The Anki action should depend on a browser-local Anki file summary already available from the Profile Anki picker.
+docs/stage-17k-g-study-source-selector-plan.md:102:- total Anki sessions
+docs/stage-17k-g-study-source-selector-plan.md:107:The admin page must not show private Anki deck names, card text, answers, tags, or media.
+docs/stage-17k-g-study-source-selector-plan.md:111:1. Add source selector plan and smoke.
+docs/stage-17k-g-study-source-selector-plan.md:112:2. Add a small frontend-only Study source selector UI.
+docs/stage-17k-g-study-source-selector-plan.md:113:3. Connect Anki source selector to the browser-local summary.
+docs/stage-17k-g-study-source-selector-plan.md:114:4. Add local Anki deck selection to session start.
+docs/stage-17k-g-study-source-selector-plan.md:117:7. Add Google Drive sync later, with separate OAuth/Drive approval.
+docs/stage-17k-g-study-source-selector-plan.md:123:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:7:Stage 17K-H successfully proved the Study source selector live in the browser.
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:11:- Study with Anki
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:14:The Anki choice uses the browser-local Anki summary created by the Profile Anki picker.
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:19:- Tag: `controller-stage-17k-h-study-source-selector-ui-source-2026-06-28`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:23:- `stage17kh-study-source-selector-ui-20260628`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:29:- `apiVersion: stage17kh-study-source-selector-ui-20260628`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:31:- `hasStudyWithAnki: true`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:34:- `ankiSummaryAvailable: true`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:35:- Anki decks available: `2`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:41:- `Anki stays browser-local and read-only`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:42:- `Study with Anki`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:43:- `Use Anki Deck1 · 2 cards`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:44:- `Use Anki Deck2 · 1 cards`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:48:## Browser proof: Anki deck selected
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:50:After selecting `Anki Deck1`, browser console proof showed:
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:53:- `apiVersion: stage17kh-study-source-selector-ui-20260628`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:54:- `sourceType: anki_browser_local`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:55:- `deckName: Anki Deck1`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:61:- `canWriteAnki: false`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:62:- `canUploadAnkiContent: false`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:66:- `source_type: anki_browser_local`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:67:- `source_label: Study with Anki`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:69:- `deck_name: Anki Deck1`
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:74:The Anki selector stores only a browser-local source choice in localStorage.
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:78:It does not upload Anki deck names, card text, answers, tags, media, or per-card review history.
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:80:It does not write to Anki.
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:82:It keeps Anki separated from the existing editable/backend-backed MyDecks study store.
+docs/stage-17k-h-study-source-selector-ui-live-proof.md:86:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:7:Stage 17K-H preflight identifies the safest frontend target for adding a Study source selector after Stage 17K-G.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:11:- Study with Anki
+docs/stage-17k-h-study-source-selector-ui-preflight.md:16:Anki remains browser-local and read-only.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:30:- Anki/Profile panel references
+docs/stage-17k-h-study-source-selector-ui-preflight.md:35:The next source patch should add a frontend-only Study source selector UI.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:37:It should not send Anki content to the server.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:39:It should not start a backend job, model call, worker, scheduler, DB write, Anki write, Google Drive write, or deploy by itself.
+docs/stage-17k-h-study-source-selector-ui-preflight.md:45:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-h-study-source-selector-ui-source.md:7:Stage 17K-H adds a frontend-only Study source selector.
+docs/stage-17k-h-study-source-selector-ui-source.md:11:- Study with Anki
+docs/stage-17k-h-study-source-selector-ui-source.md:14:## Anki behavior
+docs/stage-17k-h-study-source-selector-ui-source.md:16:The Anki path reads the browser-local Anki deck summary already created by the Profile Anki picker.
+docs/stage-17k-h-study-source-selector-ui-source.md:18:It lets the user select an Anki deck locally.
+docs/stage-17k-h-study-source-selector-ui-source.md:20:It does not upload Anki deck names, card text, answers, tags, media, or per-card history.
+docs/stage-17k-h-study-source-selector-ui-source.md:22:It does not write to Anki.
+docs/stage-17k-h-study-source-selector-ui-source.md:30:It remains separate from Anki permissions.
+docs/stage-17k-h-study-source-selector-ui-source.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:1:# Stage 17K-I — Anki Read-only Session Adapter Plan
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:7:Stage 17K-I defines the browser-local Anki read-only session adapter plan.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:11:- Stage 17K-F browser-local Anki deck extraction
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:12:- Stage 17K-H Study source selector
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:13:- a future real Study Session with Anki flow
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:15:The adapter must let a user study cards from a selected Anki deck without routing Anki data through the existing editable/backend-backed MyDecks study store.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:19:### Browser-local Anki summary
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:21:The Profile Anki picker can parse `collection.anki2` locally in the browser using same-origin vendored sql.js.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:31:- no Anki write
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:37:- `anki_browser_local`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:40:The Anki selection records a browser-local choice with:
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:47:- no Anki write permission
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:48:- no Anki content upload permission
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:54:Anki card content must not be stored in localStorage.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:56:Anki card content includes:
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:70:The browser cannot safely retain the full user-selected Anki SQLite file across a page reload using normal file input APIs.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:72:Therefore, a real Anki study session must do one of these:
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:75:2. Ask the user to select the Anki file again before starting the Anki study session.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:81:- actual card extraction requires selecting the Anki file again
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:90:- `window.APC_ANKI_READONLY_SESSION`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:94:- read the selected Anki source from `apc.study.sourceSelection.v1`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:95:- verify `source_type === anki_browser_local`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:96:- request or receive a user-selected Anki SQLite file
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:107:- call `/api/study/*`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:110:- upload Anki card content
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:111:- upload Anki deck names
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:112:- upload Anki tags
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:113:- upload Anki media
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:114:- write to Anki
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:115:- update Anki scheduling
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:116:- insert Anki revlog rows
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:123:- route Anki cards into MyDecks automatically
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:124:- save Anki card text to localStorage
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:126:## Initial supported Anki card extraction
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:139:- filter `cards.did` by selected Anki deck ID
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:141:- split `notes.flds` on the Anki field separator `\x1f`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:148:## Later Anki support
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:153:- image/audio media lookup from local Anki media folders
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:166:The first real Anki Study UI should show:
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:168:1. selected source: Study with Anki
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:169:2. selected local deck name from source selector
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:170:3. a file chooser to re-select `collection.anki2`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:171:4. a Start local Anki session button
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:180:- Anki card content stays in this browser session only.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:181:- APC does not upload Anki card text, answers, tags, or media.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:182:- This does not change the Anki file.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:186:Companion may read from the Anki read-only session adapter only after a local Anki session is active.
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:188:For Anki sessions, Companion may:
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:196:For Anki sessions, Companion must not:
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:198:- create/edit/delete/flag Anki cards
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:200:- send Anki card text to the backend
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:201:- send Anki card text to model jobs without separate local-model/privacy approval
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:207:- source type: `anki_browser_local`
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:214:- Anki deck name
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:215:- Anki deck ID
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:216:- Anki note ID
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:217:- Anki card ID
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:218:- Anki card text
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:219:- Anki answer text
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:220:- Anki tags
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:221:- Anki media names
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:222:- Anki media data
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:240:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:1:# Stage 17K-J — Anki Read-only Session Skeleton Live Proof
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:7:Stage 17K-J successfully deployed and proved the frontend-only Anki read-only session skeleton live on the Study page.
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:13:- `window.APC_ANKI_READONLY_SESSION`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:15:- selected Anki source validation
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:17:- header-only Anki SQLite inspection
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:23:- Tag: `controller-stage-17k-j-anki-readonly-session-skeleton-source-2026-06-28`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:28:- Live marker: `stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:29:- Backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17kj-anki-readonly-session-skeleton-20260628T221217Z`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:34:- `/privatepages/anki-readonly-session.js` contained `stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:35:- `/privatepages/anki-readonly-session.js` contained `APC_ANKI_READONLY_SESSION`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:41:- `apiVersion: stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:46:- `selection_source_type: anki_browser_local`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:47:- `selected_deck_name: Anki Deck1`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:53:After selecting `collection.anki2` and clicking Start local Anki skeleton session, browser snapshot showed:
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:55:- `version: stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:56:- `selection_source_type: anki_browser_local`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:57:- `selected_deck_name: Anki Deck1`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:61:- `selected_file_name: collection.anki2`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:63:- `selected_file_header_kind: sqlite-anki-collection`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:75:- `anki_write_allowed: false`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:80:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:82:No Anki card text was extracted in this skeleton stage.
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:84:No Anki card text was stored in localStorage.
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:1:# Stage 17K-J — Anki Read-only Session Adapter Skeleton Source Patch
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:7:Stage 17K-J adds a frontend-only Anki read-only session adapter skeleton.
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:11:- `window.APC_ANKI_READONLY_SESSION`
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:13:- selected Anki source validation
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:22:- confirm `anki_browser_local`
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:23:- ask the user to re-select an Anki SQLite file
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:35:- call `/api/study/*`
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:37:- write to Anki
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:38:- create, edit, delete, flag, suspend, or bury Anki cards
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:39:- upload Anki deck names, card text, tags, answers, media, or per-card history
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:45:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:1:# Stage 17K-K — Anki Basic Memory Session Live Proof
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:7:Stage 17K-K successfully deployed and proved the browser-local Anki Basic memory session live on the Study page.
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:9:The adapter can load Basic-style Anki cards from the selected local Anki deck into JavaScript memory only.
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:11:This live proof intentionally does not record Anki card question text or answer text.
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:16:- Stage 17K-K source tag: `controller-stage-17k-k-anki-basic-memory-session-source-2026-06-28`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:18:- Stage 17K-K-R2 repair tag: `controller-stage-17k-k-r2-anki-file-memory-handoff-repair-2026-06-28`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:22:- `stage17kk-anki-basic-memory-session-20260628`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:26:Browser proof on `/study` after selecting `Anki Deck1`, re-selecting `collection.anki2`, and clicking `Load selected Anki deck into memory` showed:
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:28:- `apiVersion: stage17kk-anki-basic-memory-session-20260628`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:33:- `selection_source_type: anki_browser_local`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:34:- `selected_deck_name: Anki Deck1`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:38:- `currentCardShape.deckName: Anki Deck1`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:45:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:53:The proof confirms that Anki card data is loaded into JavaScript memory for the active browser page.
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:70:- `anki_write_allowed: false`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:75:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:77:No Anki card text was saved to repo docs.
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:79:No Anki card text was intentionally saved to localStorage.
+docs/stage-17k-k-anki-basic-memory-session-source.md:1:# Stage 17K-K — Anki Basic Memory Session Source Patch
+docs/stage-17k-k-anki-basic-memory-session-source.md:7:Stage 17K-K upgrades the Anki read-only session adapter from a skeleton to a browser-local Basic card memory session.
+docs/stage-17k-k-anki-basic-memory-session-source.md:9:It can load cards from the selected Anki deck into JavaScript memory only.
+docs/stage-17k-k-anki-basic-memory-session-source.md:16:- requires `source_type: anki_browser_local`
+docs/stage-17k-k-anki-basic-memory-session-source.md:17:- requires the user to re-select the Anki SQLite file
+docs/stage-17k-k-anki-basic-memory-session-source.md:19:- filters cards by selected Anki deck ID
+docs/stage-17k-k-anki-basic-memory-session-source.md:21:- splits `notes.flds` on the Anki field separator
+docs/stage-17k-k-anki-basic-memory-session-source.md:36:The adapter does not call `/api/study/*`.
+docs/stage-17k-k-anki-basic-memory-session-source.md:40:The adapter does not write to Anki.
+docs/stage-17k-k-anki-basic-memory-session-source.md:46:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-k-r2-anki-file-memory-handoff-repair.md:1:# Stage 17K-K-R2 — Anki File Memory Handoff Repair
+docs/stage-17k-k-r2-anki-file-memory-handoff-repair.md:7:Stage 17K-K-R2 repairs the browser UI handoff for the Anki Basic memory session before live deploy.
+docs/stage-17k-k-r2-anki-file-memory-handoff-repair.md:11:This repair keeps the selected Anki file object in a module-level JavaScript memory variable only:
+docs/stage-17k-k-r2-anki-file-memory-handoff-repair.md:13:- `selectedAnkiFile`
+docs/stage-17k-k-r2-anki-file-memory-handoff-repair.md:27:Anki card content remains JavaScript memory only.
+docs/stage-17k-k-r2-anki-file-memory-handoff-repair.md:35:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-k-r3-preserve-active-anki-memory-session.md:1:# Stage 17K-K-R3 — Preserve Active Anki Memory Session
+docs/stage-17k-k-r3-preserve-active-anki-memory-session.md:17:The repair preserves the active in-memory Anki session when the user clicks load again without a selected file but cards are already loaded.
+docs/stage-17k-k-r3-preserve-active-anki-memory-session.md:33:No Anki content is uploaded.
+docs/stage-17k-k-r3-preserve-active-anki-memory-session.md:37:No Anki write is added.
+docs/stage-17k-k-r3-preserve-active-anki-memory-session.md:43:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-k-r4-anki-active-status-repair.md:1:# Stage 17K-K-R4 — Anki Active Status Repair
+docs/stage-17k-k-r4-anki-active-status-repair.md:7:Stage 17K-K-R4 repairs the Anki Basic memory session status field after live testing.
+docs/stage-17k-k-r4-anki-active-status-repair.md:36:No Anki content is uploaded.
+docs/stage-17k-k-r4-anki-active-status-repair.md:40:No Anki write is added.
+docs/stage-17k-k-r4-anki-active-status-repair.md:49:- `privatepages/anki-readonly-session.js`
+docs/stage-17k-k-r4-anki-active-status-repair.md:51:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:1:# Stage 17K-L — Anki Local Reveal / Right / Wrong / Stop Live Proof
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:7:Stage 17K-L successfully proved the browser-local Anki review loop on the live Study page.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:11:1. Re-select local `collection.anki2` through the browser file picker.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:12:2. Select `Anki Deck1`.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:13:3. Click `Load selected Anki deck into memory`.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:20:This proof intentionally does not record Anki question text or answer text.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:31:- `stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:35:- `/home/jkg76nid/apc-vm200-frontend-backups/stage17kk-r4-anki-active-status-repair-20260628T223627Z`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:42:- `apiVersion: stage17kk-anki-basic-memory-session-20260628`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:51:- `firstCardShape.deckName: Anki Deck1`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:62:- `secondCardShape.deckName: Anki Deck1`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:79:The Anki file is selected through the browser file picker and read locally in the browser.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:81:No Anki file is uploaded to the server.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:83:No Anki card text is saved to repo docs.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:85:No Anki card text is intentionally saved to localStorage.
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:92:- `anki_write_allowed: false`
+docs/stage-17k-l-anki-local-reveal-right-wrong-stop-live-proof.md:97:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:1:# Stage 17K-M — Companion Local Anki Bridge Preflight Plan
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:7:Stage 17K-M prepares the next safe bridge between Companion and the browser-local Anki review session.
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:9:The goal is for Companion UI code to detect the current local Anki card shape from browser memory only.
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:18:- Prior live proof tag: `controller-stage-17k-l-anki-local-review-loop-live-proof-2026-06-28`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:20:## Proven Anki state
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:22:The browser-local Anki adapter is live and proved:
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:24:- local file picker reads `collection.anki2` in browser
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:25:- selected deck `Anki Deck1` can be loaded into memory
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:29:- no Anki file upload
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:30:- no Anki write
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:31:- no backend API call from the Anki adapter
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:40:- read `window.APC_ANKI_READONLY_SESSION.snapshot()`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:41:- read `window.APC_ANKI_READONLY_SESSION.currentCard()`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:44:- show that the active source is `anki_browser_local`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:50:- backend API calls containing Anki card text
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:51:- model calls containing Anki card text
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:52:- saving Anki card text to localStorage
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:53:- saving Anki card text to repo docs
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:54:- writing to Anki
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:55:- flagging Anki cards
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:56:- editing Anki cards
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:57:- deleting Anki cards
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:58:- creating Anki cards
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:59:- uploading Anki files
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:60:- MyDecks writeback for Anki-sourced cards
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:68:  source_type: "anki_browser_local",
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:80:    anki_write_allowed: false
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:91:- `privatepages/companion-local-anki-bridge.js`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:95:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.version`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:96:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.snapshot()`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:97:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.currentCardShape()`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:112:- `/tmp/stage17k-m-companion-local-anki-bridge-inventory.txt`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:116:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:1:# Stage 17K-N — Companion Local Anki Bridge Live Proof
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:7:Stage 17K-N successfully proved the Companion local Anki bridge live in the browser.
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:9:The bridge reads the browser-local Anki adapter state from JavaScript memory and returns only a safe current-card shape.
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:11:This proof intentionally does not record Anki question text or answer text.
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:16:- Tag: `controller-stage-17k-n-companion-local-anki-bridge-source-2026-06-28`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:20:- `stage17kn-companion-local-anki-bridge-source-20260628`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:26:- `version: stage17kn-companion-local-anki-bridge-source-20260628`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:28:- `anki_adapter_present: true`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:29:- `source_type: anki_browser_local`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:32:- `selected_deck_name: Anki Deck1`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:47:- `current_card_shape.deck_name: Anki Deck1`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:64:- `anki_write_allowed: false`
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:69:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:71:No Anki card question text or answer text was saved to repo docs.
+docs/stage-17k-n-companion-local-anki-bridge-live-proof.md:73:No Anki card text was sent to backend or model paths.
+docs/stage-17k-n-companion-local-anki-bridge-source.md:1:# Stage 17K-N — Companion Local Anki Bridge Source
+docs/stage-17k-n-companion-local-anki-bridge-source.md:7:Stage 17K-N adds a separate Companion local Anki bridge source file.
+docs/stage-17k-n-companion-local-anki-bridge-source.md:9:The bridge lets Companion UI detect the current browser-local Anki card shape from JavaScript memory only.
+docs/stage-17k-n-companion-local-anki-bridge-source.md:11:It does not return Anki card question text or answer text.
+docs/stage-17k-n-companion-local-anki-bridge-source.md:17:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js`
+docs/stage-17k-n-companion-local-anki-bridge-source.md:23:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.version`
+docs/stage-17k-n-companion-local-anki-bridge-source.md:24:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.snapshot()`
+docs/stage-17k-n-companion-local-anki-bridge-source.md:25:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.currentCardShape()`
+docs/stage-17k-n-companion-local-anki-bridge-source.md:26:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.renderPanel()`
+docs/stage-17k-n-companion-local-anki-bridge-source.md:51:- Anki question text
+docs/stage-17k-n-companion-local-anki-bridge-source.md:52:- Anki answer text
+docs/stage-17k-n-companion-local-anki-bridge-source.md:53:- Anki media data
+docs/stage-17k-n-companion-local-anki-bridge-source.md:54:- Anki card ID
+docs/stage-17k-n-companion-local-anki-bridge-source.md:55:- Anki note ID
+docs/stage-17k-n-companion-local-anki-bridge-source.md:56:- Anki per-card review history
+docs/stage-17k-n-companion-local-anki-bridge-source.md:66:- `anki_write_allowed: false`
+docs/stage-17k-n-companion-local-anki-bridge-source.md:73:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:1:# Stage 17K-O — Companion Local Anki Status Card Live Proof
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:7:Stage 17K-O successfully proved the Companion-side local Anki bridge panel on the live Companion page.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:9:The Companion page can load the local Anki bridge and render a Companion-side status card.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:11:This proof intentionally does not record Anki question text or answer text.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:16:- Stage 17K-N source tag: `controller-stage-17k-n-companion-local-anki-bridge-source-2026-06-28`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:18:- Stage 17K-N live proof tag: `controller-stage-17k-n-companion-local-anki-bridge-live-proof-2026-06-28`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:25:- `bridgeVersion: stage17kn-companion-local-anki-bridge-source-20260628`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:30:- `state.anki_adapter_present: true`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:31:- `state.source_type: anki_browser_local`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:38:- `noAnkiWriteAllowed: true`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:44:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:45:- `/privatepages/companion-local-anki-bridge.js?v=stage17kn-companion-local-anki-bridge-source-20260628`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:49:`state.status: idle` and `state.active: false` are acceptable on the Companion route because active Anki card memory can be route/page-session dependent.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:57:- Anki writes disallowed
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:61:The Companion local Anki bridge returns only shape/status/counter information.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:63:It does not return Anki question text.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:65:It does not return Anki answer text.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:71:It does not allow Anki writes.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:73:It does not allow MyDecks writeback for Anki-sourced cards.
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:77:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed for this proof.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:1:# Stage 17K-P — Companion Local Anki Visible Privacy Copy Live Proof
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:7:Stage 17K-P successfully proved the Companion local Anki bridge visible privacy copy live on the Companion page.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:13:This proof intentionally does not record Anki question text or answer text.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:18:- Tag: `controller-stage-17k-p-companion-local-anki-visible-privacy-copy-2026-06-28`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:22:- `/home/jkg76nid/apc-vm200-frontend-backups/stage17kp-companion-local-anki-visible-privacy-copy-20260628T225750Z`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:26:- `stage17kp-companion-local-anki-visible-privacy-copy-20260628`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:33:- `bridgeVersion: stage17kp-companion-local-anki-visible-privacy-copy-20260628`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:38:- `state.anki_adapter_present: true`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:39:- `state.source_type: anki_browser_local`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:46:- `noAnkiWriteAllowed: true`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:52:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:53:- `/privatepages/companion-local-anki-bridge.js?v=stage17kp-companion-local-anki-visible-privacy-copy-20260628`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:57:The Companion local Anki bridge returns only shape/status/counter information.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:59:It does not return Anki question text.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:61:It does not return Anki answer text.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:67:It does not allow Anki writes.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:69:It does not allow MyDecks writeback for Anki-sourced cards.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:73:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed for this proof.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:1:# Stage 17K-P — Companion Local Anki Visible Privacy Copy
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:7:Stage 17K-P repairs the Companion local Anki bridge panel copy.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:20:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:26:The bridge does not return Anki question text.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:28:The bridge does not return Anki answer text.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:34:The bridge does not allow Anki writes.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:36:The bridge does not allow MyDecks writeback for Anki-sourced cards.
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy.md:40:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:1:# Stage 17K-Q — Companion Local Anki Current Card Shape Command Live Proof
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:7:Stage 17K-Q successfully proved the Companion local Anki current-card-shape command live on the Companion page.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:11:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.currentCardShapeCommand()`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:13:The command returns safe local Anki status, shape, and privacy information.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:15:It does not return Anki question text.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:17:It does not return Anki answer text.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:23:It does not write to Anki.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:28:- Tag: `controller-stage-17k-q-companion-local-anki-card-shape-command-2026-06-28`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:32:- `stage17kq-companion-local-anki-current-card-shape-command-20260628`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:39:- `bridgeVersion: stage17kq-companion-local-anki-current-card-shape-command-20260628`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:40:- `command: current_anki_card_shape`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:47:- `noAnkiWriteAllowed: true`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:53:- `Local Anki bridge status:`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:54:- `source: anki_browser_local`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:57:- `deck: Anki Deck1`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:78:- `deck_name: Anki Deck1`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:85:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:86:- `/privatepages/companion-local-anki-bridge.js?v=stage17kq-companion-local-anki-current-card-shape-command-20260628`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:96:The Companion local Anki command returns only status, counters, and shape information.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:98:It does not return Anki question text.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:100:It does not return Anki answer text.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:106:It does not allow Anki writes.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:108:It does not allow MyDecks writeback for Anki-sourced cards.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:112:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed for this proof.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:116:No Anki question text or answer text was saved to repo docs.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:1:# Stage 17K-Q — Companion Local Anki Current Card Shape Command
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:7:Stage 17K-Q adds a local-only Companion bridge command for the current Anki card shape.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:11:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.currentCardShapeCommand()`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:13:It returns a safe message and shape object for the current local Anki card.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:15:It does not return Anki question text.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:17:It does not return Anki answer text.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:23:It does not write to Anki.
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:27:The Companion local Anki bridge panel now includes:
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:29:- `Describe current local Anki card shape`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:52:- Anki card ID
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:53:- Anki note ID
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:57:- Anki writes
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:58:- MyDecks writeback for Anki cards
+docs/stage-17k-q-companion-local-anki-current-card-shape-command.md:64:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:1:# Stage 17K-R — Companion Active Anki Session Handoff Plan
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:7:Stage 17K-R records the safe handoff plan for making an active browser-local Anki session usable from Companion.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:9:The current Companion local Anki bridge can report local Anki status and current-card shape safely.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:11:The next goal is to let Companion attach to or start a browser-local Anki session without routing Anki cards through the MyDecks edit/delete/flag/write flows.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:18:- Current bridge marker: `stage17kq-companion-local-anki-current-card-shape-command-20260628`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:20:## Current browser-local Anki components
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:22:The Anki read-only session adapter already exposes:
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:24:- `window.APC_ANKI_READONLY_SESSION`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:31:The Companion local Anki bridge already exposes:
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:33:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:39:The Study source selector already records Anki as:
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:41:- `source_type: anki_browser_local`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:43:- `can_write_anki: false`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:44:- `can_upload_anki_content: false`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:48:The existing `companion.js` MyDecks path is not safe for Anki cards.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:52:Therefore Anki must remain on a separate Companion bridge path.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:54:Do not merge Anki cards into `APC_STUDY_STORE`.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:56:Do not route Anki cards through MyDecks command handlers.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:58:Do not store Anki question text or answer text in Companion chat messages, localStorage, backend, DB, or model calls.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:62:The safe handoff should add a Companion-side local-only Anki session area that can:
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:64:1. Show whether the Anki read-only adapter is present.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:65:2. Show whether an Anki deck has been selected locally.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:66:3. Let the user mount or open the existing browser-local Anki loader from Companion.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:67:4. Let the user load the selected Anki deck into JavaScript memory.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:69:6. Keep card question text and answer text inside the read-only Anki session adapter UI only.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:70:7. Keep all Anki data browser-local.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:71:8. Keep all writes disabled for Anki.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:107:- Anki writes
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:108:- MyDecks writeback for Anki cards
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:112:Stage 17K-S should add a local-only Companion Anki session mount.
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:116:- stay in `companion-local-anki-bridge.js`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:121:- not expose Anki question text or answer text through the bridge
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:122:- call existing Anki read-only adapter APIs where possible
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:123:- provide visible UI copy explaining that the user may need to re-select the Anki file because browser File objects cannot safely persist across hard refreshes or full route reloads
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:127:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included in this plan.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:1:# Stage 17K-R — Companion Anki/Local Source Separation and Future Drive Sync Plan
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:12:2. User-selected Anki cards
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:16:Anki cards must not be merged into MyDecks.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:18:Anki cards must not be routed through MyDecks create/edit/delete/flag/write flows.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:24:- `Use Anki`
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:25:- `Show my Anki decks`
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:26:- `Study Anki Deck1`
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:31:If the user selects Anki, Companion should use the user-provided local Anki file source to read the data needed for the session.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:35:## Anki source direction
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:37:The Anki path should support a user-provided browser-local file source.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:43:The Anki source should let Companion:
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:46:- list available Anki decks
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:47:- select an Anki deck
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:48:- load selected Anki cards into browser memory
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:49:- run a study session from selected Anki cards
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:50:- reveal cards only inside the local Anki read-only session UI
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:53:The Anki source must remain read-only toward Anki.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:70:- future Google Drive sync
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:74:They do not apply to Anki-sourced cards.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:92:For Anki sessions, local stats may reference deck/session metadata and aggregate counters.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:94:Do not persist raw Anki question text or answer text into backend, model calls, or repo docs.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:96:## Future Google Drive direction
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:98:When Google Drive sync is implemented, APC should support push/pull of user study data.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:109:Anki and platform cards must remain separate in Drive sync.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:111:Anki card content should not be uploaded to Drive or APC backend unless a separate explicit design approves it.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:113:The first Drive sync design should prefer syncing stats and metadata, not raw Anki card content.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:117:Allowed for Anki bridge/session stats:
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:136:Forbidden for Anki bridge/backend/model paths:
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:146:- backend calls containing Anki card content
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:147:- model calls containing Anki card content
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:148:- Anki writes
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:149:- MyDecks writeback for Anki cards
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:153:Stage 17K-S should add a Companion local Anki session mount.
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:158:- use `APC_ANKI_READONLY_SESSION` for browser-local Anki loading/session actions
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:159:- use `APC_COMPANION_LOCAL_ANKI_BRIDGE` for safe shape/status/counter reporting
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:160:- make the source choice visible: Anki vs Local/MyDecks
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:163:- avoid storing Anki question text or answer text
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:170:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-s-companion-local-anki-session-mount.md:1:# Stage 17K-S — Companion Local Anki Session Mount
+docs/stage-17k-s-companion-local-anki-session-mount.md:7:Stage 17K-S adds a Companion-side local-only mount command for the existing Anki read-only session adapter.
+docs/stage-17k-s-companion-local-anki-session-mount.md:11:- `window.APC_COMPANION_LOCAL_ANKI_BRIDGE.ankiSessionMountCommand()`
+docs/stage-17k-s-companion-local-anki-session-mount.md:15:- `window.APC_ANKI_READONLY_SESSION.renderPanel()`
+docs/stage-17k-s-companion-local-anki-session-mount.md:17:This keeps Anki study separate from MyDecks.
+docs/stage-17k-s-companion-local-anki-session-mount.md:21:The Companion local Anki bridge panel now includes:
+docs/stage-17k-s-companion-local-anki-session-mount.md:23:- `Mount local Anki session controls`
+docs/stage-17k-s-companion-local-anki-session-mount.md:27:It does not return Anki question text.
+docs/stage-17k-s-companion-local-anki-session-mount.md:29:It does not return Anki answer text.
+docs/stage-17k-s-companion-local-anki-session-mount.md:33:Anki remains separate from APC / Local / MyDecks cards.
+docs/stage-17k-s-companion-local-anki-session-mount.md:37:This stage does not route Anki cards through MyDecks create/edit/delete/flag/write flows.
+docs/stage-17k-s-companion-local-anki-session-mount.md:39:This stage does not merge Anki cards into `APC_STUDY_STORE`.
+docs/stage-17k-s-companion-local-anki-session-mount.md:67:- backend calls containing Anki card content
+docs/stage-17k-s-companion-local-anki-session-mount.md:68:- model calls containing Anki card content
+docs/stage-17k-s-companion-local-anki-session-mount.md:69:- Anki writes
+docs/stage-17k-s-companion-local-anki-session-mount.md:70:- MyDecks writeback for Anki cards
+docs/stage-17k-s-companion-local-anki-session-mount.md:76:No frontend deploy, backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:1:# Stage 17K-S-R2 — Companion Local Anki Session Mount Output Repair Live Proof
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:5:Stage 17K-S-R2 live proof passed for the Companion local Anki mount output repair.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:8:- Source tag: `controller-stage-17k-s-r2-companion-local-anki-session-mount-output-repair-2026-06-28`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:9:- Live marker: `stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:13:- `bridgeVersion: stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:14:- `command: mount_anki_session_adapter`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:22:- `noAnkiWriteAllowed: true`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:27:- `source: anki_browser_local`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:29:- `deck: Anki Deck2`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:38:It does not return Anki question text or answer text.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:40:It does not allow backend calls, model calls, Anki writes, or MyDecks writeback.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair-live-proof.md:44:No Anki question text or answer text was saved to repo docs.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:1:# Stage 17K-S-R2 — Companion Local Anki Session Mount Output Repair
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:7:Stage 17K-S-R2 repairs the Companion local Anki session mount output area.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:20:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js`
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:24:The repair does not return Anki question text.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:26:The repair does not return Anki answer text.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:32:The repair does not add Anki writes.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:34:The repair does not add MyDecks writeback for Anki cards.
+docs/stage-17k-s-r2-companion-local-anki-session-mount-output-repair.md:38:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:1:# Stage 17K-S-R3 — Anki Readonly renderPanel Export Live Proof
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:8:- Source tag: `controller-stage-17k-s-r3-anki-readonly-renderpanel-export-2026-06-28`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:9:- VM200 backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17ks-r3-anki-readonly-renderpanel-export-20260628T234224Z`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:12:- Bridge: `stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:13:- Anki adapter: `stage17ks-r3-anki-readonly-renderpanel-export-20260628`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:17:- `bridgeVersion: stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:18:- `ankiAdapterVersion: stage17ks-r3-anki-readonly-renderpanel-export-20260628`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:20:- `command: mount_anki_session_adapter`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:28:- `noAnkiWriteAllowed: true`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:33:- `source: anki_browser_local`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:36:- `deck: Anki Deck2`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:43:The Companion bridge can now call the Anki read-only adapter renderPanel API.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:47:It does not return Anki question text or answer text.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:49:It does not allow backend calls, model calls, Anki writes, or MyDecks writeback.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:51:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed for this proof.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export-live-proof.md:53:No Anki question text or answer text was saved to repo docs.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:1:# Stage 17K-S-R3 — Anki Readonly renderPanel Export
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:7:Stage 17K-S-R3 repairs the actual Companion-to-Anki adapter mount path.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:15:Preflight confirmed that `window.APC_ANKI_READONLY_SESSION` existed but did not export `renderPanel`.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:21:from the Anki read-only session adapter.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:28:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:32:This patch does not change Anki card extraction behavior.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:34:This patch does not return Anki question text through the Companion bridge.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:36:This patch does not return Anki answer text through the Companion bridge.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:42:This patch does not add Anki writes.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:44:This patch does not add MyDecks writeback for Anki-sourced cards.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:48:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-study-session-source-model-plan.md:7:After Stage 17J-R4C, the Profile page has a clean browser-local Anki file picker/proof flow. The next Study/Companion direction is to expose Study Sessions with explicit deck source choices:
+docs/stage-17k-study-session-source-model-plan.md:9:1. Study Session with Anki
+docs/stage-17k-study-session-source-model-plan.md:12:This keeps imported/read-only Anki content separate from APC-native decks while preserving a path toward user-owned Google Drive storage.
+docs/stage-17k-study-session-source-model-plan.md:18:The current Anki panel supports:
+docs/stage-17k-study-session-source-model-plan.md:27:- No Anki write
+docs/stage-17k-study-session-source-model-plan.md:31:### Study Session with Anki
+docs/stage-17k-study-session-source-model-plan.md:33:Use when the user wants to study from an existing Anki source.
+docs/stage-17k-study-session-source-model-plan.md:37:- `collection.anki2`
+docs/stage-17k-study-session-source-model-plan.md:38:- `collection.anki21`
+docs/stage-17k-study-session-source-model-plan.md:39:- `.apkg`
+docs/stage-17k-study-session-source-model-plan.md:48:- APC does not write back to Anki.
+docs/stage-17k-study-session-source-model-plan.md:53:- Preserve original Anki source metadata.
+docs/stage-17k-study-session-source-model-plan.md:64:- Imported cards from Anki
+docs/stage-17k-study-session-source-model-plan.md:75:- Link My Decks with the user's Google Drive.
+docs/stage-17k-study-session-source-model-plan.md:84:- “Start Study Session with Anki”
+docs/stage-17k-study-session-source-model-plan.md:94:- Track session state without confusing Anki-read-only cards and APC-native cards
+docs/stage-17k-study-session-source-model-plan.md:104:### Stage 17K-B — Local Anki deck extraction proof
+docs/stage-17k-study-session-source-model-plan.md:106:Use local Python against a selected `collection.anki2` to prove:
+docs/stage-17k-study-session-source-model-plan.md:121:### Stage 17K-D — Browser-local Anki metadata extraction
+docs/stage-17k-study-session-source-model-plan.md:123:Parse selected Anki files in the browser.
+docs/stage-17k-study-session-source-model-plan.md:131:- Study with Anki
+docs/stage-17k-study-session-source-model-plan.md:134:### Stage 17L — Google Drive My Decks plan
+docs/stage-17k-study-session-source-model-plan.md:144:- Google OAuth change
+docs/stage-17k-study-session-source-model-plan.md:145:- Google Drive write
+docs/stage-17k-study-session-source-model-plan.md:146:- Anki file write
+docs/stage-17k-study-session-source-model-plan.md:147:- Full Anki file upload
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:1:# Stage 17K-T — Companion Anki Active Session Controls Live Proof
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:8:- Source tag: `controller-stage-17k-t-companion-anki-active-session-controls-2026-06-28`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:9:- VM200 backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17kt-companion-anki-active-session-controls-20260629T033227Z`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:12:- Bridge: `stage17ks-r2-companion-local-anki-session-mount-output-repair-20260628`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:13:- Anki adapter: `stage17kt-companion-anki-active-session-controls-20260628`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:29:- `noAnkiWriteAllowed: true`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:32:- `command: current_anki_card_shape`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:35:- `selectedDeckName: Anki Deck1`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:46:- `noAnkiWriteAllowed: true`
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:48:The Companion page can now mount the read-only Anki session controls, let the user load a selected local Anki deck into browser memory, and report only active session shape.
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:50:No Anki question text or answer text was saved to repo docs.
+docs/stage-17k-t-companion-anki-active-session-controls-live-proof.md:52:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was performed.
+docs/stage-17k-t-companion-anki-active-session-controls.md:1:# Stage 17K-T — Companion Anki Active Session Controls
+docs/stage-17k-t-companion-anki-active-session-controls.md:7:Stage 17K-T lets the read-only Anki session controls mount on the Companion route.
+docs/stage-17k-t-companion-anki-active-session-controls.md:9:This allows the user to re-select the local Anki file, load the selected deck into browser memory, and let Companion report the active session shape.
+docs/stage-17k-t-companion-anki-active-session-controls.md:13:After a user loads a selected Anki deck into browser memory, Companion can report:
+docs/stage-17k-t-companion-anki-active-session-controls.md:22:- no Anki writes
+docs/stage-17k-t-companion-anki-active-session-controls.md:26:- `anki-readonly-session.js` now recognizes the Companion route.
+docs/stage-17k-t-companion-anki-active-session-controls.md:28:- Companion route mount falls back to `#apc-companion-local-anki-bridge`, `main`, or `document.body`.
+docs/stage-17k-t-companion-anki-active-session-controls.md:29:- `index.html` cache-busts the Anki read-only session adapter.
+docs/stage-17k-t-companion-anki-active-session-controls.md:33:Anki question and answer text remain in the read-only Anki session UI only.
+docs/stage-17k-t-companion-anki-active-session-controls.md:37:This patch does not save Anki card text to localStorage.
+docs/stage-17k-t-companion-anki-active-session-controls.md:39:This patch does not send Anki card text to the backend.
+docs/stage-17k-t-companion-anki-active-session-controls.md:43:This patch does not write to Anki.
+docs/stage-17k-t-companion-anki-active-session-controls.md:45:This patch does not write Anki-sourced cards into MyDecks.
+docs/stage-17k-t-companion-anki-active-session-controls.md:49:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:1:# Stage 17K-U-R2 — Companion Anki Consented Study Handoff Plan Repair
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:9:Stage 17K-T proved that Companion can mount the read-only Anki controls, load a selected local Anki deck into browser memory, and report active session shape only.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:11:Stage 17K-U-R2 keeps the default path shape-only and requires explicit user consent before any current Anki card text can be used by a study interaction.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:15:- Companion can mount the local Anki read-only session controls.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:16:- The user can re-select a local Anki file in the browser.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:17:- The user can load a selected Anki deck into JavaScript memory only.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:23:- Anki writes remain disallowed.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:24:- MyDecks writeback remains disallowed for Anki-sourced cards.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:33:- persistence: no Anki card text in localStorage
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:36:- Anki: no Anki writes
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:37:- MyDecks: no Anki-to-MyDecks writeback
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:43:1. Show current local Anki session status.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:45:3. Add a button such as `Use current Anki card in Companion study`.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:54:- `consentedCurrentAnkiCardForStudyCommand()`
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:71:- does not write Anki
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:83:- no Anki write
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:92:- no Anki write
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:101:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-u-companion-anki-consented-study-handoff-plan.md:103:No Anki question text or answer text is saved to repo docs.
+docs/stage-17k-v-companion-anki-consented-current-card-handoff.md:1:# Stage 17K-V — Companion Anki Consented Current-Card Handoff\n\nDate: 2026-06-28\n\n## Summary\n\nStage 17K-V adds a browser-only consent command for the current in-memory Anki card.\n\nThe default Companion bridge path remains shape-only.\n\nAnki question and answer text are returned only when `consentedCurrentAnkiCardForStudyCommand(true)` is called or when the user clicks the explicit consent button.\n\n## Source changes\n\n- Adds `consentedCurrentAnkiCardForStudyCommand(consented)`.\n- Adds a Companion button: `Use current Anki card in Companion study`.\n- Adds a consent output area that reports status without printing card text into the page.\n- Exports the consented command on `window.APC_COMPANION_LOCAL_ANKI_BRIDGE`.\n- Cache-busts `companion-local-anki-bridge.js`.\n\n## Required behavior\n\nPre-consent command behavior:\n\n- `consented: false`\n- no `question` field\n- no `answer` field\n- shape and lengths only\n- no backend call\n- no model call\n- no Anki write\n\nPost-consent command behavior:\n\n- `consented: true` when a current card exists\n- `card.question` exists only in the immediate browser command result\n- `card.answer` exists only in the immediate browser command result\n- `card_text_persisted: false`\n- no backend call\n- no model call\n- no Anki write\n- no MyDecks writeback\n\n## Safety\n\nNo backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.\n\nNo Anki question text or answer text is saved to repo docs.\n
+docs/stage-17k-w-r4-clean-study-page-source-and-profile-anki-guard.md:1:# Stage 17K-W-R4 — Clean Study Page Source and Profile Anki Guard
+docs/stage-17k-w-r4-clean-study-page-source-and-profile-anki-guard.md:7:Stage 17K-W-R4 removes the Study source card from Study and fixes the Profile Anki manifest route guard.
+docs/stage-17k-w-r4-clean-study-page-source-and-profile-anki-guard.md:9:The Study source selector is now a no-UI compatibility module that removes `#apc-study-source-selector` instead of rendering a card.
+docs/stage-17k-w-r4-clean-study-page-source-and-profile-anki-guard.md:11:The Anki manifest panel remains available for Profile, but it no longer treats generic `.profile-card` elements as proof that the current route is Profile.
+docs/stage-17k-w-r4-clean-study-page-source-and-profile-anki-guard.md:22:- Anki file picker
+docs/stage-17k-w-r4-clean-study-page-source-and-profile-anki-guard.md:23:- Local Anki decks
+docs/stage-17k-w-r4-clean-study-page-source-and-profile-anki-guard.md:27:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-w-remove-anki-from-study-page.md:1:# Stage 17K-W — Remove Anki from Study Page
+docs/stage-17k-w-remove-anki-from-study-page.md:7:Stage 17K-W removes the Anki UI from the Study page at the source.
+docs/stage-17k-w-remove-anki-from-study-page.md:13:Anki browser-local functionality remains available for Profile/Companion flows.
+docs/stage-17k-w-remove-anki-from-study-page.md:17:- Rewrote `study-source-selector.js` as a Study-page MyDecks-only selector.
+docs/stage-17k-w-remove-anki-from-study-page.md:18:- Removed Study Anki source picker UI.
+docs/stage-17k-w-remove-anki-from-study-page.md:19:- Removed Study Anki deck rows.
+docs/stage-17k-w-remove-anki-from-study-page.md:20:- Removed Study Anki selection action.
+docs/stage-17k-w-remove-anki-from-study-page.md:21:- Changed `anki-readonly-session.js` so its panel mounts only on Companion, not Study.
+docs/stage-17k-w-remove-anki-from-study-page.md:26:- Study with Anki
+docs/stage-17k-w-remove-anki-from-study-page.md:27:- Selected Anki deck
+docs/stage-17k-w-remove-anki-from-study-page.md:28:- Anki read-only session
+docs/stage-17k-w-remove-anki-from-study-page.md:29:- Re-select local Anki file
+docs/stage-17k-w-remove-anki-from-study-page.md:31:- Reveal answer / Right / Wrong / Stop Anki buttons
+docs/stage-17k-w-remove-anki-from-study-page.md:35:- Profile local Anki file summary flow remains script-loadable.
+docs/stage-17k-w-remove-anki-from-study-page.md:36:- Companion local Anki bridge remains script-loadable.
+docs/stage-17k-w-remove-anki-from-study-page.md:42:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:13:- Replaces `companion-local-anki-bridge.js` with a no-UI compatibility module.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:14:- Replaces `anki-readonly-session.js` with a no-UI compatibility module.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:21:- Companion local Anki bridge.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:23:- Describe current local Anki card shape.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:24:- Mount local Anki session controls.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:25:- Use current Anki card in Companion study.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:26:- Anki read-only session.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:27:- Re-select Anki file for this browser session.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:28:- Load selected Anki deck into memory.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:40:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-y-profile-anki-minimal-panel.md:1:# Stage 17K-Y — Profile Anki Minimal Panel
+docs/stage-17k-y-profile-anki-minimal-panel.md:7:Stage 17K-Y simplifies the Profile Anki panel.
+docs/stage-17k-y-profile-anki-minimal-panel.md:9:The Profile page keeps only file-location help, the Choose File control, total deck/card counts, and per-deck card counts.
+docs/stage-17k-y-profile-anki-minimal-panel.md:13:- Replaces the verbose Profile Anki render helpers with a minimal Profile Anki panel.
+docs/stage-17k-y-profile-anki-minimal-panel.md:14:- Adds a `Where is my Anki file?` dropdown.
+docs/stage-17k-y-profile-anki-minimal-panel.md:17:- Removes selected file proof details, sample hash, file header, note type details, and old data ownership copy from the Profile Anki panel.
+docs/stage-17k-y-profile-anki-minimal-panel.md:18:- Keeps strict Profile-only route guard.
+docs/stage-17k-y-profile-anki-minimal-panel.md:22:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:1:# Stage 17K-Y-R2 — Profile Anki Dropdown Stable Live Proof
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:7:Stage 17K-Y-R2 was deployed and live-tested on the Profile page.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:9:The Profile Anki panel is now minimal and the `Where is my Anki file?` dropdown stays open when clicked.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:13:Observed Profile Anki panel:
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:15:- Anki
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:16:- Choose your Anki collection file. APC reads deck names and card counts locally in this browser.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:17:- Where is my Anki file?
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:22:  - Android / AnkiDroid
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:24:- Choose Anki file
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:28:  - Anki Deck1: 2 card(s)
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:29:  - Anki Deck2: 1 card(s)
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:31:## Removed/no longer shown in the Profile Anki panel
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:39:- Clear local Anki proof
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:43:- Study no longer shows Anki UI.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:44:- Companion no longer shows Anki debug/local-card panels.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:45:- Profile keeps the minimal Anki file/deck inventory UI.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable-live-proof.md:49:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was included.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:1:# Stage 17K-Y-R2 — Profile Anki Dropdown Stable
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:7:Stage 17K-Y-R2 fixes the Profile Anki `Where is my Anki file?` details dropdown closing immediately after click.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:9:Root cause: `anki-manifest-panel.js` still remounted the panel on every document click. Clicking the details arrow opened the browser-native dropdown, then the script re-rendered the panel and reset it closed.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:13:- Removes the document-wide click remount listener from `anki-manifest-panel.js`.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:15:- Cache-busts `anki-manifest-panel.js` in `index.html`.
+docs/stage-17k-y-r2-profile-anki-dropdown-stable.md:19:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-y-r3-global-anki-companion-banner-live-proof.md:1:# Stage 17K-Y-R3 — Global Anki + Companion Banner Live Proof
+docs/stage-17k-y-r3-global-anki-companion-banner-live-proof.md:11:> Anki + Companion update: Anki decks can be read locally in your browser for deck and card counts. Companion study integration is in progress. Google sync for personal data is planned and not yet enabled.
+docs/stage-17k-y-r3-global-anki-companion-banner-live-proof.md:17:- Study no longer shows Anki UI.
+docs/stage-17k-y-r3-global-anki-companion-banner-live-proof.md:18:- Companion no longer shows Anki debug/local-card panels.
+docs/stage-17k-y-r3-global-anki-companion-banner-live-proof.md:19:- Profile keeps the minimal Anki panel.
+docs/stage-17k-y-r3-global-anki-companion-banner-live-proof.md:20:- Companion Anki study integration is clearly marked as in progress.
+docs/stage-17k-y-r3-global-anki-companion-banner-live-proof.md:25:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation was included.
+docs/stage-17k-y-r3-global-anki-companion-banner.md:1:# Stage 17K-Y-R3 — Global Anki + Companion Banner
+docs/stage-17k-y-r3-global-anki-companion-banner.md:7:Stage 17K-Y-R3 updates the global banner copy to match the cleaned Study, Companion, and Profile pages.
+docs/stage-17k-y-r3-global-anki-companion-banner.md:11:> Anki + Companion update: Anki decks can be read locally in your browser for deck and card counts. Companion study integration is in progress. Google sync for personal data is planned and not yet enabled.
+docs/stage-17k-y-r3-global-anki-companion-banner.md:15:The previous banner focused only on future Google Drive sync. The new banner more accurately reflects the current product state:
+docs/stage-17k-y-r3-global-anki-companion-banner.md:17:- Anki deck inventory is browser-local.
+docs/stage-17k-y-r3-global-anki-companion-banner.md:23:No backend deploy, DB write, Anki write, Google Drive write, file upload, card import, media copy, model call, worker activation, scheduler activation, service restart, nginx mutation, or cloudflared mutation is included.
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:7:Personal study/profile/deck/card data should be local-first in the user's browser. Later, the same document structure can sync to the user's Google Drive appDataFolder.
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:13:Loaded before study/profile/companion feature modules from:
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:60:- `profile/preferences/v1`
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:66:- `sync/manifest/v1`
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:82:This mirrors the useful idea behind Anki-style media management: keep card data and media files separate and avoid duplicate copies.
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:91:- `ankiContentServerUploadAllowed: false`
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:95:## Google Drive
+docs/stage-17k-z-r10b-add-browser-local-save-store.md:97:No Google OAuth or Drive API work is performed in this stage. Google sync should later mirror these same local documents to appDataFolder.
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:1:# Stage 17K-Z-R10C-R2 — Anki-Compatible Local Data Model Plan
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:3:This stage records the local-first data model for Anki-compatible studying in Buddies Who Study.
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:7:Use a hybrid Anki-compatible local shadow library.
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:9:Buddies should be able to read/import Anki content, preserve Anki identities, and offer an Anki-like study experience while saving Buddies progress locally. The original Anki files remain read-only unless a future explicit export tool is built.
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:13:### 1. Study Anki Read-Only
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:15:The user selects an Anki source. Buddies reads decks, notes, cards, templates, and media for study.
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:19:- Do not mutate the original Anki file.
+docs/stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences.md:20:- Do not upload Anki deck/card/media content to the APC server.

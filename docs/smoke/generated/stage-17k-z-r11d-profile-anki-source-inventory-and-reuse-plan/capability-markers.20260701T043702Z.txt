@@ -1,0 +1,218 @@
+=== concise capability markers ===
+PRESENT profile_anki_ui_text
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:276:      anki_upload_default: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:356:      '<label><input type="checkbox" data-apc-google-sync-explicit-consent> I understand APC will create hidden app data in my Google Drive for APC-native decks, sessions, history, and stats. APC will not upload Anki files unless I explicitly choose an import/convert option later.</label>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:4:  var PANEL_ID = "apc-anki-manifest-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:5:  var FILE_INPUT_ID = "apc-anki-file-input";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:6:  var CLEAR_BUTTON_ID = "apc-anki-clear-file-proof";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:7:  var FILE_PROOF_KEY = "apc.profile.anki.fileProof.v2";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:8:  var DECK_SUMMARY_KEY = "apc.profile.anki.localDeckSummary.v1";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:65:      || storageRead("apc.profile.anki.fileProof.v1")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:66:      || storageRead("apcAnkiFileProof")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:67:      || storageRead("apcAnkiFileProof.v1");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:76:    storageRemove("apc.profile.anki.fileProof.v1");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:77:    storageRemove("apcAnkiFileProof");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:78:    storageRemove("apcAnkiFileProof.v1");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:104:    if (headerText.indexOf("SQLite format 3") === 0) return "sqlite-anki-collection";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:134:        server_saved_anki_content: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:135:        anki_file_modified: false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:246:  async function extractLocalAnkiSummary(file) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:256:        throw new Error("Selected file is SQLite but does not look like an Anki collection.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:409:        source_type: "anki_browser_local",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:436:          server_saved_anki_content: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:437:          anki_file_modified: false,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:451:  function renderAnkiFileHelpHtml() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:453:      + '<details class="apc-anki-file-location-help">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:454:      + '  <summary>Where is my Anki file?</summary>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:456:      + '    <p>Look for <code>collection.anki2</code> inside your Anki profile folder.</p>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:458:      + '      <li><strong>Windows:</strong> <code>%APPDATA%\\Anki2\\&lt;Profile&gt;\\collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:459:      + '      <li><strong>macOS:</strong> <code>~/Library/Application Support/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:460:      + '      <li><strong>Linux:</strong> <code>~/.local/share/Anki2/&lt;Profile&gt;/collection.anki2</code> or <code>$XDG_DATA_HOME/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:461:      + '      <li><strong>Android / AnkiDroid:</strong> check AnkiDroid Settings → Advanced → Collection path. If the browser cannot open that folder, export/copy the collection file to Downloads first.</li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:462:      + '      <li><strong>iPhone / iPad:</strong> export or transfer from AnkiMobile using Add/Export, AirDrop, Finder, or iTunes, then choose the exported file from this browser.</li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:471:      return '<p class="study-muted">Choose an Anki file to show deck and card counts.</p>';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:479:            + '<div class="profile-preference-row apc-anki-minimal-deck-row">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:487:      + '<div class="apc-anki-minimal-summary">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:497:      + '<section class="profile-card apc-anki-minimal-card" id="' + PANEL_ID + '-card">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:498:      + '  <h3>Anki</h3>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:499:      + '  <p class="study-muted">Choose your Anki collection file. APC reads deck names and card counts locally in this browser.</p>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:500:      + renderAnkiFileHelpHtml()
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:501:      + (message ? '<p class="apc-anki-message">' + escapeHtml(message) + '</p>' : '')
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:503:      + '    <label for="' + FILE_INPUT_ID + '"><strong>Choose Anki file</strong></label>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:504:      + '    <input id="' + FILE_INPUT_ID + '" type="file" accept=".anki2,.anki21,.sqlite,.db,.colpkg,.apkg">'
+PRESENT file_input_or_file_api
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:117:    var sample = new Uint8Array(await file.slice(0, 1024 * 1024).arrayBuffer());
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:248:    var buffer = await file.arrayBuffer();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:504:      + '    <input id="' + FILE_INPUT_ID + '" type="file" accept=".anki2,.anki21,.sqlite,.db,.colpkg,.apkg">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:350:    if (!fileLike || typeof fileLike.arrayBuffer !== "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:351:      throw new Error("inspectApkgFile requires a browser File-like object with arrayBuffer().");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:354:    const buffer = await fileLike.arrayBuffer();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:467:    if (input instanceof Blob) return input.arrayBuffer();
+PRESENT manifest_panel
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:32:  let manifestFileId = '';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:142:    if (rollback) rollback.disabled = !(configured && consent && accessToken && (manifestFileId || databaseFileId));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:251:    setStatus('Creating hidden APC app data...', 'Creating manifest and database bootstrap in Google Drive appDataFolder.');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:253:    const manifest = await createAppDataJsonFile('apc-google-sync-manifest.json', {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:254:      record_type: 'apc_google_sync_manifest',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:279:    manifestFileId = manifest.id;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:281:    writeSessionState({ manifestFileId, databaseFileId, lastBootstrapAt: createdAt });
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:283:    setStatus('Hidden APC app data created', JSON.stringify({ manifest, database }, null, 2));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:308:    const ids = [manifestFileId || state.manifestFileId, databaseFileId || state.databaseFileId].filter(Boolean);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:323:    manifestFileId = '';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:325:    writeSessionState({ manifestFileId: '', databaseFileId: '', lastRollbackAt: new Date().toISOString() });
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:336:    manifestFileId = state.manifestFileId || manifestFileId || '';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:4:  var PANEL_ID = "apc-anki-manifest-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:588:    document.querySelectorAll(".apc-anki-manifest-panel, .apc-anki-local-only-panel, .apc-anki-local-card, .apc-anki-ownership-card").forEach(function (el) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:604:      panel.className = "apc-anki-manifest-panel apc-anki-local-only-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:47:    manifest: "sync/manifest/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:623:    const existing = await getDoc(DEFAULT_DOC_KEYS.manifest, null);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:626:    const manifest = {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:649:    await setDoc(DEFAULT_DOC_KEYS.manifest, manifest, {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:651:      recordType: "apc_local_manifest",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:655:    return manifest;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:720:    console.warn("[APC_LOCAL_SAVE] manifest initialization failed", error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1335: * R10L-R3 correctly returned all Study docs but also returned sync/manifest/v1
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1336: * because the broad matcher scanned nested manifest content.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1342: * It intentionally does not match nested manifest payload values.
+frontend/wrapper-ui/apc-wrapper-local/index.html:214:  <script src="/privatepages/anki-manifest-panel.js?v=stage17kyr2-profile-anki-dropdown-stable-20260629"></script>
+docs/stage-17b-anki2-read-only-discovery.md:169:1. **Stage 17C — APC Anki discovery manifest**  
+docs/stage-17b-anki2-read-only-discovery.md:170:   Store helper JSON as a local APC manifest only. No media copy and no deck import yet.
+docs/stage-17c-anki-discovery-manifest.md:3:Stage 17C converts Stage 17B read-only Anki discovery JSON into an APC-owned manifest that Study and Companion can display later.
+docs/stage-17c-anki-discovery-manifest.md:21:The manifest builder only transforms JSON already produced by the read-only discovery helper.
+docs/stage-17c-anki-discovery-manifest.md:25:- `ops/anki/anki_discovery_manifest.py`
+docs/stage-17c-anki-discovery-manifest.md:26:- `ops/smoke/check-stage-17c-anki-discovery-manifest.py`
+docs/stage-17c-anki-discovery-manifest.md:27:- `ops/smoke/check-stage-17c-anki-discovery-manifest.sh`
+docs/stage-17c-anki-discovery-manifest.md:31:By default, the manifest omits local filesystem paths. This prevents accidental storage of user-specific paths.
+docs/stage-17c-anki-discovery-manifest.md:36:python3 ops/anki/anki_discovery_manifest.py \
+docs/stage-17c-anki-discovery-manifest.md:38:  --output /tmp/apc-anki-manifest.json \
+docs/stage-17c-anki-discovery-manifest.md:47:python3 ops/anki/anki_discovery_manifest.py \
+docs/stage-17c-anki-discovery-manifest.md:49:  --output /tmp/apc-anki-manifest.json
+docs/stage-17c-anki-discovery-manifest.md:52:The website can later use the manifest to show discovered profiles, deck names, card counts, note counts, media presence, and import availability.
+docs/stage-17c-anki-discovery-manifest.md:60:1. Stage 17D: APC Study UI deck-discovery display from manifest.
+PRESENT readonly_session
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:8:  var PANEL_ID = "apc-anki-readonly-session";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:14:    document.querySelectorAll(".apc-anki-readonly-session-card, .apc-anki-memory-card").forEach(function (el) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:86:  window.APC_ANKI_READONLY_SESSION = {
+frontend/wrapper-ui/apc-wrapper-local/index.html:216:  <script src="/privatepages/anki-readonly-session.js?v=stage17kxr2-local-card-session-ui-removed-20260629"></script>
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:90:- `window.APC_ANKI_READONLY_SESSION`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:13:- `window.APC_ANKI_READONLY_SESSION`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:23:- Tag: `controller-stage-17k-j-anki-readonly-session-skeleton-source-2026-06-28`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:28:- Live marker: `stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:29:- Backup: `/home/jkg76nid/apc-vm200-frontend-backups/stage17kj-anki-readonly-session-skeleton-20260628T221217Z`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:34:- `/privatepages/anki-readonly-session.js` contained `stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:35:- `/privatepages/anki-readonly-session.js` contained `APC_ANKI_READONLY_SESSION`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:41:- `apiVersion: stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-live-proof.md:55:- `version: stage17kj-anki-readonly-session-skeleton-20260628`
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:11:- `window.APC_ANKI_READONLY_SESSION`
+docs/stage-17k-k-anki-basic-memory-session-live-proof.md:45:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628`
+docs/stage-17k-k-r4-anki-active-status-repair.md:49:- `privatepages/anki-readonly-session.js`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:40:- read `window.APC_ANKI_READONLY_SESSION.snapshot()`
+docs/stage-17k-m-companion-local-anki-bridge-preflight-plan.md:41:- read `window.APC_ANKI_READONLY_SESSION.currentCard()`
+docs/stage-17k-o-companion-local-anki-status-card-live-proof.md:44:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-p-companion-local-anki-visible-privacy-copy-live-proof.md:52:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-q-companion-local-anki-current-card-shape-command-live-proof.md:85:- `/privatepages/anki-readonly-session.js?v=stage17kk-anki-basic-memory-session-20260628-r4-status-repair`
+docs/stage-17k-r-companion-active-anki-session-handoff-plan.md:24:- `window.APC_ANKI_READONLY_SESSION`
+docs/stage-17k-r-companion-anki-local-source-separation-drive-sync-plan.md:158:- use `APC_ANKI_READONLY_SESSION` for browser-local Anki loading/session actions
+docs/stage-17k-s-companion-local-anki-session-mount.md:15:- `window.APC_ANKI_READONLY_SESSION.renderPanel()`
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:15:Preflight confirmed that `window.APC_ANKI_READONLY_SESSION` existed but did not export `renderPanel`.
+docs/stage-17k-s-r3-anki-readonly-renderpanel-export.md:28:- `frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js`
+docs/stage-17k-t-companion-anki-active-session-controls.md:26:- `anki-readonly-session.js` now recognizes the Companion route.
+docs/stage-17k-w-remove-anki-from-study-page.md:21:- Changed `anki-readonly-session.js` so its panel mounts only on Companion, not Study.
+docs/stage-17k-x-r2-remove-companion-anki-ui.md:14:- Replaces `anki-readonly-session.js` with a no-UI compatibility module.
+docs/stage-17k-z-r11a-study-anki-import-start-source-inventory-design.md:235:- frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js
+PRESENT new_importer_skeleton
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:4:  const PATCH_MARKER = "APC_ANKI_IMPORT_LOCAL_DISABLED_SKELETON_R11B";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:5:  const APKG_INSPECTOR_MARKER = "APC_ANKI_IMPORT_LOCAL_APKG_CONTAINER_INSPECTOR_R11C";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:336:  function inspectApkgContainer(bufferLike, fileName) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:349:  async function inspectApkgFile(fileLike) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:351:      throw new Error("inspectApkgFile requires a browser File-like object with arrayBuffer().");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:355:    const container = inspectApkgContainer(buffer, source.displayName);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:381:    inspectApkgContainer,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:382:    inspectApkgFile,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:386:  root.APC_ANKI_IMPORT_LOCAL = api;
+docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md:30:- APC_ANKI_IMPORT_LOCAL.marker
+docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md:31:- APC_ANKI_IMPORT_LOCAL.docKeys
+docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md:32:- APC_ANKI_IMPORT_LOCAL.supportedExtensions
+docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md:33:- APC_ANKI_IMPORT_LOCAL.isSupportedFileName
+docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md:34:- APC_ANKI_IMPORT_LOCAL.describeFileSource
+docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md:35:- APC_ANKI_IMPORT_LOCAL.validatePackageSummary
+docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md:36:- APC_ANKI_IMPORT_LOCAL.createImportPlan
+docs/stage-17k-z-r11b-browser-local-anki-import-skeleton-no-ui.md:37:- APC_ANKI_IMPORT_LOCAL.readApkgMetadataDisabled
+docs/stage-17k-z-r11c-browser-local-apkg-container-inspector-no-extract.md:33:The existing APC_ANKI_IMPORT_LOCAL object now also exposes:
+docs/stage-17k-z-r11c-browser-local-apkg-container-inspector-no-extract.md:37:- inspectApkgContainer
+docs/stage-17k-z-r11c-browser-local-apkg-container-inspector-no-extract.md:38:- inspectApkgFile
+PRESENT server_study_route_refs
+docs/stage-17b-anki2-read-only-discovery.md:141:      "src": "/api/study/media/local/abc123",
+docs/stage-17k-i-anki-readonly-session-adapter-plan.md:107:- call `/api/study/*`
+docs/stage-17k-j-anki-readonly-session-skeleton-source.md:35:- call `/api/study/*`
+docs/stage-17k-k-anki-basic-memory-session-source.md:36:The adapter does not call `/api/study/*`.
+docs/stage-17k-z-r10e-study-store-local-save-cutover-no-server-persistence.md:9:It no longer calls private `/api/study/*` persistence endpoints for:
+docs/stage-17k-z-r10f-verify-frontend-private-study-endpoint-cutover.md:9:- `/api/study/decks`
+docs/stage-17k-z-r10f-verify-frontend-private-study-endpoint-cutover.md:10:- `/api/study/cards-lite`
+docs/stage-17k-z-r10f-verify-frontend-private-study-endpoint-cutover.md:11:- `/api/study/progress`
+docs/stage-17k-z-r10f-verify-frontend-private-study-endpoint-cutover.md:12:- `/api/study/review-summary-lite`
+docs/stage-17k-z-r10f-verify-frontend-private-study-endpoint-cutover.md:13:- `/api/study/sessions-lite`
+docs/stage-17k-z-r10f-verify-frontend-private-study-endpoint-cutover.md:14:- `/api/study/session-writeback-lite`
+docs/stage-17k-z-r10f-verify-frontend-private-study-endpoint-cutover.md:15:- `/api/study/deck-writeback-lite`
+docs/stage-17k-z-r10f-verify-frontend-private-study-endpoint-cutover.md:16:- `/api/study/card-writeback-lite`
+docs/stage-17k-z-r10g-r3-remove-private-study-route-metadata-leftovers.md:29:- `/api/study/intent/parse`
+docs/stage-17k-z-r10h-source-package-smoke-after-private-study-route-removal.md:27:- `/api/study/intent/parse`
+docs/stage-17k-z-r10i-live-deploy-preflight-private-study-route-removal.md:31:- `/api/study/intent/parse`
+docs/stage-17k-z-r10j-r3-live-deploy-private-study-route-removal-safe-smoke-counts.md:7:R10J-R2 reached deploy, then the smoke script rolled back because `grep` returned exit code `1` when it found zero `/api/study` references in `study-store.js`.
+docs/stage-17k-z-r10j-r3-live-deploy-private-study-route-removal-safe-smoke-counts.md:34:- `/api/study/intent/parse`
+docs/stage-17k-z-r10j-r3-live-deploy-private-study-route-removal-safe-smoke-counts.md:40:Some signed-out removed `/api/study/*` requests may return `401` if authentication is enforced before final route resolution. The source-level proof is the installed CT203 route catalog: private persistence route decorators are absent.
+docs/stage-17k-z-r10k-browser-manual-smoke-plan-local-study-store.md:42:    /api/study
+docs/stage-17k-z-r10k-browser-manual-smoke-plan-local-study-store.md:47:- no `/api/study/decks`
+docs/stage-17k-z-r10k-browser-manual-smoke-plan-local-study-store.md:48:- no `/api/study/cards-lite`
+docs/stage-17k-z-r10k-browser-manual-smoke-plan-local-study-store.md:49:- no `/api/study/progress`
+docs/stage-17k-z-r10k-browser-manual-smoke-plan-local-study-store.md:50:- no `/api/study/review-summary-lite`
+docs/stage-17k-z-r10k-browser-manual-smoke-plan-local-study-store.md:51:- no `/api/study/sessions-lite`
+docs/stage-17k-z-r10k-browser-manual-smoke-plan-local-study-store.md:56:- `/api/study/intent/parse`
+docs/stage-17k-z-r10k-browser-manual-smoke-plan-local-study-store.md:67:- static `study-store.js` is live and has zero `/api/study` references
+docs/stage-17k-z-r10k-r2-record-manual-browser-local-study-proof.md:61:- static Study code has zero `/api/study` persistence references
+docs/stage-17k-z-r10l-local-save-listdocs-namespace-fix.md:39:This does not reintroduce private Study server persistence.
+docs/stage-17k-z-r10l-r2-strong-local-save-listdocs-namespace-patch.md:40:This does not reintroduce private Study server persistence.
+docs/stage-17k-z-r10l-r3-clone-frozen-local-save-api-listdocs-fix.md:34:This does not reintroduce private Study server persistence.
+docs/stage-17k-z-r10m-strict-local-save-study-namespace-matcher.md:37:This does not reintroduce private Study server persistence.
+docs/stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff.md:36:- `study-store.js` has zero private `/api/study` persistence references
+PRESENT drive_oauth_refs
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:5:  const panelId = 'apc-google-sync-profile-panel-stage-17k-z-r7c-appdata';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:6:  const styleId = 'apc-google-sync-profile-style-stage-17k-z-r7c-appdata';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:8:  const tokenScope = 'https://www.googleapis.com/auth/drive.appdata';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:10:  const gisScriptUrl = 'https://accounts.google.com/gsi/client';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:11:  const driveUploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,createdTime,spaces';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:12:  const driveFilesUrl = 'https://www.googleapis.com/drive/v3/files';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:17:    drive: 'Google Drive REST API',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:54:    const fromWindow = window.APC_GOOGLE_SYNC_CONFIG && window.APC_GOOGLE_SYNC_CONFIG.googleClientId;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:55:    const fromMeta = document.querySelector('meta[name="apc-google-client-id"]');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:84:      '.apc-google-sync-profile-panel { margin-top: 16px; padding: 16px; border: 1px solid rgba(148,163,184,.35); border-radius: 14px; background: rgba(15,23,42,.04); }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:85:      '.apc-google-sync-profile-panel h3 { margin: 0 0 8px; font-size: 1.05rem; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:86:      '.apc-google-sync-profile-panel p { margin: 6px 0; line-height: 1.45; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:87:      '.apc-google-sync-profile-panel label { display: block; margin: 10px 0; line-height: 1.35; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:88:      '.apc-google-sync-profile-panel input[type="checkbox"] { margin-right: 8px; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:89:      '.apc-google-sync-profile-panel .apc-google-sync-status { display: inline-flex; align-items: center; gap: 8px; margin: 8px 0 12px; font-weight: 700; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:90:      '.apc-google-sync-profile-panel .apc-google-sync-dot { width: 9px; height: 9px; border-radius: 999px; background: #94a3b8; display: inline-block; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:91:      '.apc-google-sync-profile-panel .apc-google-sync-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:92:      '.apc-google-sync-profile-panel button { border: 0; border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: pointer; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:93:      '.apc-google-sync-profile-panel button:disabled { cursor: not-allowed; opacity: .55; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:94:      '.apc-google-sync-profile-panel small { display: block; margin-top: 10px; opacity: .8; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:95:      '.apc-google-sync-profile-panel pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 10px; border-radius: 10px; background: rgba(15,23,42,.08); }'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:121:    const status = document.querySelector('[data-apc-google-sync-status-text]');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:122:    const detailNode = document.querySelector('[data-apc-google-sync-proof-detail]');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:128:    const checkbox = document.querySelector('[data-apc-google-sync-explicit-consent]');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:135:    const connect = document.querySelector('[data-apc-google-sync-connect]');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:136:    const bootstrap = document.querySelector('[data-apc-google-sync-bootstrap-appdata]');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:137:    const list = document.querySelector('[data-apc-google-sync-list-appdata]');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:138:    const rollback = document.querySelector('[data-apc-google-sync-rollback-appdata-proof]');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:147:      if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:151:      const existing = document.querySelector('script[data-apc-google-identity-services="true"]');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:161:      script.setAttribute('data-apc-google-identity-services', 'true');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:171:      setStatus('Missing Google client ID', 'Set window.APC_GOOGLE_SYNC_CONFIG.googleClientId or a meta tag named apc-google-client-id.');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:182:    tokenClient = window.google.accounts.oauth2.initTokenClient({
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:201:    const boundary = 'apc_google_sync_boundary_' + Math.random().toString(36).slice(2);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:251:    setStatus('Creating hidden APC app data...', 'Creating manifest and database bootstrap in Google Drive appDataFolder.');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:253:    const manifest = await createAppDataJsonFile('apc-google-sync-manifest.json', {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:254:      record_type: 'apc_google_sync_manifest',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:262:        database: 'apc-google-sync-database.json'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:266:    const database = await createAppDataJsonFile('apc-google-sync-database.json', {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:267:      record_type: 'apc_google_sync_database',
