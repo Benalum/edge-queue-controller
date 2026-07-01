@@ -1,0 +1,37 @@
+Manual browser proof after R11R:
+
+Both Profile paths now match.
+
+Tested paths:
+
+1. Hard refresh /profile.
+2. Navigate away to Study.
+3. Click Profile from the header.
+
+Observed matching Profile content:
+
+- Beta testing closed banner
+- Study / Companion / Profile / Admin / System / Logout nav
+- Your profile
+- Account information for alexhartel179@gmail.com
+- Account card
+- Email: alexhartel179@gmail.com
+- Role: admin
+- Plan: pro
+- Status: active
+- Google Drive sync panel
+- explicit consent checkbox copy
+- Connect Google Drive button
+- Create hidden APC sync database button
+- Read APC app data metadata button
+- Rollback/delete APC proof files button
+- Scope: drive.appdata
+- Anki panel
+- Choose Anki file button
+- No file chosen
+- Choose an Anki file to show deck and card counts
+
+Site did not white-screen.
+Site did not get stuck on Checking session.
+
+Result: PASS.
