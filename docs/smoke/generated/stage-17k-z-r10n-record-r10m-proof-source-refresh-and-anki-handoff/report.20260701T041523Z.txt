@@ -1,0 +1,26 @@
+=== stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff ===
+created_utc=20260701T041523Z
+head_before=d218daa
+
+Scope:
+- Recorded R10M manual browser proof.
+- Prepared source refresh and Study/Anki handoff.
+- No deploy.
+- No source patch.
+- No DB write.
+- No DB table drop.
+- No schema change.
+- No service restart.
+- No live backend mutation.
+- No live frontend mutation.
+- No server deck/card/session/progress persistence.
+
+R10M browser proof:
+- patchMarkerR10M=true
+- deckCount=2
+- cardCount=2
+- docsByNamespaceCount=5
+- docsByNamespaceKeys=study/cards/v1,study/decks/v1,study/progress/v1,study/sessions/v1,study/store-state/v1
+- expectedKeysPresent=5
+- hasSyncManifest=false
+- pass=true

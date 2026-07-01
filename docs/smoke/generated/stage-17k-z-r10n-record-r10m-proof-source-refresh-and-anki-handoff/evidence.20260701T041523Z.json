@@ -1,0 +1,28 @@
+{
+  "stage": "stage-17k-z-r10n-record-r10m-proof-source-refresh-and-anki-handoff",
+  "created_utc": "20260701T041523Z",
+  "head_before": "d218daa",
+  "deploy": false,
+  "source_patch": false,
+  "db_write": false,
+  "db_table_drop": false,
+  "schema_change": false,
+  "service_restart": false,
+  "live_backend_mutation": false,
+  "live_frontend_mutation": false,
+  "server_deck_card_session_progress_persistence": false,
+  "patchMarkerR10M": true,
+  "deckCount": 2,
+  "cardCount": 2,
+  "docsByNamespaceCount": 5,
+  "docsByNamespaceKeys": [
+    "study/cards/v1",
+    "study/decks/v1",
+    "study/progress/v1",
+    "study/sessions/v1",
+    "study/store-state/v1"
+  ],
+  "expectedKeysPresent": 5,
+  "hasSyncManifest": false,
+  "pass": true
+}
