@@ -155,9 +155,9 @@
       backupKind: BACKUP_KIND,
       backupVersion: BACKUP_VERSION,
       copy: {
-        intro: "Save a copy of your Buddies Who Study local data to a folder you choose on this device.",
-        privacy: "This does not upload anything, does not modify Anki files, and does not browse your other files.",
-        warning: "Do not choose your Anki profile folder. Use a separate backup folder."
+        intro: "Save your data locally.",
+        privacy: "",
+        warning: ""
       },
       actions: {
         chooseFolder: supported ? "Choose local backup folder" : "Folder picker not supported",
@@ -181,14 +181,11 @@
       '<section class="private-card apc-profile-local-backups-panel" data-apc-profile-local-backups-panel="true">',
       '<h3>' + escapeHtml(model.title) + '</h3>',
       '<p>' + escapeHtml(model.copy.intro) + '</p>',
-      '<p>' + escapeHtml(model.copy.privacy) + '</p>',
-      '<p><strong>' + escapeHtml(model.copy.warning) + '</strong></p>',
-      '<div class="private-actions">',
+                  '<div class="private-actions">',
       '<button type="button" data-apc-local-backup-choose-folder' + (model.folderPickerSupported ? "" : " disabled") + '>' + escapeHtml(model.actions.chooseFolder) + '</button>',
       '<button type="button" data-apc-local-backup-download>' + escapeHtml(model.actions.downloadBackup) + '</button>',
       '</div>',
-      '<small>Storage: browser-local export. Server upload: no. Anki source mutation: no.</small>',
-      '<pre data-apc-local-backup-status></pre>',
+            '<pre data-apc-local-backup-status hidden></pre>'
       '</section>'
     ].join("");
   }

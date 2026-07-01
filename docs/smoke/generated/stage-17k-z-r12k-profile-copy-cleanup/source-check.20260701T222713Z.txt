@@ -1,0 +1,2 @@
+=== verify narrow source state ===
+PASS narrow copy-only source state

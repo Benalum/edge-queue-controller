@@ -1,0 +1,5 @@
+ frontend/wrapper-ui/apc-wrapper-local/index.html            |  6 +++---
+ .../apc-wrapper-local/privatepages/anki-manifest-panel.js   |  2 +-
+ .../privatepages/profile-local-backups-mount.js             |  4 ++--
+ .../privatepages/profile-local-backups-panel.js             | 13 +++++--------
+ 4 files changed, 11 insertions(+), 14 deletions(-)

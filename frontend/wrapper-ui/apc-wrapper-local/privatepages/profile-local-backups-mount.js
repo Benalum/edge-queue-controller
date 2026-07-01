@@ -54,7 +54,7 @@
   function setStatus(panel, message, detail) {
     const node = statusNode(panel);
     if (!node) return;
-    const lines = [String(message || "")];
+    const lines = [String(message || "")].filter(Boolean);
     if (detail !== undefined && detail !== null && detail !== "") {
       if (typeof detail === "string") {
         lines.push(detail);
@@ -63,6 +63,7 @@
       }
     }
     node.textContent = lines.join("\n");
+    node.hidden = lines.length === 0;
   }
 
   function triggerDownload(panelApi, payload) {
@@ -124,7 +125,6 @@
     }
 
     panel.setAttribute(BOUND_ATTR, "true");
-    setStatus(panel, "Ready. Choose a local backup folder or download a backup file.");
     return panel;
   }
 
