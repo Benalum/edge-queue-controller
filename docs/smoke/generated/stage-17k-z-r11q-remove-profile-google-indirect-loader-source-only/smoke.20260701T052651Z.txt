@@ -1,0 +1,2 @@
+PASS script order: privatepages, google config, profile google panel, anki panel
+PASS stage-17k-z-r11q remove Profile Google indirect loader source-only smoke

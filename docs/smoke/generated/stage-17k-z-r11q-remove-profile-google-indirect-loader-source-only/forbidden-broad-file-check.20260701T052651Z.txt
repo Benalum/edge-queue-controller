@@ -1,0 +1,5 @@
+=== forbidden broad-file diff check ===
+frontend/wrapper-ui/apc-wrapper-local/index.html
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+PASS only narrow source files changed
