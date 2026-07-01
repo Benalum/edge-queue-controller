@@ -1,0 +1,2 @@
+=== verify interrupted R11V copy patch is present ===
+PASS Buddies Who Study local data copy present

@@ -1,0 +1,3 @@
+=== verify only intended source file changed ===
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+PASS interrupted R11V only touched expected paths
