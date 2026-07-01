@@ -1,0 +1,2 @@
+=== verify no index/deploy source mutation ===
+PASS no existing app source mutation

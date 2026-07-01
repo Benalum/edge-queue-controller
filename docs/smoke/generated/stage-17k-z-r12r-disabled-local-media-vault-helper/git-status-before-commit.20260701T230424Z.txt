@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-z-r12r-disabled-local-media-vault-helper/
+?? docs/stage-17k-z-r12r-disabled-local-media-vault-helper.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/local-media-vault.js
+?? ops/smoke/check-stage-17k-z-r12r-disabled-local-media-vault-helper.sh
