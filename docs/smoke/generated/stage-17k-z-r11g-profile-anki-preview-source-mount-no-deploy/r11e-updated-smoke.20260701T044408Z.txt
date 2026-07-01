@@ -1,0 +1,2 @@
+FAIL: R11E bridge must not be mounted in UI yet
+frontend/wrapper-ui/apc-wrapper-local/index.html:248:  <script src="/privatepages/profile-anki-import-bridge.js?v=stage17k-z-r11g-profile-anki-apkg-preview-source-20260701"></script>
