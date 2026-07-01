@@ -1,0 +1,11 @@
+=== restore R11M-R2 evidence docs that git revert tried to delete ===
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+?? docs/smoke/generated/stage-17k-z-r11o-r2-rollback-commit-recovery-keep-evidence/
+?? docs/smoke/generated/stage-17k-z-r11o-rollback-bad-profile-canonicalization/
+?? docs/stage-17k-z-r11o-rollback-bad-profile-canonicalization.md
+?? ops/smoke/check-stage-17k-z-r11o-rollback-bad-profile-canonicalization.sh

@@ -1,0 +1,5 @@
+=== verify live rollback evidence from prior R11O/R11O-R2 attempts ===
+R11O_VM200_ROLLBACK_DONE
+root_code=200 root_bytes=11210
+api_system_status=200
+PASS public root no longer references bad R11M-R2 cache-bust

@@ -1,0 +1,7 @@
+=== public smoke after rollback ===
+root_code=200 root_bytes=11210
+200 /privatepages/privatepages.js bytes=11715
+200 /privatepages/pages/profile.html bytes=398
+200 /privatepages/anki-manifest-panel.js bytes=25822
+200 /privatepages/profile-google-sync-panel.js bytes=18114
+200 /privatepages/profile-anki-preview-mount.js bytes=5667

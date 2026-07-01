@@ -33,7 +33,6 @@
 
     return Boolean(
       documentRef.querySelector('[data-apc-profile-root]') ||
-          documentRef.querySelector('[data-route="profile"]') ||
       documentRef.querySelector('[data-apc-private-page="profile"]') ||
       documentRef.querySelector('[data-apc-page="profile"]') ||
       documentRef.querySelector('.apc-profile-page') ||
@@ -195,9 +194,6 @@
   }
 
   if (root && root.document && root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED !== true) {
-    root.document.addEventListener("apc-private-page-rendered", function () {
-      scheduleAutoMount();
-    });
     scheduleAutoMount();
   }
 })(typeof globalThis !== "undefined" ? globalThis : window);

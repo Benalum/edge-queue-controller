@@ -1,0 +1,12 @@
+=== restore VM200 live static files from R11N backup ===
+host=website-edge
+user=jkg76nid
+remote_root=/var/www/apc-wrapper-local
+backup=/var/www/apc-wrapper-local/apc-r11n-canonical-profile-backup-20260701T051241Z
+restored_sha256 448f1cf452a31c5981f25e60a12b3b11cc13383314c4b54548bf47ed72a0f58e  /var/www/apc-wrapper-local/index.html
+restored_sha256 4a606184df7f33332a60b52f6a73212c196f70e6822e06cda8f65de4cc22c7e2  /var/www/apc-wrapper-local/privatepages/privatepages.js
+restored_sha256 b5e9fff427a904e820c63e0d1d9aa03e1eede504c3c2b4f03c99a3d146a8cda9  /var/www/apc-wrapper-local/privatepages/pages/profile.html
+restored_sha256 7e1d59156336b4cae6a50b9052a9aa1235f0b17594d72be0eec8fb562a1b53d6  /var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js
+restored_sha256 415cb06e4b2b37aee1648b29a234382ce08bd09f20d736a22975c6037cdd84c3  /var/www/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+restored_sha256 58e161a5f520f0a6b5de62d5b604557b0091ce9ab02effcfe1f7bdb2ea8197b7  /var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+R11O_VM200_ROLLBACK_DONE

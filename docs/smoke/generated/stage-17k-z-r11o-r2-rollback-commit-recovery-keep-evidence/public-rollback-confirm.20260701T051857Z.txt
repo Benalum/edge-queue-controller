@@ -1,0 +1,3 @@
+=== public smoke confirm live rollback still holds ===
+root_code=200 root_bytes=11210
+PASS public root no longer references bad R11M-R2 cache-bust

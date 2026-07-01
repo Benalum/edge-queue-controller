@@ -516,8 +516,7 @@
 
 
   function findMountHost() {
-    return document.querySelector("[data-apc-profile-anki-manifest-host]")
-      || document.querySelector("[data-page='profile']")
+    return document.querySelector("[data-page='profile']")
       || document.querySelector(".profile-grid")
       || document.querySelector(".private-profile-grid")
       || document.querySelector("main")
@@ -650,4 +649,71 @@
   scheduleMount();
 })();
 
-/* R11M-R2 removed legacy Google sync Profile loader from Anki panel. profile-google-sync-panel.js is loaded directly from index.html and listens to apc-private-page-rendered. */
+/* APC_GOOGLE_SYNC_PROFILE_ONLY_STAGE_17K_Z_R6_START */
+(function apcGoogleSyncProfileOnlyStage17kZr6cLoader() {
+  const legacyMarker = 'APC_GOOGLE_SYNC_PROFILE_ONLY_MARKER_STAGE_17K_Z_R6';
+  const loaderMarker = 'APC_GOOGLE_SYNC_PROFILE_LOADER_MARKER_STAGE_17K_Z_R6C';
+  const moduleGlobal = 'APC_PROFILE_GOOGLE_SYNC_PANEL_STAGE_17K_Z_R6C';
+  const moduleScriptId = 'apc-profile-google-sync-panel-script-stage-17k-z-r6c';
+  const modulePath = '/privatepages/profile-google-sync-panel.js?v=20260629-stage17k-z-r7c-appdata';
+  const uiTextMovedToModule = 'Google Drive sync Not connected Connect Google Drive Sync now';
+
+  function isProfileSurface() {
+    const path = String(window.location && window.location.pathname || '').toLowerCase();
+    const hash = String(window.location && window.location.hash || '').toLowerCase();
+    const title = String(document.title || '').toLowerCase();
+    const body = document.body;
+    const profileHints = [
+      '[data-apc-profile-root]',
+      '[data-profile-root]',
+      '[data-page="profile"]',
+      '[data-route="profile"]',
+      '.profile-page',
+      '#profile',
+      '#profile-page'
+    ];
+    const hasProfileNode = profileHints.some((selector) => Boolean(document.querySelector(selector)));
+    const bodyLooksProfile = body && String(body.getAttribute('data-page') || body.className || '').toLowerCase().includes('profile');
+    return path.includes('profile') || hash.includes('profile') || title.includes('profile') || hasProfileNode || bodyLooksProfile;
+  }
+
+  function invokeModuleIfLoaded() {
+    const api = window[moduleGlobal];
+    if (api && typeof api.install === 'function') {
+      api.install();
+      return true;
+    }
+    return false;
+  }
+
+  function loadModule() {
+    if (!document.body || !isProfileSurface()) return;
+    if (invokeModuleIfLoaded()) return;
+    if (document.getElementById(moduleScriptId)) return;
+    const script = document.createElement('script');
+    script.id = moduleScriptId;
+    script.src = modulePath;
+    script.defer = true;
+    script.setAttribute('data-apc-google-sync-profile-loader', 'true');
+    script.setAttribute('data-apc-google-sync-profile-only', 'true');
+    script.setAttribute('data-apc-marker', loaderMarker);
+    document.head.appendChild(script);
+  }
+
+  function scheduleLoad() {
+    loadModule();
+    window.setTimeout(loadModule, 50);
+    window.setTimeout(loadModule, 250);
+    window.setTimeout(loadModule, 750);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scheduleLoad, { once: true });
+  } else {
+    scheduleLoad();
+  }
+  window.addEventListener('hashchange', scheduleLoad);
+  window.addEventListener('popstate', scheduleLoad);
+  document.addEventListener('apc:privatepage:rendered', scheduleLoad);
+})();
+/* APC_GOOGLE_SYNC_PROFILE_ONLY_STAGE_17K_Z_R6_END */

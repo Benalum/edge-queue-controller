@@ -1,0 +1,212 @@
+=== verify source rollback files are modified and bad cache bust removed ===
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/index.html b/frontend/wrapper-ui/apc-wrapper-local/index.html
+index cb46fe3..1636f4e 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/index.html
++++ b/frontend/wrapper-ui/apc-wrapper-local/index.html
+@@ -204,15 +204,14 @@
+   <script src="/auth/reset.js?v=reset-new-password-payload-fix-20260626"></script>
+   <!-- <script src="/app.js?v=20260628-admin-users-r3s"></script> -->
+   <script src="/publicpages/publicpages.js?v=stage17i-public-private-route-20260628"></script>
+-  <script src="/privatepages/privatepages.js?v=stage17k-z-r11m-r2-canonical-profile-source-20260701"></script>
++  <script src="/privatepages/privatepages.js?v=stage17j-r3-profile-fragment-cache-20260628"></script>
+   <script src="/privatepages/local-save-store.js?v=stage17k-z-r10m-strict-study-namespace-20260701"></script>
+   <script src="/privatepages/study-store.js?v=stage17k-z-r10j-study-store-local-only-20260701"></script>
+   <script src="/privatepages/study.js?v=session-label-polish-20260627"></script>
+   <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_START -->
+   <script src="/privatepages/google-sync-config.js?v=20260629-stage17k-z-r7d-appdata-vm200"></script>
+-  <script src="/privatepages/profile-google-sync-panel.js?v=stage17k-z-r11m-r2-canonical-profile-source-20260701"></script>
+   <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_END -->
+-  <script src="/privatepages/anki-manifest-panel.js?v=stage17k-z-r11m-r2-canonical-profile-source-20260701"></script>
++  <script src="/privatepages/anki-manifest-panel.js?v=stage17kyr2-profile-anki-dropdown-stable-20260629"></script>
+   <script src="/privatepages/study-source-selector.js?v=stage17kwr4-study-source-panel-removed-20260629"></script>
+   <script src="/privatepages/anki-readonly-session.js?v=stage17kxr2-local-card-session-ui-removed-20260629"></script>
+   <script src="/privatepages/companion-local-anki-bridge.js?v=stage17kxr2-companion-local-card-ui-removed-20260629"></script>
+@@ -248,6 +247,6 @@
+   <script src="/privatepages/anki-import-local.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+   <script src="/privatepages/profile-anki-import-bridge.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+   <script src="/privatepages/profile-anki-preview-panel.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+-  <script src="/privatepages/profile-anki-preview-mount.js?v=stage17k-z-r11m-r2-canonical-profile-source-20260701"></script>
++  <script src="/privatepages/profile-anki-preview-mount.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+ </body>
+ </html>
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js b/frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+index 8f90cc1..4a1de9f 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
++++ b/frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+@@ -347,7 +347,7 @@
+       if (!app) return false;
+ 
+       app.innerHTML = `
+-        <section class="private-shell" data-private-page="${escapeHtml(page)}" data-page="${escapeHtml(page)}" data-route="${escapeHtml(path)}">
++        <section class="private-shell" data-private-page="${escapeHtml(page)}">
+           ${fillTemplate(fragment, user)}
+         </section>
+       `;
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html b/frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+index 6554b03..051821f 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
++++ b/frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+@@ -1,20 +1,14 @@
+-<section class="private-profile-root profile-page" data-apc-profile-root data-page="profile" data-route="profile">
+-  <section class="private-hero">
+-    <h1>Your profile</h1>
+-    <p>Account information for {{email}}.</p>
+-  </section>
+-
+-  <section class="private-grid profile-grid" data-apc-profile-grid>
+-    <article class="private-card" data-apc-profile-account-card>
+-      <h2>Account</h2>
+-      <p><strong>Email:</strong> {{email}}</p>
+-      <p><strong>Role:</strong> {{role}}</p>
+-      <p><strong>Plan:</strong> {{plan}}</p>
+-      <p><strong>Status:</strong> {{status}}</p>
+-    </article>
++<section class="private-hero">
++  <h1>Your profile</h1>
++  <p>Account information for {{email}}.</p>
++</section>
+ 
+-    <div data-apc-profile-google-sync-host></div>
+-    <div data-apc-profile-anki-manifest-host></div>
+-    <div data-apc-profile-anki-preview-host></div>
+-  </section>
++<section class="private-grid">
++  <article class="private-card">
++    <h2>Account</h2>
++    <p><strong>Email:</strong> {{email}}</p>
++    <p><strong>Role:</strong> {{role}}</p>
++    <p><strong>Plan:</strong> {{plan}}</p>
++    <p><strong>Status:</strong> {{status}}</p>
++  </article>
+ </section>
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js b/frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+index 02da5d2..0166c55 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
++++ b/frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+@@ -516,8 +516,7 @@
+ 
+ 
+   function findMountHost() {
+-    return document.querySelector("[data-apc-profile-anki-manifest-host]")
+-      || document.querySelector("[data-page='profile']")
++    return document.querySelector("[data-page='profile']")
+       || document.querySelector(".profile-grid")
+       || document.querySelector(".private-profile-grid")
+       || document.querySelector("main")
+@@ -650,4 +649,72 @@
+   scheduleMount();
+ })();
+ 
+-/* R11M-R2 removed legacy Google sync Profile loader from Anki panel. profile-google-sync-panel.js is loaded directly from index.html and listens to apc-private-page-rendered. */
++/* APC_GOOGLE_SYNC_PROFILE_ONLY_STAGE_17K_Z_R6_START */
++(function apcGoogleSyncProfileOnlyStage17kZr6cLoader() {
++  const legacyMarker = 'APC_GOOGLE_SYNC_PROFILE_ONLY_MARKER_STAGE_17K_Z_R6';
++  const loaderMarker = 'APC_GOOGLE_SYNC_PROFILE_LOADER_MARKER_STAGE_17K_Z_R6C';
++  const moduleGlobal = 'APC_PROFILE_GOOGLE_SYNC_PANEL_STAGE_17K_Z_R6C';
++  const moduleScriptId = 'apc-profile-google-sync-panel-script-stage-17k-z-r6c';
++  const modulePath = '/privatepages/profile-google-sync-panel.js?v=20260629-stage17k-z-r7c-appdata';
++  const uiTextMovedToModule = 'Google Drive sync Not connected Connect Google Drive Sync now';
++
++  function isProfileSurface() {
++    const path = String(window.location && window.location.pathname || '').toLowerCase();
++    const hash = String(window.location && window.location.hash || '').toLowerCase();
++    const title = String(document.title || '').toLowerCase();
++    const body = document.body;
++    const profileHints = [
++      '[data-apc-profile-root]',
++      '[data-profile-root]',
++      '[data-page="profile"]',
++      '[data-route="profile"]',
++      '.profile-page',
++      '#profile',
++      '#profile-page'
++    ];
++    const hasProfileNode = profileHints.some((selector) => Boolean(document.querySelector(selector)));
++    const bodyLooksProfile = body && String(body.getAttribute('data-page') || body.className || '').toLowerCase().includes('profile');
++    return path.includes('profile') || hash.includes('profile') || title.includes('profile') || hasProfileNode || bodyLooksProfile;
++  }
++
++  function invokeModuleIfLoaded() {
++    const api = window[moduleGlobal];
++    if (api && typeof api.install === 'function') {
++      api.install();
++      return true;
++    }
++    return false;
++  }
++
++  function loadModule() {
++    if (!document.body || !isProfileSurface()) return;
++    if (invokeModuleIfLoaded()) return;
++    if (document.getElementById(moduleScriptId)) return;
++    const script = document.createElement('script');
++    script.id = moduleScriptId;
++    script.src = modulePath;
++    script.defer = true;
++    script.setAttribute('data-apc-google-sync-profile-loader', 'true');
++    script.setAttribute('data-apc-google-sync-profile-only', 'true');
++    script.setAttribute('data-apc-marker', loaderMarker);
++    document.head.appendChild(script);
++  }
++
++  function scheduleLoad() {
++    loadModule();
++    window.setTimeout(loadModule, 50);
++    window.setTimeout(loadModule, 250);
++    window.setTimeout(loadModule, 750);
++  }
++
++  if (document.readyState === 'loading') {
++    document.addEventListener('DOMContentLoaded', scheduleLoad, { once: true });
++  } else {
++    scheduleLoad();
++  }
++  window.addEventListener('hashchange', scheduleLoad);
++  window.addEventListener('popstate', scheduleLoad);
++  document.addEventListener('apc:privatepage:rendered', scheduleLoad);
++})();
++/* APC_GOOGLE_SYNC_PROFILE_ONLY_STAGE_17K_Z_R6_END */
++
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js b/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+index 35adfbd..a8a2a2e 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
++++ b/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+@@ -99,7 +99,6 @@
+ 
+   function findProfileAnchor() {
+     const selectors = [
+-      '[data-apc-profile-google-sync-host]',
+       '[data-apc-profile-root]',
+       '[data-profile-root]',
+       '[data-page="profile"]',
+@@ -399,6 +398,6 @@
+   }
+   window.addEventListener('hashchange', install);
+   window.addEventListener('popstate', install);
+-  document.addEventListener('apc-private-page-rendered', install);
++  document.addEventListener('apc:privatepage:rendered', install);
+ })();
+ /* APC_GOOGLE_SYNC_PROFILE_MODULE_STAGE_17K_Z_R6C_END */
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js b/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+index 7cdb2d2..8ce580a 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
++++ b/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+@@ -33,7 +33,6 @@
+ 
+     return Boolean(
+       documentRef.querySelector('[data-apc-profile-root]') ||
+-          documentRef.querySelector('[data-route="profile"]') ||
+       documentRef.querySelector('[data-apc-private-page="profile"]') ||
+       documentRef.querySelector('[data-apc-page="profile"]') ||
+       documentRef.querySelector('.apc-profile-page') ||
+@@ -195,9 +194,6 @@
+   }
+ 
+   if (root && root.document && root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED !== true) {
+-    root.document.addEventListener("apc-private-page-rendered", function () {
+-      scheduleAutoMount();
+-    });
+     scheduleAutoMount();
+   }
+ })(typeof globalThis !== "undefined" ? globalThis : window);
+PASS bad R11M-R2 cache-bust removed from source index

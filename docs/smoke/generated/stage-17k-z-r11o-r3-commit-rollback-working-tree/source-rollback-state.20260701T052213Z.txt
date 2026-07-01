@@ -1,0 +1,3 @@
+=== verify source rollback state ===
+PASS bad R11M-R2 cache-bust removed from source index
+PASS bad R11M-R2 Anki loader removal marker removed from source
