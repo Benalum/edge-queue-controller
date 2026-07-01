@@ -1,0 +1,14 @@
+=== backup current and install only three VM200 static files ===
+host=website-edge
+user=jkg76nid
+remote_root=/var/www/apc-wrapper-local
+bundle=/tmp/apc-r11r-20260701T052858Z
+backup=/var/www/apc-wrapper-local/apc-r11r-profile-google-direct-loader-backup-20260701T052858Z
+backup_sha256 448f1cf452a31c5981f25e60a12b3b11cc13383314c4b54548bf47ed72a0f58e  /var/www/apc-wrapper-local/apc-r11r-profile-google-direct-loader-backup-20260701T052858Z/index.html
+backup_sha256 7e1d59156336b4cae6a50b9052a9aa1235f0b17594d72be0eec8fb562a1b53d6  /var/www/apc-wrapper-local/apc-r11r-profile-google-direct-loader-backup-20260701T052858Z/privatepages/anki-manifest-panel.js
+backup_sha256 415cb06e4b2b37aee1648b29a234382ce08bd09f20d736a22975c6037cdd84c3  /var/www/apc-wrapper-local/apc-r11r-profile-google-direct-loader-backup-20260701T052858Z/privatepages/profile-google-sync-panel.js
+live_sha256 f2332f26091744858c7f9c11946e879be6d9d778c303d0d62b0bb32f5d2b0110  /var/www/apc-wrapper-local/index.html
+live_sha256 3f664a06adde689731b1be5a1f672ff38e358d04c540d0b3d002d3dc37b6c8de  /var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js
+live_sha256 8b5ffcd7d84f4caa648679725f873adf26d0fd9a3139d85de234b9acbeb0a542  /var/www/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+backup_dir=/var/www/apc-wrapper-local/apc-r11r-profile-google-direct-loader-backup-20260701T052858Z
+R11R_VM200_THREE_FILE_DEPLOY_DONE

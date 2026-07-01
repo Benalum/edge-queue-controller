@@ -1,0 +1,2 @@
+=== assert no broad/session source files differ from HEAD ===
+PASS no broad/session source files changed

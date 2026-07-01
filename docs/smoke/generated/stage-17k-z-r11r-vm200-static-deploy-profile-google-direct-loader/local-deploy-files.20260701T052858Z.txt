@@ -1,0 +1,7 @@
+=== local deploy file SHA-256 ===
+11339 frontend/wrapper-ui/apc-wrapper-local/index.html
+f2332f26091744858c7f9c11946e879be6d9d778c303d0d62b0bb32f5d2b0110  frontend/wrapper-ui/apc-wrapper-local/index.html
+23163 frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+3f664a06adde689731b1be5a1f672ff38e358d04c540d0b3d002d3dc37b6c8de  frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+18115 frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+8b5ffcd7d84f4caa648679725f873adf26d0fd9a3139d85de234b9acbeb0a542  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js

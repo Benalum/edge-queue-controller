@@ -1,0 +1,5 @@
+=== VM200 local HTTP three-file smoke ===
+root_code=200 root_bytes=11339
+200 /privatepages/anki-manifest-panel.js bytes=23163 marker=R11Q removed legacy Profile Google sync indirect loader
+200 /privatepages/profile-google-sync-panel.js bytes=18115 marker=apc-private-page-rendered
+PASS VM200 local R11R three-file static smoke
