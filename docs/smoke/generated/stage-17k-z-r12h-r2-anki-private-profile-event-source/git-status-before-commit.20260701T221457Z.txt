@@ -1,0 +1,4 @@
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+?? docs/smoke/generated/stage-17k-z-r12h-r2-anki-private-profile-event-source/
+?? docs/stage-17k-z-r12h-r2-anki-private-profile-event-source.md
+?? ops/smoke/check-stage-17k-z-r12h-r2-anki-private-profile-event-source.sh

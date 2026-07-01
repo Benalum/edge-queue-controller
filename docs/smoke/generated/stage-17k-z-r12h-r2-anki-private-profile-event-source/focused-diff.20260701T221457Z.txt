@@ -1,0 +1,99 @@
+=== focused diff ===
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js b/frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+index 928d5f8..17bd1f4 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
++++ b/frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+@@ -10,6 +10,23 @@
+   var SQLJS_WASM_PATH = "/vendor/sqljs/sql-wasm.wasm";
+ 
+   var mountTimer = null;
++  var privateProfileEventOnlyMarker = "APC_ANKI_MANIFEST_PRIVATE_PROFILE_EVENT_ONLY_R12H_R2";
++
++  function isPrivateProfileRenderEvent(event) {
++    var detail = event && event.detail ? event.detail : null;
++    return Boolean(detail && detail.page === "profile" && detail.user);
++  }
++
++  function hasPrivateProfileShell() {
++    return Boolean(document.querySelector(".private-shell[data-private-page='profile']"));
++  }
++
++  function cleanupIfNotPrivateProfile() {
++    window.setTimeout(function () {
++      if (!hasPrivateProfileShell()) removeManifestPanel();
++    }, 0);
++  }
++
+   var sqlJsPromise = null;
+ 
+   function escapeHtml(value) {
+@@ -508,19 +525,15 @@
+   }
+ 
+   function isProfileRoute() {
+-    var routeText = String(window.location.pathname + " " + window.location.hash).toLowerCase();
+-    if (routeText.indexOf("profile") !== -1) return true;
+-    return Boolean(document.querySelector("[data-page='profile'], #profilePrivateApp, .apc-profile-root"));
++    return hasPrivateProfileShell();
+   }
+ 
+ 
+ 
+   function findMountHost() {
+-    return document.querySelector("[data-page='profile']")
+-      || document.querySelector(".profile-grid")
+-      || document.querySelector(".private-profile-grid")
+-      || document.querySelector("main")
+-      || document.body;
++    return document.querySelector(".private-shell[data-private-page='profile'] .private-grid")
++      || document.querySelector(".private-shell[data-private-page='profile']")
++      || null;
+   }
+ 
+   function bindPanel(panel) {
+@@ -592,7 +605,7 @@
+ 
+ 
+   function renderPanel(message) {
+-    if (!isProfileRoute()) { removeManifestPanel(); return; }
++    if (!hasPrivateProfileShell()) { removeManifestPanel(); return; }
+ 
+     var host = findMountHost();
+     if (!host) return;
+@@ -614,11 +627,15 @@
+     bindPanel(panel);
+   }
+ 
+-  function scheduleMount() {
++  function scheduleMount(event) {
++    if (!isPrivateProfileRenderEvent(event)) {
++      cleanupIfNotPrivateProfile();
++      return;
++    }
+     if (mountTimer) window.clearTimeout(mountTimer);
+     mountTimer = window.setTimeout(function () {
+       renderPanel();
+-    }, 50);
++    }, 0);
+   }
+ 
+   window.APC_ANKI_LOCAL = {
+@@ -637,13 +654,12 @@
+     }
+   };
+ 
+-  window.addEventListener("DOMContentLoaded", scheduleMount);
+-  window.addEventListener("popstate", scheduleMount);
+-  window.addEventListener("hashchange", scheduleMount);
++  window.addEventListener("DOMContentLoaded", cleanupIfNotPrivateProfile);
++  window.addEventListener("popstate", cleanupIfNotPrivateProfile);
++  window.addEventListener("hashchange", cleanupIfNotPrivateProfile);
+ 
+-  document.addEventListener("apc-private-page-rendered", function () {
+-    scheduleMount();
+-  });
++  document.addEventListener("apc-auth-changed", cleanupIfNotPrivateProfile);
++  document.addEventListener("apc-private-page-rendered", scheduleMount);
+ 
+ 
+   scheduleMount();

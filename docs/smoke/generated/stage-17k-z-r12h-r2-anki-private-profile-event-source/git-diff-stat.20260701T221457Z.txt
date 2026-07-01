@@ -1,0 +1,2 @@
+ .../privatepages/anki-manifest-panel.js            | 50 ++++++++++++++--------
+ 1 file changed, 33 insertions(+), 17 deletions(-)
