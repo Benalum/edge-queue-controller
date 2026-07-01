@@ -1,0 +1,3 @@
+=== forbidden broad-file diff check ===
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+PASS only profile-anki-preview-mount.js source changed

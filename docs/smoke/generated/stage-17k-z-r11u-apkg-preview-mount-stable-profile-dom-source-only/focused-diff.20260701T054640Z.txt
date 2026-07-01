@@ -1,0 +1,23 @@
+=== focused diff evidence ===
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js b/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+index 8ce580a..a55253a 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
++++ b/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+@@ -2,6 +2,7 @@
+   "use strict";
+ 
+   const PATCH_MARKER = "APC_PROFILE_ANKI_PREVIEW_MOUNT_R11G";
++  const STABLE_PROFILE_DOM_MARKER = "APC_PROFILE_ANKI_PREVIEW_MOUNT_STABLE_PROFILE_DOM_R11U";
+   const MOUNT_ID = "apc-profile-anki-preview-panel-r11g";
+   const MAX_RETRIES = 20;
+ 
+@@ -47,6 +48,9 @@
+ 
+     const selectors = [
+       "[data-apc-profile-anki-preview-host]",
++      ".private-shell[data-private-page='profile'] [data-apc-profile-anki-preview-host]",
++      ".private-shell[data-private-page='profile'] .private-grid",
++      ".private-shell[data-private-page='profile']",
+       "[data-apc-profile-root]",
+       '[data-apc-private-page="profile"]',
+       '[data-apc-page="profile"]',
