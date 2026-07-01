@@ -1,0 +1,30 @@
+=== stage-17k-z-r10l-r3a-diagnose-local-save-runtime-attachment ===
+created_utc=20260701T035433Z
+head_before=d7dbb9a
+
+Scope:
+- Read-only source diagnostic.
+- Read-only live static diagnostic.
+- Created browser runtime diagnostic snippet.
+- No deploy.
+- No source patch.
+- No DB write.
+- No schema change.
+- No service restart.
+- No live mutation.
+
+Source:
+- local_save_r10l_marker_count=4
+- local_save_r10l_r2_marker_count=2
+
+Live static:
+- static_local_save_code=200
+- static_index_code=200
+- public_status_code=200
+- public_me_code=401
+- static_r10l_r2_marker_count=2
+- static_index_r10l_r2_version_count=1
+
+Files:
+- source_grep=docs/smoke/generated/stage-17k-z-r10l-r3a-diagnose-local-save-runtime-attachment/source-grep.20260701T035433Z.txt
+- browser_snippet=docs/smoke/generated/stage-17k-z-r10l-r3a-diagnose-local-save-runtime-attachment/devtools-local-save-runtime-diagnostic.20260701T035433Z.js

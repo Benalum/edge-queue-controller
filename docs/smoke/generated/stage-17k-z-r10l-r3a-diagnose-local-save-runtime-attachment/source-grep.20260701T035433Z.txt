@@ -1,0 +1,55 @@
+=== index local-save script lines ===
+208:  <script src="/privatepages/local-save-store.js?v=stage17k-z-r10l-r2-local-save-listdocs-namespace-20260701"></script>
+
+=== index study-store script lines ===
+209:  <script src="/privatepages/study-store.js?v=stage17k-z-r10j-study-store-local-only-20260701"></script>
+
+=== local-save interesting lines ===
+17:  if (window.APC_LOCAL_SAVE && window.APC_LOCAL_SAVE.version) return;
+32:  const POLICY = Object.freeze({
+46:  const DEFAULT_DOC_KEYS = Object.freeze({
+156:        console.warn("[APC_LOCAL_SAVE] IndexedDB open is blocked by another tab.");
+206:      console.warn("[APC_LOCAL_SAVE] large document saved", { key, sizeBytes });
+239:  async function listDocs(prefix) {
+572:  async function exportAll() {
+676:  const api = Object.freeze({
+703:    exportAll,
+711:  window.APC_LOCAL_SAVE = api;
+712:  window.APC_LOCAL_SAVE_POLICY = POLICY;
+720:    console.warn("[APC_LOCAL_SAVE] manifest initialization failed", error);
+725:/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L
+733: * This keeps exportAll() behavior unchanged and only hardens namespace filtering.
+736:  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L";
+816:    const api = window.APC_LOCAL_SAVE;
+822:    api.listDocs = async function patchedListDocs(options = {}) {
+852:      if (typeof api.exportAll === "function") {
+853:        const exportPayload = await api.exportAll();
+882:/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R2
+886: *   APC_LOCAL_SAVE.listDocs({ namespace: "study" }) -> []
+889: * - the current window.APC_LOCAL_SAVE object
+890: * - any future reassignment of window.APC_LOCAL_SAVE
+892: * It uses exportAll() as the authority when listDocs namespace filtering returns
+896:  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R2";
+1006:    api.listDocs = async function patchedListDocs(options = {}) {
+1028:      if (typeof api.exportAll === "function") {
+1029:        const exportPayload = await api.exportAll();
+1045:    const current = window.APC_LOCAL_SAVE;
+1048:      const descriptor = Object.getOwnPropertyDescriptor(window, "APC_LOCAL_SAVE");
+1056:      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+1071:      patchApi(window.APC_LOCAL_SAVE);
+1080:    patchApi(window.APC_LOCAL_SAVE);
+
+=== study-store local-save interesting lines ===
+535:    return window.APC_LOCAL_SAVE && typeof window.APC_LOCAL_SAVE.setDoc === "function"
+536:      ? window.APC_LOCAL_SAVE
+591:  async function flushLocalSaveMirror() {
+609:        store.setDoc(LOCAL_SAVE_STORE_STATE_KEY, {
+618:        store.setDoc(LOCAL_SAVE_DECKS_KEY, {
+627:        store.setDoc(LOCAL_SAVE_CARDS_KEY, {
+636:        store.setDoc(LOCAL_SAVE_SESSIONS_KEY, {
+646:        store.setDoc(LOCAL_SAVE_PROGRESS_KEY, progress, {
+653:        document.dispatchEvent(new CustomEvent("apc-study-local-save-updated", {
+666:      console.warn("[study-store] APC_LOCAL_SAVE mirror failed", error);
+677:      flushLocalSaveMirror().catch((error) => {
+688:      document.dispatchEvent(new CustomEvent("apc-study-local-save-hydrated", {
+794:    flushLocalSaveMirror,
