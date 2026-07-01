@@ -878,3 +878,211 @@
   window[PATCH_MARKER] = true;
 })();
 
+
+/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R2
+ * Stronger namespace filter patch.
+ *
+ * R10L proved the source/static deploy, but live browser testing still returned:
+ *   APC_LOCAL_SAVE.listDocs({ namespace: "study" }) -> []
+ *
+ * R10L-R2 patches both:
+ * - the current window.APC_LOCAL_SAVE object
+ * - any future reassignment of window.APC_LOCAL_SAVE
+ *
+ * It uses exportAll() as the authority when listDocs namespace filtering returns
+ * no matches, and it matches key-prefixed docs such as study/decks/v1.
+ */
+(() => {
+  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R2";
+  const PATCH_FLAG = "__apcListDocsNamespacePrefixPatchR10LR2";
+
+  function namespaceFromOptions(options) {
+    if (typeof options === "string") return options.trim();
+    if (!options || typeof options !== "object") return "";
+    return String(options.namespace || options.ns || options.scope || "").trim();
+  }
+
+  function collectStrings(value, out, depth = 0) {
+    if (depth > 8 || value === undefined || value === null) return;
+
+    if (typeof value === "string" || typeof value === "number") {
+      const text = String(value).trim();
+      if (text) out.push(text);
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => collectStrings(item, out, depth + 1));
+      return;
+    }
+
+    if (typeof value === "object") {
+      Object.keys(value).forEach((key) => {
+        out.push(String(key).trim());
+        collectStrings(value[key], out, depth + 1);
+      });
+    }
+  }
+
+  function docKey(doc) {
+    if (!doc || typeof doc !== "object") return "";
+    return String(
+      doc.key ||
+      doc.id ||
+      doc.name ||
+      doc.path ||
+      (doc.record && (doc.record.key || doc.record.id || doc.record.name || doc.record.path)) ||
+      (doc.meta && (doc.meta.key || doc.meta.id || doc.meta.name || doc.meta.path)) ||
+      ""
+    ).trim();
+  }
+
+  function docMatchesNamespace(doc, namespace) {
+    if (!doc || !namespace) return false;
+
+    const key = docKey(doc);
+    if (key === namespace) return true;
+    if (key.startsWith(`${namespace}/`)) return true;
+    if (key.startsWith(`${namespace}:`)) return true;
+
+    const strings = [];
+    collectStrings(doc, strings);
+
+    return strings.some((text) => (
+      text === namespace ||
+      text.startsWith(`${namespace}/`) ||
+      text.startsWith(`${namespace}:`)
+    ));
+  }
+
+  function docsFromPayload(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (!payload || typeof payload !== "object") return [];
+
+    const candidates = [
+      payload.docs,
+      payload.records,
+      payload.items,
+      payload.data && payload.data.docs,
+      payload.data && payload.data.records,
+      payload.data && payload.data.items,
+      payload.payload && payload.payload.docs,
+      payload.payload && payload.payload.records
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) return candidate;
+    }
+
+    return [];
+  }
+
+  function uniqueDocs(docs) {
+    const seen = new Set();
+    const out = [];
+
+    for (const doc of docs || []) {
+      const key = docKey(doc) || JSON.stringify(doc);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(doc);
+    }
+
+    return out;
+  }
+
+  function patchApi(api) {
+    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+      return false;
+    }
+
+    if (api[PATCH_FLAG]) {
+      api[PATCH_MARKER] = true;
+      return true;
+    }
+
+    const originalListDocs = api.listDocs.bind(api);
+
+    api.listDocs = async function patchedListDocs(options = {}) {
+      const namespace = namespaceFromOptions(options);
+
+      let originalDocs = [];
+      let originalError = null;
+
+      try {
+        const originalPayload = await originalListDocs(options);
+        originalDocs = docsFromPayload(originalPayload);
+      } catch (error) {
+        originalError = error;
+        if (!namespace) throw error;
+      }
+
+      if (!namespace) {
+        if (originalError) throw originalError;
+        return originalDocs;
+      }
+
+      const originalMatches = uniqueDocs(originalDocs.filter((doc) => docMatchesNamespace(doc, namespace)));
+      if (originalMatches.length > 0) return originalMatches;
+
+      if (typeof api.exportAll === "function") {
+        const exportPayload = await api.exportAll();
+        const exportDocs = docsFromPayload(exportPayload);
+        const exportMatches = uniqueDocs(exportDocs.filter((doc) => docMatchesNamespace(doc, namespace)));
+        if (exportMatches.length > 0) return exportMatches;
+      }
+
+      if (originalError) throw originalError;
+      return [];
+    };
+
+    api[PATCH_FLAG] = true;
+    api[PATCH_MARKER] = true;
+    return true;
+  }
+
+  function installGlobalAssignmentPatch() {
+    const current = window.APC_LOCAL_SAVE;
+
+    try {
+      const descriptor = Object.getOwnPropertyDescriptor(window, "APC_LOCAL_SAVE");
+      if (descriptor && descriptor.configurable === false) {
+        patchApi(current);
+        return false;
+      }
+
+      let stored = current;
+
+      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return stored;
+        },
+        set(value) {
+          stored = value;
+          patchApi(stored);
+        }
+      });
+
+      patchApi(stored);
+      return true;
+    } catch (error) {
+      patchApi(window.APC_LOCAL_SAVE);
+      return false;
+    }
+  }
+
+  installGlobalAssignmentPatch();
+
+  const start = Date.now();
+  const timer = setInterval(() => {
+    patchApi(window.APC_LOCAL_SAVE);
+    if (Date.now() - start > 15000) {
+      clearInterval(timer);
+    }
+  }, 100);
+
+  window[PATCH_MARKER] = true;
+})();
+
