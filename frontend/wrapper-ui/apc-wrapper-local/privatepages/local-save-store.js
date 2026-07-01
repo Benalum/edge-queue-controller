@@ -1328,3 +1328,229 @@
   }, 100);
 })();
 
+
+/* APC_LOCAL_SAVE_STRICT_STUDY_NAMESPACE_MATCHER_R10M
+ * Tighten listDocs({ namespace: "study" }) after R10L-R3.
+ *
+ * R10L-R3 correctly returned all Study docs but also returned sync/manifest/v1
+ * because the broad matcher scanned nested manifest content.
+ *
+ * R10M only matches:
+ * - primary doc keys that equal "study" or start with "study/" / "study:"
+ * - explicit namespace/ns/scope fields that equal "study"
+ *
+ * It intentionally does not match nested manifest payload values.
+ */
+(() => {
+  const PATCH_MARKER = "APC_LOCAL_SAVE_STRICT_STUDY_NAMESPACE_MATCHER_R10M";
+
+  function namespaceFromOptions(options) {
+    if (typeof options === "string") return options.trim();
+    if (!options || typeof options !== "object") return "";
+    return String(options.namespace || options.ns || options.scope || "").trim();
+  }
+
+  function docsFromPayload(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (!payload || typeof payload !== "object") return [];
+
+    const candidates = [
+      payload.docs,
+      payload.records,
+      payload.items,
+      payload.data && payload.data.docs,
+      payload.data && payload.data.records,
+      payload.data && payload.data.items,
+      payload.payload && payload.payload.docs,
+      payload.payload && payload.payload.records,
+      payload.payload && payload.payload.items
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) return candidate;
+    }
+
+    return [];
+  }
+
+  function docPrimaryKey(doc) {
+    if (!doc || typeof doc !== "object") return "";
+    return String(
+      doc.key ||
+      doc.id ||
+      doc.name ||
+      doc.path ||
+      (doc.record && (doc.record.key || doc.record.id || doc.record.name || doc.record.path)) ||
+      (doc.meta && (doc.meta.key || doc.meta.id || doc.meta.name || doc.meta.path)) ||
+      ""
+    ).trim();
+  }
+
+  function explicitNamespace(doc) {
+    if (!doc || typeof doc !== "object") return "";
+    return String(
+      doc.namespace ||
+      doc.ns ||
+      doc.scope ||
+      (doc.record && (doc.record.namespace || doc.record.ns || doc.record.scope)) ||
+      (doc.meta && (doc.meta.namespace || doc.meta.ns || doc.meta.scope)) ||
+      ""
+    ).trim();
+  }
+
+  function docMatchesStrictNamespace(doc, namespace) {
+    if (!doc || !namespace) return false;
+
+    const key = docPrimaryKey(doc);
+    if (key === namespace) return true;
+    if (key.startsWith(`${namespace}/`)) return true;
+    if (key.startsWith(`${namespace}:`)) return true;
+
+    const ns = explicitNamespace(doc);
+    if (ns === namespace) return true;
+
+    return false;
+  }
+
+  function uniqueDocs(docs) {
+    const seen = new Set();
+    const out = [];
+
+    for (const doc of docs || []) {
+      const key = docPrimaryKey(doc) || JSON.stringify(doc);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(doc);
+    }
+
+    return out;
+  }
+
+  function cloneWithStrictListDocs(api) {
+    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+      return api;
+    }
+
+    if (api[PATCH_MARKER]) {
+      return api;
+    }
+
+    const originalListDocs = api.listDocs.bind(api);
+    const originalExportAll = typeof api.exportAll === "function" ? api.exportAll.bind(api) : null;
+
+    const clone = Object.create(Object.getPrototypeOf(api) || Object.prototype);
+
+    for (const key of Reflect.ownKeys(api)) {
+      if (key === "listDocs" || key === PATCH_MARKER) continue;
+      const descriptor = Object.getOwnPropertyDescriptor(api, key);
+      if (!descriptor) continue;
+      try {
+        Object.defineProperty(clone, key, descriptor);
+      } catch (_) {
+        try {
+          clone[key] = api[key];
+        } catch (_) {}
+      }
+    }
+
+    Object.defineProperty(clone, "listDocs", {
+      enumerable: true,
+      configurable: false,
+      writable: false,
+      value: async function strictNamespaceListDocs(options = {}) {
+        const namespace = namespaceFromOptions(options);
+
+        let originalDocs = [];
+        let originalError = null;
+
+        try {
+          const originalPayload = await originalListDocs(options);
+          originalDocs = docsFromPayload(originalPayload);
+        } catch (error) {
+          originalError = error;
+          if (!namespace) throw error;
+        }
+
+        if (!namespace) {
+          if (originalError) throw originalError;
+          return originalDocs;
+        }
+
+        const originalMatches = uniqueDocs(
+          originalDocs.filter((doc) => docMatchesStrictNamespace(doc, namespace))
+        );
+
+        if (originalMatches.length > 0) {
+          return originalMatches;
+        }
+
+        if (originalExportAll) {
+          const exportPayload = await originalExportAll();
+          const exportDocs = docsFromPayload(exportPayload);
+          return uniqueDocs(
+            exportDocs.filter((doc) => docMatchesStrictNamespace(doc, namespace))
+          );
+        }
+
+        if (originalError) throw originalError;
+        return [];
+      }
+    });
+
+    Object.defineProperty(clone, PATCH_MARKER, {
+      enumerable: true,
+      configurable: false,
+      writable: false,
+      value: true
+    });
+
+    try {
+      Object.freeze(clone);
+    } catch (_) {}
+
+    return clone;
+  }
+
+  function installStrictCloneReplacement() {
+    const current = window.APC_LOCAL_SAVE;
+    const cloned = cloneWithStrictListDocs(current);
+
+    try {
+      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return window.__APC_LOCAL_SAVE_R10M_STORED__;
+        },
+        set(value) {
+          window.__APC_LOCAL_SAVE_R10M_STORED__ = cloneWithStrictListDocs(value);
+        }
+      });
+
+      window.__APC_LOCAL_SAVE_R10M_STORED__ = cloned;
+      window[PATCH_MARKER] = true;
+      return true;
+    } catch (error) {
+      window.__APC_LOCAL_SAVE_R10M_ERROR__ = String(error && error.message ? error.message : error);
+      window[PATCH_MARKER] = true;
+      return false;
+    }
+  }
+
+  installStrictCloneReplacement();
+
+  const start = Date.now();
+  const timer = setInterval(() => {
+    try {
+      const current = window.APC_LOCAL_SAVE;
+      if (current && !current[PATCH_MARKER]) {
+        window.APC_LOCAL_SAVE = current;
+      }
+    } catch (_) {}
+
+    if (Date.now() - start > 15000) {
+      clearInterval(timer);
+    }
+  }, 100);
+})();
+
