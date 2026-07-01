@@ -36,8 +36,10 @@ if grep -nE 'fetch[[:space:]]*\(|XMLHttpRequest|sendBeacon|/api/|APC_LOCAL_SAVE[
   exit 1
 fi
 
-if grep -n "profile-anki-preview-panel.js" frontend/wrapper-ui/apc-wrapper-local/index.html frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html >/tmp/apc-r11f-mounted-check.txt 2>/dev/null; then
-  echo "FAIL: R11F panel must not be mounted in UI yet"
+if grep -n "profile-anki-preview-mount.js" frontend/wrapper-ui/apc-wrapper-local/index.html >/tmp/apc-r11g-r11f-superseded-check.txt 2>/dev/null; then
+  echo "PASS: R11G source mount supersedes the older r11f no-mount assertion"
+elif grep -n "profile-anki-preview-panel.js" frontend/wrapper-ui/apc-wrapper-local/index.html frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html >/tmp/apc-r11f-mounted-check.txt 2>/dev/null; then
+  echo "FAIL: R11F panel must not be mounted before R11G"
   cat /tmp/apc-r11f-mounted-check.txt
   exit 1
 fi

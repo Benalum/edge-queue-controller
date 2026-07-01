@@ -1,0 +1,6 @@
+=== run R11B regression smoke ===
+=== run R11C regression smoke ===
+=== run repaired R11E smoke ===
+=== run repaired R11F smoke ===
+=== run R11G smoke again ===
+=== run R11G-R2 smoke ===

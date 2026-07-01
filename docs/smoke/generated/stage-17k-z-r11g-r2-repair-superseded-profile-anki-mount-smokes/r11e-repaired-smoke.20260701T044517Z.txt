@@ -1,0 +1,4 @@
+PASS: R11G source mount supersedes the older r11e no-mount assertion
+/tmp/tmp.XD24yuW5XF/r11e-profile-preview.apkg
+PASS node profile anki preview bridge smoke
+PASS stage-17k-z-r11e profile anki apkg preview bridge smoke
