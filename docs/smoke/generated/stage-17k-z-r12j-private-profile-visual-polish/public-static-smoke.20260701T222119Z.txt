@@ -1,0 +1,4 @@
+=== public static smoke ===
+profile_root_code=200 profile_root_bytes=11713
+css_code=200 css_bytes=6762
+PASS public static R12J smoke

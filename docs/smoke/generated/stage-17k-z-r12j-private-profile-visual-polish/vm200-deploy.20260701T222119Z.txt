@@ -1,0 +1,6 @@
+=== backup and install visual files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r12j-private-profile-visual-polish-backup-20260701T222119Z
+675dbf156532e404a044a0c50a5641abba7afc8c9d33aeaff7b5fd969f6b83e5  /var/www/apc-wrapper-local/index.html
+db9497b1edd8fb3caafed700052e23b3e1b87226b0108fc5e841e990be99a6b5  /var/www/apc-wrapper-local/privatepages/profile-private-polish.css
+R12J_VM200_VISUAL_DEPLOY_DONE
