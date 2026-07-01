@@ -1,0 +1,38 @@
+=== stage-17k-z-r10e-r3-commit-study-store-local-save-cutover ===
+created_utc=20260701T023732Z
+head_before=27f8980
+
+Scope:
+- Validated existing R10E study-store.js patch after previous smoke checker bug.
+- Removed failed uncommitted R10E smoke directory.
+- Recreated clean passing R10E-R3 smoke evidence.
+- Committed frontend local-save cutover.
+- No deploy.
+- No DB write.
+- No schema change.
+- No service restart.
+- No backend endpoint removal.
+- No backend endpoint disable.
+- No backend storage change.
+- No Anki file mutation.
+- No Google OAuth.
+- No Google Drive API.
+
+Verification:
+- node_check=pass
+- api_study_count=0
+- fetch_count=0
+- api_get_count=0
+- api_post_count=0
+- writeback_count=0
+- backend_wrapper_count=0
+- apc_local_save_direct_count=3
+- get_study_local_save_count=4
+- store_setdoc_count=5
+- store_getdoc_count=4
+- sync_local_count=4
+- record_review_count=2
+- mode_count=1
+- local_storage_cache_count=2
+- startup_hydration_count=1
+- pass=true
