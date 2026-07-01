@@ -1,0 +1,6 @@
+=== VM200 local HTTP smoke ===
+root_code=200 root_bytes=11337
+200 /privatepages/profile-anki-preview-mount.js bytes=5971 marker=APC_PROFILE_ANKI_PREVIEW_MOUNT_STABLE_PROFILE_DOM_R11U
+200 /privatepages/profile-google-sync-panel.js bytes=18242 marker=Buddies Who Study local data
+200 /privatepages/profile-google-sync-panel.js bytes=18242 marker=Create hidden Buddies Who Study local data database
+PASS VM200 local R11W static smoke

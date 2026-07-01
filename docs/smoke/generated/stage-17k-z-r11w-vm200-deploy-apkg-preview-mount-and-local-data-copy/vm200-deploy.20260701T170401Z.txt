@@ -1,0 +1,14 @@
+=== backup current and install only three VM200 static files ===
+host=website-edge
+user=jkg76nid
+remote_root=/var/www/apc-wrapper-local
+bundle=/tmp/apc-r11w-20260701T170401Z
+backup=/var/www/apc-wrapper-local/apc-r11w-apkg-preview-local-data-copy-backup-20260701T170401Z
+backup_sha256 f2332f26091744858c7f9c11946e879be6d9d778c303d0d62b0bb32f5d2b0110  /var/www/apc-wrapper-local/apc-r11w-apkg-preview-local-data-copy-backup-20260701T170401Z/index.html
+backup_sha256 58e161a5f520f0a6b5de62d5b604557b0091ce9ab02effcfe1f7bdb2ea8197b7  /var/www/apc-wrapper-local/apc-r11w-apkg-preview-local-data-copy-backup-20260701T170401Z/privatepages/profile-anki-preview-mount.js
+backup_sha256 8b5ffcd7d84f4caa648679725f873adf26d0fd9a3139d85de234b9acbeb0a542  /var/www/apc-wrapper-local/apc-r11w-apkg-preview-local-data-copy-backup-20260701T170401Z/privatepages/profile-google-sync-panel.js
+live_sha256 5dccabecc3a2285b163da343f0265a4c36e0bf5dd437220e98288ced6bd3ae29  /var/www/apc-wrapper-local/index.html
+live_sha256 e1bdbc2623b292b8c58d15e3b019de1bd42ee2ca91490d307b357a8dc5fc650f  /var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+live_sha256 ab775eeb167e92428d21b225f44db1ee1301730459bcff51bde89332108f60f9  /var/www/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+backup_dir=/var/www/apc-wrapper-local/apc-r11w-apkg-preview-local-data-copy-backup-20260701T170401Z
+R11W_VM200_THREE_FILE_DEPLOY_DONE
