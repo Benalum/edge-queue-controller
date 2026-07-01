@@ -1,0 +1,19 @@
+{
+  "stage": "stage-17k-z-r10d-r2-focused-private-study-endpoint-inventory",
+  "created_utc": "20260701T022703Z",
+  "head_before": "4a48782",
+  "cleanup_noisy_uncommitted_r10d_inventory": true,
+  "deploy": false,
+  "db_write": false,
+  "schema_change": false,
+  "service_restart": false,
+  "endpoint_removal": false,
+  "endpoint_disable": false,
+  "backend_storage_change": false,
+  "anki_file_mutation": false,
+  "google_oauth": false,
+  "google_drive_api": false,
+  "frontend_api_call_focused_count": "32",
+  "backend_route_focused_count": "168",
+  "backend_storage_focused_count": "3452"
+}

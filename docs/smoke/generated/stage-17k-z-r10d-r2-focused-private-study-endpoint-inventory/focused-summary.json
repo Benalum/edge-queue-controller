@@ -1,0 +1,605 @@
+{
+  "frontend_api_call_focused_count": 32,
+  "backend_route_focused_count": 168,
+  "backend_storage_focused_count": 3452,
+  "frontend_summary": {
+    "keep_server_review": 15,
+    "private_local_candidate": 16,
+    "unknown_review": 1
+  },
+  "backend_route_summary": {
+    "keep_server_review": 109,
+    "private_local_candidate": 55,
+    "unknown_review": 4
+  },
+  "backend_storage_summary": {
+    "private_local_candidate": 3223,
+    "keep_server_review": 229
+  },
+  "sample_private_frontend_hits": [
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 546,
+      "text": "const decksResponse = await apiGet(\"/api/study/decks\");"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 561,
+      "text": "const cardResponse = await apiGet(\"/api/study/cards-lite?deck_id=\" + encodeURIComponent(deck.id));"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 597,
+      "text": "progress = await apiGet(\"/api/study/progress\");"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 604,
+      "text": "reviewSummary = await apiGet(\"/api/study/review-summary-lite\");"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 625,
+      "text": "backendSessions = await apiGet(\"/api/study/sessions-lite\");"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 765,
+      "text": "backendStartPromise = apiPost(\"/api/study/session-writeback-lite\", {"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 800,
+      "text": "const data = await apiPost(\"/api/study/session-writeback-lite\", {"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 831,
+      "text": "await apiPost(\"/api/study/session-writeback-lite\", {"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 977,
+      "text": "afterBackendMutation(\"deck create\", apiPost(\"/api/study/deck-writeback-lite\", {"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 1000,
+      "text": "afterBackendMutation(\"deck update\", apiPost(\"/api/study/deck-writeback-lite\", {"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 1025,
+      "text": "afterBackendMutation(\"deck delete\", apiPost(\"/api/study/deck-writeback-lite\", {"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 1054,
+      "text": "afterBackendMutation(\"card create\", apiPost(\"/api/study/card-writeback-lite\", payload));"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 1085,
+      "text": "afterBackendMutation(\"card update\", apiPost(\"/api/study/card-writeback-lite\", payload));"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 1107,
+      "text": "afterBackendMutation(\"card delete\", apiPost(\"/api/study/card-writeback-lite\", {"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js",
+      "line": 1140,
+      "text": "afterBackendMutation(\"card flag\", apiPost(\"/api/study/card-writeback-lite\", payload));"
+    },
+    {
+      "file": "frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js",
+      "line": 255,
+      "text": "const response = await fetch(`/privatepages/pages/${page}.html?v=stage17j-r3-profile-fragment-cache-20260628`, {"
+    }
+  ],
+  "sample_private_backend_route_hits": [
+    {
+      "file": "edge_controller.py",
+      "line": 1145,
+      "text": "@app.get(\"/scheduler/preview\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 1326,
+      "text": "@app.post(\"/workers/remediation/tick\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 1498,
+      "text": "@app.post(\"/workers/{worker_id}/remediation/reset\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8098,
+      "text": "@app.post(\"/public/study/session/start\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8099,
+      "text": "@app.post(\"/api/study/session/start\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8243,
+      "text": "@app.post(\"/public/study/session/pause\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8244,
+      "text": "@app.post(\"/api/study/session/pause\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8276,
+      "text": "@app.post(\"/public/study/session/resume\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8277,
+      "text": "@app.post(\"/api/study/session/resume\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8309,
+      "text": "@app.post(\"/public/study/session/stop\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8310,
+      "text": "@app.post(\"/api/study/session/stop\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8514,
+      "text": "@app.post(\"/public/study/intent/parse\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8515,
+      "text": "@app.post(\"/api/study/intent/parse\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8837,
+      "text": "@app.post(\"/public/study/session/command\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8838,
+      "text": "@app.post(\"/api/study/session/command\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8880,
+      "text": "@app.post(\"/public/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8881,
+      "text": "@app.post(\"/api/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8944,
+      "text": "@app.get(\"/public/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8945,
+      "text": "@app.get(\"/api/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8990,
+      "text": "@app.delete(\"/public/study/decks/{deck_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8991,
+      "text": "@app.delete(\"/api/study/decks/{deck_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9016,
+      "text": "@app.post(\"/public/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9017,
+      "text": "@app.post(\"/api/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9117,
+      "text": "@app.get(\"/public/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9118,
+      "text": "@app.get(\"/api/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9169,
+      "text": "@app.delete(\"/public/study/cards/{card_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9170,
+      "text": "@app.delete(\"/api/study/cards/{card_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9191,
+      "text": "@app.post(\"/public/study/cards/{card_id}/reviews\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9192,
+      "text": "@app.post(\"/api/study/cards/{card_id}/reviews\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9349,
+      "text": "@app.get(\"/public/study/totals\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9350,
+      "text": "@app.get(\"/api/study/totals\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9363,
+      "text": "@app.get(\"/public/study/progress\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9364,
+      "text": "@app.get(\"/api/study/progress\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9742,
+      "text": "@app.get(\"/public/study/decks/{deck_id}/card-stats\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9743,
+      "text": "@app.get(\"/api/study/decks/{deck_id}/card-stats\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9853,
+      "text": "@app.post(\"/public/companion/study/grade\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9854,
+      "text": "@app.post(\"/api/companion/study/grade\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 10120,
+      "text": "@app.get(\"/public/companion/context\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 10121,
+      "text": "@app.get(\"/api/companion/context\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 10134,
+      "text": "@app.post(\"/public/companion/chat\")"
+    }
+  ],
+  "sample_private_backend_storage_hits": [
+    {
+      "file": "public_gateway.py",
+      "line": 43,
+      "text": "if method in {\"GET\", \"POST\"} and path == \"/public/study/decks\":"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 46,
+      "text": "if method in {\"GET\", \"POST\"} and re.fullmatch(r\"/public/study/decks/[0-9]+/cards\", path):"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 49,
+      "text": "if method == \"POST\" and re.fullmatch(r\"/public/study/cards/[0-9]+/reviews\", path):"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 52,
+      "text": "if method == \"GET\" and path == \"/public/study/progress\":"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 55,
+      "text": "if method == \"GET\" and re.fullmatch(r\"/public/study/decks/[0-9]+/card-stats\", path):"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 491,
+      "text": "\"Decks, cards, reviews, stats, and study progress.\""
+    },
+    {
+      "file": "edge_router_schema.py",
+      "line": 106,
+      "text": "CREATE TABLE IF NOT EXISTS user_language_preferences ("
+    },
+    {
+      "file": "edge_router_schema.py",
+      "line": 111,
+      "text": "study_language TEXT,"
+    },
+    {
+      "file": "edge_router_schema.py",
+      "line": 173,
+      "text": "notes TEXT,"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 46,
+      "text": "# Study card intents"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 48,
+      "text": "\"intent_key\": \"study.card.next\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 50,
+      "text": "\"object_name\": \"card\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 52,
+      "text": "\"description\": \"Move to the next study card.\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 59,
+      "text": "\"intent_key\": \"study.card.skip\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 61,
+      "text": "\"object_name\": \"card\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 63,
+      "text": "\"description\": \"Skip the current study card.\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 70,
+      "text": "\"intent_key\": \"study.card.answer\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 72,
+      "text": "\"object_name\": \"card\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 74,
+      "text": "\"description\": \"Reveal the current study card answer.\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 81,
+      "text": "\"intent_key\": \"study.card.correct\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 83,
+      "text": "\"object_name\": \"card\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 85,
+      "text": "\"description\": \"Mark the current study card correct.\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 92,
+      "text": "\"intent_key\": \"study.card.incorrect\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 94,
+      "text": "\"object_name\": \"card\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 96,
+      "text": "\"description\": \"Mark the current study card incorrect.\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 103,
+      "text": "\"intent_key\": \"study.card.flag\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 105,
+      "text": "\"object_name\": \"card\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 107,
+      "text": "\"description\": \"Flag the current study card for review.\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 114,
+      "text": "\"intent_key\": \"study.card.note\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 116,
+      "text": "\"object_name\": \"card\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 117,
+      "text": "\"action_name\": \"note\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 118,
+      "text": "\"description\": \"Add a note to the current study card.\","
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 191,
+      "text": "(\"study.card.next\", \"service_action\", \"study\", \"next_card\", \"\", \"\", 0.86, 0),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 192,
+      "text": "(\"study.card.skip\", \"service_action\", \"study\", \"skip_card\", \"\", \"\", 0.86, 0),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 193,
+      "text": "(\"study.card.answer\", \"service_action\", \"study\", \"reveal_answer\", \"\", \"\", 0.86, 0),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 194,
+      "text": "(\"study.card.correct\", \"service_action\", \"study\", \"mark_correct\", \"\", \"\", 0.90, 0),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 195,
+      "text": "(\"study.card.incorrect\", \"service_action\", \"study\", \"mark_incorrect\", \"\", \"\", 0.90, 0),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 196,
+      "text": "(\"study.card.flag\", \"service_action\", \"study\", \"flag_card\", \"\", \"\", 0.86, 0),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 197,
+      "text": "(\"study.card.note\", \"service_action\", \"study\", \"add_note\", \"\", \"\", 0.86, 0),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 208,
+      "text": "(\"next\", \"next\", \"en\", \"study.card.next\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 209,
+      "text": "(\"n\", \"n\", \"en\", \"study.card.next\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 210,
+      "text": "(\"next card\", \"next card\", \"en\", \"study.card.next\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 211,
+      "text": "(\"go on\", \"go on\", \"en\", \"study.card.next\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 212,
+      "text": "(\"move on\", \"move on\", \"en\", \"study.card.skip\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 213,
+      "text": "(\"skip\", \"skip\", \"en\", \"study.card.skip\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 214,
+      "text": "(\"pass\", \"pass\", \"en\", \"study.card.skip\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 215,
+      "text": "(\"I don't know\", \"i dont know\", \"en\", \"study.card.skip\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 216,
+      "text": "(\"I do not know\", \"i do not know\", \"en\", \"study.card.skip\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 217,
+      "text": "(\"not sure\", \"not sure\", \"en\", \"study.card.skip\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 218,
+      "text": "(\"don't know this one\", \"dont know this one\", \"en\", \"study.card.skip\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 221,
+      "text": "(\"show answer\", \"show answer\", \"en\", \"study.card.answer\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 222,
+      "text": "(\"show the answer\", \"show the answer\", \"en\", \"study.card.answer\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 223,
+      "text": "(\"answer\", \"answer\", \"en\", \"study.card.answer\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 224,
+      "text": "(\"flip\", \"flip\", \"en\", \"study.card.answer\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 225,
+      "text": "(\"correct\", \"correct\", \"en\", \"study.card.correct\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 226,
+      "text": "(\"right\", \"right\", \"en\", \"study.card.correct\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 227,
+      "text": "(\"I got it\", \"i got it\", \"en\", \"study.card.correct\", \"study\", 0.0, 20),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 228,
+      "text": "(\"wrong\", \"wrong\", \"en\", \"study.card.incorrect\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 229,
+      "text": "(\"incorrect\", \"incorrect\", \"en\", \"study.card.incorrect\", \"study\", 0.0, 10),"
+    },
+    {
+      "file": "edge_router_seed.py",
+      "line": 230,
+      "text": "(\"I missed it\", \"i missed it\", \"en\", \"study.card.incorrect\", \"study\", 0.0, 20),"
+    }
+  ]
+}

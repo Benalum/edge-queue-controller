@@ -1,0 +1,29 @@
+=== stage-17k-z-r10d-r2-focused-private-study-endpoint-inventory ===
+created_utc=20260701T022703Z
+head_before=4a48782
+
+Scope:
+- Removed noisy uncommitted R10D generated inventory.
+- Created focused endpoint/storage inventory.
+- Committed docs-only inventory.
+- No deploy.
+- No DB write.
+- No schema change.
+- No service restart.
+- No endpoint removal.
+- No endpoint disable.
+- No backend storage change.
+- No Anki file mutation.
+- No Google OAuth.
+- No Google Drive API.
+
+Counts:
+- frontend_api_call_focused_count=32
+- backend_route_focused_count=168
+- backend_storage_focused_count=3452
+
+Recommended next:
+- Move profile/preferences to APC_LOCAL_SAVE first.
+- Then move decks/cards.
+- Then move study sessions/progress.
+- Then guard backend private study endpoints.

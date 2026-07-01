@@ -1,0 +1,32 @@
+frontend/wrapper-ui/apc-wrapper-local/index.html:40: fetch('/api/me', { credentials: 'include', cache: 'no-store', headers: { 'Accept': 'application/json' } })
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:546: const decksResponse = await apiGet("/api/study/decks");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:561: const cardResponse = await apiGet("/api/study/cards-lite?deck_id=" + encodeURIComponent(deck.id));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:597: progress = await apiGet("/api/study/progress");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:604: reviewSummary = await apiGet("/api/study/review-summary-lite");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:625: backendSessions = await apiGet("/api/study/sessions-lite");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:765: backendStartPromise = apiPost("/api/study/session-writeback-lite", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:800: const data = await apiPost("/api/study/session-writeback-lite", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:831: await apiPost("/api/study/session-writeback-lite", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:977: afterBackendMutation("deck create", apiPost("/api/study/deck-writeback-lite", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:1000: afterBackendMutation("deck update", apiPost("/api/study/deck-writeback-lite", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:1025: afterBackendMutation("deck delete", apiPost("/api/study/deck-writeback-lite", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:1054: afterBackendMutation("card create", apiPost("/api/study/card-writeback-lite", payload));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:1085: afterBackendMutation("card update", apiPost("/api/study/card-writeback-lite", payload));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:1107: afterBackendMutation("card delete", apiPost("/api/study/card-writeback-lite", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:1140: afterBackendMutation("card flag", apiPost("/api/study/card-writeback-lite", payload));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:171: const response = await fetch("/api/me", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:195: console.warn("[privatepages] /api/me failed", error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:255: const response = await fetch(`/privatepages/pages/${page}.html?v=stage17j-r3-profile-fragment-cache-20260628`, {
+frontend/wrapper-ui/apc-wrapper-local/auth/auth.js:9: const LOGIN_PATHS = ["/api/auth/login", "/public/auth/login", "/auth/login"];
+frontend/wrapper-ui/apc-wrapper-local/auth/auth.js:10: const REGISTER_PATHS = ["/api/auth/register", "/public/auth/register", "/auth/register"];
+frontend/wrapper-ui/apc-wrapper-local/auth/auth.js:11: const LOGOUT_PATHS = ["/api/auth/logout", "/public/auth/logout", "/auth/logout"];
+frontend/wrapper-ui/apc-wrapper-local/auth/auth.js:12: const ME_PATHS = ["/api/me", "/public/me", "/me"];
+frontend/wrapper-ui/apc-wrapper-local/auth/reset.js:8: "/api/auth/reset-password",
+frontend/wrapper-ui/apc-wrapper-local/auth/reset.js:9: "/api/auth/password-reset/confirm",
+frontend/wrapper-ui/apc-wrapper-local/auth/reset.js:10: "/api/auth/password-reset",
+frontend/wrapper-ui/apc-wrapper-local/auth/reset.js:13: "/system/session/reset-password",
+frontend/wrapper-ui/apc-wrapper-local/auth/reset.js:14: "/system/session/password-reset"
+frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.js:16: "/api/admin/users",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/admin/admin-users.js:17: "/system/admin/users"
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:94: B=B.startsWith("blob:")?"":B.substr(0,B.replace(/[?#].*/,"").lastIndexOf("/")+1),ba&&(Ea=a=>{var b=new XMLHttpRequest;b.open("GET",a,!1);b.responseType="arraybuffer";b.send(null);return new Uint8Array(b.response)}),Da=a=>Ga(a)?new Promise((b,c)=>{var d=new XMLHttpRequest;d.open("GET",a,!0);d.responseType="arraybuffer";d.onload=()=>{(200==d.status||0==d.status&&d.response)&&c(d.response);b(d.status)};d.onerror=b;d.send(null)}):fetch(a,{credentials:"same-origin"}).then(b=>b.ok?b.arrayBuffer():Prom
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:98: function ab(a,b,c){return $a(a).then(d=>WebAssembly.instantiate(d,b)).then(c,d=>{C(`failed to asynchronously prepare wasm: ${d}`);G(d)})}function bb(a,b){var c=Ya;Ia||"function"!=typeof WebAssembly.instantiateStreaming||Xa(c)||Ga(c)||ca||"function"!=typeof fetch?ab(c,a,b):fetch(c,{credentials:"same-origin"}).then(d=>WebAssembly.instantiateStreaming(d,a).then(b,function(e){C(`wasm streaming compile failed: ${e}`);C("falling back to ArrayBuffer instantiation");return ab(c,a,b)}))}
