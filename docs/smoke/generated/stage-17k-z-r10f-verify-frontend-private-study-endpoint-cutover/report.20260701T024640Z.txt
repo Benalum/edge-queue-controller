@@ -1,0 +1,27 @@
+=== stage-17k-z-r10f-verify-frontend-private-study-endpoint-cutover ===
+created_utc=20260701T024640Z
+head_before=ba5e8ee
+
+Scope:
+- Verified frontend private study persistence endpoint references.
+- Recorded backend deletion target candidates.
+- No deploy.
+- No DB write.
+- No schema change.
+- No service restart.
+- No backend endpoint removal.
+- No backend endpoint disable.
+- No backend storage change.
+- No frontend runtime behavior change.
+
+Counts:
+- frontend_private_endpoint_reference_count=0
+- backend_private_endpoint_reference_count=54
+- backend_route_target_count=44
+- backend_delete_route_target_count=37
+- backend_intent_review_target_count=2
+- gateway_target_count=6
+
+Conclusion:
+- Frontend is ready for backend private persistence route deletion if frontend_private_endpoint_reference_count is 0.
+- Backend deletion must be real route removal, not wrapper-only blocking.

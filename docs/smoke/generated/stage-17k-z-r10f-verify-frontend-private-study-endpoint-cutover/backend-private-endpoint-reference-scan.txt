@@ -1,0 +1,54 @@
+edge_controller.py:8099: /api/study/session/start: @app.post("/api/study/session/start")
+edge_controller.py:8244: /api/study/session/pause: @app.post("/api/study/session/pause")
+edge_controller.py:8277: /api/study/session/resume: @app.post("/api/study/session/resume")
+edge_controller.py:8310: /api/study/session/stop: @app.post("/api/study/session/stop")
+edge_controller.py:8838: /api/study/session/command: @app.post("/api/study/session/command")
+edge_controller.py:8880: /public/study/decks: @app.post("/public/study/decks")
+edge_controller.py:8881: /api/study/decks: @app.post("/api/study/decks")
+edge_controller.py:8944: /public/study/decks: @app.get("/public/study/decks")
+edge_controller.py:8945: /api/study/decks: @app.get("/api/study/decks")
+edge_controller.py:8990: /public/study/decks: @app.delete("/public/study/decks/{deck_id}")
+edge_controller.py:8991: /api/study/decks: @app.delete("/api/study/decks/{deck_id}")
+edge_controller.py:9016: /public/study/decks: @app.post("/public/study/decks/{deck_id}/cards")
+edge_controller.py:9017: /api/study/decks: @app.post("/api/study/decks/{deck_id}/cards")
+edge_controller.py:9117: /public/study/decks: @app.get("/public/study/decks/{deck_id}/cards")
+edge_controller.py:9118: /api/study/decks: @app.get("/api/study/decks/{deck_id}/cards")
+edge_controller.py:9169: /public/study/cards/: @app.delete("/public/study/cards/{card_id}")
+edge_controller.py:9170: /api/study/cards/: @app.delete("/api/study/cards/{card_id}")
+edge_controller.py:9191: /public/study/cards/: @app.post("/public/study/cards/{card_id}/reviews")
+edge_controller.py:9192: /api/study/cards/: @app.post("/api/study/cards/{card_id}/reviews")
+edge_controller.py:9349: /public/study/totals: @app.get("/public/study/totals")
+edge_controller.py:9350: /api/study/totals: @app.get("/api/study/totals")
+edge_controller.py:9363: /public/study/progress: @app.get("/public/study/progress")
+edge_controller.py:9364: /api/study/progress: @app.get("/api/study/progress")
+edge_controller.py:9742: /public/study/decks: @app.get("/public/study/decks/{deck_id}/card-stats")
+edge_controller.py:9743: /api/study/decks: @app.get("/api/study/decks/{deck_id}/card-stats")
+edge_controller.py:9760: /public/study/decks: @app.get("/public/study/decks/{deck_id}/review-queue")
+edge_controller.py:9761: /api/study/decks: @app.get("/api/study/decks/{deck_id}/review-queue")
+edge_controller.py:20929: /api/study/cards/: "future_flag_route": "/api/study/cards/{card_id}/flag",
+edge_controller.py:20930: /api/study/cards/: "future_unflag_route": "/api/study/cards/{card_id}/unflag",
+edge_controller.py:21029: /api/study/cards/: "future_add_or_replace_route": "/api/study/cards/{card_id}/image",
+edge_controller.py:21030: /api/study/cards/: "future_remove_route": "/api/study/cards/{card_id}/image/remove",
+edge_controller.py:21031: /api/study/cards/: "future_list_route": "/api/study/cards/{card_id}/images",
+edge_controller.py:21178: /api/study/decks: "existing_queue_endpoint": "/api/study/decks/{deck_id}/review-queue",
+edge_controller.py:21179: /api/study/cards/: "existing_review_endpoint": "/api/study/cards/{card_id}/reviews",
+edge_controller.py:21180: /api/study/cards/: "future_flag_endpoint": "/api/study/cards/{card_id}/flag",
+edge_controller.py:21181: /api/study/cards/: "future_unflag_endpoint": "/api/study/cards/{card_id}/unflag",
+edge_controller.py:21182: /api/study/cards/: "future_image_endpoint": "/api/study/cards/{card_id}/image",
+edge_controller.py:21309: /api/study/decks: "existing_review_queue_endpoint": "/api/study/decks/{deck_id}/review-queue",
+edge_controller.py:21310: /api/study/cards/: "existing_review_endpoint": "/api/study/cards/{card_id}/reviews",
+edge_controller.py:21313: /api/study/cards/: "future_flag_endpoint": "/api/study/cards/{card_id}/flag",
+edge_controller.py:21314: /api/study/cards/: "future_image_endpoint": "/api/study/cards/{card_id}/image",
+edge_controller.py:24327: /api/study/decks: @app.get("/api/study/decks/{deck_id}/cards")
+edge_controller.py:24333: /api/study/cards-lite: @app.get("/api/study/cards-lite")
+edge_controller.py:24392: /api/study/review-summary-lite: @app.get("/api/study/review-summary-lite")
+edge_controller.py:24487: /api/study/sessions-lite: @app.get("/api/study/sessions-lite")
+edge_controller.py:24593: /api/study/session-writeback-lite: @app.post("/api/study/session-writeback-lite")
+edge_controller.py:24972: /api/study/deck-writeback-lite: @app.post("/api/study/deck-writeback-lite")
+edge_controller.py:25156: /api/study/card-writeback-lite: @app.post("/api/study/card-writeback-lite")
+public_gateway.py:43: /public/study/decks: if method in {"GET", "POST"} and path == "/public/study/decks":
+public_gateway.py:46: /public/study/decks: if method in {"GET", "POST"} and re.fullmatch(r"/public/study/decks/[0-9]+/cards", path):
+public_gateway.py:49: /public/study/cards/: if method == "POST" and re.fullmatch(r"/public/study/cards/[0-9]+/reviews", path):
+public_gateway.py:52: /public/study/progress: if method == "GET" and path == "/public/study/progress":
+public_gateway.py:55: /public/study/decks: if method == "GET" and re.fullmatch(r"/public/study/decks/[0-9]+/card-stats", path):
+public_gateway.py:58: /public/study/decks: if method == "GET" and re.fullmatch(r"/public/study/decks/[0-9]+/review-queue", path):

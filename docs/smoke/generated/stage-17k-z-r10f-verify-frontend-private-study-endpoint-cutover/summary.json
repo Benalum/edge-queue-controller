@@ -1,0 +1,748 @@
+{
+  "private_endpoint_patterns": [
+    "/api/study/decks",
+    "/public/study/decks",
+    "/api/study/cards-lite",
+    "/api/study/progress",
+    "/public/study/progress",
+    "/api/study/review-summary-lite",
+    "/api/study/sessions-lite",
+    "/api/study/session-writeback-lite",
+    "/api/study/deck-writeback-lite",
+    "/api/study/card-writeback-lite",
+    "/api/study/session/start",
+    "/api/study/session/pause",
+    "/api/study/session/resume",
+    "/api/study/session/stop",
+    "/api/study/session/command",
+    "/api/study/cards/",
+    "/public/study/cards/",
+    "/api/study/totals",
+    "/public/study/totals"
+  ],
+  "frontend_private_endpoint_reference_count": 0,
+  "backend_private_endpoint_reference_count": 54,
+  "backend_route_target_count": 44,
+  "backend_delete_route_target_count": 37,
+  "backend_intent_review_target_count": 2,
+  "gateway_target_count": 6,
+  "frontend_hits": [],
+  "backend_hits": [
+    {
+      "file": "edge_controller.py",
+      "line": 8099,
+      "pattern": "/api/study/session/start",
+      "text": "@app.post(\"/api/study/session/start\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8244,
+      "pattern": "/api/study/session/pause",
+      "text": "@app.post(\"/api/study/session/pause\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8277,
+      "pattern": "/api/study/session/resume",
+      "text": "@app.post(\"/api/study/session/resume\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8310,
+      "pattern": "/api/study/session/stop",
+      "text": "@app.post(\"/api/study/session/stop\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8838,
+      "pattern": "/api/study/session/command",
+      "text": "@app.post(\"/api/study/session/command\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8880,
+      "pattern": "/public/study/decks",
+      "text": "@app.post(\"/public/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8881,
+      "pattern": "/api/study/decks",
+      "text": "@app.post(\"/api/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8944,
+      "pattern": "/public/study/decks",
+      "text": "@app.get(\"/public/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8945,
+      "pattern": "/api/study/decks",
+      "text": "@app.get(\"/api/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8990,
+      "pattern": "/public/study/decks",
+      "text": "@app.delete(\"/public/study/decks/{deck_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8991,
+      "pattern": "/api/study/decks",
+      "text": "@app.delete(\"/api/study/decks/{deck_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9016,
+      "pattern": "/public/study/decks",
+      "text": "@app.post(\"/public/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9017,
+      "pattern": "/api/study/decks",
+      "text": "@app.post(\"/api/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9117,
+      "pattern": "/public/study/decks",
+      "text": "@app.get(\"/public/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9118,
+      "pattern": "/api/study/decks",
+      "text": "@app.get(\"/api/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9169,
+      "pattern": "/public/study/cards/",
+      "text": "@app.delete(\"/public/study/cards/{card_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9170,
+      "pattern": "/api/study/cards/",
+      "text": "@app.delete(\"/api/study/cards/{card_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9191,
+      "pattern": "/public/study/cards/",
+      "text": "@app.post(\"/public/study/cards/{card_id}/reviews\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9192,
+      "pattern": "/api/study/cards/",
+      "text": "@app.post(\"/api/study/cards/{card_id}/reviews\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9349,
+      "pattern": "/public/study/totals",
+      "text": "@app.get(\"/public/study/totals\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9350,
+      "pattern": "/api/study/totals",
+      "text": "@app.get(\"/api/study/totals\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9363,
+      "pattern": "/public/study/progress",
+      "text": "@app.get(\"/public/study/progress\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9364,
+      "pattern": "/api/study/progress",
+      "text": "@app.get(\"/api/study/progress\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9742,
+      "pattern": "/public/study/decks",
+      "text": "@app.get(\"/public/study/decks/{deck_id}/card-stats\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9743,
+      "pattern": "/api/study/decks",
+      "text": "@app.get(\"/api/study/decks/{deck_id}/card-stats\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9760,
+      "pattern": "/public/study/decks",
+      "text": "@app.get(\"/public/study/decks/{deck_id}/review-queue\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9761,
+      "pattern": "/api/study/decks",
+      "text": "@app.get(\"/api/study/decks/{deck_id}/review-queue\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20929,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_flag_route\": \"/api/study/cards/{card_id}/flag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20930,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_unflag_route\": \"/api/study/cards/{card_id}/unflag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21029,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_add_or_replace_route\": \"/api/study/cards/{card_id}/image\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21030,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_remove_route\": \"/api/study/cards/{card_id}/image/remove\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21031,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_list_route\": \"/api/study/cards/{card_id}/images\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21178,
+      "pattern": "/api/study/decks",
+      "text": "\"existing_queue_endpoint\": \"/api/study/decks/{deck_id}/review-queue\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21179,
+      "pattern": "/api/study/cards/",
+      "text": "\"existing_review_endpoint\": \"/api/study/cards/{card_id}/reviews\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21180,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_flag_endpoint\": \"/api/study/cards/{card_id}/flag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21181,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_unflag_endpoint\": \"/api/study/cards/{card_id}/unflag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21182,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_image_endpoint\": \"/api/study/cards/{card_id}/image\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21309,
+      "pattern": "/api/study/decks",
+      "text": "\"existing_review_queue_endpoint\": \"/api/study/decks/{deck_id}/review-queue\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21310,
+      "pattern": "/api/study/cards/",
+      "text": "\"existing_review_endpoint\": \"/api/study/cards/{card_id}/reviews\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21313,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_flag_endpoint\": \"/api/study/cards/{card_id}/flag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 21314,
+      "pattern": "/api/study/cards/",
+      "text": "\"future_image_endpoint\": \"/api/study/cards/{card_id}/image\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24327,
+      "pattern": "/api/study/decks",
+      "text": "@app.get(\"/api/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24333,
+      "pattern": "/api/study/cards-lite",
+      "text": "@app.get(\"/api/study/cards-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24392,
+      "pattern": "/api/study/review-summary-lite",
+      "text": "@app.get(\"/api/study/review-summary-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24487,
+      "pattern": "/api/study/sessions-lite",
+      "text": "@app.get(\"/api/study/sessions-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24593,
+      "pattern": "/api/study/session-writeback-lite",
+      "text": "@app.post(\"/api/study/session-writeback-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24972,
+      "pattern": "/api/study/deck-writeback-lite",
+      "text": "@app.post(\"/api/study/deck-writeback-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 25156,
+      "pattern": "/api/study/card-writeback-lite",
+      "text": "@app.post(\"/api/study/card-writeback-lite\")"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 43,
+      "pattern": "/public/study/decks",
+      "text": "if method in {\"GET\", \"POST\"} and path == \"/public/study/decks\":"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 46,
+      "pattern": "/public/study/decks",
+      "text": "if method in {\"GET\", \"POST\"} and re.fullmatch(r\"/public/study/decks/[0-9]+/cards\", path):"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 49,
+      "pattern": "/public/study/cards/",
+      "text": "if method == \"POST\" and re.fullmatch(r\"/public/study/cards/[0-9]+/reviews\", path):"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 52,
+      "pattern": "/public/study/progress",
+      "text": "if method == \"GET\" and path == \"/public/study/progress\":"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 55,
+      "pattern": "/public/study/decks",
+      "text": "if method == \"GET\" and re.fullmatch(r\"/public/study/decks/[0-9]+/card-stats\", path):"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 58,
+      "pattern": "/public/study/decks",
+      "text": "if method == \"GET\" and re.fullmatch(r\"/public/study/decks/[0-9]+/review-queue\", path):"
+    }
+  ],
+  "backend_route_targets": [
+    {
+      "file": "edge_controller.py",
+      "line": 8027,
+      "method": "GET",
+      "route": "/public/study/session/status",
+      "category": "review_unknown_study_route",
+      "text": "@app.get(\"/public/study/session/status\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8028,
+      "method": "GET",
+      "route": "/api/study/session/status",
+      "category": "review_unknown_study_route",
+      "text": "@app.get(\"/api/study/session/status\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8098,
+      "method": "POST",
+      "route": "/public/study/session/start",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/public/study/session/start\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8099,
+      "method": "POST",
+      "route": "/api/study/session/start",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/api/study/session/start\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8243,
+      "method": "POST",
+      "route": "/public/study/session/pause",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/public/study/session/pause\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8244,
+      "method": "POST",
+      "route": "/api/study/session/pause",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/api/study/session/pause\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8276,
+      "method": "POST",
+      "route": "/public/study/session/resume",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/public/study/session/resume\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8277,
+      "method": "POST",
+      "route": "/api/study/session/resume",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/api/study/session/resume\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8309,
+      "method": "POST",
+      "route": "/public/study/session/stop",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/public/study/session/stop\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8310,
+      "method": "POST",
+      "route": "/api/study/session/stop",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/api/study/session/stop\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8514,
+      "method": "POST",
+      "route": "/public/study/intent/parse",
+      "category": "review_keep_or_rehome_intent_parse",
+      "text": "@app.post(\"/public/study/intent/parse\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8515,
+      "method": "POST",
+      "route": "/api/study/intent/parse",
+      "category": "review_keep_or_rehome_intent_parse",
+      "text": "@app.post(\"/api/study/intent/parse\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8837,
+      "method": "POST",
+      "route": "/public/study/session/command",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/public/study/session/command\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8838,
+      "method": "POST",
+      "route": "/api/study/session/command",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/api/study/session/command\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8880,
+      "method": "POST",
+      "route": "/public/study/decks",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/public/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8881,
+      "method": "POST",
+      "route": "/api/study/decks",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/api/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8944,
+      "method": "GET",
+      "route": "/public/study/decks",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/public/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8945,
+      "method": "GET",
+      "route": "/api/study/decks",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/decks\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8990,
+      "method": "DELETE",
+      "route": "/public/study/decks/{deck_id}",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.delete(\"/public/study/decks/{deck_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 8991,
+      "method": "DELETE",
+      "route": "/api/study/decks/{deck_id}",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.delete(\"/api/study/decks/{deck_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9016,
+      "method": "POST",
+      "route": "/public/study/decks/{deck_id}/cards",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/public/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9017,
+      "method": "POST",
+      "route": "/api/study/decks/{deck_id}/cards",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/api/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9117,
+      "method": "GET",
+      "route": "/public/study/decks/{deck_id}/cards",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/public/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9118,
+      "method": "GET",
+      "route": "/api/study/decks/{deck_id}/cards",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9169,
+      "method": "DELETE",
+      "route": "/public/study/cards/{card_id}",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.delete(\"/public/study/cards/{card_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9170,
+      "method": "DELETE",
+      "route": "/api/study/cards/{card_id}",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.delete(\"/api/study/cards/{card_id}\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9191,
+      "method": "POST",
+      "route": "/public/study/cards/{card_id}/reviews",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/public/study/cards/{card_id}/reviews\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9192,
+      "method": "POST",
+      "route": "/api/study/cards/{card_id}/reviews",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.post(\"/api/study/cards/{card_id}/reviews\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9349,
+      "method": "GET",
+      "route": "/public/study/totals",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/public/study/totals\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9350,
+      "method": "GET",
+      "route": "/api/study/totals",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/totals\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9363,
+      "method": "GET",
+      "route": "/public/study/progress",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/public/study/progress\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9364,
+      "method": "GET",
+      "route": "/api/study/progress",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/progress\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9742,
+      "method": "GET",
+      "route": "/public/study/decks/{deck_id}/card-stats",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/public/study/decks/{deck_id}/card-stats\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9743,
+      "method": "GET",
+      "route": "/api/study/decks/{deck_id}/card-stats",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/decks/{deck_id}/card-stats\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9760,
+      "method": "GET",
+      "route": "/public/study/decks/{deck_id}/review-queue",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/public/study/decks/{deck_id}/review-queue\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 9761,
+      "method": "GET",
+      "route": "/api/study/decks/{deck_id}/review-queue",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/decks/{deck_id}/review-queue\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24267,
+      "method": "GET",
+      "route": "/api/study/cards",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24327,
+      "method": "GET",
+      "route": "/api/study/decks/{deck_id}/cards",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/decks/{deck_id}/cards\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24333,
+      "method": "GET",
+      "route": "/api/study/cards-lite",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/cards-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24392,
+      "method": "GET",
+      "route": "/api/study/review-summary-lite",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/review-summary-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24487,
+      "method": "GET",
+      "route": "/api/study/sessions-lite",
+      "category": "delete_private_study_persistence_route",
+      "text": "@app.get(\"/api/study/sessions-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24593,
+      "method": "POST",
+      "route": "/api/study/session-writeback-lite",
+      "category": "review_unknown_study_route",
+      "text": "@app.post(\"/api/study/session-writeback-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 24972,
+      "method": "POST",
+      "route": "/api/study/deck-writeback-lite",
+      "category": "review_unknown_study_route",
+      "text": "@app.post(\"/api/study/deck-writeback-lite\")"
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 25156,
+      "method": "POST",
+      "route": "/api/study/card-writeback-lite",
+      "category": "review_unknown_study_route",
+      "text": "@app.post(\"/api/study/card-writeback-lite\")"
+    }
+  ],
+  "gateway_targets": [
+    {
+      "file": "public_gateway.py",
+      "line": 43,
+      "category": "delete_private_study_public_gateway_mapping",
+      "text": "if method in {\"GET\", \"POST\"} and path == \"/public/study/decks\":"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 46,
+      "category": "delete_private_study_public_gateway_mapping",
+      "text": "if method in {\"GET\", \"POST\"} and re.fullmatch(r\"/public/study/decks/[0-9]+/cards\", path):"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 49,
+      "category": "delete_private_study_public_gateway_mapping",
+      "text": "if method == \"POST\" and re.fullmatch(r\"/public/study/cards/[0-9]+/reviews\", path):"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 52,
+      "category": "delete_private_study_public_gateway_mapping",
+      "text": "if method == \"GET\" and path == \"/public/study/progress\":"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 55,
+      "category": "delete_private_study_public_gateway_mapping",
+      "text": "if method == \"GET\" and re.fullmatch(r\"/public/study/decks/[0-9]+/card-stats\", path):"
+    },
+    {
+      "file": "public_gateway.py",
+      "line": 58,
+      "category": "delete_private_study_public_gateway_mapping",
+      "text": "if method == \"GET\" and re.fullmatch(r\"/public/study/decks/[0-9]+/review-queue\", path):"
+    }
+  ]
+}
