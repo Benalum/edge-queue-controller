@@ -1,0 +1,3 @@
+2
+/api/study/intent/parse
+/public/study/intent/parse

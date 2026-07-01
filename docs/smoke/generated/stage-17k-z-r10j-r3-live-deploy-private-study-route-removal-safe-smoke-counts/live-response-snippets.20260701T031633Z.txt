@@ -1,0 +1,14 @@
+--- /api/study/decks ---
+{"detail":"Not Found"}
+--- /api/study/progress ---
+{"detail":"Not Found"}
+--- /api/study/cards-lite ---
+{"detail":"Not Found"}
+--- /api/study/session-writeback-lite ---
+{"detail":"Not Found"}
+--- /public/study/decks ---
+{"detail":"Not Found"}
+--- /api/study/intent/parse ---
+{"detail":"Missing bearer token."}
+--- signup ---
+{"detail":{"ok":false,"code":"closed_beta_signup_disabled","message":"Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.","brand":"Buddies Who Study","product_domain":"buddieswhostudy.com","public_signup_enabled":false,"existing_user_signin_enabled":true}}

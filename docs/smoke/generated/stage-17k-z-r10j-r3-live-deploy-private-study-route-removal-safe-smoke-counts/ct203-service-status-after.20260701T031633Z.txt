@@ -1,0 +1,11 @@
+active
+● edge-queue-controller.service - AI Platform Control CT203 Edge Queue Controller
+     Loaded: loaded (/etc/systemd/system/edge-queue-controller.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-07-01 03:16:43 UTC; 8s ago
+ Invocation: fc9ddc7230154c2099623df49f2dd596
+   Main PID: 19554 (python)
+      Tasks: 6 (limit: 9136)
+     Memory: 41.8M (peak: 41.8M)
+        CPU: 384ms
+     CGroup: /system.slice/edge-queue-controller.service
+             └─19554 /opt/edge-queue-controller/venv/bin/python -m uvicorn edge_controller:app --host 0.0.0.0 --port 7070 --log-level info
