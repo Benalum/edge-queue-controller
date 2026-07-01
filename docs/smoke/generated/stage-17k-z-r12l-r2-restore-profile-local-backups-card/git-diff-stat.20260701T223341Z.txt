@@ -1,0 +1,5 @@
+ frontend/wrapper-ui/apc-wrapper-local/index.html   |  6 ++--
+ .../privatepages/profile-local-backups-mount.js    | 35 ++++++++++++++++++----
+ .../privatepages/profile-local-backups-panel.js    | 10 +++----
+ .../privatepages/profile-private-polish.css        | 17 +++++++++++
+ 4 files changed, 54 insertions(+), 14 deletions(-)

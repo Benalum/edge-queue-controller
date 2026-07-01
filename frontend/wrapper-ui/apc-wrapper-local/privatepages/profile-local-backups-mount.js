@@ -3,7 +3,7 @@
   "use strict";
 
   const root = typeof window !== "undefined" ? window : globalThis;
-  const MARKER = "APC_PROFILE_LOCAL_BACKUPS_MOUNT_R12E_SOURCE_ONLY";
+  const MARKER = "APC_PROFILE_LOCAL_BACKUPS_MOUNT_R12L_R2_RESTORED_CARD";
   const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
   const BOUND_ATTR = "data-apc-local-backups-bound";
 
@@ -134,6 +134,15 @@
       return null;
     }
 
+    return mountIfPrivateProfileShell();
+  }
+
+  function mountIfPrivateProfileShell() {
+    if (!hasPrivateProfileShell()) {
+      removePanel();
+      return null;
+    }
+
     const panelApi = api();
     const host = findMountHost();
     if (!panelApi || !host) {
@@ -146,6 +155,18 @@
     return panel;
   }
 
+  function scheduleMountIfPrivateProfileShell() {
+    root.setTimeout(function () {
+      mountIfPrivateProfileShell();
+    }, 0);
+    root.setTimeout(function () {
+      mountIfPrivateProfileShell();
+    }, 150);
+    root.setTimeout(function () {
+      mountIfPrivateProfileShell();
+    }, 500);
+  }
+
   function cleanupIfNotPrivateProfile() {
     root.setTimeout(function () {
       if (!hasPrivateProfileShell()) removePanel();
@@ -154,6 +175,8 @@
 
   const mountApi = Object.freeze({
     marker: MARKER,
+    mountIfPrivateProfileShell: mountIfPrivateProfileShell,
+    scheduleMountIfPrivateProfileShell: scheduleMountIfPrivateProfileShell,
     isPrivateProfileRenderEvent: isPrivateProfileRenderEvent,
     hasPrivateProfileShell: hasPrivateProfileShell,
     findMountHost: findMountHost,
@@ -166,14 +189,14 @@
 
   if (root && root.document) {
     if (root.document.readyState === "loading") {
-      root.document.addEventListener("DOMContentLoaded", cleanupIfNotPrivateProfile, { once: true });
+      root.document.addEventListener("DOMContentLoaded", scheduleMountIfPrivateProfileShell, { once: true });
     } else {
-      cleanupIfNotPrivateProfile();
+      scheduleMountIfPrivateProfileShell();
     }
 
-    root.addEventListener("hashchange", cleanupIfNotPrivateProfile);
-    root.addEventListener("popstate", cleanupIfNotPrivateProfile);
-    root.document.addEventListener("apc-auth-changed", cleanupIfNotPrivateProfile);
+    root.addEventListener("hashchange", scheduleMountIfPrivateProfileShell);
+    root.addEventListener("popstate", scheduleMountIfPrivateProfileShell);
+    root.document.addEventListener("apc-auth-changed", scheduleMountIfPrivateProfileShell);
     root.document.addEventListener("apc-private-page-rendered", mountFromPrivateProfileEvent);
   }
 

@@ -1,0 +1,2 @@
+=== upload four-file restore bundle ===
+bundle=/tmp/apc-r12l-r2-20260701T223341Z

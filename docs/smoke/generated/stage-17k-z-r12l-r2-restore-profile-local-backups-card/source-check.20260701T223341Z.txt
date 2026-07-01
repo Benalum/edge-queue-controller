@@ -1,0 +1,2 @@
+=== verify source state ===
+PASS local backups card restore source state

@@ -3,7 +3,7 @@
   "use strict";
 
   const root = typeof window !== "undefined" ? window : globalThis;
-  const MARKER = "APC_PROFILE_LOCAL_BACKUPS_PANEL_R12D_SOURCE_ONLY";
+  const MARKER = "APC_PROFILE_LOCAL_BACKUPS_PANEL_R12L_R2_RESTORED_CARD";
   const PANEL_TITLE = "Buddies Who Study local backups";
   const BACKUP_KIND = "buddies-who-study-local-backup";
   const BACKUP_VERSION = 1;
@@ -178,14 +178,14 @@
   function renderPreviewHtml(options) {
     const model = createPreviewModel(options);
     return [
-      '<section class="private-card apc-profile-local-backups-panel" data-apc-profile-local-backups-panel="true">',
+      '<section class="private-card profile-card apc-profile-local-backups-panel" data-apc-profile-local-backups-panel="true">',
       '<h3>' + escapeHtml(model.title) + '</h3>',
-      '<p>' + escapeHtml(model.copy.intro) + '</p>',
-                  '<div class="private-actions">',
+      '<p class="apc-local-backup-short-copy">Save your data locally.</p>',
+      '<div class="private-actions apc-local-backup-actions">',
       '<button type="button" data-apc-local-backup-choose-folder' + (model.folderPickerSupported ? "" : " disabled") + '>' + escapeHtml(model.actions.chooseFolder) + '</button>',
       '<button type="button" data-apc-local-backup-download>' + escapeHtml(model.actions.downloadBackup) + '</button>',
       '</div>',
-            '<pre data-apc-local-backup-status hidden></pre>'
+      '<pre data-apc-local-backup-status hidden></pre>',
       '</section>'
     ].join("");
   }

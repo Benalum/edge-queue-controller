@@ -224,3 +224,20 @@
 }
 
 /* APC_PRIVATE_PROFILE_VISUAL_POLISH_R12J_END */
+
+
+/* APC_PRIVATE_PROFILE_LOCAL_BACKUPS_VISIBLE_R12L_R2_START */
+.private-shell[data-private-page="profile"] .apc-profile-local-backups-panel,
+.private-shell[data-private-page="profile"] [data-apc-profile-local-backups-panel="true"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 0 !important;
+}
+
+.private-shell[data-private-page="profile"] .apc-local-backup-short-copy {
+  margin: 0.25rem 0 0.9rem !important;
+  font-size: 1rem !important;
+  color: #526079 !important;
+}
+/* APC_PRIVATE_PROFILE_LOCAL_BACKUPS_VISIBLE_R12L_R2_END */
