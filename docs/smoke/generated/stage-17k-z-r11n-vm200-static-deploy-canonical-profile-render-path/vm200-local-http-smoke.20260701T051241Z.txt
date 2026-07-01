@@ -1,0 +1,8 @@
+=== VM200 local HTTP canonical Profile smoke ===
+root_code=200 root_bytes=11343
+200 /privatepages/privatepages.js bytes=11780 marker=data-route="${escapeHtml(path)}"
+200 /privatepages/pages/profile.html bytes=769 marker=data-apc-profile-google-sync-host
+200 /privatepages/anki-manifest-panel.js bytes=23230 marker=R11M-R2 removed legacy Google sync Profile loader
+200 /privatepages/profile-google-sync-panel.js bytes=18160 marker=apc-private-page-rendered
+200 /privatepages/profile-anki-preview-mount.js bytes=5845 marker=apc-private-page-rendered
+PASS VM200 local canonical Profile static smoke

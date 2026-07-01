@@ -1,0 +1,20 @@
+=== backup current and install VM200 static files ===
+host=website-edge
+user=jkg76nid
+remote_root=/var/www/apc-wrapper-local
+bundle=/tmp/apc-r11n-20260701T051241Z
+backup=/var/www/apc-wrapper-local/apc-r11n-canonical-profile-backup-20260701T051241Z
+backup_sha256 448f1cf452a31c5981f25e60a12b3b11cc13383314c4b54548bf47ed72a0f58e  /var/www/apc-wrapper-local/apc-r11n-canonical-profile-backup-20260701T051241Z/index.html
+backup_sha256 4a606184df7f33332a60b52f6a73212c196f70e6822e06cda8f65de4cc22c7e2  /var/www/apc-wrapper-local/apc-r11n-canonical-profile-backup-20260701T051241Z/privatepages/privatepages.js
+backup_sha256 b5e9fff427a904e820c63e0d1d9aa03e1eede504c3c2b4f03c99a3d146a8cda9  /var/www/apc-wrapper-local/apc-r11n-canonical-profile-backup-20260701T051241Z/privatepages/pages/profile.html
+backup_sha256 7e1d59156336b4cae6a50b9052a9aa1235f0b17594d72be0eec8fb562a1b53d6  /var/www/apc-wrapper-local/apc-r11n-canonical-profile-backup-20260701T051241Z/privatepages/anki-manifest-panel.js
+backup_sha256 415cb06e4b2b37aee1648b29a234382ce08bd09f20d736a22975c6037cdd84c3  /var/www/apc-wrapper-local/apc-r11n-canonical-profile-backup-20260701T051241Z/privatepages/profile-google-sync-panel.js
+backup_sha256 58e161a5f520f0a6b5de62d5b604557b0091ce9ab02effcfe1f7bdb2ea8197b7  /var/www/apc-wrapper-local/apc-r11n-canonical-profile-backup-20260701T051241Z/privatepages/profile-anki-preview-mount.js
+live_sha256 47b097403df40066ba5af71ae4c7bdf59cea3692085c18b2134b85853859a19e  /var/www/apc-wrapper-local/index.html
+live_sha256 a031b44cb015934551c901010752b97ad7742dfa43df61ad8838ad24a0423a3a  /var/www/apc-wrapper-local/privatepages/privatepages.js
+live_sha256 49c1f704371daa9808769f8c73647ab4813e2c1d226f4102d1e2d5d33edafb5f  /var/www/apc-wrapper-local/privatepages/pages/profile.html
+live_sha256 ccbbfdf89d17633552ea48e7074d2593b7a5dabd6be5ccfe25b950ac92d449ee  /var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js
+live_sha256 825dfc65f7efbe1c3a1ffc2d24307576ba41a987a1bc38d2cb7ee3fc8a7c8100  /var/www/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+live_sha256 ba9164c1c9a56c3ade7cbc98e297b9e2fd6f23f7edfeed6724a9b4c7d9d9dde9  /var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+backup_dir=/var/www/apc-wrapper-local/apc-r11n-canonical-profile-backup-20260701T051241Z
+R11N_VM200_STATIC_DEPLOY_DONE

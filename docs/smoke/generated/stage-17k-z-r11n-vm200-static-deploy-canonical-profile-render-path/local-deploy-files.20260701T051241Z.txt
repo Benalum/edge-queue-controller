@@ -1,0 +1,13 @@
+=== local deploy file SHA-256 ===
+11343 frontend/wrapper-ui/apc-wrapper-local/index.html
+47b097403df40066ba5af71ae4c7bdf59cea3692085c18b2134b85853859a19e  frontend/wrapper-ui/apc-wrapper-local/index.html
+11780 frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+a031b44cb015934551c901010752b97ad7742dfa43df61ad8838ad24a0423a3a  frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+769 frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+49c1f704371daa9808769f8c73647ab4813e2c1d226f4102d1e2d5d33edafb5f  frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+23230 frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+ccbbfdf89d17633552ea48e7074d2593b7a5dabd6be5ccfe25b950ac92d449ee  frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+18160 frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+825dfc65f7efbe1c3a1ffc2d24307576ba41a987a1bc38d2cb7ee3fc8a7c8100  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+5845 frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+ba9164c1c9a56c3ade7cbc98e297b9e2fd6f23f7edfeed6724a9b4c7d9d9dde9  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
