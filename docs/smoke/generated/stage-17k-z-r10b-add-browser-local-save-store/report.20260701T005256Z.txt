@@ -1,0 +1,30 @@
+=== stage-17k-z-r10b-add-browser-local-save-store ===
+created_utc=20260701T005256Z
+head_before=019508b
+
+Scope:
+- Added browser-local IndexedDB store.
+- Loaded local-save-store.js before study-store.js.
+- Added docs and smoke evidence.
+- No deploy.
+- No DB write.
+- No schema change.
+- No service restart.
+- No backend storage enable.
+- No server deck/card persistence.
+- No Google OAuth.
+- No Google Drive API.
+
+Verification:
+- node_check=pass
+- index_local_line=208:  <script src="/privatepages/local-save-store.js?v=stage17k-z-r10b-local-save-store-20260701"></script>
+- index_study_store_line=209:  <script src="/privatepages/study-store.js?v=crud-writeback-r2-ui-args-20260627"></script>
+- index_google_line=212:  <script src="/privatepages/google-sync-config.js?v=20260629-stage17k-z-r7d-appdata-vm200"></script>
+- local_line_no=208
+- study_store_line_no=209
+- policy_false_count=1
+- deck_upload_false_count=1
+- db_name_count=1
+- media_sha_count=18
+- google_token_count=0
+- pass=true
