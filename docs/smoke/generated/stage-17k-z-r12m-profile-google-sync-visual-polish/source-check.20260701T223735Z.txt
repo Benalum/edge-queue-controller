@@ -1,0 +1,2 @@
+=== verify narrow visual-only source state ===
+PASS narrow CSS-only Google visual source state

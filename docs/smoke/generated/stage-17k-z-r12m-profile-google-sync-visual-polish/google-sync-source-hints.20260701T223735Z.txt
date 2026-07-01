@@ -1,0 +1,58 @@
+=== capture current Google sync class hints ===
+8:  const tokenScope = 'https://www.googleapis.com/auth/drive.appdata';
+9:  const appDataSpace = 'appDataFolder';
+66:      '[data-apc-profile-root]',
+67:      '[data-profile-root]',
+68:      '[data-page="profile"]',
+69:      '[data-route="profile"]',
+75:    const bodyLooksProfile = body && String(body.getAttribute('data-page') || body.className || '').toLowerCase().includes('profile');
+87:    return Boolean(document.querySelector('.private-shell[data-private-page="profile"]'));
+111:      '.apc-google-sync-profile-panel label { display: block; margin: 10px 0; line-height: 1.35; }',
+112:      '.apc-google-sync-profile-panel input[type="checkbox"] { margin-right: 8px; }',
+116:      '.apc-google-sync-profile-panel button { border: 0; border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: pointer; }',
+117:      '.apc-google-sync-profile-panel button:disabled { cursor: not-allowed; opacity: .55; }',
+126:      '[data-apc-profile-root]',
+127:      '[data-profile-root]',
+128:      '[data-page="profile"]',
+129:      '[data-route="profile"]',
+145:    const status = document.querySelector('[data-apc-google-sync-status-text]');
+146:    const detailNode = document.querySelector('[data-apc-google-sync-proof-detail]');
+152:    const checkbox = document.querySelector('[data-apc-google-sync-explicit-consent]');
+153:    return Boolean(checkbox && checkbox.checked);
+159:    const connect = document.querySelector('[data-apc-google-sync-connect]');
+160:    const bootstrap = document.querySelector('[data-apc-google-sync-bootstrap-appdata]');
+161:    const list = document.querySelector('[data-apc-google-sync-list-appdata]');
+162:    const rollback = document.querySelector('[data-apc-google-sync-rollback-appdata-proof]');
+175:      const existing = document.querySelector('script[data-apc-google-identity-services="true"]');
+185:      script.setAttribute('data-apc-google-identity-services', 'true');
+208:      scope: tokenScope,
+217:        setStatus('Connected for this browser session', 'Token is held in memory only. APC can use its hidden appDataFolder, not your normal Drive folders.');
+275:    setStatus('Creating hidden APC app data...', 'Creating manifest and database bootstrap in Google Drive appDataFolder.');
+316:    const url = driveFilesUrl + '?spaces=appDataFolder&fields=files(id,name,mimeType,createdTime,modifiedTime,spaces)';
+364:    const panel = document.createElement('section');
+367:    panel.setAttribute('data-apc-google-sync-profile-panel', 'true');
+368:    panel.setAttribute('data-apc-google-sync-profile-only', 'true');
+369:    panel.setAttribute('data-apc-google-sync-oauth-active', 'appdata-explicit-consent-only');
+370:    panel.setAttribute('data-apc-google-sync-drive-reads', 'appdata-explicit-consent-only');
+371:    panel.setAttribute('data-apc-google-sync-drive-writes', 'appdata-explicit-consent-only');
+372:    panel.setAttribute('data-apc-google-sync-scope', tokenScope);
+373:    panel.setAttribute('data-apc-google-sync-storage-space', appDataSpace);
+374:    panel.setAttribute('data-apc-google-sync-user-visible-folder', 'false');
+375:    panel.setAttribute('data-apc-marker', liveMarker);
+377:      '<h3>Google Drive sync</h3>',
+379:      '<div class="apc-google-sync-status"><span class="apc-google-sync-dot" aria-hidden="true"></span><span data-apc-google-sync-status-text>' + (configured ? 'Ready for explicit consent' : 'Google client ID not configured') + '</span></div>',
+380:      '<label><input type="checkbox" data-apc-google-sync-explicit-consent> I understand Buddies Who Study will create hidden app data in my Google Drive for Buddies Who Study local data, including platform decks, sessions, history, and stats. Buddies Who Study will not upload Anki files unless I explicitly choose an import/convert option later.</label>',
+381:      '<div class="apc-google-sync-actions">',
+382:      '<button type="button" data-apc-google-sync-connect>Connect Google Drive</button>',
+383:      '<button type="button" data-apc-google-sync-bootstrap-appdata>Create hidden Buddies Who Study local data database</button>',
+384:      '<button type="button" data-apc-google-sync-list-appdata>Read Buddies Who Study local data metadata</button>',
+385:      '<button type="button" data-apc-google-sync-rollback-appdata-proof>Rollback/delete Buddies Who Study local data proof files</button>',
+386:      '</div>',
+387:      '<small>Scope: drive.appdata. Storage: appDataFolder. Token is kept in memory only. No backend queue, no DB write, and no broad Drive access.</small>',
+388:      '<pre data-apc-google-sync-proof-detail></pre>'
+392:    panel.querySelector('[data-apc-google-sync-explicit-consent]').addEventListener('change', updateButtons);
+393:    panel.querySelector('[data-apc-google-sync-connect]').addEventListener('click', () => connectGoogleDrive().catch((err) => setStatus('Google connection error', err.message || String(err))));
+394:    panel.querySelector('[data-apc-google-sync-bootstrap-appdata]').addEventListener('click', () => bootstrapHiddenAppDatabase().catch((err) => setStatus('Hidden app data create error', err.message || String(err))));
+395:    panel.querySelector('[data-apc-google-sync-list-appdata]').addEventListener('click', () => listHiddenAppDataFiles().catch((err) => setStatus('Hidden app data read error', err.message || String(err))));
+396:    panel.querySelector('[data-apc-google-sync-rollback-appdata-proof]').addEventListener('click', () => rollbackHiddenAppDataProof().catch((err) => setStatus('Rollback error', err.message || String(err))));
+413:    scope: tokenScope,

@@ -1,0 +1,6 @@
+=== backup and install visual files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r12m-profile-google-sync-visual-polish-backup-20260701T223735Z
+7e260aa39454cd37ebd0fa848979a4ced775d2513cc710354ae2bcaa63c80bdc  /var/www/apc-wrapper-local/index.html
+aa946452c7d7175410ba2837379d8f57ad8a084cb55b6cfae1abaecb01489a35  /var/www/apc-wrapper-local/privatepages/profile-private-polish.css
+R12M_VM200_GOOGLE_SYNC_VISUAL_DEPLOY_DONE

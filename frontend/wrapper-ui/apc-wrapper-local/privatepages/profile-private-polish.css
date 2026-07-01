@@ -241,3 +241,151 @@
   color: #526079 !important;
 }
 /* APC_PRIVATE_PROFILE_LOCAL_BACKUPS_VISIBLE_R12L_R2_END */
+
+
+/* APC_PRIVATE_PROFILE_GOOGLE_SYNC_VISUAL_POLISH_R12M_START */
+
+.private-shell[data-private-page="profile"] [data-apc-google-sync-profile-panel="true"],
+.private-shell[data-private-page="profile"] [data-apc-google-sync-panel="true"],
+.private-shell[data-private-page="profile"] .apc-google-sync-profile-panel,
+.private-shell[data-private-page="profile"] .apc-google-sync-panel,
+.private-shell[data-private-page="profile"] .apc-google-drive-sync-panel,
+.private-shell[data-private-page="profile"] .profile-google-sync-panel,
+.private-shell[data-private-page="profile"] [class*="google"][class*="sync"],
+.private-shell[data-private-page="profile"] [class*="drive"][class*="sync"],
+.private-shell[data-private-page="profile"] [id*="google"][id*="sync"],
+.private-shell[data-private-page="profile"] [id*="drive"][id*="sync"] {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  border: 1px solid rgba(99, 115, 146, 0.18) !important;
+  border-radius: 1.25rem !important;
+  padding: clamp(1rem, 2vw, 1.35rem) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 14px 34px rgba(18, 38, 63, 0.09) !important;
+  color: #1f2a44 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.private-shell[data-private-page="profile"] [data-apc-google-sync-profile-panel="true"] h2,
+.private-shell[data-private-page="profile"] [data-apc-google-sync-profile-panel="true"] h3,
+.private-shell[data-private-page="profile"] [data-apc-google-sync-panel="true"] h2,
+.private-shell[data-private-page="profile"] [data-apc-google-sync-panel="true"] h3,
+.private-shell[data-private-page="profile"] .apc-google-sync-profile-panel h2,
+.private-shell[data-private-page="profile"] .apc-google-sync-profile-panel h3,
+.private-shell[data-private-page="profile"] .apc-google-sync-panel h2,
+.private-shell[data-private-page="profile"] .apc-google-sync-panel h3,
+.private-shell[data-private-page="profile"] .apc-google-drive-sync-panel h2,
+.private-shell[data-private-page="profile"] .apc-google-drive-sync-panel h3,
+.private-shell[data-private-page="profile"] .profile-google-sync-panel h2,
+.private-shell[data-private-page="profile"] .profile-google-sync-panel h3,
+.private-shell[data-private-page="profile"] [class*="google"][class*="sync"] h2,
+.private-shell[data-private-page="profile"] [class*="google"][class*="sync"] h3,
+.private-shell[data-private-page="profile"] [class*="drive"][class*="sync"] h2,
+.private-shell[data-private-page="profile"] [class*="drive"][class*="sync"] h3 {
+  margin: 0 0 0.7rem !important;
+  color: #18233f !important;
+  letter-spacing: -0.025em !important;
+  font-size: 1.18rem !important;
+}
+
+.private-shell[data-private-page="profile"] [data-apc-google-sync-profile-panel="true"] p,
+.private-shell[data-private-page="profile"] [data-apc-google-sync-panel="true"] p,
+.private-shell[data-private-page="profile"] .apc-google-sync-profile-panel p,
+.private-shell[data-private-page="profile"] .apc-google-sync-panel p,
+.private-shell[data-private-page="profile"] .apc-google-drive-sync-panel p,
+.private-shell[data-private-page="profile"] .profile-google-sync-panel p,
+.private-shell[data-private-page="profile"] [class*="google"][class*="sync"] p,
+.private-shell[data-private-page="profile"] [class*="drive"][class*="sync"] p {
+  margin: 0.45rem 0 !important;
+  color: #526079 !important;
+  line-height: 1.55 !important;
+}
+
+.private-shell[data-private-page="profile"] [data-apc-google-sync-profile-panel="true"] label,
+.private-shell[data-private-page="profile"] [data-apc-google-sync-panel="true"] label,
+.private-shell[data-private-page="profile"] .apc-google-sync-profile-panel label,
+.private-shell[data-private-page="profile"] .apc-google-sync-panel label,
+.private-shell[data-private-page="profile"] .apc-google-drive-sync-panel label,
+.private-shell[data-private-page="profile"] .profile-google-sync-panel label,
+.private-shell[data-private-page="profile"] [class*="google"][class*="sync"] label,
+.private-shell[data-private-page="profile"] [class*="drive"][class*="sync"] label {
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  gap: 0.7rem !important;
+  align-items: start !important;
+  margin: 0.9rem 0 !important;
+  padding: 0.9rem !important;
+  border: 1px solid rgba(102, 126, 234, 0.18) !important;
+  border-radius: 1rem !important;
+  background: rgba(247, 250, 255, 0.86) !important;
+  color: #526079 !important;
+  line-height: 1.5 !important;
+}
+
+.private-shell[data-private-page="profile"] [data-apc-google-sync-profile-panel="true"] input[type="checkbox"],
+.private-shell[data-private-page="profile"] [data-apc-google-sync-panel="true"] input[type="checkbox"],
+.private-shell[data-private-page="profile"] .apc-google-sync-profile-panel input[type="checkbox"],
+.private-shell[data-private-page="profile"] .apc-google-sync-panel input[type="checkbox"],
+.private-shell[data-private-page="profile"] .apc-google-drive-sync-panel input[type="checkbox"],
+.private-shell[data-private-page="profile"] .profile-google-sync-panel input[type="checkbox"],
+.private-shell[data-private-page="profile"] [class*="google"][class*="sync"] input[type="checkbox"],
+.private-shell[data-private-page="profile"] [class*="drive"][class*="sync"] input[type="checkbox"] {
+  width: 1.05rem !important;
+  height: 1.05rem !important;
+  margin-top: 0.18rem !important;
+  accent-color: #667eea !important;
+}
+
+.private-shell[data-private-page="profile"] [data-apc-google-sync-profile-panel="true"] small,
+.private-shell[data-private-page="profile"] [data-apc-google-sync-panel="true"] small,
+.private-shell[data-private-page="profile"] .apc-google-sync-profile-panel small,
+.private-shell[data-private-page="profile"] .apc-google-sync-panel small,
+.private-shell[data-private-page="profile"] .apc-google-drive-sync-panel small,
+.private-shell[data-private-page="profile"] .profile-google-sync-panel small,
+.private-shell[data-private-page="profile"] [class*="google"][class*="sync"] small,
+.private-shell[data-private-page="profile"] [class*="drive"][class*="sync"] small {
+  display: block !important;
+  margin-top: 0.7rem !important;
+  padding: 0.75rem 0.85rem !important;
+  border-radius: 0.9rem !important;
+  background: rgba(102, 126, 234, 0.08) !important;
+  color: #526079 !important;
+  line-height: 1.45 !important;
+}
+
+.private-shell[data-private-page="profile"] [data-apc-google-sync-profile-panel="true"] strong,
+.private-shell[data-private-page="profile"] [data-apc-google-sync-panel="true"] strong,
+.private-shell[data-private-page="profile"] .apc-google-sync-profile-panel strong,
+.private-shell[data-private-page="profile"] .apc-google-sync-panel strong,
+.private-shell[data-private-page="profile"] .apc-google-drive-sync-panel strong,
+.private-shell[data-private-page="profile"] .profile-google-sync-panel strong,
+.private-shell[data-private-page="profile"] [class*="google"][class*="sync"] strong,
+.private-shell[data-private-page="profile"] [class*="drive"][class*="sync"] strong {
+  display: inline-flex !important;
+  width: fit-content !important;
+  margin: 0.35rem 0 0.2rem !important;
+  padding: 0.32rem 0.65rem !important;
+  border-radius: 999px !important;
+  background: rgba(101, 214, 166, 0.16) !important;
+  color: #23634d !important;
+  font-size: 0.84rem !important;
+  letter-spacing: 0.01em !important;
+}
+
+@media (max-width: 860px) {
+  .private-shell[data-private-page="profile"] [data-apc-google-sync-profile-panel="true"] label,
+  .private-shell[data-private-page="profile"] [data-apc-google-sync-panel="true"] label,
+  .private-shell[data-private-page="profile"] .apc-google-sync-profile-panel label,
+  .private-shell[data-private-page="profile"] .apc-google-sync-panel label,
+  .private-shell[data-private-page="profile"] .apc-google-drive-sync-panel label,
+  .private-shell[data-private-page="profile"] .profile-google-sync-panel label,
+  .private-shell[data-private-page="profile"] [class*="google"][class*="sync"] label,
+  .private-shell[data-private-page="profile"] [class*="drive"][class*="sync"] label {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* APC_PRIVATE_PROFILE_GOOGLE_SYNC_VISUAL_POLISH_R12M_END */

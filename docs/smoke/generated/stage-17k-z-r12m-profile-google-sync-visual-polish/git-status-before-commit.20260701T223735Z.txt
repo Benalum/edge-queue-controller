@@ -1,0 +1,5 @@
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css
+?? docs/smoke/generated/stage-17k-z-r12m-profile-google-sync-visual-polish/
+?? docs/stage-17k-z-r12m-profile-google-sync-visual-polish.md
+?? ops/smoke/check-stage-17k-z-r12m-profile-google-sync-visual-polish.sh
