@@ -76,6 +76,30 @@
     return path.includes('profile') || hash.includes('profile') || title.includes('profile') || hasProfileNode || bodyLooksProfile;
   }
 
+  const PRIVATE_RENDER_EVENT_ONLY_MARKER = "PROFILE_GOOGLE_SYNC_PRIVATE_RENDER_EVENT_ONLY_R12A_R3";
+
+  function isPrivateProfileRenderEvent(event) {
+    const detail = event && event.detail ? event.detail : null;
+    return Boolean(detail && detail.page === 'profile' && detail.user);
+  }
+
+  function hasPrivateProfileShell() {
+    return Boolean(document.querySelector('.private-shell[data-private-page="profile"]'));
+  }
+
+  function removePanel() {
+    const panel = document.getElementById(panelId);
+    if (panel && panel.parentNode) {
+      panel.parentNode.removeChild(panel);
+    }
+  }
+
+  function cleanupIfNotPrivateProfile() {
+    window.setTimeout(function () {
+      if (!hasPrivateProfileShell()) removePanel();
+    }, 0);
+  }
+
   function installStyle() {
     if (document.getElementById(styleId)) return;
     const style = document.createElement('style');
@@ -327,8 +351,8 @@
     updateButtons();
   }
 
-  function renderPanel() {
-    if (!document.body || !isProfileSurface()) return;
+  function renderPanel(event) {
+    if (!document.body || !isPrivateProfileRenderEvent(event)) { removePanel(); return; }
     if (document.getElementById(panelId)) return;
     installStyle();
 
@@ -373,11 +397,12 @@
     updateButtons();
   }
 
-  function install() {
-    renderPanel();
-    window.setTimeout(renderPanel, 50);
-    window.setTimeout(renderPanel, 250);
-    window.setTimeout(renderPanel, 750);
+  function install(event) {
+    if (!isPrivateProfileRenderEvent(event)) { removePanel(); return; }
+    renderPanel(event);
+    window.setTimeout(function () { renderPanel(event); }, 50);
+    window.setTimeout(function () { renderPanel(event); }, 250);
+    window.setTimeout(function () { renderPanel(event); }, 750);
   }
 
   window[apiName] = Object.freeze({
@@ -392,12 +417,13 @@
   });
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', install, { once: true });
+    document.addEventListener('DOMContentLoaded', cleanupIfNotPrivateProfile, { once: true });
   } else {
-    install();
+    cleanupIfNotPrivateProfile();
   }
-  window.addEventListener('hashchange', install);
-  window.addEventListener('popstate', install);
+  window.addEventListener('hashchange', cleanupIfNotPrivateProfile);
+  window.addEventListener('popstate', cleanupIfNotPrivateProfile);
+  document.addEventListener('apc-auth-changed', cleanupIfNotPrivateProfile);
   document.addEventListener('apc-private-page-rendered', install);
 })();
 /* APC_GOOGLE_SYNC_PROFILE_MODULE_STAGE_17K_Z_R6C_END */

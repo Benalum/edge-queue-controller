@@ -1,0 +1,2 @@
+ .../privatepages/profile-google-sync-panel.js      | 48 +++++++++++++++++-----
+ 1 file changed, 37 insertions(+), 11 deletions(-)
