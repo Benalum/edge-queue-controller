@@ -1,0 +1,28 @@
+{
+  "route_total": 142,
+  "study_route_total": 2,
+  "kept_study_intent_present": [
+    "/api/study/intent/parse",
+    "/public/study/intent/parse"
+  ],
+  "missing_kept_study_intent_count": 0,
+  "missing_kept_study_intent": [],
+  "unexpected_study_route_count": 0,
+  "unexpected_study_routes": [],
+  "remaining_forbidden_count": 0,
+  "remaining_forbidden": [],
+  "wrapper_guard_count": 0,
+  "gateway_private_study_count": 0,
+  "gateway_private_study_lines": [],
+  "core_groups": {
+    "system_status": 1,
+    "auth_or_me": 11,
+    "account": 4,
+    "jobs_or_queue": 8,
+    "admin": 7,
+    "credits_or_billing": 9
+  },
+  "route_catalog_path": "docs/smoke/generated/stage-17k-z-r10h-source-package-smoke-after-private-study-route-removal/edge-route-catalog.20260701T030014Z.txt",
+  "study_route_catalog_path": "docs/smoke/generated/stage-17k-z-r10h-source-package-smoke-after-private-study-route-removal/study-route-catalog.20260701T030014Z.txt",
+  "gateway_scan_path": "docs/smoke/generated/stage-17k-z-r10h-source-package-smoke-after-private-study-route-removal/public-gateway-study-scan.20260701T030014Z.txt"
+}

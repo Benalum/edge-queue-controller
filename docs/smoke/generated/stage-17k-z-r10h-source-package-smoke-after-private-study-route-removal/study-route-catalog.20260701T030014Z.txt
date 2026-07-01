@@ -1,0 +1,2 @@
+POST /api/study/intent/parse edge_controller.py:8350 public_study_intent_parse
+POST /public/study/intent/parse edge_controller.py:8349 public_study_intent_parse

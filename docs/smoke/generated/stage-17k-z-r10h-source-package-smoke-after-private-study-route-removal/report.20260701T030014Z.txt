@@ -1,0 +1,30 @@
+=== stage-17k-z-r10h-source-package-smoke-after-private-study-route-removal ===
+created_utc=20260701T030014Z
+head_before=d5cefdc
+
+Scope:
+- Source/package smoke after private study route removal.
+- No deploy.
+- No DB write.
+- No DB table drop.
+- No schema change.
+- No service restart.
+- No live backend mutation.
+- No backend endpoint removal in this stage.
+- No wrapper guard.
+
+Verification:
+- py_compile_edge_controller=pass
+- py_compile_public_gateway=pass
+- route_total=142
+- study_route_total=2
+- kept_study_intent_present_count=2
+- missing_kept_study_intent_count=0
+- unexpected_study_route_count=0
+- remaining_forbidden_count=0
+- wrapper_guard_count=0
+- gateway_private_study_count=0
+- frontend_private_ref_count=0
+- core_system_status_count=1
+- core_auth_or_me_count=11
+- core_jobs_or_queue_count=8
