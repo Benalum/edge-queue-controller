@@ -2,6 +2,7 @@
   "use strict";
 
   const PATCH_MARKER = "APC_ANKI_IMPORT_LOCAL_DISABLED_SKELETON_R11B";
+  const APKG_INSPECTOR_MARKER = "APC_ANKI_IMPORT_LOCAL_APKG_CONTAINER_INSPECTOR_R11C";
 
   const DOC_KEYS = Object.freeze({
     importSources: "study/import-sources/v1",
@@ -217,6 +218,152 @@
     });
   }
 
+  function asUint8Array(bufferLike) {
+    if (bufferLike instanceof Uint8Array) return bufferLike;
+    if (bufferLike instanceof ArrayBuffer) return new Uint8Array(bufferLike);
+    if (bufferLike && bufferLike.buffer instanceof ArrayBuffer) {
+      return new Uint8Array(bufferLike.buffer, bufferLike.byteOffset || 0, bufferLike.byteLength);
+    }
+    throw new Error("APKG inspector requires an ArrayBuffer or Uint8Array.");
+  }
+
+  function readUInt16LE(bytes, offset) {
+    return bytes[offset] | (bytes[offset + 1] << 8);
+  }
+
+  function readUInt32LE(bytes, offset) {
+    return (bytes[offset] |
+      (bytes[offset + 1] << 8) |
+      (bytes[offset + 2] << 16) |
+      (bytes[offset + 3] << 24)) >>> 0;
+  }
+
+  function decodeZipName(bytes, offset, length) {
+    const slice = bytes.slice(offset, offset + length);
+    if (typeof TextDecoder !== "undefined") {
+      return new TextDecoder("utf-8").decode(slice);
+    }
+    let text = "";
+    for (let i = 0; i < slice.length; i += 1) {
+      text += String.fromCharCode(slice[i]);
+    }
+    return text;
+  }
+
+  function findEndOfCentralDirectory(bytes) {
+    const minOffset = Math.max(0, bytes.length - 22 - 65535);
+    for (let offset = bytes.length - 22; offset >= minOffset; offset -= 1) {
+      if (readUInt32LE(bytes, offset) === 0x06054b50) {
+        const commentLength = readUInt16LE(bytes, offset + 20);
+        if (offset + 22 + commentLength === bytes.length) {
+          return {
+            offset,
+            diskEntries: readUInt16LE(bytes, offset + 8),
+            totalEntries: readUInt16LE(bytes, offset + 10),
+            centralDirectorySize: readUInt32LE(bytes, offset + 12),
+            centralDirectoryOffset: readUInt32LE(bytes, offset + 16),
+            commentLength
+          };
+        }
+      }
+    }
+    return null;
+  }
+
+  function inspectZipContainer(bufferLike) {
+    const bytes = asUint8Array(bufferLike);
+    const eocd = findEndOfCentralDirectory(bytes);
+    if (!eocd) {
+      return Object.freeze({
+        marker: APKG_INSPECTOR_MARKER,
+        isZip: false,
+        entryCount: 0,
+        entries: [],
+        warnings: ["ZIP end of central directory record not found"]
+      });
+    }
+
+    const entries = [];
+    let offset = eocd.centralDirectoryOffset;
+    const end = eocd.centralDirectoryOffset + eocd.centralDirectorySize;
+
+    while (offset + 46 <= bytes.length && offset < end) {
+      const signature = readUInt32LE(bytes, offset);
+      if (signature !== 0x02014b50) {
+        break;
+      }
+
+      const flags = readUInt16LE(bytes, offset + 8);
+      const compressionMethod = readUInt16LE(bytes, offset + 10);
+      const crc32 = readUInt32LE(bytes, offset + 16).toString(16).padStart(8, "0");
+      const compressedSize = readUInt32LE(bytes, offset + 20);
+      const uncompressedSize = readUInt32LE(bytes, offset + 24);
+      const nameLength = readUInt16LE(bytes, offset + 28);
+      const extraLength = readUInt16LE(bytes, offset + 30);
+      const commentLength = readUInt16LE(bytes, offset + 32);
+      const localHeaderOffset = readUInt32LE(bytes, offset + 42);
+      const name = decodeZipName(bytes, offset + 46, nameLength);
+
+      entries.push(Object.freeze({
+        name,
+        compressionMethod,
+        isDeflated: compressionMethod === 8,
+        isStored: compressionMethod === 0,
+        utf8Name: Boolean(flags & 0x0800),
+        compressedSize,
+        uncompressedSize,
+        crc32,
+        localHeaderOffset
+      }));
+
+      offset += 46 + nameLength + extraLength + commentLength;
+    }
+
+    return Object.freeze({
+      marker: APKG_INSPECTOR_MARKER,
+      isZip: true,
+      entryCount: entries.length,
+      eocd,
+      entries,
+      hasCollectionAnki2: entries.some((entry) => entry.name === "collection.anki2"),
+      hasCollectionAnki21: entries.some((entry) => entry.name === "collection.anki21"),
+      hasMediaJson: entries.some((entry) => entry.name === "media"),
+      hasTopLevelMediaFiles: entries.some((entry) => /^[0-9]+$/.test(entry.name)),
+      warnings: entries.length === eocd.totalEntries ? [] : ["central directory entry count mismatch"]
+    });
+  }
+
+  function inspectApkgContainer(bufferLike, fileName) {
+    const displayName = normalizeFilename(fileName || "package.apkg");
+    if (!isSupportedFileName(displayName)) {
+      throw new Error("APKG container inspector only accepts .apkg filenames.");
+    }
+
+    const inspected = inspectZipContainer(bufferLike);
+    return Object.freeze(Object.assign({}, inspected, {
+      fileName: displayName,
+      isApkgContainer: inspected.isZip && (inspected.hasCollectionAnki2 || inspected.hasCollectionAnki21)
+    }));
+  }
+
+  async function inspectApkgFile(fileLike) {
+    if (!fileLike || typeof fileLike.arrayBuffer !== "function") {
+      throw new Error("inspectApkgFile requires a browser File-like object with arrayBuffer().");
+    }
+    const source = describeFileSource(fileLike);
+    const buffer = await fileLike.arrayBuffer();
+    const container = inspectApkgContainer(buffer, source.displayName);
+    return Object.freeze({
+      marker: APKG_INSPECTOR_MARKER,
+      source,
+      container,
+      disabledInspectorOnly: true,
+      writesOriginalAnki: false,
+      writesServer: false,
+      writesLocalDocs: false
+    });
+  }
+
   function readApkgMetadataDisabled() {
     return Promise.reject(new Error("R11B is a disabled skeleton. Real apkg parsing is intentionally not active."));
   }
@@ -229,6 +376,10 @@
     describeFileSource,
     validatePackageSummary,
     createImportPlan,
+    apkgInspectorMarker: APKG_INSPECTOR_MARKER,
+    inspectZipContainer,
+    inspectApkgContainer,
+    inspectApkgFile,
     readApkgMetadataDisabled
   });
 
