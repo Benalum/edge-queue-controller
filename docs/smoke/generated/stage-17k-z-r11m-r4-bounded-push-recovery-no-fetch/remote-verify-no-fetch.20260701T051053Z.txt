@@ -1,0 +1,4 @@
+=== optional bounded remote verification, no fetch ===
+2a7fe0a5e9f8b3a19e386dbfe1491eea1746e2cf	refs/heads/main
+2a7fe0a5e9f8b3a19e386dbfe1491eea1746e2cf	refs/tags/controller-stage-17k-z-r11m-r2-remove-duplicate-profile-render-path-source-2026-07-01
+remote_verify_exit=0

@@ -1,0 +1,19 @@
+2a7fe0a (HEAD -> main, tag: controller-stage-17k-z-r11m-r2-remove-duplicate-profile-render-path-source-2026-07-01) fix: remove duplicate profile render path
+ .../focused-diff.20260701T050656Z.txt              | 211 +++++++++++++++++++++
+ .../git-diff-stat.20260701T050656Z.txt             |   7 +
+ .../git-status-before-commit.20260701T050656Z.txt  |   9 +
+ .../head-short.20260701T050656Z.txt                |   1 +
+ .../head.20260701T050656Z.txt                      |   1 +
+ .../r11j-r2-smoke.20260701T050656Z.txt             |   1 +
+ .../r11l-smoke.20260701T050656Z.txt                |   1 +
+ .../report.20260701T050656Z.txt                    |   4 +
+ .../smoke.20260701T050656Z.txt                     |   1 +
+ ...-remove-duplicate-profile-render-path-source.md |  69 +++++++
+ frontend/wrapper-ui/apc-wrapper-local/index.html   |   7 +-
+ .../privatepages/anki-manifest-panel.js            |  73 +------
+ .../privatepages/pages/profile.html                |  30 +--
+ .../apc-wrapper-local/privatepages/privatepages.js |   2 +-
+ .../privatepages/profile-anki-preview-mount.js     |   4 +
+ .../privatepages/profile-google-sync-panel.js      |   3 +-
+ ...-remove-duplicate-profile-render-path-source.sh |  76 ++++++++
+ 17 files changed, 413 insertions(+), 87 deletions(-)
