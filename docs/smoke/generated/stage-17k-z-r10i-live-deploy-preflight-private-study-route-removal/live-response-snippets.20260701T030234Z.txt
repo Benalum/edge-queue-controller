@@ -1,0 +1,10 @@
+--- /tmp/r10i-study-decks.txt ---
+{"detail":"Missing bearer token."}
+--- /tmp/r10i-study-progress.txt ---
+{"detail":"Missing bearer token."}
+--- /tmp/r10i-cards-lite.txt ---
+{"detail":"Missing bearer token."}
+--- /tmp/r10i-intent.txt ---
+{"detail":"Missing bearer token."}
+--- /tmp/r10i-signup.json ---
+{"detail":{"ok":false,"code":"closed_beta_signup_disabled","message":"Beta testing is not open yet. Account creation is temporarily closed while we prepare Buddies Who Study.","brand":"Buddies Who Study","product_domain":"buddieswhostudy.com","public_signup_enabled":false,"existing_user_signin_enabled":true}}

@@ -1,0 +1,37 @@
+=== stage-17k-z-r10i-live-deploy-preflight-private-study-route-removal ===
+created_utc=20260701T030234Z
+head_before=19e2855
+
+Scope:
+- Read-only live deploy preflight.
+- No deploy.
+- No DB write.
+- No DB table drop.
+- No schema change.
+- No service restart.
+- No live backend mutation.
+- No live frontend mutation.
+
+Source:
+- py_compile_edge_controller=pass
+- py_compile_public_gateway=pass
+- node_check_study_store=pass
+- source_study_route_count=2
+- source_private_frontend_ref_count=0
+
+Public:
+- public_root_status=200
+- public_system_status_code=200
+- public_me_code=401
+- public_signup_code=403
+
+Live private study endpoint current posture:
+- live_study_decks_code=401
+- live_study_progress_code=401
+- live_study_cards_lite_code=401
+- live_study_intent_code=401
+
+SSH:
+- ssh_pvew_direct=ok
+- ssh_website_edge=ok
+- ssh_pvew_via_edge=ok
