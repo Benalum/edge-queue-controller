@@ -1,0 +1,367 @@
+=== source inventory: local Study, Anki, Companion, backups ===
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js =====
+48:      sessions: [],
+59:    out.sessions = Array.isArray(out.sessions) ? out.sessions : [];
+250:        result = { ok: false, message: "A study session is already running." };
+266:        id: uid("session"),
+283:      result = { ok: true, message: "Study session started.", runtime: draft.runtime };
+297:    let message = "No active session to pause.";
+303:      message = "Study session paused.";
+309:    let message = "No paused session to resume.";
+316:      message = "Study session resumed.";
+347:      draft.sessions.unshift(record);
+363:        ? "Study session stopped and saved."
+364:        : "Study session stopped. No session was saved because no cards were reviewed."
+453:        reply = "The study session is paused. Resume it when you are ready.";
+502:    const cardsSeen = state.sessions.reduce((sum, session) => sum + Number(session.cardsSeen || 0), 0);
+503:    const totalMs = state.sessions.reduce((sum, session) => sum + Number(session.durationMs || 0), 0);
+510:      savedSessions: state.sessions.length,
+526:  const LOCAL_SAVE_DECKS_KEY = "study/decks/v1";
+527:  const LOCAL_SAVE_CARDS_KEY = "study/cards/v1";
+528:  const LOCAL_SAVE_SESSIONS_KEY = "study/sessions/v1";
+529:  const LOCAL_SAVE_PROGRESS_KEY = "study/progress/v1";
+560:    (state.sessions || []).forEach((session) => {
+561:      const type = session.style || "standard";
+564:          sessionType: type,
+565:          sessions: 0,
+574:      bySessionType[type].sessions += 1;
+575:      bySessionType[type].cardsSeen += Number(session.cardsSeen || 0);
+576:      bySessionType[type].correct += Number(session.correct || 0);
+577:      bySessionType[type].wrong += Number(session.wrong || 0);
+578:      bySessionType[type].skipped += Number(session.skipped || 0);
+579:      bySessionType[type].totalMs += Number(session.durationMs || 0);
+640:          recentSessions: state.sessions || []
+643:          recordType: "apc_study_sessions"
+653:        document.dispatchEvent(new CustomEvent("apc-study-local-save-updated", {
+659:            sessionCount: (state.sessions || []).length
+688:      document.dispatchEvent(new CustomEvent("apc-study-local-save-hydrated", {
+693:          sessionCount: normalized.sessions.length
+714:      const [storeStateDoc, decksDoc, cardsDoc, sessionsDoc] = await Promise.all([
+729:        (current.cards && current.cards.length) ||
+730:        (current.sessions && current.sessions.length) ||
+742:          sessions: sessionsDoc && Array.isArray(sessionsDoc.recentSessions) ? sessionsDoc.recentSessions : current.sessions,
+743:          runtime: sessionsDoc && sessionsDoc.activeSession ? sessionsDoc.activeSession : current.runtime
+769:      sessionId: runtime && runtime.id ? runtime.id : null,
+773:      sessionType: runtime && runtime.style ? runtime.style : "standard",
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js =====
+6: * - Provide one stable local document/media/event API that can later sync to
+12: * - media: de-duplicated blobs by SHA-256, similar to Anki-style media refs.
+19:  const VERSION = "stage-17k-z-r10b-local-save-store";
+25:  const STORE_MEDIA = "media";
+38:    ankiContentServerUploadAllowed: false,
+41:    mediaStorage: "indexeddb-content-addressed-sha256",
+47:    manifest: "sync/manifest/v1",
+49:    studyDecks: "study/decks/v1",
+50:    studySessions: "study/sessions/v1",
+51:    studyProgress: "study/progress/v1",
+52:    companionPreferences: "companion/preferences/v1",
+53:    companionLocalMemory: "companion/local-memory/v1"
+130:          events.createIndex("sessionId", "sessionId", { unique: false });
+134:          const media = db.createObjectStore(STORE_MEDIA, { keyPath: "sha256" });
+135:          media.createIndex("createdAt", "createdAt", { unique: false });
+136:          media.createIndex("mimeType", "mimeType", { unique: false });
+137:          media.createIndex("sizeBytes", "sizeBytes", { unique: false });
+273:      throw new Error(`Event payload too large: ${size} bytes. Store large data as a doc or media reference.`);
+293:      sessionId: opts.sessionId || cleanPayload.sessionId || null,
+324:            (!opts.sessionId || event.sessionId === opts.sessionId) &&
+376:      sessionTypes: {},
+393:    const sessionType = review.sessionType || "standard";
+398:      sessionId: review.sessionId || null,
+402:      sessionType
+407:      sessionId: review.sessionId || null
+442:    daily.sessionTypes = daily.sessionTypes || {};
+443:    daily.sessionTypes[sessionType] = (daily.sessionTypes[sessionType] || 0) + 1;
+457:      throw new Error("crypto.subtle is required for content-addressed media.");
+466:  async function blobToArrayBuffer(input) {
+475:    const bytes = await blobToArrayBuffer(input);
+478:    if (sizeBytes <= 0) throw new Error("Cannot store empty media.");
+497:    const blob = input instanceof Blob ? input : new Blob([bytes], { type: mimeType });
+500:      blob,
+528:    return record ? record.blob : null;
+538:        request.onerror = () => reject(request.error || new Error("Unable to list media"));
+580:      media: await listMedia()
+623:    const existing = await getDoc(DEFAULT_DOC_KEYS.manifest, null);
+626:    const manifest = {
+633:      media: {
+649:    await setDoc(DEFAULT_DOC_KEYS.manifest, manifest, {
+651:      recordType: "apc_local_manifest",
+655:    return manifest;
+661:    const media = await listMedia();
+671:      mediaCount: media.length,
+715:    document.documentElement.setAttribute("data-apc-local-save-store", VERSION);
+716:    document.dispatchEvent(new CustomEvent("apc-local-save-ready", { detail: { version: VERSION } }));
+720:    console.warn("[APC_LOCAL_SAVE] manifest initialization failed", error);
+727: * - study/cards/v1
+728: * - study/decks/v1
+729: * - study/progress/v1
+730: * - study/sessions/v1
+893: * no matches, and it matches key-prefixed docs such as study/decks/v1.
+1103: * - key-prefixed docs like study/decks/v1 are returned
+1335: * R10L-R3 correctly returned all Study docs but also returned sync/manifest/v1
+1336: * because the broad matcher scanned nested manifest content.
+1342: * It intentionally does not match nested manifest payload values.
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js =====
+4:  var PANEL_ID = "apc-anki-manifest-panel";
+5:  var FILE_INPUT_ID = "apc-anki-file-input";
+6:  var CLEAR_BUTTON_ID = "apc-anki-clear-file-proof";
+7:  var FILE_PROOF_KEY = "apc.profile.anki.fileProof.v2";
+8:  var DECK_SUMMARY_KEY = "apc.profile.anki.localDeckSummary.v1";
+82:      || storageRead("apc.profile.anki.fileProof.v1")
+93:    storageRemove("apc.profile.anki.fileProof.v1");
+121:    if (headerText.indexOf("SQLite format 3") === 0) return "sqlite-anki-collection";
+151:        server_saved_anki_content: false,
+152:        anki_file_modified: false
+426:        source_type: "anki_browser_local",
+453:          server_saved_anki_content: false,
+454:          anki_file_modified: false,
+457:          media_sent_to_server: false
+470:      + '<details class="apc-anki-file-location-help">'
+473:      + '    <p>Look for <code>collection.anki2</code> inside your Anki profile folder.</p>'
+475:      + '      <li><strong>Windows:</strong> <code>%APPDATA%\\Anki2\\&lt;Profile&gt;\\collection.anki2</code></li>'
+476:      + '      <li><strong>macOS:</strong> <code>~/Library/Application Support/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+477:      + '      <li><strong>Linux:</strong> <code>~/.local/share/Anki2/&lt;Profile&gt;/collection.anki2</code> or <code>$XDG_DATA_HOME/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+496:            + '<div class="profile-preference-row apc-anki-minimal-deck-row">'
+504:      + '<div class="apc-anki-minimal-summary">'
+514:      + '<section class="profile-card apc-anki-minimal-card" id="' + PANEL_ID + '-card">'
+518:      + (message ? '<p class="apc-anki-message">' + escapeHtml(message) + '</p>' : '')
+521:      + '    <input id="' + FILE_INPUT_ID + '" type="file" accept=".anki2,.anki21,.sqlite,.db,.colpkg,.apkg">'
+554:          if (proof.header_kind !== "sqlite-anki-collection") {
+561:                anki_file_modified: false
+579:              anki_file_modified: false
+601:    document.querySelectorAll(".apc-anki-manifest-panel, .apc-anki-local-only-panel, .apc-anki-local-card, .apc-anki-ownership-card").forEach(function (el) {
+617:      panel.className = "apc-anki-manifest-panel apc-anki-local-only-panel";
+621:    var ankiFileHelpWasOpen = Boolean(panel.querySelector(".apc-anki-file-location-help[open]"));
+623:    if (ankiFileHelpWasOpen) {
+624:      var ankiFileHelp = panel.querySelector(".apc-anki-file-location-help");
+625:      if (ankiFileHelp) ankiFileHelp.setAttribute("open", "");
+642:    version: "stage17kyr2-profile-anki-dropdown-stable-20260629",
+652:      server_saved_anki_content: false,
+653:      anki_write_allowed: false
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js =====
+9:    ankiPackages: "study/anki-packages/v1",
+10:    ankiNotes: "study/anki-notes/v1",
+11:    ankiCards: "study/anki-cards/v1",
+12:    ankiMedia: "study/anki-media/v1",
+16:  const SUPPORTED_EXTENSIONS = Object.freeze([".apkg"]);
+52:      throw new Error("Only .apkg files are supported by the disabled R11B skeleton.");
+62:      kind: "anki-apkg",
+83:    if (!Array.isArray(value.media)) errors.push("summary.media must be an array");
+111:    const packageId = makeLocalId("anki_pkg", [
+116:      arrayOrEmpty(summary.media).length
+122:      const noteLocalId = makeLocalId("anki_note", [packageId, note.ankiNoteId, note.guid]);
+123:      noteLocalIdBySourceId.set(String(note.ankiNoteId), noteLocalId);
+127:        ankiNoteId: note.ankiNoteId == null ? null : Number(note.ankiNoteId),
+139:      const noteLocalId = noteLocalIdBySourceId.get(String(card.ankiNoteId)) || "";
+141:        id: makeLocalId("anki_card", [packageId, card.ankiCardId, card.ankiNoteId, card.ordinal]),
+144:        ankiCardId: card.ankiCardId == null ? null : Number(card.ankiCardId),
+145:        ankiNoteId: card.ankiNoteId == null ? null : Number(card.ankiNoteId),
+155:    const media = arrayOrEmpty(summary.media).map((item) => ({
+156:      id: makeLocalId("anki_media", [packageId, item.packageMediaKey, item.originalFilename, item.contentSha256]),
+166:      id: makeLocalId("anki_deck", [packageId, deck.deckId, deck.deckPath || deck.name]),
+177:      collectionSchema: safeString(summary.collectionSchema || "anki2"),
+182:      mediaCount: media.length,
+200:        media: media.length
+212:        [DOC_KEYS.ankiPackages]: { packages: [packageRecord] },
+213:        [DOC_KEYS.ankiNotes]: { notes },
+214:        [DOC_KEYS.ankiCards]: { cards },
+215:        [DOC_KEYS.ankiMedia]: { media },
+328:      hasCollectionAnki2: entries.some((entry) => entry.name === "collection.anki2"),
+329:      hasCollectionAnki21: entries.some((entry) => entry.name === "collection.anki21"),
+330:      hasMediaJson: entries.some((entry) => entry.name === "media"),
+337:    const displayName = normalizeFilename(fileName || "package.apkg");
+339:      throw new Error("APKG container inspector only accepts .apkg filenames.");
+368:    return Promise.reject(new Error("R11B is a disabled skeleton. Real apkg parsing is intentionally not active."));
+379:    apkgInspectorMarker: APKG_INSPECTOR_MARKER,
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js =====
+34:      mode: safeString(value.mode || "apkg-preview-only"),
+95:      '<section class="apc-profile-anki-preview-result" data-apc-profile-anki-preview-result="true">',
+100:      `<dt>collection.anki2</dt><dd>${escapeHtml(yesNo(preview.package.hasCollectionAnki2))}</dd>`,
+101:      `<dt>collection.anki21</dt><dd>${escapeHtml(yesNo(preview.package.hasCollectionAnki21))}</dd>`,
+102:      `<dt>media manifest</dt><dd>${escapeHtml(yesNo(preview.package.hasMediaJson))}</dd>`,
+103:      `<dt>numeric media entries</dt><dd>${preview.package.numericMediaEntryCount}</dd>`,
+126:    wrapper.className = "apc-profile-anki-preview-panel";
+127:    wrapper.setAttribute("data-apc-profile-anki-preview-panel", "true");
+130:      '<p>Select an .apkg file to inspect it locally before importing. This preview does not upload or save anything.</p>',
+131:      '<input type="file" accept=".apkg" data-apc-profile-anki-file="true" />',
+132:      '<button type="button" data-apc-profile-anki-preview-button="true">Preview locally</button>',
+133:      '<div data-apc-profile-anki-preview-status="true">No file selected.</div>',
+134:      '<div data-apc-profile-anki-preview-output="true"></div>'
+137:    const input = wrapper.querySelector("[data-apc-profile-anki-file]");
+138:    const button = wrapper.querySelector("[data-apc-profile-anki-preview-button]");
+139:    const status = wrapper.querySelector("[data-apc-profile-anki-preview-status]");
+140:    const output = wrapper.querySelector("[data-apc-profile-anki-preview-output]");
+145:        status.textContent = "Choose an .apkg file first.";
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js =====
+6:  const MOUNT_ID = "apc-profile-anki-preview-panel-r11g";
+50:      "[data-apc-profile-anki-preview-host]",
+51:      ".private-shell[data-private-page='profile'] [data-apc-profile-anki-preview-host]",
+61:      "#companionPrivateApp",
+128:    host.setAttribute("data-apc-profile-anki-preview-mount", "true");
+129:    host.setAttribute("data-apc-profile-anki-preview-source", "r11g");
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js =====
+18:  const VERSION = "sol-study-session-v2";
+197:  function companionVoiceNotice(message) {
+340:    const prompt = byId("companionPrompt");
+359:      restorePromptAfterRender(preservedText || "");
+379:    restorePromptAfterRender(preservedText || "");
+392:    const prompt = byId("companionPrompt");
+410:  function restorePromptAfterRender(text) {
+411:    const prompt = byId("companionPrompt");
+422:    const prompt = byId("companionPrompt");
+431:      const current = byId("companionPrompt");
+463:    const promptBeforeStop = byId("companionPrompt");
+484:      companionVoiceNotice(message);
+485:      restorePromptAfterRender(preservedPromptText);
+488:      restorePromptAfterRender(preservedPromptText);
+505:    const input = byId("companionSilenceSeconds");
+529:      companionVoiceNotice("Conversation mode needs browser listening, but this browser does not support it.");
+535:    const prompt = byId("companionPrompt");
+627:      companionVoiceNotice("Browser listening is not supported in this browser.");
+639:    const prompt = byId("companionPrompt");
+700:        restorePromptAfterRender(text);
+710:        restorePromptAfterRender(text);
+726:      restorePromptAfterRender(browserListenBaseText);
+728:      console.warn("[companion] browser listening failed", error);
+731:      companionVoiceNotice("Browser listening could not start. Check microphone permission and browser support.");
+737:    if (!latest) return `<div class="sol-reply empty">Ask Sol a question or start a study session below.</div>`;
+758:    if (!rt) return `<p class="study-muted">No active study session.</p>`;
+762:      <div class="sol-session-status">
+768:          ? `<div class="sol-current-card">
+783:        <h2>Study session</h2>
+787:        <div class="sol-session-grid">
+809:          <button class="sol-button" type="button" data-companion-action="start-session">Start</button>
+810:          <button class="sol-button secondary" type="button" data-companion-action="pause-session">Pause</button>
+811:          <button class="sol-button secondary" type="button" data-companion-action="resume-session">Resume</button>
+812:          <button class="sol-button secondary" type="button" data-companion-action="stop-session">Stop</button>
+819:            <form class="sol-mini-form" data-companion-form="create-deck">
+826:            <form class="sol-mini-form" data-companion-form="create-card">
+853:                      <button class="study-button secondary" data-companion-action="select-deck" data-deck-id="${escapeHtml(deck.id)}">Select</button>
+854:                      <button class="study-button secondary" data-companion-action="edit-deck" data-deck-id="${escapeHtml(deck.id)}">Edit</button>
+855:                      <button class="study-button danger" data-companion-action="delete-deck" data-deck-id="${escapeHtml(deck.id)}">Remove</button>
+875:                      <button class="study-button secondary" data-companion-action="flag-card" data-card-id="${escapeHtml(card.id)}">${card.flagged ? "Unflag" : "Flag"}</button>
+876:                      <button class="study-button secondary" data-companion-action="edit-card" data-card-id="${escapeHtml(card.id)}">Edit</button>
+877:                      <button class="study-button danger" data-companion-action="delete-card" data-card-id="${escapeHtml(card.id)}">Remove</button>
+905:          <button class="${enableClass}" type="button" data-companion-action="enable-voice" aria-pressed="${voiceOn ? "true" : "false"}">Enable Voice</button>
+906:          <button class="${disableClass}" type="button" data-companion-action="disable-voice" aria-pressed="${voiceOn ? "false" : "true"}">Disable Voice</button>
+910:          <label for="companionBrowserVoiceSelect" style="font-weight: 600;">Browser voice</label>
+911:          <select id="companionBrowserVoiceSelect" style="min-width: 280px; max-width: 100%;">
+938:          <button class="${startClass}" type="button" data-companion-action="conversation-start" aria-pressed="${conversationOn ? "true" : "false"}" ${startDisabled}>Start conversation mode</button>
+939:          <button class="${stopClass}" type="button" data-companion-action="conversation-stop" aria-pressed="${conversationOn ? "false" : "true"}">Stop conversation mode</button>
+943:          <label for="companionSilenceSeconds" style="font-weight: 600;">Silence before sending</label>
+944:          <input id="companionSilenceSeconds" type="number" min="2" max="15" step="1" value="${escapeHtml(silenceSeconds)}" style="width: 72px; padding: 4px 6px;" />
+963:          Companion can chat with you, speak replies, listen to drafts, run hands-free conversation mode, list and select study decks, start study sessions, show cards, create/edit/delete decks and cards, and flag cards.
+970:    const el = document.getElementById("companionPrivateApp");
+990:        <form class="sol-input-form" data-companion-form="chat">
+991:          <textarea id="companionPrompt" placeholder="Message Sol..."></textarea>
+993:          <button class="sol-button secondary" type="button" data-companion-action="listen-draft">Listen to draft</button>
+1010:    ["companionKokoroEnabled", "companionAutoListen", "companionVoiceSelect", "companionVolume", "companionSpeed"].forEach((id) => {
+1019:    const input = byId("companionPrompt");
+1032:      kokoroEnabled: Boolean(byId("companionKokoroEnabled")?.checked),
+1033:      autoListen: Boolean(byId("companionAutoListen")?.checked),
+1034:      voiceName: byId("companionVoiceSelect")?.value || "kokoro:af_sarah",
+1035:      volume: Number(byId("companionVolume")?.value || 0.85),
+1036:      speed: Number(byId("companionSpeed")?.value || 1.0)
+1040:    const volumeLabel = byId("companionVolumeValue");
+1042:    const speedLabel = byId("companionSpeedValue");
+1159:    if (rt && rt.status === "active") return "A study session is already active. Answer the current card, or say “pause study” or “stop study”.";
+1160:    if (rt && rt.status === "paused") return "A study session is paused. Say “resume study” to continue it, or “stop study” to end it.";
+1179:    if (!result.ok) return result.message || "I could not start a study session yet.";
+1183:    return `Started a ${style} study session with “${deck.title}”.\n\n${card ? `Question:\n\n${card.front}` : "No card is ready yet."}`;
+1189:    if (!rt || rt.status !== "active") return "There is no active study session to pause.";
+1196:    if (!rt || rt.status !== "paused") return "There is no paused study session to resume.";
+1206:    if (!rt) return "There is no active study session to stop.";
+1418:    if (lower === "show current card" || lower === "current card") {
+1420:      return card ? `Current card:\n\n${card.front} → ${card.back}` : "No current card is selected.";
+1427:    if (lower === "start study" || lower.includes("start study session") || lower.includes("begin study")) return commandStartStudy(clean);
+1432:    if (lower === "pause study" || lower.includes("pause study session")) return commandPauseStudy();
+1433:    if (lower === "resume study" || lower.includes("resume study session") || lower.includes("continue study")) return commandResumeStudy();
+1434:    if (lower === "stop study" || lower.includes("stop study session") || lower.includes("end study") || lower.includes("finish study") || lower.includes("quit study")) return commandStopStudy();
+1441:    if (lower === "flag card" || lower.startsWith("flag card ") || lower === "flag current card") return commandFlagCard(clean, true);
+1442:    if (lower === "unflag card" || lower.startsWith("unflag card ") || lower === "unflag current card") return commandFlagCard(clean, false);
+1457:    return "I’m here with you. You can talk with me, study flashcards, and manage your decks.\n\nTo study, try saying things like “list decks,” “select deck [deck name],” “start study,” or “show current card.” You can also create, edit, delete, and flag cards.";
+1481:        reply = "The study session is paused. Say “resume study” to continue it, or “stop study” to end it.";
+1500:    let reply = result.message || "Study session started.";
+1590:      console.warn("[companion] browser voice is not supported in this browser");
+1600:      console.warn("[companion] browser voice failed", error);
+1658:    if (action === "start-session") return startStudySession();
+1659:    if (action === "pause-session") return pauseStudySession();
+1660:    if (action === "resume-session") return resumeStudySession();
+1661:    if (action === "stop-session") return stopStudySession();
+1714:      const form = event.target.closest("[data-companion-form]");
+1718:      if (form.dataset.companionForm === "chat") {
+1719:        const input = byId("companionPrompt");
+1725:      if (form.dataset.companionForm === "create-deck") {
+1730:      if (form.dataset.companionForm === "create-card") {
+1744:    if (target && target.id === "companionSilenceSeconds") {
+1751:    if (target && target.id === "companionSilenceSeconds") {
+1757:      const button = event.target.closest("[data-companion-action]");
+1760:      handleManagerAction(button.dataset.companionAction, button);
+1801:    if (event.detail && event.detail.page === "companion") syncThenRender();
+1806:    if (!event.target || !event.target.matches("#companionBrowserVoiceSelect")) return;
+1823:        if (byId("companionBrowserVoiceSelect")) render();
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js =====
+7:  var VERSION = "stage17kxr2-companion-local-card-ui-removed-20260629";
+8:  var PANEL_ID = "apc-companion-local-anki-bridge";
+14:    document.querySelectorAll(".apc-companion-local-anki-bridge-card, .apc-companion-local-anki-session-mount-output, .apc-companion-local-anki-command-output, .apc-companion-local-anki-consent-output").forEach(function (el) {
+25:      current_card_shape: {
+37:        anki_write_allowed: false,
+44:    return snapshot().current_card_shape;
+54:      shape: state.current_card_shape,
+60:        anki_write_allowed: false,
+85:        anki_write_allowed: false,
+91:  function ankiSessionMountCommand() {
+104:        anki_write_allowed: false,
+126:    ankiSessionMountCommand: ankiSessionMountCommand,
+133:      anki_write_allowed: false,
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-panel.js =====
+7:  const PANEL_TITLE = "Buddies Who Study local backups";
+8:  const BACKUP_KIND = "buddies-who-study-local-backup";
+12:    "study/cards/v1",
+13:    "study/decks/v1",
+14:    "study/progress/v1",
+15:    "study/sessions/v1",
+27:  function backupFileName(date) {
+28:    return "buddies-who-study-local-backup-v1-" + safeFileStamp(date) + ".json";
+101:        intendedStorage: "user-selected local backup file"
+113:    const blob = new Blob([stringifyBackup(payload)], { type: "application/json" });
+114:    return URL.createObjectURL(blob);
+122:    const name = fileName || backupFileName(payload && payload.createdAt);
+137:      throw new Error("Folder picker is not supported in this browser. Use download backup instead.");
+142:      id: "buddies-who-study-local-backups",
+155:      backupKind: BACKUP_KIND,
+156:      backupVersion: BACKUP_VERSION,
+163:        chooseFolder: supported ? "Choose local backup folder" : "Folder picker not supported",
+164:        downloadBackup: "Download backup file"
+181:      '<section class="private-card profile-card apc-profile-local-backups-panel" data-apc-profile-local-backups-panel="true">',
+183:      '<p class="apc-local-backup-short-copy">Save your data locally.</p>',
+184:      '<div class="private-actions apc-local-backup-actions">',
+185:      '<button type="button" data-apc-local-backup-choose-folder' + (model.folderPickerSupported ? "" : " disabled") + '>' + escapeHtml(model.actions.chooseFolder) + '</button>',
+186:      '<button type="button" data-apc-local-backup-download>' + escapeHtml(model.actions.downloadBackup) + '</button>',
+188:      '<pre data-apc-local-backup-status hidden></pre>',
+197:    if (host.querySelector && host.querySelector("[data-apc-profile-local-backups-panel='true']")) {
+198:      return host.querySelector("[data-apc-profile-local-backups-panel='true']");
+201:    return host.querySelector("[data-apc-profile-local-backups-panel='true']");
+207:    backupKind: BACKUP_KIND,
+208:    backupVersion: BACKUP_VERSION,
+211:    backupFileName: backupFileName,
+
+===== frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js =====
+7:  const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
+8:  const BOUND_ATTR = "data-apc-local-backups-bound";
+51:    return panel && panel.querySelector ? panel.querySelector("[data-apc-local-backup-status]") : null;
+75:    link.download = panelApi.backupFileName(payload.createdAt);
+95:      setStatus(panel, "Local backup module is not loaded.");
+99:    const chooseButton = panel.querySelector("[data-apc-local-backup-choose-folder]");
+100:    const downloadButton = panel.querySelector("[data-apc-local-backup-download]");
+105:          setStatus(panel, "Preparing local backup...");
+117:          setStatus(panel, "Preparing backup download...");
+122:          setStatus(panel, "Could not create backup download.", String(error && error.message ? error.message : error));

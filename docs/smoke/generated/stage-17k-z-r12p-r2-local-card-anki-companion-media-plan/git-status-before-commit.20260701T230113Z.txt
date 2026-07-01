@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-z-r12p-r2-local-card-anki-companion-media-plan/
+?? docs/stage-17k-z-r12p-r2-local-card-anki-companion-media-plan.md
+?? ops/smoke/check-stage-17k-z-r12p-r2-local-card-anki-companion-media-plan.sh

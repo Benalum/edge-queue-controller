@@ -1,0 +1,54 @@
+=== current source markers ===
+frontend/wrapper-ui/apc-wrapper-local/index.html:212:  <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_START -->
+frontend/wrapper-ui/apc-wrapper-local/index.html:217:  <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_END -->
+frontend/wrapper-ui/apc-wrapper-local/index.html:250:  <!-- Stage 17K-Z-R11G: Profile-local Anki APKG preview source mount; browser-local only. -->
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css:229:/* APC_PRIVATE_PROFILE_LOCAL_BACKUPS_VISIBLE_R12L_R2_START */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css:243:/* APC_PRIVATE_PROFILE_LOCAL_BACKUPS_VISIBLE_R12L_R2_END */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css:246:/* APC_PRIVATE_PROFILE_GOOGLE_SYNC_VISUAL_POLISH_R12M_START */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css:391:/* APC_PRIVATE_PROFILE_GOOGLE_SYNC_VISUAL_POLISH_R12M_END */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css:394:/* APC_PRIVATE_PROFILE_GOOGLE_SYNC_GRID_CARD_R12N_R4_START */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css:412:/* APC_PRIVATE_PROFILE_GOOGLE_SYNC_GRID_CARD_R12N_R4_END */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css:415:/* APC_PRIVATE_PROFILE_CARD_ORDER_POLISH_R12O_START */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css:495:/* APC_PRIVATE_PROFILE_CARD_ORDER_POLISH_R12O_END */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:1:/* APC_GOOGLE_SYNC_PROFILE_MODULE_STAGE_17K_Z_R6C_START */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:3:  const marker = 'APC_GOOGLE_SYNC_PROFILE_MODULE_MARKER_STAGE_17K_Z_R6C';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:4:  const liveMarker = 'APC_GOOGLE_SYNC_PROFILE_APPDATA_BOUNDARY_STAGE_17K_Z_R7C';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:7:  const apiName = 'APC_PROFILE_GOOGLE_SYNC_PANEL_STAGE_17K_Z_R6C';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:54:    const fromWindow = window.APC_GOOGLE_SYNC_CONFIG && window.APC_GOOGLE_SYNC_CONFIG.googleClientId;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:79:  const PRIVATE_RENDER_EVENT_ONLY_MARKER = "PROFILE_GOOGLE_SYNC_PRIVATE_RENDER_EVENT_ONLY_R12A_R3";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:80:  const GRID_PLACEMENT_MARKER_R12N_R4 = "APC_PROFILE_GOOGLE_SYNC_GRID_PLACEMENT_R12N_R4";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:182:      setStatus('Missing Google client ID', 'Set window.APC_GOOGLE_SYNC_CONFIG.googleClientId or a meta tag named apc-google-client-id.');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:421:/* APC_GOOGLE_SYNC_PROFILE_MODULE_STAGE_17K_Z_R6C_END */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-panel.js:1:/* APC_PROFILE_LOCAL_BACKUPS_PANEL_R12D_SOURCE_ONLY_START */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-panel.js:6:  const MARKER = "APC_PROFILE_LOCAL_BACKUPS_PANEL_R12L_R2_RESTORED_CARD";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-panel.js:222:  root.APC_PROFILE_LOCAL_BACKUPS_PANEL = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-panel.js:228:/* APC_PROFILE_LOCAL_BACKUPS_PANEL_R12D_SOURCE_ONLY_END */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js:1:/* APC_PROFILE_LOCAL_BACKUPS_MOUNT_R12E_SOURCE_ONLY_START */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js:6:  const MARKER = "APC_PROFILE_LOCAL_BACKUPS_MOUNT_R12L_R2_RESTORED_CARD";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js:15:    return root && root.APC_PROFILE_LOCAL_BACKUPS_PANEL
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js:16:      ? root.APC_PROFILE_LOCAL_BACKUPS_PANEL
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js:188:  root.APC_PROFILE_LOCAL_BACKUPS_MOUNT = mountApi;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js:207:/* APC_PROFILE_LOCAL_BACKUPS_MOUNT_R12E_SOURCE_ONLY_END */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:13:  var privateProfileEventOnlyMarker = "APC_ANKI_MANIFEST_PRIVATE_PROFILE_EVENT_ONLY_R12H_R2";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:641:  window.APC_ANKI_LOCAL = {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:668:/* R11Q removed legacy Profile Google sync indirect loader from Anki panel. profile-google-sync-panel.js is loaded directly from index.html and listens to apc-private-page-rendered. */
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:4:  const PATCH_MARKER = "APC_ANKI_IMPORT_LOCAL_DISABLED_SKELETON_R11B";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:5:  const APKG_INSPECTOR_MARKER = "APC_ANKI_IMPORT_LOCAL_APKG_CONTAINER_INSPECTOR_R11C";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:52:      throw new Error("Only .apkg files are supported by the disabled R11B skeleton.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:368:    return Promise.reject(new Error("R11B is a disabled skeleton. Real apkg parsing is intentionally not active."));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:386:  root.APC_ANKI_IMPORT_LOCAL = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:4:  const PATCH_MARKER = "APC_PROFILE_ANKI_PREVIEW_PANEL_R11F";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:20:    const bridge = explicitBridge || root.APC_PROFILE_ANKI_IMPORT_BRIDGE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:22:      throw new Error("Profile Anki preview panel requires APC_PROFILE_ANKI_IMPORT_BRIDGE.createProfileAnkiPreview.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:76:      api: args.importer || args.api || root.APC_ANKI_IMPORT_LOCAL
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:183:  root.APC_PROFILE_ANKI_PREVIEW_PANEL = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:4:  const PATCH_MARKER = "APC_PROFILE_ANKI_PREVIEW_MOUNT_R11G";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:5:  const STABLE_PROFILE_DOM_MARKER = "APC_PROFILE_ANKI_PREVIEW_MOUNT_STABLE_PROFILE_DOM_R11U";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:14:    const panel = explicitPanel || root.APC_PROFILE_ANKI_PREVIEW_PANEL;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:16:      throw new Error("Profile Anki preview mount requires APC_PROFILE_ANKI_PREVIEW_PANEL.renderPanel.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:83:    if (root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED === true && opts.force !== true) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:133:      bridge: opts.bridge || root.APC_PROFILE_ANKI_IMPORT_BRIDGE,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:134:      importer: opts.importer || root.APC_ANKI_IMPORT_LOCAL
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:194:  root.APC_PROFILE_ANKI_PREVIEW_MOUNT = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:200:  if (root && root.document && root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED !== true) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-local-anki-bridge.js:120:  window.APC_COMPANION_LOCAL_ANKI_BRIDGE = {
