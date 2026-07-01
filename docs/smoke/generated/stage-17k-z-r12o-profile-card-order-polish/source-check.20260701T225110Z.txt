@@ -1,0 +1,2 @@
+=== verify narrow CSS-only source state ===
+PASS narrow CSS-only source state

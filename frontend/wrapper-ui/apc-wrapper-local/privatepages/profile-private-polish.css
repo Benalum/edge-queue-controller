@@ -410,3 +410,86 @@
   overflow: auto !important;
 }
 /* APC_PRIVATE_PROFILE_GOOGLE_SYNC_GRID_CARD_R12N_R4_END */
+
+
+/* APC_PRIVATE_PROFILE_CARD_ORDER_POLISH_R12O_START */
+
+/*
+  Desired private Profile card layout:
+  Row 1: Account | Buddies Who Study local backups
+  Row 2: Anki    | Google Drive sync
+*/
+
+.private-shell[data-private-page="profile"] .private-grid {
+  align-items: start !important;
+}
+
+.private-shell[data-private-page="profile"] .private-grid > :first-child {
+  order: 10 !important;
+}
+
+.private-shell[data-private-page="profile"] .private-grid > .apc-profile-local-backups-panel,
+.private-shell[data-private-page="profile"] .private-grid > [data-apc-profile-local-backups-panel="true"] {
+  order: 20 !important;
+}
+
+.private-shell[data-private-page="profile"] .private-grid > .apc-anki-minimal-card,
+.private-shell[data-private-page="profile"] .private-grid > .apc-anki-local-only-panel,
+.private-shell[data-private-page="profile"] .private-grid > .apc-anki-manifest-panel {
+  order: 30 !important;
+}
+
+.private-shell[data-private-page="profile"] .private-grid > [data-apc-google-sync-profile-panel="true"],
+.private-shell[data-private-page="profile"] .private-grid > .apc-google-sync-profile-panel {
+  order: 40 !important;
+}
+
+.private-shell[data-private-page="profile"] .apc-google-sync-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  width: fit-content !important;
+  margin: 0.65rem 0 0.75rem !important;
+  padding: 0.38rem 0.72rem !important;
+  border: 1px solid rgba(101, 214, 166, 0.22) !important;
+  border-radius: 999px !important;
+  background: rgba(101, 214, 166, 0.13) !important;
+  color: #23634d !important;
+  font-weight: 750 !important;
+  line-height: 1.2 !important;
+}
+
+.private-shell[data-private-page="profile"] .apc-google-sync-dot {
+  flex: 0 0 auto !important;
+  width: 0.52rem !important;
+  height: 0.52rem !important;
+  border-radius: 999px !important;
+  background: #65d6a6 !important;
+}
+
+.private-shell[data-private-page="profile"] .apc-google-sync-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.55rem !important;
+  margin-top: 0.85rem !important;
+}
+
+.private-shell[data-private-page="profile"] .apc-google-sync-actions button {
+  width: auto !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  text-align: left !important;
+}
+
+@media (max-width: 860px) {
+  .private-shell[data-private-page="profile"] .private-grid > :first-child,
+  .private-shell[data-private-page="profile"] .private-grid > .apc-profile-local-backups-panel,
+  .private-shell[data-private-page="profile"] .private-grid > [data-apc-profile-local-backups-panel="true"],
+  .private-shell[data-private-page="profile"] .private-grid > .apc-anki-minimal-card,
+  .private-shell[data-private-page="profile"] .private-grid > [data-apc-google-sync-profile-panel="true"],
+  .private-shell[data-private-page="profile"] .private-grid > .apc-google-sync-profile-panel {
+    order: initial !important;
+  }
+}
+
+/* APC_PRIVATE_PROFILE_CARD_ORDER_POLISH_R12O_END */

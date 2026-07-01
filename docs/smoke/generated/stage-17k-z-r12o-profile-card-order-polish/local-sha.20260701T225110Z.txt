@@ -1,0 +1,3 @@
+=== local shas ===
+9f11ca83a8af2ce626acb0667d998e28c8f190a39086b721e51fc7ffc707bef6  frontend/wrapper-ui/apc-wrapper-local/index.html
+e112932139bd7c2dee316ccf620313b1f8a8742171258b142d1475572bb48c15  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-private-polish.css

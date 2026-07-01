@@ -1,0 +1,6 @@
+=== backup and install CSS-only files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r12o-profile-card-order-polish-backup-20260701T225110Z
+9f11ca83a8af2ce626acb0667d998e28c8f190a39086b721e51fc7ffc707bef6  /var/www/apc-wrapper-local/index.html
+e112932139bd7c2dee316ccf620313b1f8a8742171258b142d1475572bb48c15  /var/www/apc-wrapper-local/privatepages/profile-private-polish.css
+R12O_VM200_PROFILE_CARD_ORDER_DEPLOY_DONE
