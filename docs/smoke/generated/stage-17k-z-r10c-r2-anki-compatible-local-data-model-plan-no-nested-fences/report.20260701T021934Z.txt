@@ -1,0 +1,28 @@
+=== stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences ===
+created_utc=20260701T021934Z
+head_before=81974c5
+
+Scope:
+- Added Anki-compatible local shadow library schema.
+- Added import/read-only/compare-reimport contract.
+- Added plan doc without nested triple-backtick fences.
+- No deploy.
+- No DB write.
+- No schema change.
+- No service restart.
+- No backend storage enable.
+- No server deck/card persistence.
+- No Anki file mutation.
+- No Google OAuth.
+- No Google Drive API.
+
+Verification:
+- schema_json=docs/design/buddies-local-library-schema-v1.json
+- contract_json=docs/design/anki-compatible-shadow-library-contract-v1.json
+- schema_doc_count=10
+- contract_mode_count=4
+- no_anki_mutation_count=4
+- server_false_count=8
+- media_hash_count=11
+- nested_fence_count=0
+- pass=true

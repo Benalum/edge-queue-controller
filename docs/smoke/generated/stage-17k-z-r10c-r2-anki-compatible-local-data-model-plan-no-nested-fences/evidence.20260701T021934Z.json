@@ -1,0 +1,23 @@
+{
+  "stage": "stage-17k-z-r10c-r2-anki-compatible-local-data-model-plan-no-nested-fences",
+  "created_utc": "20260701T021934Z",
+  "head_before": "81974c5",
+  "deploy": false,
+  "db_write": false,
+  "schema_change": false,
+  "service_restart": false,
+  "backend_storage_enable": false,
+  "server_deck_card_persistence": false,
+  "anki_file_mutation": false,
+  "google_oauth": false,
+  "google_drive_api": false,
+  "schema_json": "docs/design/buddies-local-library-schema-v1.json",
+  "contract_json": "docs/design/anki-compatible-shadow-library-contract-v1.json",
+  "schema_doc_count": "10",
+  "contract_mode_count": "4",
+  "no_anki_mutation_count": "4",
+  "server_false_count": "8",
+  "media_hash_count": "11",
+  "nested_fence_count": "0",
+  "pass": true
+}

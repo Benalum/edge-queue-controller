@@ -1,0 +1,73 @@
+{
+  "contract_name": "anki_compatible_shadow_library_contract",
+  "contract_version": 1,
+  "product": "Buddies Who Study",
+  "goal": "Support Anki-compatible studying while protecting original Anki files from corruption.",
+  "modes": {
+    "anki_readonly_study": {
+      "description": "Read Anki package/database content selected by the user and study it in Buddies without modifying the original source.",
+      "writes_to_original_anki": false,
+      "stores_buddies_progress_locally": true,
+      "server_uploads_deck_card_content": false
+    },
+    "import_to_buddies_library": {
+      "description": "Copy Anki decks, notes, cards, note types, templates, and media into the browser-local Buddies library.",
+      "writes_to_original_anki": false,
+      "user_can_edit_inside_buddies": true,
+      "source_identity_preserved": true
+    },
+    "compare_reimport": {
+      "description": "Read the same Anki source again, calculate differences, and ask the user before applying local Buddies library changes.",
+      "automatic_destructive_sync": false,
+      "requires_user_choice": true,
+      "conflict_strategy": "show_diff_then_choose"
+    },
+    "export_later": {
+      "description": "Potential future export from Buddies to a portable package. Not part of this stage.",
+      "enabled_now": false
+    }
+  },
+  "non_goals_now": [
+    "Direct mutation of Anki collection files",
+    "Automatic two-way Anki sync",
+    "Server persistence of private deck/card/media content",
+    "Google Drive sync before local schema is proven",
+    "Changing the public signup posture"
+  ],
+  "identity_preservation": {
+    "preserve_anki_note_guid": true,
+    "preserve_anki_card_ordinal": true,
+    "preserve_anki_deck_path": true,
+    "preserve_anki_note_type_name": true,
+    "preserve_anki_template_name": true,
+    "preserve_media_original_name": true,
+    "add_content_hashes_for_diffing": true
+  },
+  "diff_model": {
+    "deck_match_order": ["sourceImportId + externalDeckId", "normalized deck path", "user-selected match"],
+    "note_match_order": ["ankiGuid", "contentHash", "normalized fields + note type", "user-selected match"],
+    "card_match_order": ["note match + template ordinal", "ankiCardId", "contentHash", "user-selected match"],
+    "media_match_order": ["sha256", "original filename + size", "user-selected match"],
+    "actions": ["add", "update", "ignore", "duplicate_copy", "mark_deleted_locally"]
+  },
+  "scheduler_model": {
+    "initial": "apc-simple-v1",
+    "supports_anki_like_buttons": ["again", "hard", "good", "easy"],
+    "future": ["apc-sm2-v1", "apc-fsrs-compatible-v1"],
+    "progress_storage": "compact_events_plus_rollups"
+  },
+  "media_model": {
+    "store": "IndexedDB media object store",
+    "key": "sha256",
+    "cards_reference_media_by_hash": true,
+    "deduplicate_media": true,
+    "do_not_embed_large_base64_in_card_docs": true
+  },
+  "privacy_model": {
+    "browser_local_first": true,
+    "server_private_content_storage_allowed": false,
+    "server_progress_storage_allowed": false,
+    "future_google_drive_sync_requires_user_opt_in": true,
+    "tokens_stored_in_browser_local_save": false
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "schema_name": "buddies_local_library_schema",
+  "schema_version": 1,
+  "storage_authority": "browser_indexeddb",
+  "indexeddb_database": "buddies_who_study_local_v1",
+  "server_private_content_storage_allowed": false,
+  "google_drive_sync_enabled": false,
+  "google_drive_sync_target_later": "appDataFolder",
+  "documents": {
+    "sync/manifest/v1": {
+      "purpose": "Local library manifest, document versions, source imports, and future sync metadata.",
+      "minimum_fields": ["schemaVersion", "createdAt", "updatedAt", "libraryId", "documents", "sourceImports", "sync"]
+    },
+    "profile/preferences/v1": {
+      "purpose": "User-owned local preferences for study and companion behavior.",
+      "minimum_fields": ["schemaVersion", "updatedAt", "study", "companion", "accessibility", "language"]
+    },
+    "study/decks/v1": {
+      "purpose": "APC-native and imported deck summaries. Full card bodies should be in notes/cards docs or imported library docs.",
+      "minimum_fields": ["schemaVersion", "updatedAt", "decks"]
+    },
+    "study/notes/v1": {
+      "purpose": "Note/content records. A note owns fields and metadata. Cards render from notes plus templates.",
+      "minimum_fields": ["schemaVersion", "updatedAt", "notes"]
+    },
+    "study/cards/v1": {
+      "purpose": "Card records derived from notes/templates. Cards point to deckId, noteId, templateId, and mediaRefs.",
+      "minimum_fields": ["schemaVersion", "updatedAt", "cards"]
+    },
+    "study/note-types/v1": {
+      "purpose": "Anki-compatible note type and template definitions used to render cards.",
+      "minimum_fields": ["schemaVersion", "updatedAt", "noteTypes"]
+    },
+    "study/sessions/v1": {
+      "purpose": "Current and recent local study sessions. Long-term analytics should be in events and rollups.",
+      "minimum_fields": ["schemaVersion", "updatedAt", "activeSession", "recentSessions"]
+    },
+    "study/progress/v1": {
+      "purpose": "Top-level progress summary. Detailed progress uses compact events and rollup docs.",
+      "minimum_fields": ["schemaVersion", "updatedAt", "totals", "byDeck", "bySessionType"]
+    },
+    "companion/preferences/v1": {
+      "purpose": "Local companion voice, tone, behavior, and study-assist preferences.",
+      "minimum_fields": ["schemaVersion", "updatedAt", "voice", "tone", "behavior"]
+    },
+    "companion/local-memory/v1": {
+      "purpose": "Browser-local companion memory chosen by the user. Never uploaded to APC server.",
+      "minimum_fields": ["schemaVersion", "updatedAt", "items", "limits"]
+    }
+  },
+  "record_shapes": {
+    "deck": {
+      "id": "apc-deck-id",
+      "name": "Deck name",
+      "parentId": null,
+      "path": ["Parent", "Child"],
+      "source": {
+        "sourceType": "apc_native | anki_import | anki_readonly",
+        "sourceImportId": "import-id-or-null",
+        "externalDeckId": "optional source deck id",
+        "externalDeckName": "optional source deck name"
+      },
+      "stats": {
+        "cardCount": 0,
+        "newCount": 0,
+        "reviewCount": 0,
+        "suspendedCount": 0
+      },
+      "createdAt": "ISO-8601",
+      "updatedAt": "ISO-8601",
+      "deletedAt": null
+    },
+    "note": {
+      "id": "apc-note-id",
+      "noteTypeId": "apc-note-type-id",
+      "fields": {
+        "Front": "question text",
+        "Back": "answer text"
+      },
+      "mediaRefs": ["sha256-media-hash"],
+      "tags": [],
+      "source": {
+        "sourceType": "apc_native | anki_import | anki_readonly",
+        "sourceImportId": "import-id-or-null",
+        "ankiGuid": "preserved when imported/read from Anki",
+        "ankiNoteId": "optional numeric source id",
+        "originalModifiedAt": "optional source timestamp",
+        "contentHash": "hash of normalized fields/templates/media refs"
+      },
+      "createdAt": "ISO-8601",
+      "updatedAt": "ISO-8601",
+      "deletedAt": null
+    },
+    "card": {
+      "id": "apc-card-id",
+      "noteId": "apc-note-id",
+      "deckId": "apc-deck-id",
+      "templateId": "apc-template-id",
+      "ordinal": 0,
+      "questionHtml": "rendered or renderable question template",
+      "answerHtml": "rendered or renderable answer template",
+      "mediaRefs": ["sha256-media-hash"],
+      "source": {
+        "sourceType": "apc_native | anki_import | anki_readonly",
+        "sourceImportId": "import-id-or-null",
+        "ankiCardId": "optional source id",
+        "ankiCardOrd": 0,
+        "originalModifiedAt": "optional source timestamp",
+        "contentHash": "hash of normalized rendered card inputs"
+      },
+      "createdAt": "ISO-8601",
+      "updatedAt": "ISO-8601",
+      "deletedAt": null
+    },
+    "media": {
+      "sha256": "content-addressed media hash",
+      "mimeType": "image/png",
+      "sizeBytes": 0,
+      "originalName": "source filename",
+      "sourceName": "source package or local import name",
+      "altText": "",
+      "createdAt": "ISO-8601",
+      "updatedAt": "ISO-8601"
+    },
+    "review_event": {
+      "eventType": "card_review",
+      "createdAt": "ISO-8601",
+      "deckId": "apc-deck-id",
+      "cardId": "apc-card-id",
+      "sessionId": "session-id",
+      "payload": {
+        "wasCorrect": true,
+        "wasSkipped": false,
+        "answerMs": 0,
+        "sessionType": "standard | cramming | weak_cards | companion_guided",
+        "grade": "again | hard | good | easy"
+      }
+    },
+    "card_progress_rollup": {
+      "key": "progress/cards/<cardId>/v1",
+      "reviews": 0,
+      "correct": 0,
+      "wrong": 0,
+      "skipped": 0,
+      "totalAnswerMs": 0,
+      "firstReviewedAt": "ISO-8601",
+      "lastReviewedAt": "ISO-8601",
+      "streakCorrect": 0,
+      "easeScore": 0,
+      "scheduler": {
+        "name": "apc-simple-v1",
+        "dueAt": "ISO-8601",
+        "intervalDays": 0,
+        "easeFactor": 2.5
+      }
+    },
+    "deck_progress_rollup": {
+      "key": "progress/decks/<deckId>/v1",
+      "reviews": 0,
+      "correct": 0,
+      "wrong": 0,
+      "skipped": 0,
+      "uniqueCards": {},
+      "totalAnswerMs": 0,
+      "firstReviewedAt": "ISO-8601",
+      "lastReviewedAt": "ISO-8601"
+    },
+    "daily_progress_rollup": {
+      "key": "progress/daily/<YYYY-MM-DD>/v1",
+      "reviews": 0,
+      "correct": 0,
+      "wrong": 0,
+      "skipped": 0,
+      "studySeconds": 0,
+      "sessionTypes": {},
+      "deckIds": {}
+    }
+  },
+  "size_policy": {
+    "cards_store_media_by_reference_only": true,
+    "media_deduplicated_by_sha256": true,
+    "event_payload_limit_bytes": 24576,
+    "large_doc_warning_bytes": 524288,
+    "single_media_limit_bytes": 26214400,
+    "avoid_repeated_full_card_snapshots": true,
+    "prefer_rollups_for_stats": true
+  }
+}
