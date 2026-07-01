@@ -347,7 +347,7 @@
       if (!app) return false;
 
       app.innerHTML = `
-        <section class="private-shell" data-private-page="${escapeHtml(page)}">
+        <section class="private-shell" data-private-page="${escapeHtml(page)}" data-page="${escapeHtml(page)}" data-route="${escapeHtml(path)}">
           ${fillTemplate(fragment, user)}
         </section>
       `;

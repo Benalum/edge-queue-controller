@@ -99,6 +99,7 @@
 
   function findProfileAnchor() {
     const selectors = [
+      '[data-apc-profile-google-sync-host]',
       '[data-apc-profile-root]',
       '[data-profile-root]',
       '[data-page="profile"]',
@@ -398,6 +399,6 @@
   }
   window.addEventListener('hashchange', install);
   window.addEventListener('popstate', install);
-  document.addEventListener('apc:privatepage:rendered', install);
+  document.addEventListener('apc-private-page-rendered', install);
 })();
 /* APC_GOOGLE_SYNC_PROFILE_MODULE_STAGE_17K_Z_R6C_END */

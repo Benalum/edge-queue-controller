@@ -1,0 +1,4 @@
+=== patch canonical Profile source, quoted heredoc ===
+=== run prior deploy evidence smoke ===
+=== run R11L inventory smoke ===
+=== run R11M-R2 source smoke ===
