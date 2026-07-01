@@ -1,0 +1,52 @@
+=== focused diff evidence ===
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js b/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+index 3c93c1c..9d7f597 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
++++ b/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+@@ -5,6 +5,7 @@
+   const panelId = 'apc-google-sync-profile-panel-stage-17k-z-r7c-appdata';
+   const styleId = 'apc-google-sync-profile-style-stage-17k-z-r7c-appdata';
+   const apiName = 'APC_PROFILE_GOOGLE_SYNC_PANEL_STAGE_17K_Z_R6C';
++  const signedInPrivateOnlyMarker = 'PROFILE_GOOGLE_SYNC_SIGNED_IN_PRIVATE_PROFILE_ONLY_R11Y';
+   const tokenScope = 'https://www.googleapis.com/auth/drive.appdata';
+   const appDataSpace = 'appDataFolder';
+   const gisScriptUrl = 'https://accounts.google.com/gsi/client';
+@@ -76,6 +77,22 @@
+     return path.includes('profile') || hash.includes('profile') || title.includes('profile') || hasProfileNode || bodyLooksProfile;
+   }
+ 
++  function hasSignedInPrivateProfile() {
++    const privateProfileShell = Boolean(document.querySelector('.private-shell[data-private-page="profile"]'));
++    const privatePagesApi = root.APC_PRIVATEPAGES;
++    const user = privatePagesApi && typeof privatePagesApi.me === 'function'
++      ? privatePagesApi.me()
++      : null;
++    return Boolean(privateProfileShell && user);
++  }
++
++  function removePanel() {
++    const panel = document.getElementById(panelId);
++    if (panel && panel.parentNode) {
++      panel.parentNode.removeChild(panel);
++    }
++  }
++
+   function installStyle() {
+     if (document.getElementById(styleId)) return;
+     const style = document.createElement('style');
+@@ -328,7 +345,7 @@
+   }
+ 
+   function renderPanel() {
+-    if (!document.body || !isProfileSurface()) return;
++    if (!document.body || !isProfileSurface() || !hasSignedInPrivateProfile()) { removePanel(); return; }
+     if (document.getElementById(panelId)) return;
+     installStyle();
+ 
+@@ -399,5 +416,6 @@
+   window.addEventListener('hashchange', install);
+   window.addEventListener('popstate', install);
+   document.addEventListener('apc-private-page-rendered', install);
++  document.addEventListener('apc-auth-changed', install);
+ })();
+ /* APC_GOOGLE_SYNC_PROFILE_MODULE_STAGE_17K_Z_R6C_END */
