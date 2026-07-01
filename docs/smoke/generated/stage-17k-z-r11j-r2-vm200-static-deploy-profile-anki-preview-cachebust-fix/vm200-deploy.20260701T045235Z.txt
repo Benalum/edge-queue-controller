@@ -1,0 +1,18 @@
+=== backup current and install VM200 static files ===
+host=website-edge
+user=jkg76nid
+remote_root=/var/www/apc-wrapper-local
+bundle=/tmp/apc-r11j-r2-20260701T045235Z
+backup=/var/www/apc-wrapper-local/apc-r11j-r2-cachebust-fix-backup-20260701T045235Z
+backup_sha256 f36f09e05cbdfeeead905c3afa0facc725701e6f93559e226f0fef04827dedcb  /var/www/apc-wrapper-local/apc-r11j-r2-cachebust-fix-backup-20260701T045235Z/index.html
+backup_sha256 0d57692c705fe87a243affabce21ba5cc50c7801299da17698644dd9ffdbdf47  /var/www/apc-wrapper-local/apc-r11j-r2-cachebust-fix-backup-20260701T045235Z/privatepages/anki-import-local.js
+backup_sha256 337749e4b8b54c3505abd0a360dfbe3eb9efcd94db08adc2f782743734268808  /var/www/apc-wrapper-local/apc-r11j-r2-cachebust-fix-backup-20260701T045235Z/privatepages/profile-anki-import-bridge.js
+backup_sha256 e3603587b1c476ecd3ade20435b4080a658f72427b3b6a19acc03f49aa1592d5  /var/www/apc-wrapper-local/apc-r11j-r2-cachebust-fix-backup-20260701T045235Z/privatepages/profile-anki-preview-panel.js
+backup_sha256 58e161a5f520f0a6b5de62d5b604557b0091ce9ab02effcfe1f7bdb2ea8197b7  /var/www/apc-wrapper-local/apc-r11j-r2-cachebust-fix-backup-20260701T045235Z/privatepages/profile-anki-preview-mount.js
+live_sha256 448f1cf452a31c5981f25e60a12b3b11cc13383314c4b54548bf47ed72a0f58e  /var/www/apc-wrapper-local/index.html
+live_sha256 0d57692c705fe87a243affabce21ba5cc50c7801299da17698644dd9ffdbdf47  /var/www/apc-wrapper-local/privatepages/anki-import-local.js
+live_sha256 337749e4b8b54c3505abd0a360dfbe3eb9efcd94db08adc2f782743734268808  /var/www/apc-wrapper-local/privatepages/profile-anki-import-bridge.js
+live_sha256 e3603587b1c476ecd3ade20435b4080a658f72427b3b6a19acc03f49aa1592d5  /var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js
+live_sha256 58e161a5f520f0a6b5de62d5b604557b0091ce9ab02effcfe1f7bdb2ea8197b7  /var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+backup_dir=/var/www/apc-wrapper-local/apc-r11j-r2-cachebust-fix-backup-20260701T045235Z
+R11J_R2_VM200_STATIC_DEPLOY_DONE

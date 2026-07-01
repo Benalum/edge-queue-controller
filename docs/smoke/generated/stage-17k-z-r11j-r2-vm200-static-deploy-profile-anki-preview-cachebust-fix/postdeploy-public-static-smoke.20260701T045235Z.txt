@@ -1,0 +1,6 @@
+=== postdeploy public static smoke with new cache-bust only ===
+root_code=200 root_bytes=11210
+200 /privatepages/anki-import-local.js bytes=13953 marker=APC_ANKI_IMPORT_LOCAL_APKG_CONTAINER_INSPECTOR_R11C
+200 /privatepages/profile-anki-import-bridge.js bytes=3489 marker=APC_PROFILE_ANKI_IMPORT_BRIDGE_R11E
+200 /privatepages/profile-anki-preview-panel.js bytes=7556 marker=APC_PROFILE_ANKI_PREVIEW_PANEL_R11F
+200 /privatepages/profile-anki-preview-mount.js bytes=5667 marker=APC_PROFILE_ANKI_PREVIEW_MOUNT_R11G

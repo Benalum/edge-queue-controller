@@ -1,0 +1,2 @@
+=== find safe rollback backup on VM200 ===
+safe_rollback_index=/var/www/apc-wrapper-local/apc-r11j-profile-anki-preview-backup-20260701T044914Z/index.html

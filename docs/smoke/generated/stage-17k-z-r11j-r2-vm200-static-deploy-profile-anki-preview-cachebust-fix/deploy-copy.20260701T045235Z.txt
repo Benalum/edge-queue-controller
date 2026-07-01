@@ -1,0 +1,2 @@
+=== copy deploy bundle to VM200 temp ===
+bundle_uploaded=/tmp/apc-r11j-r2-20260701T045235Z
