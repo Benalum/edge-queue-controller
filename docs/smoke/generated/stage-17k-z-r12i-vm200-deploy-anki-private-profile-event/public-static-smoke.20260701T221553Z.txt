@@ -1,0 +1,4 @@
+=== public static smoke ===
+profile_root_code=200 profile_root_bytes=11580
+anki_code=200 anki_bytes=23687
+PASS public static R12I smoke
