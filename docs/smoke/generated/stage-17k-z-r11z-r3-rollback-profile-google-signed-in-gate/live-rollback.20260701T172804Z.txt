@@ -1,0 +1,6 @@
+=== restore live VM200 index.html and profile-google-sync-panel.js from pre-gate backup ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r11z-profile-google-signed-in-gate-backup-20260701T171628Z
+restored_live_sha256 5dccabecc3a2285b163da343f0265a4c36e0bf5dd437220e98288ced6bd3ae29  /var/www/apc-wrapper-local/index.html
+restored_live_sha256 ab775eeb167e92428d21b225f44db1ee1301730459bcff51bde89332108f60f9  /var/www/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+R11Z_R3_LIVE_ROLLBACK_DONE

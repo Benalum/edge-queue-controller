@@ -1,0 +1,3 @@
+ frontend/wrapper-ui/apc-wrapper-local/index.html   |  2 +-
+ .../privatepages/profile-google-sync-panel.js      | 38 +---------------------
+ 2 files changed, 2 insertions(+), 38 deletions(-)
