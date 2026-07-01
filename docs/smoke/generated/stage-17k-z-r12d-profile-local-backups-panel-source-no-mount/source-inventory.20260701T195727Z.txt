@@ -1,0 +1,328 @@
+=== source inventory for local save/export surfaces ===
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:461:      + '      <li><strong>Android / AnkiDroid:</strong> check AnkiDroid Settings → Advanced → Collection path. If the browser cannot open that folder, export/copy the collection file to Downloads first.</li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:462:      + '      <li><strong>iPhone / iPad:</strong> export or transfer from AnkiMobile using Add/Export, AirDrop, Finder, or iTunes, then choose the exported file from this browser.</li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:17:  if (window.APC_LOCAL_SAVE && window.APC_LOCAL_SAVE.version) return;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:19:  const VERSION = "stage-17k-z-r10b-local-save-store";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:156:        console.warn("[APC_LOCAL_SAVE] IndexedDB open is blocked by another tab.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:206:      console.warn("[APC_LOCAL_SAVE] large document saved", { key, sizeBytes });
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:239:  async function listDocs(prefix) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:467:    if (input instanceof Blob) return input.arrayBuffer();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:470:    throw new Error("putMedia expects a Blob, ArrayBuffer, or typed array.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:483:    const mimeType = meta.mimeType || (input instanceof Blob ? input.type : "") || "application/octet-stream";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:497:    const blob = input instanceof Blob ? input : new Blob([bytes], { type: mimeType });
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:526:  async function getMediaBlob(sha256) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:572:  async function exportAll() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:574:      recordType: "buddies_who_study_local_export",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:576:      exportedAt: nowIso(),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:578:      docs: await listDocs(),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:584:  async function importDocs(payload, options) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:587:    const imported = [];
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:602:      imported.push(next.key);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:605:    return { importedDocKeys: imported };
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:659:    const docs = await listDocs();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:691:    listDocs,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:699:    getMediaBlob,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:703:    exportAll,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:704:    importDocs,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:711:  window.APC_LOCAL_SAVE = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:712:  window.APC_LOCAL_SAVE_POLICY = POLICY;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:715:    document.documentElement.setAttribute("data-apc-local-save-store", VERSION);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:716:    document.dispatchEvent(new CustomEvent("apc-local-save-ready", { detail: { version: VERSION } }));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:720:    console.warn("[APC_LOCAL_SAVE] manifest initialization failed", error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:725:/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:726: * Make listDocs({ namespace: "study" }) include key-prefixed docs such as:
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:733: * This keeps exportAll() behavior unchanged and only hardens namespace filtering.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:736:  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:816:    const api = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:817:    if (!api || typeof api.listDocs !== "function") return false;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:818:    if (api.__listDocsNamespacePrefixPatchR10L) return true;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:820:    const originalListDocs = api.listDocs.bind(api);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:822:    api.listDocs = async function patchedListDocs(options = {}) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:852:      if (typeof api.exportAll === "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:853:        const exportPayload = await api.exportAll();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:854:        const exportDocs = docsFromExportAllPayload(exportPayload);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:855:        const exportMatches = exportDocs.filter((doc) => docMatchesNamespace(doc, namespace));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:856:        if (exportMatches.length > 0) return exportMatches;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:863:    api.__listDocsNamespacePrefixPatchR10L = true;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:882:/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R2
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:886: *   APC_LOCAL_SAVE.listDocs({ namespace: "study" }) -> []
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:889: * - the current window.APC_LOCAL_SAVE object
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:890: * - any future reassignment of window.APC_LOCAL_SAVE
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:892: * It uses exportAll() as the authority when listDocs namespace filtering returns
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:896:  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R2";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:995:    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1004:    const originalListDocs = api.listDocs.bind(api);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1006:    api.listDocs = async function patchedListDocs(options = {}) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1028:      if (typeof api.exportAll === "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1029:        const exportPayload = await api.exportAll();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1030:        const exportDocs = docsFromPayload(exportPayload);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1031:        const exportMatches = uniqueDocs(exportDocs.filter((doc) => docMatchesNamespace(doc, namespace)));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1032:        if (exportMatches.length > 0) return exportMatches;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1045:    const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1048:      const descriptor = Object.getOwnPropertyDescriptor(window, "APC_LOCAL_SAVE");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1056:      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1071:      patchApi(window.APC_LOCAL_SAVE);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1080:    patchApi(window.APC_LOCAL_SAVE);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1090:/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R3
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1093: * Browser diagnostics proved the live APC_LOCAL_SAVE object is frozen and sealed:
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1094: * - Object.isFrozen(APC_LOCAL_SAVE) === true
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1095: * - Object.isExtensible(APC_LOCAL_SAVE) === false
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1097: * Therefore R10L/R10L-R2 could not attach markers or replace listDocs in place.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1099: * This patch replaces window.APC_LOCAL_SAVE with a cloned frozen API object:
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1101: * - listDocs is replaced with namespace-aware behavior
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1102: * - listDocs({ namespace: "study" }) falls back to exportAll()
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1106:  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L_R3";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1205:    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1214:    const originalListDocs = api.listDocs.bind(api);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1215:    const originalExportAll = typeof api.exportAll === "function" ? api.exportAll.bind(api) : null;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1220:      if (key === "listDocs" || key === PATCH_MARKER) continue;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1232:    Object.defineProperty(clone, "listDocs", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1261:          const exportPayload = await originalExportAll();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1262:          const exportDocs = docsFromPayload(exportPayload);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1263:          const exportMatches = uniqueDocs(exportDocs.filter((doc) => docMatchesNamespace(doc, namespace)));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1264:          if (exportMatches.length > 0) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1265:            return exportMatches;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1289:    const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1293:      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1297:          return window.__APC_LOCAL_SAVE_R10L_R3_STORED__;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1300:          window.__APC_LOCAL_SAVE_R10L_R3_STORED__ = cloneWithPatchedListDocs(value);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1304:      window.__APC_LOCAL_SAVE_R10L_R3_STORED__ = cloned;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1308:      window.__APC_LOCAL_SAVE_R10L_R3_ERROR__ = String(error && error.message ? error.message : error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1319:      const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1321:        window.APC_LOCAL_SAVE = current;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1332:/* APC_LOCAL_SAVE_STRICT_STUDY_NAMESPACE_MATCHER_R10M
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1333: * Tighten listDocs({ namespace: "study" }) after R10L-R3.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1345:  const PATCH_MARKER = "APC_LOCAL_SAVE_STRICT_STUDY_NAMESPACE_MATCHER_R10M";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1430:    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1438:    const originalListDocs = api.listDocs.bind(api);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1439:    const originalExportAll = typeof api.exportAll === "function" ? api.exportAll.bind(api) : null;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1444:      if (key === "listDocs" || key === PATCH_MARKER) continue;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1456:    Object.defineProperty(clone, "listDocs", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1488:          const exportPayload = await originalExportAll();
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1489:          const exportDocs = docsFromPayload(exportPayload);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1491:            exportDocs.filter((doc) => docMatchesStrictNamespace(doc, namespace))
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1515:    const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1519:      Object.defineProperty(window, "APC_LOCAL_SAVE", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1523:          return window.__APC_LOCAL_SAVE_R10M_STORED__;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1526:          window.__APC_LOCAL_SAVE_R10M_STORED__ = cloneWithStrictListDocs(value);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1530:      window.__APC_LOCAL_SAVE_R10M_STORED__ = cloned;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1534:      window.__APC_LOCAL_SAVE_R10M_ERROR__ = String(error && error.message ? error.message : error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1545:      const current = window.APC_LOCAL_SAVE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:1547:        window.APC_LOCAL_SAVE = current;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:380:      '<label><input type="checkbox" data-apc-google-sync-explicit-consent> I understand Buddies Who Study will create hidden app data in my Google Drive for Buddies Who Study local data, including platform decks, sessions, history, and stats. Buddies Who Study will not upload Anki files unless I explicitly choose an import/convert option later.</label>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:535:    return window.APC_LOCAL_SAVE && typeof window.APC_LOCAL_SAVE.setDoc === "function"
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:536:      ? window.APC_LOCAL_SAVE
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:614:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:623:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:632:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:642:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:647:          namespace: "study",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:653:        document.dispatchEvent(new CustomEvent("apc-study-local-save-updated", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:666:      console.warn("[study-store] APC_LOCAL_SAVE mirror failed", error);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js:688:      document.dispatchEvent(new CustomEvent("apc-study-local-save-hydrated", {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:8:    importSources: "study/import-sources/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:13:    importRuns: "study/import-runs/v1"
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:49:      throw new Error("Anki import source requires a display filename.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:183:      importedAt: timestamp,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:188:      id: makeLocalId("import_run", [packageId, timestamp]),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:211:        [DOC_KEYS.importSources]: { sources: [Object.assign({}, source, { status: "planned" })] },
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:216:        [DOC_KEYS.importRuns]: { runs: [runRecord] }
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:388:  if (typeof module !== "undefined" && module.exports) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:389:    module.exports = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js:359:      restorePromptAfterRender(preservedText || "");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js:379:    restorePromptAfterRender(preservedText || "");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js:410:  function restorePromptAfterRender(text) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js:485:      restorePromptAfterRender(preservedPromptText);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js:488:      restorePromptAfterRender(preservedPromptText);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js:700:        restorePromptAfterRender(text);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js:710:        restorePromptAfterRender(text);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js:726:      restorePromptAfterRender(browserListenBaseText);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:13:      throw new Error("Profile Anki import bridge requires APC_ANKI_IMPORT_LOCAL.inspectApkgFile.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:75:    const importer = getImporter(args.importer || args.api);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:76:    const inspection = await importer.inspectApkgFile(file);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:88:  if (typeof module !== "undefined" && module.exports) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:89:    module.exports = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:134:      importer: opts.importer || root.APC_ANKI_IMPORT_LOCAL
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:196:  if (typeof module !== "undefined" && module.exports) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:197:    module.exports = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:76:      api: args.importer || args.api || root.APC_ANKI_IMPORT_LOCAL
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:130:      '<p>Select an .apkg file to inspect it locally before importing. This preview does not upload or save anything.</p>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:155:          importer: opts.importer
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:185:  if (typeof module !== "undefined" && module.exports) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:186:    module.exports = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:5:  max-width: 860px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:6:  margin: 0 auto !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:7:  padding: 1.25rem 1rem 4rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:11:  display: grid !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:12:  gap: 1.15rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:16:  display: block !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:17:  overflow: hidden !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:18:  border: 1px solid rgba(205, 189, 255, 0.28) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:19:  border-radius: 1.65rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:23:    linear-gradient(145deg, rgba(7, 23, 19, 0.98), rgba(13, 42, 34, 0.94)) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:24:  box-shadow: 0 28px 80px rgba(3, 12, 10, 0.55) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:28:  display: grid !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:29:  grid-template-columns: 180px minmax(0, 1fr) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:30:  gap: 1.25rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:31:  align-items: center !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:32:  padding: 1.25rem 1.25rem 0.8rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:36:  position: relative !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:37:  width: 180px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:38:  height: 135px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:39:  max-width: 180px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:40:  max-height: 135px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:41:  overflow: hidden !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:42:  border-radius: 1.2rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:43:  border: 2px solid rgba(183, 244, 212, 0.58) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:44:  background: rgba(3, 12, 10, 0.72) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:45:  box-shadow: 0 14px 36px rgba(3, 12, 10, 0.45) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:50:  display: block !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:51:  width: 180px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:52:  height: 135px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:53:  max-width: 180px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:54:  max-height: 135px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:55:  object-fit: cover !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:56:  border: 0 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:60:  display: none !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:64:  display: grid !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:65:  gap: 0.3rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:66:  align-items: center !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:70:  margin: 0 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:71:  color: #f7f2ff !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:72:  font-size: clamp(3.6rem, 8vw, 5.2rem) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:73:  line-height: 0.9 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:74:  letter-spacing: -0.065em !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:75:  text-shadow: 0 2px 0 rgba(205, 189, 255, 0.26) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:79:  margin: 0.9rem 1.25rem 1rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:80:  padding: 1rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:81:  min-height: 170px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:82:  display: grid !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:83:  align-items: center !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:84:  border-radius: 1.3rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:85:  border: 1px solid rgba(183, 244, 212, 0.24) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:88:    linear-gradient(145deg, rgba(5, 18, 15, 0.88), rgba(11, 34, 28, 0.9)) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:92:  display: block !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:93:  padding: 1.05rem 1.15rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:94:  border-radius: 1.15rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:95:  color: #f8f5ff !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:97:    linear-gradient(145deg, rgba(38, 82, 68, 0.96), rgba(18, 58, 47, 0.96)) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:98:  border: 1px solid rgba(183, 244, 212, 0.36) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:101:    0 14px 34px rgba(3, 12, 10, 0.32) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:102:  line-height: 1.6 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:103:  white-space: pre-wrap !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:104:  font-size: 1.05rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:108:  color: rgba(248, 245, 255, 0.7) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:109:  background: rgba(205, 189, 255, 0.08) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:110:  border-style: dashed !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:114:  display: grid !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:115:  grid-template-columns: minmax(0, 1fr) 110px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:116:  gap: 0.85rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:117:  padding: 0 1.25rem 1.25rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:122:  width: 100% !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:123:  min-height: 7.2rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:124:  max-height: 14rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:125:  resize: vertical !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:126:  border: 1px solid rgba(205, 189, 255, 0.3) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:127:  border-radius: 1.15rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:128:  padding: 1rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:129:  color: #f8f5ff !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:130:  background: rgba(3, 12, 10, 0.55) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:131:  font-size: 1.05rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:132:  line-height: 1.45 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:133:  outline: none !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:134:  box-sizing: border-box !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:139:  border-color: rgba(183, 244, 212, 0.8) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:140:  box-shadow: 0 0 0 3px rgba(183, 244, 212, 0.13) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:147:  appearance: none !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:148:  border: 0 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:149:  border-radius: 1rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:150:  padding: 0.85rem 1.05rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:151:  min-height: 3rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:152:  color: #071713 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:153:  font-weight: 850 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:154:  font-size: 0.95rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:155:  letter-spacing: 0.01em !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:156:  cursor: pointer !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:157:  background: linear-gradient(135deg, #cdbdff, #b7f4d4) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:158:  box-shadow: 0 12px 28px rgba(3, 12, 10, 0.34) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:165:  transform: translateY(-1px) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:166:  filter: brightness(1.04) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:170:  align-self: stretch !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:171:  min-width: 110px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:177:  color: #f8f5ff !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:178:  background: rgba(205, 189, 255, 0.14) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:179:  border: 1px solid rgba(205, 189, 255, 0.3) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:180:  box-shadow: none !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:184:  display: block !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:185:  margin-top: 1rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:186:  padding: 1rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:187:  border: 1px solid rgba(205, 189, 255, 0.26) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:188:  border-radius: 1.45rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:191:    linear-gradient(145deg, rgba(18, 48, 39, 0.9), rgba(7, 23, 19, 0.82)) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:192:  box-shadow: 0 18px 48px rgba(3, 12, 10, 0.38) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:196:  margin: 0 0 0.9rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:197:  color: #cdbdff !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:198:  font-size: 1.6rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:202:  display: grid !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:203:  grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:204:  gap: 0.85rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:209:  display: grid !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:210:  gap: 0.45rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:211:  padding: 0.9rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:212:  border: 1px solid rgba(205, 189, 255, 0.18) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:213:  border-radius: 1rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:214:  background: rgba(3, 12, 10, 0.32) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:215:  color: rgba(248, 245, 255, 0.86) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:216:  box-sizing: border-box !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:220:  display: flex !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:221:  align-items: center !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:222:  gap: 0.65rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:226:  width: 1.1rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:227:  height: 1.1rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:228:  accent-color: #b7f4d4 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:232:  grid-column: 1 / -1 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:236:  width: 100% !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:237:  border: 1px solid rgba(205, 189, 255, 0.28) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:238:  border-radius: 0.85rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:239:  padding: 0.75rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:240:  color: #f8f5ff !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:241:  background: #071713 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:245:  width: 100% !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:246:  accent-color: #b7f4d4 !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:250:  display: flex !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:251:  flex-wrap: wrap !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:252:  gap: 0.7rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:253:  margin-top: 0.9rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:258:    grid-template-columns: 112px 1fr !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:264:    width: 112px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:265:    height: 84px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:266:    max-width: 112px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:267:    max-height: 84px !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:271:    font-size: clamp(3rem, 18vw, 4.2rem) !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:275:    grid-template-columns: 1fr !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:279:    min-height: 3.2rem !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:283:    grid-template-columns: 1fr !important;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/sol.css:291:  display: none !important;
+frontend/wrapper-ui/apc-wrapper-local/index.html:76:    html.apc-auth-checking body > * { visibility: hidden !important; }
+frontend/wrapper-ui/apc-wrapper-local/index.html:88:      visibility: visible !important;
+frontend/wrapper-ui/apc-wrapper-local/index.html:132:  <script src="/header/header.js?v=r9x-restore-header-login-brand-20260701"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:208:  <script src="/privatepages/local-save-store.js?v=stage17k-z-r10m-strict-study-namespace-20260701"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:248:  <script src="/privatepages/anki-import-local.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:249:  <script src="/privatepages/profile-anki-import-bridge.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:4:// In addition, When you use emcc's modularization, it still expects to export a global object called `Module`,
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:6:// The modularization below exports a promise that loads and resolves to the actual sql.js module.
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:55:        //     module['exports'] = Module;
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:57:        // When that runs, it's going to overwrite our own modularization export efforts in shell-post.js!
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:62:        // 2) We remember what `module['exports']` was at the beginning of this function and we restore it later
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:72:var f;f||=typeof Module != 'undefined' ? Module : {};var aa="object"==typeof window,ba="function"==typeof importScripts,ca="object"==typeof process&&"object"==typeof process.versions&&"string"==typeof process.versions.node;"use strict";
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:81:function(g){null==g&&(g=this.Ia,this.Ia+=1);g=pb(this.Ka,g);if("function"!==typeof BigInt)throw Error("BigInt is not supported");return BigInt(g)};c.prototype.Ab=function(g){null==g&&(g=this.Ia,this.Ia+=1);return pb(this.Ka,g)};c.prototype.getBlob=function(g){null==g&&(g=this.Ia,this.Ia+=1);var l=zc(this.Ka,g);g=yc(this.Ka,g);for(var n=new Uint8Array(l),t=0;t<l;t+=1)n[t]=p[g+t];return n};c.prototype.get=function(g,l){l=l||{};null!=g&&this.bind(g)&&this.step();g=[];for(var n=wc(this.Ka),t=0;t<n;t+=
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:82:1)switch(Ac(this.Ka,t)){case 1:var w=l.useBigInt?this.zb(t):this.qb(t);g.push(w);break;case 2:g.push(this.qb(t));break;case 3:g.push(this.Ab(t));break;case 4:g.push(this.getBlob(t));break;default:g.push(null)}return g};c.prototype.getColumnNames=function(){for(var g=[],l=vc(this.Ka),n=0;n<l;n+=1)g.push(Bc(this.Ka,n));return g};c.prototype.getAsObject=function(g,l){g=this.get(g,l);l=this.getColumnNames();for(var n={},t=0;t<l.length;t+=1)n[l[t]]=g[t];return n};c.prototype.getSQL=function(){return mb(this.Ka)};
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:89:this.handleError(H(this.db,g,-1,h,0));g=m(h,"i32");if(0===g)throw"Nothing to prepare";var n=new c(g,this);null!=l&&n.bind(l);return this.Ya[g]=n};e.prototype.iterateStatements=function(g){return new d(g,this)};e.prototype["export"]=function(){Object.values(this.Ya).forEach(function(l){l.free()});Object.values(this.Ma).forEach(wa);this.Ma={};this.handleError(z(this.db));var g=ya(this.filename);this.handleError(r(this.filename,h));this.db=m(h,"i32");lb(this.db);return g};e.prototype.close=function(){null!==
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:93:if(ca){var fs=require("fs"),Fa=require("path");B=__dirname+"/";Ea=a=>{a=Ga(a)?new URL(a):Fa.normalize(a);return fs.readFileSync(a)};Da=a=>{a=Ga(a)?new URL(a):Fa.normalize(a);return new Promise((b,c)=>{fs.readFile(a,void 0,(d,e)=>{d?c(d):b(e.buffer)})})};!f.thisProgram&&1<process.argv.length&&(Ca=process.argv[1].replace(/\\/g,"/"));process.argv.slice(2);"undefined"!=typeof module&&(module.exports=f)}else if(aa||ba)ba?B=self.location.href:"undefined"!=typeof document&&document.currentScript&&(B=document.currentScript.src),
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:141:0,7,5,1,1,102,0,0);b=new WebAssembly.Module(new Uint8Array(b));b=(new WebAssembly.Instance(b,{e:{f:a}})).exports.f}X.set(c,b)}Tc.set(a,c);return c};[44].forEach(a=>{Cb[a]=new P(a);Cb[a].stack="<generic error, no stack>"});S=Array(4096);Vb(Q,"/");V("/tmp");V("/home");V("/home/web_user");
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:158:typeof W||"ErrnoError"!==H.name)throw H;return H.Ja}}},Z=function(){function a(c){Z=c.exports;Ja=Z.I;Oa();X=Z.K;Qa.unshift(Z.J);Ua--;f.monitorRunDependencies?.(Ua);0==Ua&&(null!==Va&&(clearInterval(Va),Va=null),Wa&&(c=Wa,Wa=null,c()));return Z}var b={a:Vc};Ua++;f.monitorRunDependencies?.(Ua);if(f.instantiateWasm)try{return f.instantiateWasm(b,a)}catch(c){return C(`Module.instantiateWasm callback failed with error: ${c}`),!1}Ya||=Xa("sql-wasm.wasm")?"sql-wasm.wasm":f.locateFile?f.locateFile("sql-wasm.wasm",
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:179:if (typeof exports === 'object' && typeof module === 'object'){
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:180:    module.exports = initSqlJs;
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:182:    module.exports.default = initSqlJs;
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:187:else if (typeof exports === 'object'){
+frontend/wrapper-ui/apc-wrapper-local/vendor/sqljs/sql-wasm.js:188:    exports["Module"] = initSqlJs;
