@@ -1,0 +1,33 @@
+=== stage-17k-z-r10k-r2-record-manual-browser-local-study-proof ===
+created_utc=20260701T033400Z
+head_before=f42aeee
+
+Scope:
+- Recorded user manual browser proof.
+- No deploy.
+- No DB write.
+- No DB table drop.
+- No schema change.
+- No service restart.
+- No live backend mutation.
+- No live frontend mutation.
+
+Manual browser proof:
+- deck_and_card_persisted_after_refresh=true
+- studyStoreAvailable=true
+- studyStoreMode=browser-local-only
+- localSaveAvailable=true
+- deckCount=2
+- cardCount=2
+- post_refresh_pass=true
+
+Forced IndexedDB mirror proof:
+- docsByNamespaceCount=0
+- exportStudyDocCount=5
+- exportStudyDocKeys=study/cards/v1,study/decks/v1,study/progress/v1,study/sessions/v1,study/store-state/v1
+- forced_mirror_pass=true
+
+Interpretation:
+- local study browser persistence passed
+- APC_LOCAL_SAVE export contains expected study docs
+- namespace listDocs filter behavior can be cleaned up later
