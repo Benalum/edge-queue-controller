@@ -720,3 +720,161 @@
     console.warn("[APC_LOCAL_SAVE] manifest initialization failed", error);
   });
 })();
+
+
+/* APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L
+ * Make listDocs({ namespace: "study" }) include key-prefixed docs such as:
+ * - study/cards/v1
+ * - study/decks/v1
+ * - study/progress/v1
+ * - study/sessions/v1
+ * - study/store-state/v1
+ *
+ * This keeps exportAll() behavior unchanged and only hardens namespace filtering.
+ */
+(() => {
+  const PATCH_MARKER = "APC_LOCAL_SAVE_LISTDOCS_NAMESPACE_PREFIX_R10L";
+
+  function namespaceFromOptions(options) {
+    if (typeof options === "string") return options;
+    if (!options || typeof options !== "object") return "";
+    return String(options.namespace || options.ns || options.scope || "").trim();
+  }
+
+  function valueFromPath(object, path) {
+    return path.reduce((current, key) => {
+      if (!current || typeof current !== "object") return undefined;
+      return current[key];
+    }, object);
+  }
+
+  function docValue(doc, paths) {
+    for (const path of paths) {
+      const value = valueFromPath(doc, path);
+      if (value !== undefined && value !== null && String(value).trim()) {
+        return String(value).trim();
+      }
+    }
+    return "";
+  }
+
+  function docMatchesNamespace(doc, namespace) {
+    if (!doc || !namespace) return false;
+
+    const key = docValue(doc, [
+      ["key"],
+      ["id"],
+      ["name"],
+      ["path"],
+      ["record", "key"],
+      ["record", "id"],
+      ["record", "name"],
+      ["meta", "key"],
+      ["meta", "id"]
+    ]);
+
+    const explicitNamespace = docValue(doc, [
+      ["namespace"],
+      ["ns"],
+      ["scope"],
+      ["record", "namespace"],
+      ["record", "ns"],
+      ["record", "scope"],
+      ["meta", "namespace"],
+      ["meta", "ns"],
+      ["meta", "scope"]
+    ]);
+
+    const recordType = docValue(doc, [
+      ["recordType"],
+      ["type"],
+      ["record", "recordType"],
+      ["record", "type"],
+      ["meta", "recordType"],
+      ["meta", "type"]
+    ]);
+
+    if (explicitNamespace === namespace) return true;
+    if (key === namespace) return true;
+    if (key.startsWith(`${namespace}/`)) return true;
+    if (key.startsWith(`${namespace}:`)) return true;
+    if (recordType === namespace) return true;
+    if (recordType.startsWith(`${namespace}/`)) return true;
+    if (recordType.startsWith(`${namespace}:`)) return true;
+
+    return false;
+  }
+
+  function docsFromExportAllPayload(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.docs)) return payload.docs;
+    if (payload && payload.data && Array.isArray(payload.data.docs)) return payload.data.docs;
+    return [];
+  }
+
+  function patchLocalSaveListDocs() {
+    const api = window.APC_LOCAL_SAVE;
+    if (!api || typeof api.listDocs !== "function") return false;
+    if (api.__listDocsNamespacePrefixPatchR10L) return true;
+
+    const originalListDocs = api.listDocs.bind(api);
+
+    api.listDocs = async function patchedListDocs(options = {}) {
+      const namespace = namespaceFromOptions(options);
+
+      let originalDocs = [];
+      let originalError = null;
+
+      try {
+        const maybeDocs = await originalListDocs(options);
+        originalDocs = Array.isArray(maybeDocs) ? maybeDocs : [];
+      } catch (error) {
+        originalError = error;
+        if (!namespace) throw error;
+      }
+
+      if (!namespace) {
+        if (originalError) throw originalError;
+        return originalDocs;
+      }
+
+      const originalMatches = originalDocs.filter((doc) => docMatchesNamespace(doc, namespace));
+      if (originalMatches.length > 0) return originalMatches;
+
+      if (originalDocs.length > 0) {
+        const looseMatches = originalDocs.filter((doc) => {
+          const text = JSON.stringify(doc || {});
+          return text.includes(`"${namespace}/`) || text.includes(`${namespace}/`);
+        });
+        if (looseMatches.length > 0) return looseMatches;
+      }
+
+      if (typeof api.exportAll === "function") {
+        const exportPayload = await api.exportAll();
+        const exportDocs = docsFromExportAllPayload(exportPayload);
+        const exportMatches = exportDocs.filter((doc) => docMatchesNamespace(doc, namespace));
+        if (exportMatches.length > 0) return exportMatches;
+      }
+
+      if (originalError) throw originalError;
+      return originalDocs;
+    };
+
+    api.__listDocsNamespacePrefixPatchR10L = true;
+    api[PATCH_MARKER] = true;
+    return true;
+  }
+
+  if (!patchLocalSaveListDocs()) {
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts += 1;
+      if (patchLocalSaveListDocs() || attempts >= 40) {
+        clearInterval(timer);
+      }
+    }, 50);
+  }
+
+  window[PATCH_MARKER] = true;
+})();
+
