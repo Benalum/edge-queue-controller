@@ -1,0 +1,84 @@
+=== source profile feature markers ===
+--- frontend/wrapper-ui/apc-wrapper-local/index.html ---
+211:  <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_START -->
+213:  <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_END -->
+--- frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js ---
+429:    document.addEventListener("DOMContentLoaded", init, { once: true });
+--- frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html ---
+2:  <h1>Your profile</h1>
+--- frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js ---
+1:/* APC_GOOGLE_SYNC_PROFILE_MODULE_STAGE_17K_Z_R6C_START */
+3:  const marker = 'APC_GOOGLE_SYNC_PROFILE_MODULE_MARKER_STAGE_17K_Z_R6C';
+4:  const liveMarker = 'APC_GOOGLE_SYNC_PROFILE_APPDATA_BOUNDARY_STAGE_17K_Z_R7C';
+54:    const fromWindow = window.APC_GOOGLE_SYNC_CONFIG && window.APC_GOOGLE_SYNC_CONFIG.googleClientId;
+66:      '[data-apc-profile-root]',
+102:      '[data-apc-profile-root]',
+171:      setStatus('Missing Google client ID', 'Set window.APC_GOOGLE_SYNC_CONFIG.googleClientId or a meta tag named apc-google-client-id.');
+330:  function renderPanel() {
+353:      '<h3>Google Drive sync</h3>',
+377:    renderPanel();
+378:    window.setTimeout(renderPanel, 50);
+379:    window.setTimeout(renderPanel, 250);
+380:    window.setTimeout(renderPanel, 750);
+395:    document.addEventListener('DOMContentLoaded', install, { once: true });
+403:/* APC_GOOGLE_SYNC_PROFILE_MODULE_STAGE_17K_Z_R6C_END */
+--- frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js ---
+495:  function renderPanelHtml(message) {
+499:      + '  <p class="study-muted">Choose your Anki collection file. APC reads deck names and card counts locally in this browser.</p>'
+536:          renderPanel("Reading local Anki file proof…");
+551:            renderPanel("File proof saved locally, but deck extraction was skipped.");
+555:          renderPanel("Extracting deck names locally in this browser…");
+558:          renderPanel("Local Anki deck extraction complete. No Anki content was uploaded.");
+569:          renderPanel("Local Anki deck extraction failed.");
+578:        renderPanel("Local Anki proof cleared.");
+594:  function renderPanel(message) {
+609:    panel.innerHTML = renderPanelHtml(message);
+620:      renderPanel();
+631:    renderPanel: renderPanel,
+640:  window.addEventListener("DOMContentLoaded", scheduleMount);
+652:/* APC_GOOGLE_SYNC_PROFILE_ONLY_STAGE_17K_Z_R6_START */
+654:  const legacyMarker = 'APC_GOOGLE_SYNC_PROFILE_ONLY_MARKER_STAGE_17K_Z_R6';
+655:  const loaderMarker = 'APC_GOOGLE_SYNC_PROFILE_LOADER_MARKER_STAGE_17K_Z_R6C';
+659:  const uiTextMovedToModule = 'Google Drive sync Not connected Connect Google Drive Sync now';
+667:      '[data-apc-profile-root]',
+711:    document.addEventListener('DOMContentLoaded', scheduleLoad, { once: true });
+719:/* APC_GOOGLE_SYNC_PROFILE_ONLY_STAGE_17K_Z_R6_END */
+--- frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js ---
+4:  const PATCH_MARKER = "APC_PROFILE_ANKI_PREVIEW_MOUNT_R11G";
+13:    const panel = explicitPanel || root.APC_PROFILE_ANKI_PREVIEW_PANEL;
+14:    if (!panel || typeof panel.renderPanel !== "function") {
+15:      throw new Error("Profile Anki preview mount requires APC_PROFILE_ANKI_PREVIEW_PANEL.renderPanel.");
+35:      documentRef.querySelector('[data-apc-profile-root]') ||
+39:      documentRef.querySelector('#profileRoot')
+49:      "[data-apc-profile-anki-preview-host]",
+50:      "[data-apc-profile-root]",
+54:      "#profileRoot",
+79:    if (root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED === true && opts.force !== true) {
+124:    host.setAttribute("data-apc-profile-anki-preview-mount", "true");
+125:    host.setAttribute("data-apc-profile-anki-preview-source", "r11g");
+128:    const rendered = panel.renderPanel(host, {
+129:      bridge: opts.bridge || root.APC_PROFILE_ANKI_IMPORT_BRIDGE,
+159:      windowRef.addEventListener("DOMContentLoaded", attempt, { once: true });
+190:  root.APC_PROFILE_ANKI_PREVIEW_MOUNT = api;
+196:  if (root && root.document && root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED !== true) {
+--- frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js ---
+4:  const PATCH_MARKER = "APC_PROFILE_ANKI_PREVIEW_PANEL_R11F";
+20:    const bridge = explicitBridge || root.APC_PROFILE_ANKI_IMPORT_BRIDGE;
+22:      throw new Error("Profile Anki preview panel requires APC_PROFILE_ANKI_IMPORT_BRIDGE.createProfileAnkiPreview.");
+95:      '<section class="apc-profile-anki-preview-result" data-apc-profile-anki-preview-result="true">',
+96:      '<h4>Anki package preview</h4>',
+115:  function renderPanel(targetNode, options) {
+117:      throw new Error("renderPanel requires a DOM node target.");
+120:      throw new Error("renderPanel requires a browser document.");
+127:    wrapper.setAttribute("data-apc-profile-anki-preview-panel", "true");
+129:      '<h3>Anki package preview</h3>',
+131:      '<input type="file" accept=".apkg" data-apc-profile-anki-file="true" />',
+132:      '<button type="button" data-apc-profile-anki-preview-button="true">Preview locally</button>',
+133:      '<div data-apc-profile-anki-preview-status="true">No file selected.</div>',
+134:      '<div data-apc-profile-anki-preview-output="true"></div>'
+137:    const input = wrapper.querySelector("[data-apc-profile-anki-file]");
+138:    const button = wrapper.querySelector("[data-apc-profile-anki-preview-button]");
+139:    const status = wrapper.querySelector("[data-apc-profile-anki-preview-status]");
+140:    const output = wrapper.querySelector("[data-apc-profile-anki-preview-output]");
+180:    renderPanel
+183:  root.APC_PROFILE_ANKI_PREVIEW_PANEL = api;

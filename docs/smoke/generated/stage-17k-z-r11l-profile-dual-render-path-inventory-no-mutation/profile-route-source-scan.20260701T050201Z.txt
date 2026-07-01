@@ -1,0 +1,331 @@
+=== profile route/source scan ===
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:4:  var PANEL_ID = "apc-anki-manifest-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:7:  var FILE_PROOF_KEY = "apc.profile.anki.fileProof.v2";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:8:  var DECK_SUMMARY_KEY = "apc.profile.anki.localDeckSummary.v1";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:65:      || storageRead("apc.profile.anki.fileProof.v1")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:76:    storageRemove("apc.profile.anki.fileProof.v1");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:256:        throw new Error("Selected file is SQLite but does not look like an Anki collection.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:456:      + '    <p>Look for <code>collection.anki2</code> inside your Anki profile folder.</p>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:458:      + '      <li><strong>Windows:</strong> <code>%APPDATA%\\Anki2\\&lt;Profile&gt;\\collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:459:      + '      <li><strong>macOS:</strong> <code>~/Library/Application Support/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:460:      + '      <li><strong>Linux:</strong> <code>~/.local/share/Anki2/&lt;Profile&gt;/collection.anki2</code> or <code>$XDG_DATA_HOME/Anki2/&lt;Profile&gt;/collection.anki2</code></li>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:479:            + '<div class="profile-preference-row apc-anki-minimal-deck-row">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:488:      + '  <div class="profile-preference-row"><span>Decks</span><strong>' + escapeHtml(summary.deck_count_with_cards || decks.length || 0) + '</strong></div>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:489:      + '  <div class="profile-preference-row"><span>Total cards</span><strong>' + escapeHtml(summary.card_count || 0) + '</strong></div>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:497:      + '<section class="profile-card apc-anki-minimal-card" id="' + PANEL_ID + '-card">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:499:      + '  <p class="study-muted">Choose your Anki collection file. APC reads deck names and card counts locally in this browser.</p>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:502:      + '  <div class="profile-preference-row">'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:510:  function isProfileRoute() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:512:    if (routeText.indexOf("profile") !== -1) return true;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:513:    return Boolean(document.querySelector("[data-page='profile'], #profilePrivateApp, .apc-profile-root"));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:519:    return document.querySelector("[data-page='profile']")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:520:      || document.querySelector(".profile-grid")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:521:      || document.querySelector(".private-profile-grid")
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:588:    document.querySelectorAll(".apc-anki-manifest-panel, .apc-anki-local-only-panel, .apc-anki-local-card, .apc-anki-ownership-card").forEach(function (el) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:595:    if (!isProfileRoute()) { removeManifestPanel(); return; }
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:604:      panel.className = "apc-anki-manifest-panel apc-anki-local-only-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:624:  window.APC_ANKI_LOCAL = {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:625:    version: "stage17kyr2-profile-anki-dropdown-stable-20260629",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:653:(function apcGoogleSyncProfileOnlyStage17kZr6cLoader() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:656:  const moduleGlobal = 'APC_PROFILE_GOOGLE_SYNC_PANEL_STAGE_17K_Z_R6C';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:657:  const moduleScriptId = 'apc-profile-google-sync-panel-script-stage-17k-z-r6c';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:658:  const modulePath = '/privatepages/profile-google-sync-panel.js?v=20260629-stage17k-z-r7c-appdata';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:659:  const uiTextMovedToModule = 'Google Drive sync Not connected Connect Google Drive Sync now';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:661:  function isProfileSurface() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:666:    const profileHints = [
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:667:      '[data-apc-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:668:      '[data-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:669:      '[data-page="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:670:      '[data-route="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:671:      '.profile-page',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:672:      '#profile',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:673:      '#profile-page'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:675:    const hasProfileNode = profileHints.some((selector) => Boolean(document.querySelector(selector)));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:676:    const bodyLooksProfile = body && String(body.getAttribute('data-page') || body.className || '').toLowerCase().includes('profile');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:677:    return path.includes('profile') || hash.includes('profile') || title.includes('profile') || hasProfileNode || bodyLooksProfile;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:690:    if (!document.body || !isProfileSurface()) return;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:697:    script.setAttribute('data-apc-google-sync-profile-loader', 'true');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js:698:    script.setAttribute('data-apc-google-sync-profile-only', 'true');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:4: * - Keep private user study/profile/deck/card data browser-local first.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js:48:    profilePreferences: "profile/preferences/v1",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:2:(function apcProfileGoogleSyncPanelStage17kZr7cAppdata() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:5:  const panelId = 'apc-google-sync-profile-panel-stage-17k-z-r7c-appdata';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:6:  const styleId = 'apc-google-sync-profile-style-stage-17k-z-r7c-appdata';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:7:  const apiName = 'APC_PROFILE_GOOGLE_SYNC_PANEL_STAGE_17K_Z_R6C';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:24:    profileOnly: true,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:60:  function isProfileSurface() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:65:    const profileHints = [
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:66:      '[data-apc-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:67:      '[data-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:68:      '[data-page="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:69:      '[data-route="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:70:      '.profile-page',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:71:      '#profile',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:72:      '#profile-page'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:74:    const hasProfileNode = profileHints.some((selector) => Boolean(document.querySelector(selector)));
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:75:    const bodyLooksProfile = body && String(body.getAttribute('data-page') || body.className || '').toLowerCase().includes('profile');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:76:    return path.includes('profile') || hash.includes('profile') || title.includes('profile') || hasProfileNode || bodyLooksProfile;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:84:      '.apc-google-sync-profile-panel { margin-top: 16px; padding: 16px; border: 1px solid rgba(148,163,184,.35); border-radius: 14px; background: rgba(15,23,42,.04); }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:85:      '.apc-google-sync-profile-panel h3 { margin: 0 0 8px; font-size: 1.05rem; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:86:      '.apc-google-sync-profile-panel p { margin: 6px 0; line-height: 1.45; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:87:      '.apc-google-sync-profile-panel label { display: block; margin: 10px 0; line-height: 1.35; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:88:      '.apc-google-sync-profile-panel input[type="checkbox"] { margin-right: 8px; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:89:      '.apc-google-sync-profile-panel .apc-google-sync-status { display: inline-flex; align-items: center; gap: 8px; margin: 8px 0 12px; font-weight: 700; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:90:      '.apc-google-sync-profile-panel .apc-google-sync-dot { width: 9px; height: 9px; border-radius: 999px; background: #94a3b8; display: inline-block; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:91:      '.apc-google-sync-profile-panel .apc-google-sync-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:92:      '.apc-google-sync-profile-panel button { border: 0; border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: pointer; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:93:      '.apc-google-sync-profile-panel button:disabled { cursor: not-allowed; opacity: .55; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:94:      '.apc-google-sync-profile-panel small { display: block; margin-top: 10px; opacity: .8; }',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:95:      '.apc-google-sync-profile-panel pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 10px; border-radius: 10px; background: rgba(15,23,42,.08); }'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:100:  function findProfileAnchor() {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:102:      '[data-apc-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:103:      '[data-profile-root]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:104:      '[data-page="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:105:      '[data-route="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:106:      '.profile-page',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:107:      '#profile',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:108:      '#profile-page',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:331:    if (!document.body || !isProfileSurface()) return;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:342:    panel.className = 'apc-google-sync-profile-panel';
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:343:    panel.setAttribute('data-apc-google-sync-profile-panel', 'true');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:344:    panel.setAttribute('data-apc-google-sync-profile-only', 'true');
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:353:      '<h3>Google Drive sync</h3>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:367:    findProfileAnchor().appendChild(panel);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js:390:    profileOnly: true,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:4:  const PATCH_MARKER = "APC_ANKI_IMPORT_LOCAL_DISABLED_SKELETON_R11B";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:5:  const APKG_INSPECTOR_MARKER = "APC_ANKI_IMPORT_LOCAL_APKG_CONTAINER_INSPECTOR_R11C";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-import-local.js:386:  root.APC_ANKI_IMPORT_LOCAL = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:16:    "/profile",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:28:    "/profile": "profile",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:38:    profile: "Profile",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:204:    app.innerHTML = `<div class="private-loading">${escapeHtml(message || "Loading private page...")}</div>`;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:233:      ["/profile", "Profile", "profile"],
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:255:    const response = await fetch(`/privatepages/pages/${page}.html?v=stage17j-r3-profile-fragment-cache-20260628`, {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:315:      // Let publicpages render signed-out public pages like /study, /companion, /profile, /system, /support.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:319:    setLoading("Loading private page...");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:368:              <p>${escapeHtml(error.message || "Unknown private page error")}</p>
+frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js:403:      // Signed-in users should always get private pages for these routes.
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:1:(function attachApcProfileAnkiImportBridge(root) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:4:  const PATCH_MARKER = "APC_PROFILE_ANKI_IMPORT_BRIDGE_R11E";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:11:    const api = explicitApi || root.APC_ANKI_IMPORT_LOCAL;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:13:      throw new Error("Profile Anki import bridge requires APC_ANKI_IMPORT_LOCAL.inspectApkgFile.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:39:      sourceSurface: "profile",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:68:  async function createProfileAnkiPreview(input) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:72:      throw new Error("Profile Anki preview requires a browser File-like object with arrayBuffer().");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:82:    createProfileAnkiPreview,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:86:  root.APC_PROFILE_ANKI_IMPORT_BRIDGE = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html:2:  <h1>Your profile</h1>
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:1:(function attachApcProfileAnkiPreviewMount(root) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:4:  const PATCH_MARKER = "APC_PROFILE_ANKI_PREVIEW_MOUNT_R11G";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:5:  const MOUNT_ID = "apc-profile-anki-preview-panel-r11g";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:13:    const panel = explicitPanel || root.APC_PROFILE_ANKI_PREVIEW_PANEL;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:15:      throw new Error("Profile Anki preview mount requires APC_PROFILE_ANKI_PREVIEW_PANEL.renderPanel.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:20:  function isProfileSurface(documentRef) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:26:    if (path.includes("profile") || hash.includes("profile") || search.includes("profile")) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:35:      documentRef.querySelector('[data-apc-profile-root]') ||
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:36:      documentRef.querySelector('[data-apc-private-page="profile"]') ||
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:37:      documentRef.querySelector('[data-apc-page="profile"]') ||
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:38:      documentRef.querySelector('.apc-profile-page') ||
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:39:      documentRef.querySelector('#profileRoot')
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:43:  function findProfileTarget(documentRef) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:49:      "[data-apc-profile-anki-preview-host]",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:50:      "[data-apc-profile-root]",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:51:      '[data-apc-private-page="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:52:      '[data-apc-page="profile"]',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:53:      ".apc-profile-page",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:54:      "#profileRoot",
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:75:  function ensureProfileAnkiPreviewMounted(options) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:79:    if (root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED === true && opts.force !== true) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:95:    if (!isProfileSurface(documentRef) && opts.force !== true) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:99:        reason: "not-profile-surface"
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:112:    const target = opts.target || findProfileTarget(documentRef);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:124:    host.setAttribute("data-apc-profile-anki-preview-mount", "true");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:125:    host.setAttribute("data-apc-profile-anki-preview-source", "r11g");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:129:      bridge: opts.bridge || root.APC_PROFILE_ANKI_IMPORT_BRIDGE,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:130:      importer: opts.importer || root.APC_ANKI_IMPORT_LOCAL
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:151:      const result = ensureProfileAnkiPreviewMounted(opts);
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:184:    isProfileSurface,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:185:    findProfileTarget,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:186:    ensureProfileAnkiPreviewMounted,
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:190:  root.APC_PROFILE_ANKI_PREVIEW_MOUNT = api;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:196:  if (root && root.document && root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED !== true) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js:86:  window.APC_ANKI_READONLY_SESSION = {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:1:(function attachApcProfileAnkiPreviewPanel(root) {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:4:  const PATCH_MARKER = "APC_PROFILE_ANKI_PREVIEW_PANEL_R11F";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:20:    const bridge = explicitBridge || root.APC_PROFILE_ANKI_IMPORT_BRIDGE;
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:21:    if (!bridge || typeof bridge.createProfileAnkiPreview !== "function") {
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:22:      throw new Error("Profile Anki preview panel requires APC_PROFILE_ANKI_IMPORT_BRIDGE.createProfileAnkiPreview.");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:33:      sourceSurface: safeString(value.sourceSurface || "profile"),
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:71:      throw new Error("Profile Anki preview panel requires a browser File-like object with arrayBuffer().");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:74:    const preview = await bridge.createProfileAnkiPreview({
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:76:      api: args.importer || args.api || root.APC_ANKI_IMPORT_LOCAL
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:95:      '<section class="apc-profile-anki-preview-result" data-apc-profile-anki-preview-result="true">',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:126:    wrapper.className = "apc-profile-anki-preview-panel";
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:127:    wrapper.setAttribute("data-apc-profile-anki-preview-panel", "true");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:131:      '<input type="file" accept=".apkg" data-apc-profile-anki-file="true" />',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:132:      '<button type="button" data-apc-profile-anki-preview-button="true">Preview locally</button>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:133:      '<div data-apc-profile-anki-preview-status="true">No file selected.</div>',
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:134:      '<div data-apc-profile-anki-preview-output="true"></div>'
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:137:    const input = wrapper.querySelector("[data-apc-profile-anki-file]");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:138:    const button = wrapper.querySelector("[data-apc-profile-anki-preview-button]");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:139:    const status = wrapper.querySelector("[data-apc-profile-anki-preview-status]");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:140:    const output = wrapper.querySelector("[data-apc-profile-anki-preview-output]");
+frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:183:  root.APC_PROFILE_ANKI_PREVIEW_PANEL = api;
+frontend/wrapper-ui/apc-wrapper-local/header/header.html:17:    <a href="/profile" data-route="/profile">Profile</a>
+frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:18:    "/profile": {
+frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:19:      title: "Profile | Buddies Who Study",
+frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js:20:      file: "/publicpages/pages/profile.html"
+frontend/wrapper-ui/apc-wrapper-local/auth/auth.js:95:      data.profile ||
+frontend/wrapper-ui/apc-wrapper-local/auth/auth.js:241:        ? "Create an account for Study, Companion, Profile, and future private tools."
+frontend/wrapper-ui/apc-wrapper-local/index.html:68:        if (!/(study|companion|profile|calendar|account|dashboard|private)/i.test(marker)) return;
+frontend/wrapper-ui/apc-wrapper-local/index.html:207:  <script src="/privatepages/privatepages.js?v=stage17j-r3-profile-fragment-cache-20260628"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:214:  <script src="/privatepages/anki-manifest-panel.js?v=stage17kyr2-profile-anki-dropdown-stable-20260629"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:246:  <!-- Stage 17K-Z-R11G: Profile-local Anki APKG preview source mount; browser-local only. -->
+frontend/wrapper-ui/apc-wrapper-local/index.html:247:  <script src="/privatepages/anki-import-local.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:248:  <script src="/privatepages/profile-anki-import-bridge.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:249:  <script src="/privatepages/profile-anki-preview-panel.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+frontend/wrapper-ui/apc-wrapper-local/index.html:250:  <script src="/privatepages/profile-anki-preview-mount.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+frontend/wrapper-ui/app.js:491:let profilePreferences = null;
+frontend/wrapper-ui/app.js:492:let profilePreferencesLoading = false;
+frontend/wrapper-ui/app.js:493:let profilePreferencesSaving = false;
+frontend/wrapper-ui/app.js:494:let profilePreferencesError = "";
+frontend/wrapper-ui/app.js:495:let profilePreferencesSaveMessage = "";
+frontend/wrapper-ui/app.js:513:// can decide whether /study, /chat, /companion, /calendar, and /profile should proxy
+frontend/wrapper-ui/app.js:586:const PRIVATE_APP_ROUTE_SET = new Set(["/study-wrapper-preview", "/study", "/chat", "/companion", "/calendar", "/profile"]);
+frontend/wrapper-ui/app.js:616:      ["Profile", "Manage preferences, permissions, account settings, and future companion personalization.", "/profile"],
+frontend/wrapper-ui/app.js:621:      ["AI support", "The companion can eventually use study history, profile settings, and calendar context to support learning."],
+frontend/wrapper-ui/app.js:669:      ["Context aware", "Future versions can use profile, calendar, study, and file context with permission."],
+frontend/wrapper-ui/app.js:689:  "/profile": {
+frontend/wrapper-ui/app.js:691:    title: "Profile",
+frontend/wrapper-ui/app.js:693:      "Profile will manage account settings, preferences, permissions, and personalization for the platform.",
+frontend/wrapper-ui/app.js:1394:      id: "profile-api",
+frontend/wrapper-ui/app.js:1395:      name: "Profile API",
+frontend/wrapper-ui/app.js:1397:      detail: "Account profile, preferences, permissions, and user settings are active.",
+frontend/wrapper-ui/app.js:2243:        <p>Study, Companion, Profile, Calendar, Images, and related APIs.</p>
+frontend/wrapper-ui/app.js:4548:    profileLanguage: "en",
+frontend/wrapper-ui/app.js:5207:// Profile and other gated pages must re-render after /me confirms
+frontend/wrapper-ui/app.js:5233:      path === "/profile" ||
+frontend/wrapper-ui/app.js:5272:  "/profile": {
+frontend/wrapper-ui/app.js:5273:    eyebrow: "Profile",
+frontend/wrapper-ui/app.js:5275:    body: "Profile explains how account settings, privacy controls, permissions, and personalization will work after you sign in.",
+frontend/wrapper-ui/app.js:5364:// Real logged-in Profile surface instead of generic feature summary.
+frontend/wrapper-ui/app.js:5368:// Read-only display of backend-owned profile preferences.
+frontend/wrapper-ui/app.js:5371:function normalizeProfilePreferenceValue(value) {
+frontend/wrapper-ui/app.js:5380:function renderProfilePreferenceRows(preferences) {
+frontend/wrapper-ui/app.js:5405:    <div class="profile-preference-list" data-phase14a-profile-preferences-list="true">
+frontend/wrapper-ui/app.js:5407:        <div class="profile-preference-row">
+frontend/wrapper-ui/app.js:5409:          <strong>${safe(normalizeProfilePreferenceValue(value))}</strong>
+frontend/wrapper-ui/app.js:5416:function renderProfilePreferencesCard() {
+frontend/wrapper-ui/app.js:5424:  if (profilePreferencesLoading) {
+frontend/wrapper-ui/app.js:5426:      <div class="summary-card profile-preferences-card" data-phase14a-profile-preferences-card="loading">
+frontend/wrapper-ui/app.js:5429:        <p>Reading your backend-owned profile preferences.</p>
+frontend/wrapper-ui/app.js:5434:  if (profilePreferencesError) {
+frontend/wrapper-ui/app.js:5436:      <div class="summary-card profile-preferences-card" data-phase14a-profile-preferences-card="error">
+frontend/wrapper-ui/app.js:5439:        <p>${safe(profilePreferencesError)}</p>
+frontend/wrapper-ui/app.js:5445:  const prefs = profilePreferences?.preferences || null;
+frontend/wrapper-ui/app.js:5449:      <div class="summary-card profile-preferences-card" data-phase14a-profile-preferences-card="empty">
+frontend/wrapper-ui/app.js:5452:        <p>Profile preferences will appear here after the backend route is available.</p>
+frontend/wrapper-ui/app.js:5458:    <div class="summary-card profile-preferences-card" data-phase14a-profile-preferences-card="ready">
+frontend/wrapper-ui/app.js:5461:      <p>These values are read from /api/profile/preferences. Save only updates backend-owned profile preferences.</p>
+frontend/wrapper-ui/app.js:5462:      ${renderProfilePreferenceRows(prefs)}
+frontend/wrapper-ui/app.js:5463:      ${renderProfilePreferencesForm(prefs)}
+frontend/wrapper-ui/app.js:5468:async function loadProfilePreferencesForProfilePage({ force = false } = {}) {
+frontend/wrapper-ui/app.js:5470:    profilePreferences = null;
+frontend/wrapper-ui/app.js:5471:    profilePreferencesError = "";
+frontend/wrapper-ui/app.js:5472:    profilePreferencesLoading = false;
+frontend/wrapper-ui/app.js:5476:  if (profilePreferences && !force) return profilePreferences;
+frontend/wrapper-ui/app.js:5477:  if (profilePreferencesError && !force) return null;
+frontend/wrapper-ui/app.js:5478:  if (profilePreferencesLoading) return profilePreferences;
+frontend/wrapper-ui/app.js:5480:  profilePreferencesLoading = true;
+frontend/wrapper-ui/app.js:5481:  profilePreferencesError = "";
+frontend/wrapper-ui/app.js:5484:    const result = await api("/profile/preferences", { method: "GET" });
+frontend/wrapper-ui/app.js:5485:    profilePreferences = result;
+frontend/wrapper-ui/app.js:5486:    profilePreferencesError = "";
+frontend/wrapper-ui/app.js:5489:    profilePreferencesError = sanitizeVisibleErrorText(err?.message || "Profile preferences are not available yet.");
+frontend/wrapper-ui/app.js:5492:    profilePreferencesLoading = false;
+frontend/wrapper-ui/app.js:5493:    if (normalizeWrapperAuthRoute(window.location.pathname || "/") === "/profile") {
+frontend/wrapper-ui/app.js:5500:// Editable profile preference controls. This phase only writes allowed
+frontend/wrapper-ui/app.js:5501:// profile preference fields through the backend-owned PATCH endpoint.
+frontend/wrapper-ui/app.js:5504:function profilePreferenceSafe(value) {
+frontend/wrapper-ui/app.js:5513:function renderProfilePreferenceSelect(name, label, value, options) {
+frontend/wrapper-ui/app.js:5514:  const safeName = profilePreferenceSafe(name);
+frontend/wrapper-ui/app.js:5515:  const safeLabel = profilePreferenceSafe(label);
+frontend/wrapper-ui/app.js:5519:    <label class="profile-preference-control">
+frontend/wrapper-ui/app.js:5521:      <select name="${safeName}" data-profile-preference-field="${safeName}">
+frontend/wrapper-ui/app.js:5526:          return `<option value="${profilePreferenceSafe(optionValue)}"${selected}>${profilePreferenceSafe(optionLabel)}</option>`;
+frontend/wrapper-ui/app.js:5533:function renderProfilePreferenceToggle(name, label, value, detail) {
+frontend/wrapper-ui/app.js:5534:  const safeName = profilePreferenceSafe(name);
+frontend/wrapper-ui/app.js:5538:    <label class="profile-preference-toggle">
+frontend/wrapper-ui/app.js:5539:      <input type="checkbox" name="${safeName}" data-profile-preference-field="${safeName}"${checked} />
+frontend/wrapper-ui/app.js:5541:        <strong>${profilePreferenceSafe(label)}</strong>
+frontend/wrapper-ui/app.js:5542:        <small>${profilePreferenceSafe(detail)}</small>
+frontend/wrapper-ui/app.js:5548:function renderProfilePreferencesForm(preferences) {
+frontend/wrapper-ui/app.js:5550:  const message = profilePreferencesSaveMessage
+frontend/wrapper-ui/app.js:5551:    ? `<p class="profile-preference-save-message">${profilePreferenceSafe(profilePreferencesSaveMessage)}</p>`
+frontend/wrapper-ui/app.js:5555:    <form class="profile-preference-form" data-phase14f-profile-preferences-form="true">
+frontend/wrapper-ui/app.js:5556:      <div class="profile-preference-control-grid">
+frontend/wrapper-ui/app.js:5557:        ${renderProfilePreferenceSelect("preferred_language", "Preferred language", prefs.preferred_language, [
+frontend/wrapper-ui/app.js:5569:        ${renderProfilePreferenceSelect("study_language", "Study language", prefs.study_language, [
+frontend/wrapper-ui/app.js:5581:        ${renderProfilePreferenceSelect("learning_style", "Learning style", prefs.learning_style, [
+frontend/wrapper-ui/app.js:5589:        ${renderProfilePreferenceSelect("study_explanation_depth", "Explanation depth", prefs.study_explanation_depth, [
+frontend/wrapper-ui/app.js:5595:        ${renderProfilePreferenceSelect("study_answer_strictness", "Answer strictness", prefs.study_answer_strictness, [
+frontend/wrapper-ui/app.js:5601:        ${renderProfilePreferenceSelect("study_session_default_mode", "Study mode", prefs.study_session_default_mode, [
+frontend/wrapper-ui/app.js:5606:        ${renderProfilePreferenceSelect("companion_behavior", "Companion behavior", prefs.companion_behavior, [
+frontend/wrapper-ui/app.js:5612:        ${renderProfilePreferenceSelect("companion_tone", "Companion tone", prefs.companion_tone, [
+frontend/wrapper-ui/app.js:5618:        ${renderProfilePreferenceSelect("companion_memory_scope", "Companion memory scope", prefs.companion_memory_scope, [
+frontend/wrapper-ui/app.js:5620:          ["session_and_profile_approved", "Session and profile approved"],
+frontend/wrapper-ui/app.js:5623:        ${renderProfilePreferenceSelect("calendar_provider_preference", "Calendar provider", prefs.calendar_provider_preference, [
+frontend/wrapper-ui/app.js:5629:        ${renderProfilePreferenceSelect("notification_preference", "Notifications", prefs.notification_preference, [
+frontend/wrapper-ui/app.js:5636:      <div class="profile-preference-toggle-grid">
+frontend/wrapper-ui/app.js:5637:        ${renderProfilePreferenceToggle("voice_enabled", "Voice preference", prefs.voice_enabled, "Stores preference only. Does not activate microphone or speakers.")}
+frontend/wrapper-ui/app.js:5638:        ${renderProfilePreferenceToggle("listen_enabled", "Listen preference", prefs.listen_enabled, "Stores preference only. Listening still requires an explicit future action.")}
+frontend/wrapper-ui/app.js:5639:        ${renderProfilePreferenceToggle("speak_enabled", "Speak preference", prefs.speak_enabled, "Stores preference only. Speaking still requires an explicit future action.")}
+frontend/wrapper-ui/app.js:5640:        ${renderProfilePreferenceToggle("auto_listen_enabled", "Auto-listen preference", prefs.auto_listen_enabled, "Stored as off by default. No background listening is activated.")}
+frontend/wrapper-ui/app.js:5641:        ${renderProfilePreferenceToggle("auto_speak_enabled", "Auto-speak preference", prefs.auto_speak_enabled, "Stored as off by default. No automatic speech is activated.")}
+frontend/wrapper-ui/app.js:5642:        ${renderProfilePreferenceToggle("accessibility_large_text", "Large text", prefs.accessibility_large_text, "Stores a future display preference.")}
+frontend/wrapper-ui/app.js:5643:        ${renderProfilePreferenceToggle("accessibility_reduce_motion", "Reduce motion", prefs.accessibility_reduce_motion, "Stores a future accessibility preference.")}
+frontend/wrapper-ui/app.js:5646:      <div class="profile-preference-actions">
+frontend/wrapper-ui/app.js:5647:        <button class="primary-btn" type="submit" data-profile-preferences-save="true"${profilePreferencesSaving ? " disabled" : ""}>
+frontend/wrapper-ui/app.js:5648:          ${profilePreferencesSaving ? "Saving..." : "Save preferences"}
+frontend/wrapper-ui/app.js:5650:        <button class="ghost-btn" type="button" data-profile-preferences-refresh="true"${profilePreferencesSaving ? " disabled" : ""}>
+frontend/wrapper-ui/app.js:5660:function collectProfilePreferencesFormPatch() {
+frontend/wrapper-ui/app.js:5661:  const form = document.querySelector('[data-phase14f-profile-preferences-form="true"]');
+frontend/wrapper-ui/app.js:5664:  const current = profilePreferences?.preferences || {};
+frontend/wrapper-ui/app.js:5703:async function saveProfilePreferencesFromProfilePage(event) {
+frontend/wrapper-ui/app.js:5711:  const patch = collectProfilePreferencesFormPatch();
+frontend/wrapper-ui/app.js:5714:    profilePreferencesSaveMessage = "No preference changes to save.";
+frontend/wrapper-ui/app.js:5719:  profilePreferencesSaving = true;
+frontend/wrapper-ui/app.js:5720:  profilePreferencesSaveMessage = "Saving preferences...";
+frontend/wrapper-ui/app.js:5724:    const result = await api("/profile/preferences", {
+frontend/wrapper-ui/app.js:5730:    profilePreferences = result;
+frontend/wrapper-ui/app.js:5731:    profilePreferencesError = "";
+frontend/wrapper-ui/app.js:5732:    profilePreferencesSaveMessage = "Preferences saved.";
+frontend/wrapper-ui/app.js:5734:    profilePreferencesSaveMessage = sanitizeVisibleErrorText(err?.message || "Could not save preferences.");
+frontend/wrapper-ui/app.js:5736:    profilePreferencesSaving = false;
+frontend/wrapper-ui/app.js:5737:    if (normalizeWrapperAuthRoute(window.location.pathname || "/") === "/profile") {
+frontend/wrapper-ui/app.js:5743:function bindProfilePreferencesControls() {
+frontend/wrapper-ui/app.js:5744:  const form = document.querySelector('[data-phase14f-profile-preferences-form="true"]');
+frontend/wrapper-ui/app.js:5746:    form.addEventListener("submit", saveProfilePreferencesFromProfilePage);
+frontend/wrapper-ui/app.js:5749:  const refreshBtn = document.querySelector('[data-profile-preferences-refresh="true"]');
+frontend/wrapper-ui/app.js:5752:      profilePreferencesError = "";
+frontend/wrapper-ui/app.js:5753:      profilePreferencesSaveMessage = "";
+frontend/wrapper-ui/app.js:5754:      loadProfilePreferencesForProfilePage({ force: true });
+frontend/wrapper-ui/app.js:5759:function renderLoggedInProfilePage() {
+frontend/wrapper-ui/app.js:5779:    <section class="system-section profile-page">
+frontend/wrapper-ui/app.js:5780:      <div class="summary-box profile-hero">
+frontend/wrapper-ui/app.js:5781:        <span>Profile</span>
+frontend/wrapper-ui/app.js:5789:      <div class="summary-grid profile-grid">
+frontend/wrapper-ui/app.js:5818:      <div class="summary-grid profile-grid">
+frontend/wrapper-ui/app.js:5825:        ${renderProfilePreferencesCard()}
+frontend/wrapper-ui/app.js:6508:      path === "/profile" ||
+frontend/wrapper-ui/app.js:6522:    if (path === "/profile" || path === "/calendar" || path === "/credits") {
+frontend/wrapper-ui/app.js:6574:  if (path === "/profile") {
+frontend/wrapper-ui/app.js:6577:      renderPublicFeatureGate("/profile");
+frontend/wrapper-ui/app.js:6581:    $("app").innerHTML = renderLoggedInProfilePage();
+frontend/wrapper-ui/app.js:6582:    bindProfilePreferencesControls();
+frontend/wrapper-ui/app.js:6583:    loadProfilePreferencesForProfilePage();
+frontend/wrapper-ui/app.js:7663:          <strong>Login, profile, access</strong>
+frontend/wrapper-ui/app.js:7664:          <p>Get help when account tools, login, or profile settings are not working.</p>
+frontend/wrapper-ui/app.js:10126:    "/profile",
+frontend/wrapper-ui/app.js:12353:      const isLargePageShell = t.includes("Companion") && t.includes("Profile") && t.includes("System") && t.length > 600;
+frontend/wrapper-ui/index.html:27:      <a href="/profile" data-route="/profile">Profile</a>

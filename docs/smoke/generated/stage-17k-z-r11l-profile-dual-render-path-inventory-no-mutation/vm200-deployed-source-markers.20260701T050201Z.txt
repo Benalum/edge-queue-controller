@@ -1,0 +1,57 @@
+=== VM200 read-only deployed source markers ===
+SSH_OK
+host=website-edge
+root=/var/www/apc-wrapper-local
+--- deployed file sizes ---
+size=11210 path=/var/www/apc-wrapper-local/index.html
+size=11715 path=/var/www/apc-wrapper-local/privatepages/privatepages.js
+size=398 path=/var/www/apc-wrapper-local/privatepages/pages/profile.html
+size=18114 path=/var/www/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+size=25822 path=/var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js
+size=3489 path=/var/www/apc-wrapper-local/privatepages/profile-anki-import-bridge.js
+size=7556 path=/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js
+size=5667 path=/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+--- deployed marker grep ---
+/var/www/apc-wrapper-local/index.html:247:  <script src="/privatepages/anki-import-local.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+/var/www/apc-wrapper-local/index.html:248:  <script src="/privatepages/profile-anki-import-bridge.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+/var/www/apc-wrapper-local/index.html:249:  <script src="/privatepages/profile-anki-preview-panel.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+/var/www/apc-wrapper-local/index.html:250:  <script src="/privatepages/profile-anki-preview-mount.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+/var/www/apc-wrapper-local/privatepages/pages/dashboard.html.before-welcome-home-20260626T235519Z.bak:33:      <a class="private-button" href="/profile">Open Profile</a>
+/var/www/apc-wrapper-local/privatepages/pages/dashboard.html:19:    <a class="public-card" href="/profile">
+/var/www/apc-wrapper-local/privatepages/pages/profile.html:2:  <h1>Your profile</h1>
+/var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js:499:      + '  <p class="study-muted">Choose your Anki collection file. APC reads deck names and card counts locally in this browser.</p>'
+/var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js:657:  const moduleScriptId = 'apc-profile-google-sync-panel-script-stage-17k-z-r6c';
+/var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js:658:  const modulePath = '/privatepages/profile-google-sync-panel.js?v=20260629-stage17k-z-r7c-appdata';
+/var/www/apc-wrapper-local/privatepages/anki-manifest-panel.js:659:  const uiTextMovedToModule = 'Google Drive sync Not connected Connect Google Drive Sync now';
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:4:  const PATCH_MARKER = "APC_PROFILE_ANKI_PREVIEW_PANEL_R11F";
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:20:    const bridge = explicitBridge || root.APC_PROFILE_ANKI_IMPORT_BRIDGE;
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:22:      throw new Error("Profile Anki preview panel requires APC_PROFILE_ANKI_IMPORT_BRIDGE.createProfileAnkiPreview.");
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:95:      '<section class="apc-profile-anki-preview-result" data-apc-profile-anki-preview-result="true">',
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:96:      '<h4>Anki package preview</h4>',
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:126:    wrapper.className = "apc-profile-anki-preview-panel";
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:127:    wrapper.setAttribute("data-apc-profile-anki-preview-panel", "true");
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:129:      '<h3>Anki package preview</h3>',
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:132:      '<button type="button" data-apc-profile-anki-preview-button="true">Preview locally</button>',
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:133:      '<div data-apc-profile-anki-preview-status="true">No file selected.</div>',
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:134:      '<div data-apc-profile-anki-preview-output="true"></div>'
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:138:    const button = wrapper.querySelector("[data-apc-profile-anki-preview-button]");
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:139:    const status = wrapper.querySelector("[data-apc-profile-anki-preview-status]");
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:140:    const output = wrapper.querySelector("[data-apc-profile-anki-preview-output]");
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-panel.js:183:  root.APC_PROFILE_ANKI_PREVIEW_PANEL = api;
+/var/www/apc-wrapper-local/privatepages/companion.js.before-global-drive-banner-r3p-20260628T021423Z.bak:966:          We’re working toward Google Drive sync so decks, cards, sessions, and study history can stay in each user’s own Google account.
+/var/www/apc-wrapper-local/privatepages/profile-google-sync-panel.js:353:      '<h3>Google Drive sync</h3>',
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:4:  const PATCH_MARKER = "APC_PROFILE_ANKI_PREVIEW_MOUNT_R11G";
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:5:  const MOUNT_ID = "apc-profile-anki-preview-panel-r11g";
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:13:    const panel = explicitPanel || root.APC_PROFILE_ANKI_PREVIEW_PANEL;
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:15:      throw new Error("Profile Anki preview mount requires APC_PROFILE_ANKI_PREVIEW_PANEL.renderPanel.");
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:39:      documentRef.querySelector('#profileRoot')
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:49:      "[data-apc-profile-anki-preview-host]",
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:54:      "#profileRoot",
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:79:    if (root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED === true && opts.force !== true) {
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:124:    host.setAttribute("data-apc-profile-anki-preview-mount", "true");
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:125:    host.setAttribute("data-apc-profile-anki-preview-source", "r11g");
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:129:      bridge: opts.bridge || root.APC_PROFILE_ANKI_IMPORT_BRIDGE,
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:190:  root.APC_PROFILE_ANKI_PREVIEW_MOUNT = api;
+/var/www/apc-wrapper-local/privatepages/profile-anki-preview-mount.js:196:  if (root && root.document && root.APC_PROFILE_ANKI_PREVIEW_MOUNT_DISABLED !== true) {
+/var/www/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:4:  const PATCH_MARKER = "APC_PROFILE_ANKI_IMPORT_BRIDGE_R11E";
+/var/www/apc-wrapper-local/privatepages/profile-anki-import-bridge.js:86:  root.APC_PROFILE_ANKI_IMPORT_BRIDGE = api;

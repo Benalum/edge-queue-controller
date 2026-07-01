@@ -1,0 +1,26 @@
+=== focused source file presence ===
+PRESENT frontend/wrapper-ui/apc-wrapper-local/index.html
+size=11210 path=frontend/wrapper-ui/apc-wrapper-local/index.html
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+size=11715 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+size=398 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+size=18114 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-google-sync-panel.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+size=25822 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-manifest-panel.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js
+size=2980 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/anki-readonly-session.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/study-source-selector.js
+size=1795 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/study-source-selector.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js
+size=3489 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-import-bridge.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js
+size=7556 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-panel.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+size=5667 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-anki-preview-mount.js
+PRESENT frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js
+size=61877 path=frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js
+MISSING frontend/wrapper-ui/apc-wrapper-local/app.js
+PRESENT frontend/wrapper-ui/app.js
+size=579740 path=frontend/wrapper-ui/app.js
