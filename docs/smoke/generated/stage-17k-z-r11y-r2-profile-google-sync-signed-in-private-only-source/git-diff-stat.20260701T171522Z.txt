@@ -1,0 +1,2 @@
+ .../privatepages/profile-google-sync-panel.js          | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)

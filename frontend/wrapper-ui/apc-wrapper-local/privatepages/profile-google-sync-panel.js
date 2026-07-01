@@ -93,6 +93,24 @@
     }
   }
 
+  const SIGNED_IN_PRIVATE_PROFILE_ONLY_MARKER = "PROFILE_GOOGLE_SYNC_SIGNED_IN_PRIVATE_PROFILE_ONLY_R11Y_R2";
+
+  function hasSignedInPrivateProfile() {
+    const privateProfileShell = Boolean(document.querySelector('.private-shell[data-private-page="profile"]'));
+    const privatePagesApi = root.APC_PRIVATEPAGES;
+    const user = privatePagesApi && typeof privatePagesApi.me === 'function'
+      ? privatePagesApi.me()
+      : null;
+    return Boolean(privateProfileShell && user);
+  }
+
+  function removePanel() {
+    const panel = document.getElementById(panelId);
+    if (panel && panel.parentNode) {
+      panel.parentNode.removeChild(panel);
+    }
+  }
+
   function installStyle() {
     if (document.getElementById(styleId)) return;
     const style = document.createElement('style');
