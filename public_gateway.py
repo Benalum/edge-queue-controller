@@ -40,24 +40,12 @@ def is_allowed_public_route(method: str, path: str) -> bool:
     if method == "GET" and path == "/public/me":
         return True
 
-    if method in {"GET", "POST"} and path == "/public/study/decks":
-        return True
-
-    if method in {"GET", "POST"} and re.fullmatch(r"/public/study/decks/[0-9]+/cards", path):
-        return True
-
-    if method == "POST" and re.fullmatch(r"/public/study/cards/[0-9]+/reviews", path):
-        return True
-
-    if method == "GET" and path == "/public/study/progress":
-        return True
-
-    if method == "GET" and re.fullmatch(r"/public/study/decks/[0-9]+/card-stats", path):
-        return True
-
-    if method == "GET" and re.fullmatch(r"/public/study/decks/[0-9]+/review-queue", path):
-        return True
-
+    # Stage 17K-Z-R10G removed private study public gateway mapping.
+    # Stage 17K-Z-R10G removed private study public gateway mapping.
+    # Stage 17K-Z-R10G removed private study public gateway mapping.
+    # Stage 17K-Z-R10G removed private study public gateway mapping.
+    # Stage 17K-Z-R10G removed private study public gateway mapping.
+    # Stage 17K-Z-R10G removed private study public gateway mapping.
     if method == "POST" and path == "/public/companion/study/grade":
         return True
 

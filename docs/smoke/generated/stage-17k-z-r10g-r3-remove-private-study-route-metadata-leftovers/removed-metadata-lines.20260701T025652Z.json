@@ -1,0 +1,133 @@
+{
+  "removed_metadata_line_count": 16,
+  "removed": [
+    {
+      "file": "edge_controller.py",
+      "line": 20200,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_flag_route\": \"/api/study/cards/{card_id}/flag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20201,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_unflag_route\": \"/api/study/cards/{card_id}/unflag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20300,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_add_or_replace_route\": \"/api/study/cards/{card_id}/image\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20301,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_remove_route\": \"/api/study/cards/{card_id}/image/remove\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20302,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_list_route\": \"/api/study/cards/{card_id}/images\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20449,
+      "matched": [
+        "/api/study/decks"
+      ],
+      "text": "            \"existing_queue_endpoint\": \"/api/study/decks/{deck_id}/review-queue\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20450,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"existing_review_endpoint\": \"/api/study/cards/{card_id}/reviews\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20451,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_flag_endpoint\": \"/api/study/cards/{card_id}/flag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20452,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_unflag_endpoint\": \"/api/study/cards/{card_id}/unflag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20453,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_image_endpoint\": \"/api/study/cards/{card_id}/image\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20454,
+      "matched": [
+        "/api/study/session/status"
+      ],
+      "text": "            \"future_current_session_status_endpoint\": \"/api/study/session/status\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20579,
+      "matched": [
+        "/api/study/session/status"
+      ],
+      "text": "            \"existing_session_status_endpoint\": \"/api/study/session/status\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20580,
+      "matched": [
+        "/api/study/decks"
+      ],
+      "text": "            \"existing_review_queue_endpoint\": \"/api/study/decks/{deck_id}/review-queue\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20581,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"existing_review_endpoint\": \"/api/study/cards/{card_id}/reviews\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20584,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_flag_endpoint\": \"/api/study/cards/{card_id}/flag\","
+    },
+    {
+      "file": "edge_controller.py",
+      "line": 20585,
+      "matched": [
+        "/api/study/cards"
+      ],
+      "text": "            \"future_image_endpoint\": \"/api/study/cards/{card_id}/image\","
+    }
+  ]
+}

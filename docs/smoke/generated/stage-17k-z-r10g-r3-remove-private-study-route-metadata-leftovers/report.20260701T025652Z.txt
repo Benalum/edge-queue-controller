@@ -1,0 +1,24 @@
+=== stage-17k-z-r10g-r3-remove-private-study-route-metadata-leftovers ===
+created_utc=20260701T025652Z
+head_before=2a1dae2
+
+Scope:
+- Completed real deletion of private study backend route source and stale metadata references.
+- Removed failed uncommitted R10G/R10G-R2 smoke evidence.
+- No wrappers or guard responses added.
+- No deploy.
+- No DB write.
+- No DB table drop.
+- No schema change.
+- No service restart.
+- No live backend mutation.
+
+Verification:
+- py_compile=pass
+- frontend_ref_count=0
+- removed_metadata_line_count=16
+- final_remaining_forbidden_count=0
+- final_missing_required_count=0
+- final_wrapper_guard_count=0
+- final_remaining_study_route_decorator_count=0
+- final_gateway_private_study_count=0
