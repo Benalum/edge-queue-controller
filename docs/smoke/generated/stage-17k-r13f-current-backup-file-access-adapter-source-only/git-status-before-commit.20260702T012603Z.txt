@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r13f-current-backup-file-access-adapter-source-only/
+?? docs/stage-17k-r13f-current-backup-file-access-adapter-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/local-backup-current-file-access.js
+?? ops/smoke/check-stage-17k-r13f-current-backup-file-access-adapter-source-only.sh
