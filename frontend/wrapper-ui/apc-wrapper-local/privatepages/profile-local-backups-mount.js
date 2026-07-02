@@ -4,6 +4,7 @@
 
   const root = typeof window !== "undefined" ? window : globalThis;
   const MARKER = "APC_PROFILE_LOCAL_BACKUPS_MOUNT_R12L_R2_RESTORED_CARD";
+  const RESTORE_PREVIEW_BIND_MARKER_R12V = "APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BIND_R12V";
   const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
   const BOUND_ATTR = "data-apc-local-backups-bound";
 
@@ -184,6 +185,76 @@
     cleanupIfNotPrivateProfile: cleanupIfNotPrivateProfile,
     removePanel: removePanel
   });
+
+
+
+  function getRestorePreviewBridgeR12V() {
+    return root && root.APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BRIDGE
+      ? root.APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BRIDGE
+      : null;
+  }
+
+  function findRestorePreviewOutputR12V(panel) {
+    return panel && panel.querySelector
+      ? panel.querySelector("[data-apc-local-backup-restore-preview-output]")
+      : null;
+  }
+
+  function setRestorePreviewOutputR12V(panel, text) {
+    const output = findRestorePreviewOutputR12V(panel);
+    if (!output) return;
+    output.hidden = false;
+    output.textContent = text || "";
+  }
+
+  function bindRestorePreviewClickOnceR12V() {
+    if (!root || !root.document || root.APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_CLICK_BOUND_R12V === true) {
+      return;
+    }
+
+    root.APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_CLICK_BOUND_R12V = true;
+
+    root.document.addEventListener("click", function onRestorePreviewClickR12V(event) {
+      const target = event && event.target && event.target.closest
+        ? event.target.closest("[data-apc-local-backup-preview-restore]")
+        : null;
+
+      if (!target) return;
+
+      const panel = target.closest ? target.closest(PANEL_SELECTOR) : null;
+      if (!panel) return;
+
+      const bridge = getRestorePreviewBridgeR12V();
+      if (!bridge || typeof bridge.chooseBackupFileForPreview !== "function") {
+        setStatus(panel, "Backup restore preview module is not loaded.");
+        return;
+      }
+
+      target.disabled = true;
+      setStatus(panel, "Choose a backup JSON file to preview.");
+
+      bridge.chooseBackupFileForPreview({ explicitUserAction: true }).then(function onPreview(preview) {
+        const text = typeof bridge.formatPreviewText === "function"
+          ? bridge.formatPreviewText(preview)
+          : JSON.stringify(preview, null, 2);
+
+        setRestorePreviewOutputR12V(panel, text);
+
+        if (preview && preview.ok) {
+          setStatus(panel, "Backup preview complete. No data was restored.");
+        } else {
+          setStatus(panel, "Backup preview found issues. No data was restored.");
+        }
+      }).catch(function onPreviewError(error) {
+        setStatus(panel, "Could not preview backup file.", String(error && error.message ? error.message : error));
+      }).finally(function onPreviewDone() {
+        target.disabled = false;
+      });
+    });
+  }
+
+  bindRestorePreviewClickOnceR12V();
+
 
   root.APC_PROFILE_LOCAL_BACKUPS_MOUNT = mountApi;
 

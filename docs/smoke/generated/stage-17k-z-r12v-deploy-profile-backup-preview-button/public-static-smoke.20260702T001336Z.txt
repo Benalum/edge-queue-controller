@@ -1,0 +1,10 @@
+=== public static smoke ===
+profile_root_code=200 profile_root_bytes=12367
+local-backup-media-schema.js code=200 bytes=7966
+local-media-vault.js code=200 bytes=10751
+local-backup-media-export.js code=200 bytes=9486
+local-backup-restore-preview.js code=200 bytes=10361
+profile-local-backups-restore-preview-bridge.js code=200 bytes=8908
+profile-local-backups-panel.js code=200 bytes=7701
+profile-local-backups-mount.js code=200 bytes=9068
+PASS public static R12V smoke

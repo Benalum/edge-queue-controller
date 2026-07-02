@@ -4,6 +4,7 @@
 
   const root = typeof window !== "undefined" ? window : globalThis;
   const MARKER = "APC_PROFILE_LOCAL_BACKUPS_PANEL_R12L_R2_RESTORED_CARD";
+  const RESTORE_PREVIEW_BUTTON_MARKER_R12V = "APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BUTTON_R12V";
   const PANEL_TITLE = "Buddies Who Study local backups";
   const BACKUP_KIND = "buddies-who-study-local-backup";
   const BACKUP_VERSION = 1;
@@ -161,7 +162,8 @@
       },
       actions: {
         chooseFolder: supported ? "Choose local backup folder" : "Folder picker not supported",
-        downloadBackup: "Download backup file"
+        downloadBackup: "Download backup file",
+        previewRestore: "Preview backup file"
       }
     };
   }
@@ -184,7 +186,9 @@
       '<div class="private-actions apc-local-backup-actions">',
       '<button type="button" data-apc-local-backup-choose-folder' + (model.folderPickerSupported ? "" : " disabled") + '>' + escapeHtml(model.actions.chooseFolder) + '</button>',
       '<button type="button" data-apc-local-backup-download>' + escapeHtml(model.actions.downloadBackup) + '</button>',
+      '<button type="button" data-apc-local-backup-preview-restore>' + escapeHtml(model.actions.previewRestore) + '</button>',
       '</div>',
+      '<pre data-apc-local-backup-restore-preview-output hidden></pre>',
       '<pre data-apc-local-backup-status hidden></pre>',
       '</section>'
     ].join("");
