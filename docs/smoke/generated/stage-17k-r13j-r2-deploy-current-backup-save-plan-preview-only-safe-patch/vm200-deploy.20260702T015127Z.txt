@@ -1,0 +1,7 @@
+=== backup and install R13J-R2 static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13j-r2-current-backup-save-plan-preview-only-backup-20260702T015127Z
+c35118c063ed018688f26adba30d3e6497ab3f46dc62692f40a0063839da4fe7  /var/www/apc-wrapper-local/index.html
+dbc139a9efc9052110d8707475bb3f37abb0c1484a49af7290735a4a8bb0039c  /var/www/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+1994e9a64656c4322a34b329662e0e0e247c80d713247b1e30bf35456c740098  /var/www/apc-wrapper-local/privatepages/local-backup-current-file-save-plan.js
+R13J_R2_VM200_CURRENT_BACKUP_SAVE_PLAN_PREVIEW_ONLY_DEPLOY_DONE

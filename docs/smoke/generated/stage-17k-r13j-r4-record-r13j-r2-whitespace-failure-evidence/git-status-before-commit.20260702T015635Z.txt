@@ -1,0 +1,6 @@
+?? docs/smoke/generated/stage-17k-r13j-r2-deploy-current-backup-save-plan-preview-only-safe-patch/
+?? docs/smoke/generated/stage-17k-r13j-r4-record-r13j-r2-whitespace-failure-evidence/
+?? docs/stage-17k-r13j-r2-deploy-current-backup-save-plan-preview-only-safe-patch.md
+?? docs/stage-17k-r13j-r4-record-r13j-r2-whitespace-failure-evidence.md
+?? ops/smoke/check-stage-17k-r13j-r2-deploy-current-backup-save-plan-preview-only-safe-patch.sh
+?? ops/smoke/check-stage-17k-r13j-r4-record-r13j-r2-whitespace-failure-evidence.sh
