@@ -1,0 +1,4 @@
+=== local shas ===
+c9603d8e4ffb2b8d873c5369486296e4e7d55a202aad98844f5a20a80b2c1f99  frontend/wrapper-ui/apc-wrapper-local/index.html
+8225415371ea724e933588f39eb2ee5e00f2900efa8c657f26e1344bc87dca5d  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+ca846a55b18ec98f1790fd7c86f5cdd468d330f382758fc0453cbf58de6e7898  frontend/wrapper-ui/apc-wrapper-local/privatepages/local-backup-current-file-access.js

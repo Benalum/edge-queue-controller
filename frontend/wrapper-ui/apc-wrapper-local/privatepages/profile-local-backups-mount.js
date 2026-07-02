@@ -7,6 +7,7 @@
   const RESTORE_PREVIEW_BIND_MARKER_R12V = "APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BIND_R12V";
   const ASYNC_DOWNLOAD_BIND_MARKER_R12Y = "APC_PROFILE_LOCAL_BACKUPS_ASYNC_DOWNLOAD_BIND_R12Y";
   const MERGE_PREVIEW_UI_BIND_MARKER_R13B = "APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_UI_BIND_R13B";
+  const OPEN_CURRENT_FILE_PREVIEW_BIND_MARKER_R13G_R2 = "APC_PROFILE_LOCAL_BACKUPS_OPEN_CURRENT_FILE_PREVIEW_BIND_R13G_R2";
   const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
   const BOUND_ATTR = "data-apc-local-backups-bound";
 
@@ -391,6 +392,129 @@
   }
 
   bindMergePreviewClickOnceR13B();
+
+
+
+
+  function getCurrentBackupFileAccessR13GR2() {
+    return root && root.APC_LOCAL_BACKUP_CURRENT_FILE_ACCESS
+      ? root.APC_LOCAL_BACKUP_CURRENT_FILE_ACCESS
+      : null;
+  }
+
+  function ensureCurrentBackupPreviewOutputR13GR2(panel) {
+    if (!panel || !panel.querySelector) return null;
+
+    let output = panel.querySelector("[data-apc-local-backup-current-file-output]");
+    if (output) return output;
+
+    output = root.document.createElement("pre");
+    output.setAttribute("data-apc-local-backup-current-file-output", "true");
+    output.hidden = true;
+    output.style.whiteSpace = "pre-wrap";
+
+    const previewOutput = panel.querySelector("[data-apc-local-backup-restore-preview-output]");
+    if (previewOutput && previewOutput.parentNode) {
+      previewOutput.parentNode.insertBefore(output, previewOutput.nextSibling);
+    } else {
+      panel.appendChild(output);
+    }
+
+    return output;
+  }
+
+  function setCurrentBackupPreviewOutputR13GR2(panel, text) {
+    const output = ensureCurrentBackupPreviewOutputR13GR2(panel);
+    if (!output) return;
+    output.hidden = false;
+    output.textContent = text || "";
+  }
+
+  function ensureOpenCurrentBackupFileButtonR13GR2(panel) {
+    if (!panel || !panel.querySelector) return;
+    if (panel.querySelector("[data-apc-local-backup-open-current]")) return;
+
+    const previewButton = panel.querySelector("[data-apc-local-backup-preview-restore]");
+    if (!previewButton || !previewButton.parentNode) return;
+
+    const button = root.document.createElement("button");
+    button.type = "button";
+    button.setAttribute("data-apc-local-backup-open-current", "true");
+    button.textContent = "Open current backup file";
+    button.title = "Preview buddies-who-study-current.json. No data will be restored or overwritten.";
+
+    previewButton.parentNode.insertBefore(button, previewButton.nextSibling);
+  }
+
+  function ensureOpenCurrentBackupFileButtonsR13GR2() {
+    if (!root || !root.document || !root.document.querySelectorAll) return;
+    root.document.querySelectorAll(PANEL_SELECTOR).forEach(ensureOpenCurrentBackupFileButtonR13GR2);
+  }
+
+  function bindOpenCurrentBackupFileClickOnceR13GR2() {
+    if (!root || !root.document || root.APC_PROFILE_LOCAL_BACKUPS_OPEN_CURRENT_FILE_CLICK_BOUND_R13G_R2 === true) {
+      return;
+    }
+
+    root.APC_PROFILE_LOCAL_BACKUPS_OPEN_CURRENT_FILE_CLICK_BOUND_R13G_R2 = true;
+
+    root.document.addEventListener("click", function onOpenCurrentBackupFileClickR13GR2(event) {
+      const target = event && event.target && event.target.closest
+        ? event.target.closest("[data-apc-local-backup-open-current]")
+        : null;
+
+      if (!target) return;
+
+      const panel = target.closest ? target.closest(PANEL_SELECTOR) : null;
+      if (!panel) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      const adapter = getCurrentBackupFileAccessR13GR2();
+      if (!adapter || typeof adapter.chooseBackupFileForRead !== "function") {
+        setStatus(panel, "Current backup file preview module is not loaded.");
+        return;
+      }
+
+      target.disabled = true;
+      setStatus(panel, "Choose buddies-who-study-current.json to preview. No data will be restored or overwritten.");
+
+      adapter.chooseBackupFileForRead({ explicitUserAction: true }).then(function onCurrentBackupPreview(result) {
+        const text = typeof adapter.formatReadResultText === "function"
+          ? adapter.formatReadResultText(result)
+          : JSON.stringify(result, null, 2);
+
+        setCurrentBackupPreviewOutputR13GR2(panel, text);
+        setStatus(panel, "Current backup file preview complete. No data was restored or overwritten.");
+      }).catch(function onCurrentBackupPreviewError(error) {
+        setStatus(panel, "Could not preview current backup file.", String(error && error.message ? error.message : error));
+      }).finally(function onCurrentBackupPreviewDone() {
+        target.disabled = false;
+      });
+    }, true);
+  }
+
+  function installOpenCurrentBackupFilePreviewR13GR2() {
+    bindOpenCurrentBackupFileClickOnceR13GR2();
+    ensureOpenCurrentBackupFileButtonsR13GR2();
+
+    if (root && root.document) {
+      root.document.addEventListener("apc-private-page-rendered", function onPrivatePageRenderedR13GR2(event) {
+        const detail = event && event.detail ? event.detail : {};
+        if (detail.page !== "profile" || !detail.user) return;
+        root.setTimeout(ensureOpenCurrentBackupFileButtonsR13GR2, 0);
+      });
+
+      root.setTimeout(ensureOpenCurrentBackupFileButtonsR13GR2, 0);
+      root.setTimeout(ensureOpenCurrentBackupFileButtonsR13GR2, 250);
+    }
+  }
+
+  installOpenCurrentBackupFilePreviewR13GR2();
 
 
   root.APC_PROFILE_LOCAL_BACKUPS_MOUNT = mountApi;
