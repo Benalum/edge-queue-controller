@@ -1,0 +1,6 @@
+=== backup and install R12X static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r12x-preserve-study-docs-v2-backup-20260702T003247Z
+d0410e922e3ccd002c576c141a1e0bd400d3552826041401806a69d0871bc4f9  /var/www/apc-wrapper-local/index.html
+77e9629d4914e3e271106a2b40d357bae50e2c9746c0b0f6651d0c8bbe08f4b3  /var/www/apc-wrapper-local/privatepages/profile-local-backups-panel.js
+R12X_VM200_PRESERVE_STUDY_DOCS_V2_BACKUP_DEPLOY_DONE

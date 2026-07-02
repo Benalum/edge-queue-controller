@@ -6,6 +6,7 @@
   const MARKER = "APC_PROFILE_LOCAL_BACKUPS_PANEL_R12L_R2_RESTORED_CARD";
   const RESTORE_PREVIEW_BUTTON_MARKER_R12V = "APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BUTTON_R12V";
   const MEDIA_AWARE_EXPORT_MARKER_R12W = "APC_PROFILE_LOCAL_BACKUPS_MEDIA_AWARE_EXPORT_R12W";
+  const PRESERVE_STUDY_DOCS_MARKER_R12X = "APC_PROFILE_LOCAL_BACKUPS_PRESERVE_STUDY_DOCS_R12X";
   const PANEL_TITLE = "Buddies Who Study local backups";
   const BACKUP_KIND = "buddies-who-study-local-backup";
   const BACKUP_VERSION = 1;
@@ -330,6 +331,125 @@
   const buildBackupPayloadBaseR12W = buildBackupPayload;
   buildBackupPayload = function buildBackupPayload(options) {
     return makeMediaAwareBackupPayloadR12W(buildBackupPayloadBaseR12W(options), options || {});
+  };
+
+
+
+
+  function primaryStudyDocKeysR12X() {
+    const schema = root && root.APC_LOCAL_BACKUP_MEDIA_SCHEMA;
+    if (schema && Array.isArray(schema.primaryStudyDocKeys)) {
+      return schema.primaryStudyDocKeys.slice();
+    }
+    return [
+      "study/cards/v1",
+      "study/decks/v1",
+      "study/progress/v1",
+      "study/sessions/v1",
+      "study/store-state/v1"
+    ];
+  }
+
+  function cloneJsonR12X(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function docsEntriesToObjectR12X(entries) {
+    const out = {};
+    if (!Array.isArray(entries)) return out;
+    entries.forEach(function copyEntry(entry) {
+      if (!entry || !entry.key) return;
+      out[String(entry.key)] = entry.value === undefined ? null : entry.value;
+    });
+    return out;
+  }
+
+  function docsObjectR12X(value) {
+    if (!value) return {};
+    if (Array.isArray(value)) return docsEntriesToObjectR12X(value);
+    if (typeof value === "object") return cloneJsonR12X(value);
+    return {};
+  }
+
+  function mergePrimaryStudyDocsR12X(target, source) {
+    const keys = primaryStudyDocKeysR12X();
+    const sourceDocs = docsObjectR12X(source);
+    keys.forEach(function mergeKey(key) {
+      if (sourceDocs[key] !== undefined && sourceDocs[key] !== null) {
+        target[key] = sourceDocs[key];
+      }
+    });
+    return target;
+  }
+
+  function maybeSyncValueR12X(value) {
+    if (value && typeof value.then === "function") return null;
+    return value;
+  }
+
+  function readLocalSavePrimaryDocsR12X() {
+    const out = {};
+    const api = root && root.APC_LOCAL_SAVE;
+    if (!api) return out;
+
+    try {
+      if (typeof api.listDocs === "function") {
+        const listed = maybeSyncValueR12X(api.listDocs({ namespace: "study" }));
+        if (Array.isArray(listed)) {
+          mergePrimaryStudyDocsR12X(out, listed);
+        } else if (listed && Array.isArray(listed.docs)) {
+          mergePrimaryStudyDocsR12X(out, listed.docs);
+        } else if (listed && typeof listed === "object") {
+          mergePrimaryStudyDocsR12X(out, listed);
+        }
+      }
+    } catch (error) {
+      console.warn("[local-backups] R12X listDocs read failed", error);
+    }
+
+    primaryStudyDocKeysR12X().forEach(function readKey(key) {
+      if (out[key] !== undefined && out[key] !== null) return;
+
+      ["getDoc", "readDoc", "loadDoc"].forEach(function tryReader(name) {
+        if (out[key] !== undefined && out[key] !== null) return;
+        if (typeof api[name] !== "function") return;
+
+        try {
+          let value = maybeSyncValueR12X(api[name](key));
+          if (value === null || value === undefined) {
+            value = maybeSyncValueR12X(api[name]({ key: key }));
+          }
+          if (value && typeof value === "object" && value.value !== undefined) {
+            out[key] = value.value;
+          } else if (value !== undefined && value !== null) {
+            out[key] = value;
+          }
+        } catch (error) {
+          console.warn("[local-backups] R12X " + name + " read failed for " + key, error);
+        }
+      });
+    });
+
+    return out;
+  }
+
+  function preserveStudyDocsInBackupPayloadR12X(payload, originalPayload) {
+    const next = payload && typeof payload === "object" ? cloneJsonR12X(payload) : {};
+    next.docs = docsObjectR12X(next.docs);
+
+    const original = originalPayload && typeof originalPayload === "object" ? originalPayload : {};
+    mergePrimaryStudyDocsR12X(next.docs, original.docs);
+    mergePrimaryStudyDocsR12X(next.docs, original.legacyDocs);
+    mergePrimaryStudyDocsR12X(next.docs, readLocalSavePrimaryDocsR12X());
+
+    next.backupDocs = Array.from(new Set(Object.keys(next.docs).concat(Array.isArray(next.backupDocs) ? next.backupDocs : [])));
+    return next;
+  }
+
+  const buildBackupPayloadBaseR12X = buildBackupPayload;
+  buildBackupPayload = function buildBackupPayload(options) {
+    const originalPayload = buildBackupPayloadBaseR12X(options || {});
+    return preserveStudyDocsInBackupPayloadR12X(originalPayload, originalPayload);
   };
 
 
