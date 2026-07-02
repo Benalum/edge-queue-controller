@@ -1,0 +1,5 @@
+docs/smoke/generated/stage-17k-r13h-r2-finalize-compact-backup-preview-text-after-tag-collision/live-smoke.20260702T014053Z.txt:PASS live R13H static smoke
+docs/smoke/generated/stage-17k-r13h-r2-finalize-compact-backup-preview-text-after-tag-collision/api-guard.20260702T014053Z.txt:api_system_status=200
+docs/smoke/generated/stage-17k-r13h-r2-finalize-compact-backup-preview-text-after-tag-collision/api-guard.20260702T014053Z.txt:api_me_status=401
+docs/smoke/generated/stage-17k-r13h-r2-finalize-compact-backup-preview-text-after-tag-collision/api-guard.20260702T014053Z.txt:signup_status=403
+PASS stage-17k-r13h-r3 record R13H-R2 finalize evidence smoke

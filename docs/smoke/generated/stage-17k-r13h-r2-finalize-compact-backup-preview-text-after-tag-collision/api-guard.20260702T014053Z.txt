@@ -1,0 +1,5 @@
+=== API guard smoke ===
+api_system_status=200
+api_me_status=401
+signup_status=403
+study_decks_status=404

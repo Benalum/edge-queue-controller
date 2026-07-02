@@ -1,0 +1,5 @@
+=== live static smoke for already-deployed R13H ===
+root_code=200
+bridge_code=200
+adapter_code=200
+PASS live R13H static smoke
