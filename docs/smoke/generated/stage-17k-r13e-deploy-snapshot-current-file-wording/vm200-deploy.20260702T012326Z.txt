@@ -1,0 +1,6 @@
+=== backup and install R13E static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13e-snapshot-current-file-wording-backup-20260702T012326Z
+7e3c2d9c981d3c8e3ee4c5ba6dae4ec9e5edaa7fd1c386c905ef689f1cdb5b3e  /var/www/apc-wrapper-local/index.html
+5436af73132e624275ac56ef508a3a02054979da450bbde9df3a1689f5765c6e  /var/www/apc-wrapper-local/privatepages/profile-local-backups-panel.js
+R13E_VM200_SNAPSHOT_CURRENT_FILE_WORDING_DEPLOY_DONE

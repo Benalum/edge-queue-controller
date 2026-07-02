@@ -1,3 +1,4 @@
+/* APC_PROFILE_LOCAL_BACKUPS_SNAPSHOT_CURRENT_FILE_WORDING_R13E */
 /* APC_PROFILE_LOCAL_BACKUPS_PANEL_R12D_SOURCE_ONLY_START */
 (function () {
   "use strict";
@@ -159,13 +160,13 @@
       backupKind: BACKUP_KIND,
       backupVersion: BACKUP_VERSION,
       copy: {
-        intro: "Save your data locally.",
+        intro: "Save your data locally. Download snapshots are timestamped safety copies. Future merge backups will use buddies-who-study-current.json.",
         privacy: "",
         warning: ""
       },
       actions: {
         chooseFolder: supported ? "Choose local backup folder" : "Folder picker not supported",
-        downloadBackup: "Download backup file",
+        downloadBackup: "Download snapshot",
         previewRestore: "Preview backup file"
       }
     };
