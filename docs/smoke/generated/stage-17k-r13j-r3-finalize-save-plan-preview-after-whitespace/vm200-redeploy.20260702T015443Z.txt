@@ -1,0 +1,7 @@
+=== redeploy corrected static files so VM200 matches source ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13j-r3-finalize-save-plan-preview-after-whitespace-backup-20260702T015443Z
+414cadc094c943269fa84076ac9d5ad92ad5e0b1f50a9d06f870a61e751ba41f  /var/www/apc-wrapper-local/index.html
+c6b1e7976467676b1f57ab3fba531f85a4501a738f2deec0b0f4c87cd7f472a7  /var/www/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+1994e9a64656c4322a34b329662e0e0e247c80d713247b1e30bf35456c740098  /var/www/apc-wrapper-local/privatepages/local-backup-current-file-save-plan.js
+R13J_R3_VM200_SAVE_PLAN_PREVIEW_WHITESPACE_FINALIZE_DEPLOY_DONE

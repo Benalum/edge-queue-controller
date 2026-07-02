@@ -1,0 +1,5 @@
+=== live static smoke ===
+root_code=200
+mount_code=200
+save_plan_code=200
+PASS live static R13J-R3 smoke

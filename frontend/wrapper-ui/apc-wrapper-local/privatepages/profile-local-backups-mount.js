@@ -8,6 +8,7 @@
   const ASYNC_DOWNLOAD_BIND_MARKER_R12Y = "APC_PROFILE_LOCAL_BACKUPS_ASYNC_DOWNLOAD_BIND_R12Y";
   const MERGE_PREVIEW_UI_BIND_MARKER_R13B = "APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_UI_BIND_R13B";
   const OPEN_CURRENT_FILE_PREVIEW_BIND_MARKER_R13G_R2 = "APC_PROFILE_LOCAL_BACKUPS_OPEN_CURRENT_FILE_PREVIEW_BIND_R13G_R2";
+  const SAVE_PLAN_PREVIEW_BIND_MARKER_R13J_R2 = "APC_PROFILE_LOCAL_BACKUPS_SAVE_PLAN_PREVIEW_BIND_R13J_R2";
   const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
   const BOUND_ATTR = "data-apc-local-backups-bound";
 
@@ -451,6 +452,53 @@
     root.document.querySelectorAll(PANEL_SELECTOR).forEach(ensureOpenCurrentBackupFileButtonR13GR2);
   }
 
+
+
+  function getCurrentBackupSavePlanR13JR2() {
+    return root && root.APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_PLAN
+      ? root.APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_PLAN
+      : null;
+  }
+
+  function appendCurrentBackupSavePlanPreviewR13JR2(panel, readResult) {
+    if (!panel || !readResult) return;
+
+    const savePlanApi = getCurrentBackupSavePlanR13JR2();
+    if (!savePlanApi || typeof savePlanApi.createSavePlan !== "function") {
+      return;
+    }
+
+    const summary = readResult.summary || {};
+    const plan = savePlanApi.createSavePlan({
+      selectedFileName: readResult.fileName || "",
+      incomingPayload: readResult.payload || null,
+      currentPayload: readResult.payload || null,
+      mergePreview: {
+        adds: 0,
+        updates: 0,
+        skipped: Number(summary.docCount || 0),
+        conflicts: 0,
+        canWrite: false,
+        writeMode: "preview-only"
+      },
+      createdAt: new Date().toISOString()
+    });
+
+    const text = typeof savePlanApi.formatSavePlanText === "function"
+      ? savePlanApi.formatSavePlanText(plan)
+      : JSON.stringify(plan, null, 2);
+
+    const output = ensureCurrentBackupPreviewOutputR13GR2(panel);
+    if (!output) return;
+
+    output.hidden = false;
+    output.textContent = String(output.textContent || "").trimEnd() +
+      "\n\n" +
+      text +
+      "\n\nSave-plan preview only. No save, merge, restore, or overwrite action is available.";
+  }
+
+
   function bindOpenCurrentBackupFileClickOnceR13GR2() {
     if (!root || !root.document || root.APC_PROFILE_LOCAL_BACKUPS_OPEN_CURRENT_FILE_CLICK_BOUND_R13G_R2 === true) {
       return;
@@ -489,7 +537,9 @@
           : JSON.stringify(result, null, 2);
 
         setCurrentBackupPreviewOutputR13GR2(panel, text);
-        setStatus(panel, "Current backup file preview complete. No data was restored or overwritten.");
+
+            appendCurrentBackupSavePlanPreviewR13JR2(panel, result);
+setStatus(panel, "Current backup file and save-plan preview complete. No data was saved, restored, merged, or overwritten.");
       }).catch(function onCurrentBackupPreviewError(error) {
         setStatus(panel, "Could not preview current backup file.", String(error && error.message ? error.message : error));
       }).finally(function onCurrentBackupPreviewDone() {
