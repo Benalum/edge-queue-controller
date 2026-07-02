@@ -4,6 +4,7 @@
   const MARKER = "APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_BRIDGE_R13A_SOURCE_ONLY";
   const BACKUP_KIND = "buddies-who-study-local-backup";
   const WRITE_MODE = "preview-only";
+  const STABLE_FILE_PLAN_PREVIEW_MARKER_R13D = "APC_PROFILE_LOCAL_BACKUPS_STABLE_FILE_PLAN_PREVIEW_R13D";
 
   function isObject(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -39,6 +40,37 @@
       ? root.APC_LOCAL_BACKUP_RESTORE_PREVIEW
       : null;
   }
+
+
+
+  function stableFilePlanApiR13D() {
+    return root && root.APC_LOCAL_BACKUP_STABLE_FILE_PLAN
+      ? root.APC_LOCAL_BACKUP_STABLE_FILE_PLAN
+      : null;
+  }
+
+  function createStableFilePlanIfAvailableR13D(currentPayload, incomingPayload, options) {
+    const stableApi = stableFilePlanApiR13D();
+    if (stableApi && typeof stableApi.createStableCurrentFilePlan === "function") {
+      return stableApi.createStableCurrentFilePlan({
+        currentPayload: currentPayload || {},
+        incomingPayload: incomingPayload || {},
+        selectedFileName: options && options.selectedFileName ? options.selectedFileName : "",
+        createdAt: options && options.createdAt ? options.createdAt : new Date().toISOString()
+      });
+    }
+
+    return {
+      ok: true,
+      writeMode: "plan-only",
+      canWrite: false,
+      writesEnabled: false,
+      normalCurrentFileName: "buddies-who-study-current.json",
+      warnings: ["Stable current backup file plan is not loaded."],
+      errors: []
+    };
+  }
+
 
   function parseBackupJsonText(text) {
     if (typeof text !== "string" || text.trim() === "") {
@@ -117,6 +149,7 @@
     const mergePlan = planner.createMergePlan(currentPayload || {}, incomingPayload || {}, {
       createdAt: options && options.createdAt ? options.createdAt : new Date().toISOString()
     });
+    const stableFilePlan = createStableFilePlanIfAvailableR13D(currentPayload, incomingPayload, options || {});
 
     return {
       marker: MARKER,
@@ -130,13 +163,16 @@
       overwriteExistingLocalData: false,
       restorePreview: restorePreview,
       mergePlan: mergePlan,
+      stableFilePlan: stableFilePlan,
       ok: Boolean((restorePreview ? restorePreview.ok !== false : true) && mergePlan && mergePlan.ok !== false),
       errors: []
         .concat(restorePreview && Array.isArray(restorePreview.errors) ? restorePreview.errors : [])
-        .concat(mergePlan && Array.isArray(mergePlan.errors) ? mergePlan.errors : []),
+        .concat(mergePlan && Array.isArray(mergePlan.errors) ? mergePlan.errors : [])
+        .concat(stableFilePlan && Array.isArray(stableFilePlan.errors) ? stableFilePlan.errors : []),
       warnings: []
         .concat(restorePreview && Array.isArray(restorePreview.warnings) ? restorePreview.warnings : [])
         .concat(mergePlan && Array.isArray(mergePlan.warnings) ? mergePlan.warnings : [])
+        .concat(stableFilePlan && Array.isArray(stableFilePlan.warnings) ? stableFilePlan.warnings : [])
     };
   }
 
@@ -162,7 +198,9 @@
     }
 
     const text = await file.text();
-    return previewMergeBackupText(text, opts);
+    return previewMergeBackupText(text, Object.assign({}, opts, {
+      selectedFileName: file && file.name ? file.name : undefined
+    }));
   }
 
   function chooseBackupFileForMergePreview(options) {
@@ -203,6 +241,29 @@
     });
   }
 
+
+
+  function stableFilePlanLinesForPreviewR13D(preview) {
+    const stable = preview && preview.stableFilePlan ? preview.stableFilePlan : null;
+    if (!stable) return [];
+
+    const selected = stable.selectedFile || {};
+    const lines = [
+      "",
+      "Backup file naming",
+      "Normal file to keep using: " + String(stable.normalCurrentFileName || "buddies-who-study-current.json"),
+      "Selected file role: " + String(selected.role || "unknown"),
+      "Recommendation: " + String(selected.recommendation || "Use the stable current file for normal backup merges."),
+      "Timestamped downloads should stay manual snapshots.",
+      "Normal browser downloads may create duplicate files like buddies-who-study-current (1).json.",
+      "Updating the same file later requires a user-selected file or folder.",
+      "No data was restored or overwritten."
+    ];
+
+    return lines;
+  }
+
+
   function formatMergePreviewLines(preview) {
     const p = preview || {};
     const plan = p.mergePlan || {};
@@ -222,7 +283,7 @@
       "Restore preview ok: " + String(p.restorePreview ? p.restorePreview.ok !== false : true),
       "Merge preview ok: " + String(plan ? plan.ok !== false : false),
       ""
-    ].concat(planLines);
+    ].concat(planLines).concat(stableFilePlanLinesForPreviewR13D(p));
 
     if ((p.warnings || []).length) {
       lines.push("");

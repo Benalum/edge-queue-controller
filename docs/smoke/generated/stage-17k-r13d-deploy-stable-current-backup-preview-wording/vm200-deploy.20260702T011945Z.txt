@@ -1,0 +1,7 @@
+=== backup and install R13D static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13d-stable-current-backup-preview-wording-backup-20260702T011945Z
+9ce4c3bb32eb737eb7cfc3083da19052fa37ffa0e1a15cb18405606ff1f263f4  /var/www/apc-wrapper-local/index.html
+c7530b6e192cc16495f99e30be0d2cb0d513ba32c9de6b6f5e177a1738024b20  /var/www/apc-wrapper-local/privatepages/local-backup-stable-file-plan.js
+2bf8c2aa83c51d9006b569f02fcbfb1bf014da2996d51db414352b57d3341915  /var/www/apc-wrapper-local/privatepages/profile-local-backups-merge-preview-bridge.js
+R13D_VM200_STABLE_CURRENT_BACKUP_PREVIEW_WORDING_DEPLOY_DONE
