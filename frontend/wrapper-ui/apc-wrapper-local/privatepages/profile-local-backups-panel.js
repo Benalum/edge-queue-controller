@@ -7,6 +7,7 @@
   const RESTORE_PREVIEW_BUTTON_MARKER_R12V = "APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BUTTON_R12V";
   const MEDIA_AWARE_EXPORT_MARKER_R12W = "APC_PROFILE_LOCAL_BACKUPS_MEDIA_AWARE_EXPORT_R12W";
   const PRESERVE_STUDY_DOCS_MARKER_R12X = "APC_PROFILE_LOCAL_BACKUPS_PRESERVE_STUDY_DOCS_R12X";
+  const ASYNC_STUDY_DOC_EXPORT_MARKER_R12Y = "APC_PROFILE_LOCAL_BACKUPS_ASYNC_STUDY_DOC_EXPORT_R12Y";
   const PANEL_TITLE = "Buddies Who Study local backups";
   const BACKUP_KIND = "buddies-who-study-local-backup";
   const BACKUP_VERSION = 1;
@@ -450,6 +451,146 @@
   buildBackupPayload = function buildBackupPayload(options) {
     const originalPayload = buildBackupPayloadBaseR12X(options || {});
     return preserveStudyDocsInBackupPayloadR12X(originalPayload, originalPayload);
+  };
+
+
+
+
+  function isPromiseLikeR12Y(value) {
+    return value && typeof value.then === "function";
+  }
+
+  async function awaitMaybeR12Y(value) {
+    return isPromiseLikeR12Y(value) ? await value : value;
+  }
+
+  function valueFromLocalSaveDocR12Y(value) {
+    if (value && typeof value === "object") {
+      if (value.value !== undefined) return value.value;
+      if (value.doc !== undefined) return value.doc;
+      if (value.data !== undefined) return value.data;
+    }
+    return value;
+  }
+
+  function mergeLocalSaveDocListR12Y(target, listed) {
+    if (!listed) return target;
+
+    if (Array.isArray(listed)) {
+      listed.forEach(function mergeEntry(entry) {
+        if (!entry) return;
+        if (entry.key) {
+          const key = String(entry.key);
+          if (primaryStudyDocKeysR12X().indexOf(key) >= 0) {
+            target[key] = valueFromLocalSaveDocR12Y(entry);
+          }
+        }
+      });
+      return target;
+    }
+
+    if (listed && Array.isArray(listed.docs)) {
+      return mergeLocalSaveDocListR12Y(target, listed.docs);
+    }
+
+    if (listed && typeof listed === "object") {
+      primaryStudyDocKeysR12X().forEach(function mergeKey(key) {
+        if (listed[key] !== undefined && listed[key] !== null) {
+          target[key] = valueFromLocalSaveDocR12Y(listed[key]);
+        }
+      });
+    }
+
+    return target;
+  }
+
+  async function readLocalSavePrimaryDocsAsyncR12Y() {
+    const out = {};
+    const api = root && root.APC_LOCAL_SAVE;
+    if (!api) return out;
+
+    if (typeof api.listDocs === "function") {
+      try {
+        mergeLocalSaveDocListR12Y(out, await awaitMaybeR12Y(api.listDocs({ namespace: "study" })));
+      } catch (error) {
+        console.warn("[local-backups] R12Y async listDocs read failed", error);
+      }
+    }
+
+    for (const key of primaryStudyDocKeysR12X()) {
+      if (out[key] !== undefined && out[key] !== null) continue;
+
+      for (const name of ["getDoc", "readDoc", "loadDoc"]) {
+        if (out[key] !== undefined && out[key] !== null) break;
+        if (typeof api[name] !== "function") continue;
+
+        const attempts = [
+          { namespace: "study", key: key },
+          { key: key },
+          key,
+          ["study", key]
+        ];
+
+        for (const attempt of attempts) {
+          if (out[key] !== undefined && out[key] !== null) break;
+          try {
+            let value;
+            if (Array.isArray(attempt)) {
+              value = await awaitMaybeR12Y(api[name](attempt[0], attempt[1]));
+            } else {
+              value = await awaitMaybeR12Y(api[name](attempt));
+            }
+            value = valueFromLocalSaveDocR12Y(value);
+            if (value !== undefined && value !== null) {
+              out[key] = value;
+            }
+          } catch (error) {
+            if (attempt === attempts[attempts.length - 1]) {
+              console.warn("[local-backups] R12Y " + name + " read failed for " + key, error);
+            }
+          }
+        }
+      }
+    }
+
+    return out;
+  }
+
+  async function preserveStudyDocsInBackupPayloadAsyncR12Y(payload, originalPayload) {
+    const next = payload && typeof payload === "object" ? cloneJsonR12X(payload) : {};
+    next.docs = docsObjectR12X(next.docs);
+
+    const original = originalPayload && typeof originalPayload === "object" ? originalPayload : {};
+    mergePrimaryStudyDocsR12X(next.docs, original.docs);
+    mergePrimaryStudyDocsR12X(next.docs, original.legacyDocs);
+    mergePrimaryStudyDocsR12X(next.docs, await readLocalSavePrimaryDocsAsyncR12Y());
+
+    next.backupDocs = Array.from(new Set(Object.keys(next.docs).concat(Array.isArray(next.backupDocs) ? next.backupDocs : [])));
+    return next;
+  }
+
+  const buildBackupPayloadBaseR12Y = buildBackupPayload;
+  buildBackupPayload = async function buildBackupPayload(options) {
+    const originalPayload = await awaitMaybeR12Y(buildBackupPayloadBaseR12Y(options || {}));
+    return preserveStudyDocsInBackupPayloadAsyncR12Y(originalPayload, originalPayload);
+  };
+
+  const chooseFolderAndWriteBackupBaseR12Y = chooseFolderAndWriteBackup;
+  chooseFolderAndWriteBackup = async function chooseFolderAndWriteBackup(options) {
+    const opts = options || {};
+
+    if (!hasDirectoryPicker()) {
+      throw new Error("Folder picker is not supported in this browser. Use download backup instead.");
+    }
+
+    const directoryHandle = opts.directoryHandle || await root.showDirectoryPicker({
+      id: "buddies-who-study-local-backups",
+      mode: "readwrite"
+    });
+
+    const payload = await buildBackupPayload(opts);
+    const fileName = opts.fileName || backupFileName(payload && payload.createdAt);
+    return writeBackupToDirectoryHandle(directoryHandle, payload, fileName);
   };
 
 

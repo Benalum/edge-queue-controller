@@ -5,6 +5,7 @@
   const root = typeof window !== "undefined" ? window : globalThis;
   const MARKER = "APC_PROFILE_LOCAL_BACKUPS_MOUNT_R12L_R2_RESTORED_CARD";
   const RESTORE_PREVIEW_BIND_MARKER_R12V = "APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BIND_R12V";
+  const ASYNC_DOWNLOAD_BIND_MARKER_R12Y = "APC_PROFILE_LOCAL_BACKUPS_ASYNC_DOWNLOAD_BIND_R12Y";
   const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
   const BOUND_ATTR = "data-apc-local-backups-bound";
 
@@ -254,6 +255,65 @@
   }
 
   bindRestorePreviewClickOnceR12V();
+
+
+
+
+  function bindAsyncDownloadClickOnceR12Y() {
+    if (!root || !root.document || root.APC_PROFILE_LOCAL_BACKUPS_ASYNC_DOWNLOAD_CLICK_BOUND_R12Y === true) {
+      return;
+    }
+
+    root.APC_PROFILE_LOCAL_BACKUPS_ASYNC_DOWNLOAD_CLICK_BOUND_R12Y = true;
+
+    root.document.addEventListener("click", function onAsyncDownloadClickR12Y(event) {
+      const target = event && event.target && event.target.closest
+        ? event.target.closest("[data-apc-local-backup-download]")
+        : null;
+
+      if (!target) return;
+
+      const panel = target.closest ? target.closest(PANEL_SELECTOR) : null;
+      if (!panel) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      const panelApi = getPanelApi();
+      if (!panelApi || typeof panelApi.buildBackupPayload !== "function" || typeof panelApi.createDownloadUrl !== "function") {
+        setStatus(panel, "Local backup module is not loaded.");
+        return;
+      }
+
+      target.disabled = true;
+      setStatus(panel, "Preparing backup download...");
+
+      Promise.resolve(panelApi.buildBackupPayload()).then(function onPayload(payload) {
+        const url = panelApi.createDownloadUrl(payload);
+        const link = root.document.createElement("a");
+        link.href = url;
+        link.download = panelApi.backupFileName(payload && payload.createdAt);
+        root.document.body.appendChild(link);
+        link.click();
+        link.remove();
+        root.setTimeout(function revokeUrl() {
+          if (root.URL && typeof root.URL.revokeObjectURL === "function") {
+            root.URL.revokeObjectURL(url);
+          }
+        }, 1000);
+        setStatus(panel, "Backup download ready. Study docs and media docs were included.");
+      }).catch(function onDownloadError(error) {
+        setStatus(panel, "Could not create backup download.", String(error && error.message ? error.message : error));
+      }).finally(function onDownloadDone() {
+        target.disabled = false;
+      });
+    }, true);
+  }
+
+  bindAsyncDownloadClickOnceR12Y();
 
 
   root.APC_PROFILE_LOCAL_BACKUPS_MOUNT = mountApi;

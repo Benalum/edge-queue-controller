@@ -1,0 +1,7 @@
+=== backup and install R12Y static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r12y-async-study-doc-export-backup-20260702T004435Z
+2158c159cd4028b0ab4151ff264393c4ff60d2577b708768fde768c04d9febc3  /var/www/apc-wrapper-local/index.html
+832d926377af68597d1ed5985d0ec781a36cf6fb0d0f30d6fbd6dcd34f0c6fad  /var/www/apc-wrapper-local/privatepages/profile-local-backups-panel.js
+caeb837bf9fd17c00675061819e7ed2127f5c6016d5f82ad9411cd6503c7eea9  /var/www/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+R12Y_VM200_ASYNC_STUDY_DOC_EXPORT_DEPLOY_DONE
