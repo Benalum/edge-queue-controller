@@ -1,0 +1,5 @@
+=== public static smoke ===
+profile_root_code=200 profile_root_bytes=12912
+bridge_code=200 bridge_bytes=15151
+adapter_code=200 adapter_bytes=13187
+PASS public static R13H smoke

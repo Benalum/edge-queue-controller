@@ -1,0 +1,7 @@
+=== backup and install R13H static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13h-compact-backup-preview-text-backup-20260702T013758Z
+97aeb6685545680dfe16fe8cb9e61d9e798410a942e37026368a893bf1c5942d  /var/www/apc-wrapper-local/index.html
+5e1e0c6c2d44872456c9c432459bf3e34c77ea46064a4eae7d5d4a15732b4b3d  /var/www/apc-wrapper-local/privatepages/profile-local-backups-merge-preview-bridge.js
+9e88609f5759965545214ba10127d757b88162068cee93ec997c9e16fb399ce4  /var/www/apc-wrapper-local/privatepages/local-backup-current-file-access.js
+R13H_VM200_COMPACT_BACKUP_PREVIEW_TEXT_DEPLOY_DONE

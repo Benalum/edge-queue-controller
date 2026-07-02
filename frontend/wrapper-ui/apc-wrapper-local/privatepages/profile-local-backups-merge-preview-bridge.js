@@ -4,6 +4,7 @@
   const MARKER = "APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_BRIDGE_R13A_SOURCE_ONLY";
   const BACKUP_KIND = "buddies-who-study-local-backup";
   const WRITE_MODE = "preview-only";
+  const COMPACT_PREVIEW_TEXT_MARKER_R13H = "APC_PROFILE_LOCAL_BACKUPS_COMPACT_PREVIEW_TEXT_R13H";
   const STABLE_FILE_PLAN_PREVIEW_MARKER_R13D = "APC_PROFILE_LOCAL_BACKUPS_STABLE_FILE_PLAN_PREVIEW_R13D";
 
   function isObject(value) {
@@ -264,7 +265,7 @@
   }
 
 
-  function formatMergePreviewLines(preview) {
+  function formatMergePreviewLinesVerboseR13H(preview) {
     const p = preview || {};
     const plan = p.mergePlan || {};
     const planner = mergePlannerApi();
@@ -298,6 +299,92 @@
       lines.push("Errors: " + String(p.errors.length));
       (p.errors || []).slice(0, 10).forEach(function addError(error) {
         lines.push("- " + error);
+      });
+    }
+
+    return lines;
+  }
+
+  function formatMergePreviewLines(preview) {
+    const verboseLines = typeof formatMergePreviewLinesVerboseR13H === "function"
+      ? formatMergePreviewLinesVerboseR13H(preview)
+      : [];
+
+    function valueAfter(prefix, fallback) {
+      const found = verboseLines.find(function findLine(line) {
+        return String(line || "").indexOf(prefix) === 0;
+      });
+      if (!found) return fallback || "";
+      return String(found).slice(prefix.length).trim();
+    }
+
+    function collectBulletsAfter(prefix) {
+      const out = [];
+      const start = verboseLines.findIndex(function findLine(line) {
+        return String(line || "").indexOf(prefix) === 0;
+      });
+      if (start < 0) return out;
+      for (let i = start + 1; i < verboseLines.length; i += 1) {
+        const line = String(verboseLines[i] || "");
+        if (line.indexOf("- ") === 0) out.push(line);
+        else if (line.trim() === "") continue;
+        else break;
+      }
+      return out;
+    }
+
+    const writeMode = valueAfter("Write mode:", "preview-only");
+    const canWrite = valueAfter("Can write:", "false");
+    const version = valueAfter("Incoming version:", "");
+    const adds = valueAfter("Adds:", "0");
+    const updates = valueAfter("Updates:", "0");
+    const skipped = valueAfter("Skipped:", "0");
+    const conflicts = valueAfter("Conflicts:", "0");
+    const deckAdds = valueAfter("Deck adds:", "0");
+    const cardAdds = valueAfter("Card adds:", "0");
+    const sessionAdds = valueAfter("Session adds:", "0");
+    const mediaAdds = valueAfter("Media adds:", "0");
+    const currentFile = valueAfter("Normal file to keep using:", "buddies-who-study-current.json");
+    const selectedRole = valueAfter("Selected file role:", "unknown");
+    const recommendation = valueAfter("Recommendation:", "");
+    const warningsCount = valueAfter("Warnings:", "0");
+    const errorsCount = valueAfter("Errors:", "0");
+    const warnings = collectBulletsAfter("Warnings:");
+    const errors = collectBulletsAfter("Errors:");
+
+    const lines = [
+      "Backup preview",
+      "Mode: " + writeMode,
+      "Can write: " + canWrite,
+      "Incoming version: " + version,
+      "",
+      "Merge plan summary",
+      "Changes: " + adds + " adds, " + updates + " updates, " + skipped + " skipped, " + conflicts + " conflicts",
+      "New items: " + deckAdds + " decks, " + cardAdds + " cards, " + sessionAdds + " sessions, " + mediaAdds + " media",
+      "",
+      "File naming",
+      "Current file: " + currentFile,
+      "Selected file role: " + selectedRole,
+      recommendation ? "Recommendation: " + recommendation : "Recommendation: Preview first, then use the current file for normal backup updates.",
+      "",
+      "Safety",
+      "Preview only. No data was restored or overwritten.",
+      "Writing stays disabled."
+    ];
+
+    if (warningsCount !== "0" || warnings.length) {
+      lines.push("");
+      lines.push("Warnings: " + warningsCount);
+      warnings.slice(0, 5).forEach(function addWarning(line) {
+        lines.push(line);
+      });
+    }
+
+    if (errorsCount !== "0" || errors.length) {
+      lines.push("");
+      lines.push("Errors: " + errorsCount);
+      errors.slice(0, 5).forEach(function addError(line) {
+        lines.push(line);
       });
     }
 

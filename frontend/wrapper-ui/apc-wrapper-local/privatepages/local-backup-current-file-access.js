@@ -7,6 +7,7 @@
   const SNAPSHOT_PREFIX = "buddies-who-study-local-backup-v2-";
   const JSON_EXTENSION = ".json";
   const MODE = "read-and-preview-only";
+  const COMPACT_PREVIEW_TEXT_MARKER_R13H = "APC_LOCAL_BACKUP_CURRENT_FILE_COMPACT_PREVIEW_TEXT_R13H";
 
   function isObject(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -246,7 +247,7 @@
     });
   }
 
-  function formatReadResultLines(result) {
+  function formatReadResultLinesVerboseR13H(result) {
     const r = result || {};
     const summary = r.summary || {};
     const classification = r.classification || {};
@@ -288,6 +289,54 @@
       lines.push("");
       lines.push("Errors: " + String(r.errors.length));
       (r.errors || []).slice(0, 10).forEach(function addError(error) {
+        lines.push("- " + error);
+      });
+    }
+
+    return lines;
+  }
+
+  function formatReadResultLines(result) {
+    const r = result || {};
+    const summary = r.summary || {};
+    const classification = r.classification || {};
+    const warnings = Array.isArray(r.warnings) ? r.warnings : [];
+    const errors = Array.isArray(r.errors) ? r.errors : [];
+
+    const lines = [
+      "Current backup file preview",
+      "Mode: " + String(r.mode || MODE),
+      "Can write: " + String(r.canWrite === true),
+      "Selected file: " + String(r.fileName || ""),
+      "Expected current file: " + String(r.expectedCurrentFileName || CURRENT_FILE_NAME),
+      "Selected file role: " + String(classification.role || "unknown"),
+      "",
+      "Backup contents",
+      "Version " + String(summary.version || 0) + " from " + String(summary.createdAt || ""),
+      String(summary.deckCount || 0) + " decks, " + String(summary.cardCount || 0) + " cards, " + String(summary.sessionCount || 0) + " sessions",
+      String(summary.mediaCount || 0) + " media items, " + String(summary.totalMediaBytes || 0) + " bytes",
+      "",
+      "Safety",
+      "Preview only. No data was restored, merged, or overwritten.",
+      "Writing stays disabled."
+    ];
+
+    if (classification.recommendation) {
+      lines.splice(6, 0, "Recommendation: " + String(classification.recommendation || ""));
+    }
+
+    if (warnings.length) {
+      lines.push("");
+      lines.push("Warnings: " + String(warnings.length));
+      warnings.slice(0, 5).forEach(function addWarning(warning) {
+        lines.push("- " + warning);
+      });
+    }
+
+    if (errors.length) {
+      lines.push("");
+      lines.push("Errors: " + String(errors.length));
+      errors.slice(0, 5).forEach(function addError(error) {
         lines.push("- " + error);
       });
     }

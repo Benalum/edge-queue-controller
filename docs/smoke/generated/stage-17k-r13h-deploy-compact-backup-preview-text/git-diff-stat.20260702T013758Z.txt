@@ -1,0 +1,4 @@
+ frontend/wrapper-ui/apc-wrapper-local/index.html   |  4 +-
+ .../local-backup-current-file-access.js            | 51 ++++++++++++-
+ .../profile-local-backups-merge-preview-bridge.js  | 89 +++++++++++++++++++++-
+ 3 files changed, 140 insertions(+), 4 deletions(-)
