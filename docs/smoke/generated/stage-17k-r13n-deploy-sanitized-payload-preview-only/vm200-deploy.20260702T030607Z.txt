@@ -1,0 +1,7 @@
+=== backup and install R13N static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13n-sanitized-payload-preview-only-backup-20260702T030607Z
+4ccd9aeb6eaae4083ac8b43873b862238022ee414cf7c772cd72baeb910e6554  /var/www/apc-wrapper-local/index.html
+97892612f54c2841401697c99f9b22c15164670f0d9a1d5680821cd5d1bd8161  /var/www/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+4646f850900cb9f7fc05d161d6bbd078a4700a94163dfc29f2f72aedf255ca46  /var/www/apc-wrapper-local/privatepages/local-backup-sanitized-payload-builder.js
+R13N_VM200_SANITIZED_PAYLOAD_PREVIEW_ONLY_DEPLOY_DONE
