@@ -3,6 +3,7 @@
   "use strict";
 
   const MARKER = "APC_LOCAL_BACKUP_RESTORE_PREVIEW_R12T_SOURCE_ONLY";
+  const LEGACY_V1_COMPAT_MARKER_R12W = "APC_LOCAL_BACKUP_RESTORE_PREVIEW_LEGACY_V1_COMPAT_R12W";
   const VERSION = 1;
   const BACKUP_KIND = "buddies-who-study-local-backup";
 
@@ -68,9 +69,31 @@
   }
 
   function docsObject(payload) {
-    return payload && payload.docs && typeof payload.docs === "object" && !Array.isArray(payload.docs)
-      ? payload.docs
-      : {};
+    if (!payload || payload.docs === undefined || payload.docs === null) {
+      return {};
+    }
+
+    if (Array.isArray(payload.docs)) {
+      const out = {};
+      payload.docs.forEach(function copyLegacyDoc(entry) {
+        if (!entry || !entry.key) return;
+        out[String(entry.key)] = entry.value === undefined ? null : entry.value;
+      });
+      return out;
+    }
+
+    return typeof payload.docs === "object" ? payload.docs : {};
+  }
+
+  function normalizePrivacyR12W(privacy) {
+    const source = privacy && typeof privacy === "object" ? privacy : {};
+    return Object.assign({}, source, {
+      serverUpload: source.serverUpload === false || source.uploadsToServer === false ? false : source.serverUpload,
+      ankiSourceMutation: source.ankiSourceMutation === false || source.modifiesAnkiSourceFiles === false ? false : source.ankiSourceMutation,
+      sourceMutation: source.sourceMutation === false || source.modifiesAnkiSourceFiles === false ? false : source.sourceMutation,
+      localOnly: source.localOnly === true || source.uploadsToServer === false ? true : source.localOnly,
+      originalAnkiBytesIncluded: source.originalAnkiBytesIncluded === false || source.includesAnkiSourceFileBytes === false ? false : source.originalAnkiBytesIncluded
+    });
   }
 
   function listDocKeys(payload) {
@@ -130,7 +153,7 @@
   function validatePrivacy(payload) {
     const errors = [];
     const warnings = [];
-    const privacy = payload && payload.privacy ? payload.privacy : {};
+    const privacy = normalizePrivacyR12W(payload && payload.privacy ? payload.privacy : {});
 
     if (privacy.serverUpload !== false) {
       errors.push("Backup privacy.serverUpload must be false.");
@@ -185,7 +208,13 @@
 
     if (exporter && typeof exporter.validateAugmentedBackup === "function") {
       const result = exporter.validateAugmentedBackup(payload);
-      (result.errors || []).forEach(function add(error) { errors.push(error); });
+      (result.errors || []).forEach(function add(error) {
+        if (String(error).indexOf("Missing media backup doc:") === 0) {
+          warnings.push(error);
+        } else {
+          errors.push(error);
+        }
+      });
       (result.warnings || []).forEach(function add(warning) { warnings.push(warning); });
     }
 
@@ -214,8 +243,11 @@
       errors.push("Backup kind is not recognized.");
     }
 
+    copy.docs = docsObject(copy);
+    copy.privacy = normalizePrivacyR12W(copy.privacy);
+
     if (!copy.docs || typeof copy.docs !== "object" || Array.isArray(copy.docs)) {
-      errors.push("Backup docs must be an object.");
+      errors.push("Backup docs must be an object or legacy docs array.");
     }
 
     const privacyResult = validatePrivacy(copy);

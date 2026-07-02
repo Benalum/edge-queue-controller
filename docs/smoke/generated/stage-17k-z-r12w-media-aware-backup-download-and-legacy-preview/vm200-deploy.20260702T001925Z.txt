@@ -1,0 +1,7 @@
+=== backup and install R12W static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r12w-media-aware-backup-legacy-preview-backup-20260702T001925Z
+f13bf62907d608a9b965698f45adf03bee5686b343bd148ccd87dd52f209d52b  /var/www/apc-wrapper-local/index.html
+068f635a11a3d3c3115bac6589bdf01b3f6fb67d2ad055dac40061f1a76ae8df  /var/www/apc-wrapper-local/privatepages/profile-local-backups-panel.js
+dd7d4862eec740ca281c3c9a9a1210b178d687e02e0e0fe9b3a6e59270ce9d02  /var/www/apc-wrapper-local/privatepages/local-backup-restore-preview.js
+R12W_VM200_MEDIA_AWARE_BACKUP_LEGACY_PREVIEW_DEPLOY_DONE

@@ -1,0 +1,9 @@
+=== local shas ===
+f13bf62907d608a9b965698f45adf03bee5686b343bd148ccd87dd52f209d52b  frontend/wrapper-ui/apc-wrapper-local/index.html
+068f635a11a3d3c3115bac6589bdf01b3f6fb67d2ad055dac40061f1a76ae8df  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-panel.js
+dd7d4862eec740ca281c3c9a9a1210b178d687e02e0e0fe9b3a6e59270ce9d02  frontend/wrapper-ui/apc-wrapper-local/privatepages/local-backup-restore-preview.js
+8486cd1d38be150f841ff25fa74166bc45532e391cec06cb9a86d231d009f03a  frontend/wrapper-ui/apc-wrapper-local/privatepages/local-backup-media-schema.js
+9568a702ab8973371a1fd80ee9ba999f4bd66d4bc0de922358d74b79447c4239  frontend/wrapper-ui/apc-wrapper-local/privatepages/local-media-vault.js
+7a1d2c3d4d22d0816b8a427db16385895a554053e2c5d4971153025dbcbc9419  frontend/wrapper-ui/apc-wrapper-local/privatepages/local-backup-media-export.js
+3fda5a1be172182fe1015d5c84bf4eb57813530e0be5fd212b354a74bcd765a1  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-restore-preview-bridge.js
+244fbdfa76cf0ccb423f0414f28f52b0901be914329bc70dbec77e0b15026395  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js

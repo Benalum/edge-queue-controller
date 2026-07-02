@@ -1,0 +1,4 @@
+ frontend/wrapper-ui/apc-wrapper-local/index.html   |  14 +--
+ .../privatepages/local-backup-restore-preview.js   |  44 ++++++-
+ .../privatepages/profile-local-backups-panel.js    | 130 ++++++++++++++++++++-
+ 3 files changed, 174 insertions(+), 14 deletions(-)

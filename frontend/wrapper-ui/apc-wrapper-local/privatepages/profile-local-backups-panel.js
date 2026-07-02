@@ -5,6 +5,7 @@
   const root = typeof window !== "undefined" ? window : globalThis;
   const MARKER = "APC_PROFILE_LOCAL_BACKUPS_PANEL_R12L_R2_RESTORED_CARD";
   const RESTORE_PREVIEW_BUTTON_MARKER_R12V = "APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BUTTON_R12V";
+  const MEDIA_AWARE_EXPORT_MARKER_R12W = "APC_PROFILE_LOCAL_BACKUPS_MEDIA_AWARE_EXPORT_R12W";
   const PANEL_TITLE = "Buddies Who Study local backups";
   const BACKUP_KIND = "buddies-who-study-local-backup";
   const BACKUP_VERSION = 1;
@@ -26,7 +27,7 @@
   }
 
   function backupFileName(date) {
-    return "buddies-who-study-local-backup-v1-" + safeFileStamp(date) + ".json";
+    return "buddies-who-study-local-backup-v2-" + safeFileStamp(date) + ".json";
   }
 
   function hasDirectoryPicker() {
@@ -204,6 +205,133 @@
     host.insertAdjacentHTML("beforeend", renderPreviewHtml(options));
     return host.querySelector("[data-apc-profile-local-backups-panel='true']");
   }
+
+
+
+  function legacyDocsArrayToObjectR12W(docs) {
+    const out = {};
+    if (!Array.isArray(docs)) return out;
+    docs.forEach(function copyDoc(entry) {
+      if (!entry || !entry.key) return;
+      out[String(entry.key)] = entry.value === undefined ? null : entry.value;
+    });
+    return out;
+  }
+
+  function normalizeBackupPrivacyR12W(privacy) {
+    const source = privacy && typeof privacy === "object" ? privacy : {};
+    return Object.assign({}, source, {
+      serverUpload: false,
+      uploadsToServer: false,
+      ankiSourceMutation: false,
+      modifiesAnkiSourceFiles: false,
+      sourceMutation: false,
+      localOnly: true,
+      includesAnkiSourceFileBytes: false,
+      originalAnkiBytesIncluded: false
+    });
+  }
+
+  function makeMediaAwareBackupPayloadR12W(payload, options) {
+    const base = payload && typeof payload === "object" ? JSON.parse(JSON.stringify(payload)) : {};
+
+    if (Array.isArray(base.docs)) {
+      base.legacyDocs = base.docs;
+      base.docs = legacyDocsArrayToObjectR12W(base.legacyDocs);
+    } else if (!base.docs || typeof base.docs !== "object") {
+      base.docs = {};
+    }
+
+    base.kind = base.kind || "buddies-who-study-local-backup";
+    base.version = Math.max(Number(base.version || 1), 2);
+    base.app = base.app || "Buddies Who Study";
+    base.label = base.label || "Buddies Who Study local data";
+    base.privacy = normalizeBackupPrivacyR12W(base.privacy);
+
+    const exporter = root && root.APC_LOCAL_BACKUP_MEDIA_EXPORT;
+    if (exporter && typeof exporter.augmentBackupPayload === "function") {
+      return exporter.augmentBackupPayload(base, options || {});
+    }
+
+    const createdAt = base.createdAt || new Date().toISOString();
+    const emptyPrivacy = normalizeBackupPrivacyR12W(base.privacy);
+    const emptyDocs = {
+      "study/media/v1": {
+        kind: "buddies-who-study-media-index",
+        version: 1,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        items: [],
+        privacy: emptyPrivacy
+      },
+      "study/media-blobs/v1": {
+        kind: "buddies-who-study-media-blobs-index",
+        version: 1,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        blobs: [],
+        privacy: emptyPrivacy
+      },
+      "study/card-media-refs/v1": {
+        kind: "buddies-who-study-card-media-refs",
+        version: 1,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        refs: [],
+        privacy: emptyPrivacy
+      },
+      "study/media-manifest/v1": {
+        kind: "buddies-who-study-media-manifest",
+        version: 1,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        mediaCount: 0,
+        totalBytes: 0,
+        items: [],
+        privacy: emptyPrivacy
+      },
+      "study/anki-media/v1": {
+        kind: "buddies-who-study-anki-media-index",
+        version: 1,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        imports: [],
+        items: [],
+        privacy: emptyPrivacy
+      },
+      "study/anki-imports/v1": {
+        kind: "buddies-who-study-anki-imports-index",
+        version: 1,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        imports: [],
+        privacy: emptyPrivacy
+      }
+    };
+
+    Object.keys(emptyDocs).forEach(function ensureDoc(key) {
+      if (base.docs[key] === undefined || base.docs[key] === null) {
+        base.docs[key] = emptyDocs[key];
+      }
+    });
+
+    base.backupDocs = Object.keys(base.docs).sort();
+    base.media = {
+      manifestKey: "study/media-manifest/v1",
+      blobsKey: "study/media-blobs/v1",
+      refsKey: "study/card-media-refs/v1",
+      count: 0,
+      totalBytes: 0
+    };
+
+    return base;
+  }
+
+  const buildBackupPayloadBaseR12W = buildBackupPayload;
+  buildBackupPayload = function buildBackupPayload(options) {
+    return makeMediaAwareBackupPayloadR12W(buildBackupPayloadBaseR12W(options), options || {});
+  };
+
 
   const api = Object.freeze({
     marker: MARKER,

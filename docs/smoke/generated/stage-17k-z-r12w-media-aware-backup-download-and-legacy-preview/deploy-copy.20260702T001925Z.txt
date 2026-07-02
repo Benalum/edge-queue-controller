@@ -1,0 +1,2 @@
+=== upload R12W static bundle ===
+bundle=/tmp/apc-r12w-20260702T001925Z
