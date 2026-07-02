@@ -6,6 +6,7 @@
   const MARKER = "APC_PROFILE_LOCAL_BACKUPS_MOUNT_R12L_R2_RESTORED_CARD";
   const RESTORE_PREVIEW_BIND_MARKER_R12V = "APC_PROFILE_LOCAL_BACKUPS_RESTORE_PREVIEW_BIND_R12V";
   const ASYNC_DOWNLOAD_BIND_MARKER_R12Y = "APC_PROFILE_LOCAL_BACKUPS_ASYNC_DOWNLOAD_BIND_R12Y";
+  const MERGE_PREVIEW_UI_BIND_MARKER_R13B = "APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_UI_BIND_R13B";
   const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
   const BOUND_ATTR = "data-apc-local-backups-bound";
 
@@ -314,6 +315,82 @@
   }
 
   bindAsyncDownloadClickOnceR12Y();
+
+
+
+
+  function getMergePreviewBridgeR13B() {
+    return root && root.APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_BRIDGE
+      ? root.APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_BRIDGE
+      : null;
+  }
+
+  function findMergePreviewOutputR13B(panel) {
+    return panel && panel.querySelector
+      ? panel.querySelector("[data-apc-local-backup-restore-preview-output]")
+      : null;
+  }
+
+  function setMergePreviewOutputR13B(panel, text) {
+    const output = findMergePreviewOutputR13B(panel);
+    if (!output) return;
+    output.hidden = false;
+    output.textContent = text || "";
+  }
+
+  function bindMergePreviewClickOnceR13B() {
+    if (!root || !root.document || root.APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_CLICK_BOUND_R13B === true) {
+      return;
+    }
+
+    root.APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_CLICK_BOUND_R13B = true;
+
+    root.document.addEventListener("click", function onMergePreviewClickR13B(event) {
+      const target = event && event.target && event.target.closest
+        ? event.target.closest("[data-apc-local-backup-preview-restore]")
+        : null;
+
+      if (!target) return;
+
+      const panel = target.closest ? target.closest(PANEL_SELECTOR) : null;
+      if (!panel) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      const bridge = getMergePreviewBridgeR13B();
+      if (!bridge || typeof bridge.chooseBackupFileForMergePreview !== "function") {
+        setStatus(panel, "Backup merge preview module is not loaded.");
+        return;
+      }
+
+      target.disabled = true;
+      setStatus(panel, "Choose a backup JSON file to preview for merge.");
+
+      bridge.chooseBackupFileForMergePreview({ explicitUserAction: true }).then(function onMergePreview(preview) {
+        const text = typeof bridge.formatMergePreviewText === "function"
+          ? bridge.formatMergePreviewText(preview)
+          : JSON.stringify(preview, null, 2);
+
+        setMergePreviewOutputR13B(panel, text);
+
+        if (preview && preview.ok) {
+          setStatus(panel, "Backup merge preview complete. No data was restored.");
+        } else {
+          setStatus(panel, "Backup merge preview found issues. No data was restored.");
+        }
+      }).catch(function onMergePreviewError(error) {
+        setStatus(panel, "Could not preview backup merge.", String(error && error.message ? error.message : error));
+      }).finally(function onMergePreviewDone() {
+        target.disabled = false;
+      });
+    }, true);
+  }
+
+  bindMergePreviewClickOnceR13B();
 
 
   root.APC_PROFILE_LOCAL_BACKUPS_MOUNT = mountApi;
