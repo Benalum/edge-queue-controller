@@ -9,6 +9,7 @@
   const MERGE_PREVIEW_UI_BIND_MARKER_R13B = "APC_PROFILE_LOCAL_BACKUPS_MERGE_PREVIEW_UI_BIND_R13B";
   const OPEN_CURRENT_FILE_PREVIEW_BIND_MARKER_R13G_R2 = "APC_PROFILE_LOCAL_BACKUPS_OPEN_CURRENT_FILE_PREVIEW_BIND_R13G_R2";
   const SAVE_PLAN_PREVIEW_BIND_MARKER_R13J_R2 = "APC_PROFILE_LOCAL_BACKUPS_SAVE_PLAN_PREVIEW_BIND_R13J_R2";
+  const SANITIZER_PREVIEW_BIND_MARKER_R13L = "APC_PROFILE_LOCAL_BACKUPS_SANITIZER_PREVIEW_BIND_R13L";
   const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
   const BOUND_ATTR = "data-apc-local-backups-bound";
 
@@ -454,6 +455,41 @@
 
 
 
+
+
+  function getLegacyBackendCacheSanitizerR13L() {
+    return root && root.APC_LOCAL_BACKUP_LEGACY_BACKEND_CACHE_SANITIZER
+      ? root.APC_LOCAL_BACKUP_LEGACY_BACKEND_CACHE_SANITIZER
+      : null;
+  }
+
+  function appendLegacyBackendCacheSanitizerPreviewR13L(panel, readResult) {
+    if (!panel || !readResult) return;
+
+    const sanitizerApi = getLegacyBackendCacheSanitizerR13L();
+    if (!sanitizerApi || typeof sanitizerApi.createBackupSanitizationPreview !== "function") {
+      return;
+    }
+
+    const preview = sanitizerApi.createBackupSanitizationPreview(readResult.payload || null, {
+      updatedAt: new Date().toISOString()
+    });
+
+    const text = typeof sanitizerApi.formatSanitizationPreviewText === "function"
+      ? sanitizerApi.formatSanitizationPreviewText(preview)
+      : JSON.stringify(preview, null, 2);
+
+    const output = ensureCurrentBackupPreviewOutputR13GR2(panel);
+    if (!output) return;
+
+    output.hidden = false;
+    output.textContent = String(output.textContent || "").trimEnd() +
+      "\n\n" +
+      text +
+      "\n\nSanitizer preview only. Legacy backend cache fields are not removed from your browser data yet.";
+  }
+
+
   function getCurrentBackupSavePlanR13JR2() {
     return root && root.APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_PLAN
       ? root.APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_PLAN
@@ -538,8 +574,9 @@
 
         setCurrentBackupPreviewOutputR13GR2(panel, text);
 
+            appendLegacyBackendCacheSanitizerPreviewR13L(panel, result);
             appendCurrentBackupSavePlanPreviewR13JR2(panel, result);
-setStatus(panel, "Current backup file and save-plan preview complete. No data was saved, restored, merged, or overwritten.");
+setStatus(panel, "Current backup, sanitizer, and save-plan previews complete. No data was saved, restored, merged, or overwritten.");
       }).catch(function onCurrentBackupPreviewError(error) {
         setStatus(panel, "Could not preview current backup file.", String(error && error.message ? error.message : error));
       }).finally(function onCurrentBackupPreviewDone() {

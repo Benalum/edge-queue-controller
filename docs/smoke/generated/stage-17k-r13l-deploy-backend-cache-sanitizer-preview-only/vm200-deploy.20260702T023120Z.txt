@@ -1,0 +1,7 @@
+=== backup and install R13L static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13l-backend-cache-sanitizer-preview-only-backup-20260702T023120Z
+6049978b6866ed7d7c8c88f49fd61fdcdb40e55ed0215acb4c8dbdebb1e9aaad  /var/www/apc-wrapper-local/index.html
+cfba656cc274de88bc1abaa318566e646c2f931932f6d23265290c785553814c  /var/www/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+c39b91c04539d3230917862edbce783f5c4dd7ae0978ad62aa7654625750bd97  /var/www/apc-wrapper-local/privatepages/local-backup-legacy-backend-cache-sanitizer.js
+R13L_VM200_BACKEND_CACHE_SANITIZER_PREVIEW_ONLY_DEPLOY_DONE
