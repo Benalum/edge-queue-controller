@@ -1,0 +1,16 @@
+stage=stage-17k-r13u-record-save-writer-plan-browser-proof
+timestamp=20260705T234224Z
+head=479adbbeafb0416b164bf31b108f0e97dea6242e
+short_head=479adbb
+browser_proof=PASS_R13T_SAVE_WRITER_PLAN_PROOF
+helper_marker=APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_WRITER_R13S_SOURCE_ONLY
+accepted_file=buddies-who-study-current.json
+previous_file=buddies-who-study-current.previous.json
+refused_file=buddies-who-study-local-backup-v2-test.json
+write_flags=canWrite:false,writesEnabled:false,sameFileWriteEnabled:false,currentFileWriteEnabled:false,previousFileWriteEnabled:false
+legacy_before=backendProgress,backendReviewSummary,backendSessions,backendSyncedAt
+legacy_after=none
+removed_field_count=4
+counts_before=decks:2,cards:2,sessions:16,media:0
+counts_after=decks:2,cards:2,sessions:16,media:0
+safety=docs-only,no-write,no-deploy
