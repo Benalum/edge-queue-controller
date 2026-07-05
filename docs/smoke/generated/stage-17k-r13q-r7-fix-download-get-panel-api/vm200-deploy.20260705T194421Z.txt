@@ -1,0 +1,6 @@
+=== backup and install R13Q-R7 static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13q-r7-fix-download-get-panel-api-backup-20260705T194421Z
+9cda571e039337ca3ffc205fea2819afda6eccf8e3fe36e3c7f5aaf0e8ac5f18  /var/www/apc-wrapper-local/index.html
+7fa0472eb555faee79e796348a876e1b3088b46c926a70925913efffc3647d94  /var/www/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+R13Q_R7_VM200_FIX_DOWNLOAD_GET_PANEL_API_DEPLOY_DONE
