@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-17k-r13w-record-visible-save-plan-preview-proof.md"
+OUT_DIR="docs/smoke/generated/stage-17k-r13w-record-visible-save-plan-preview-proof"
+
+test -f "$DOC"
+test -d "$OUT_DIR"
+
+grep -Fq "Record Visible Save Plan Preview Proof" "$DOC"
+grep -Fq "Browser proof passed" "$DOC"
+grep -Fq "PASS_R13V_VISIBLE_SAVE_PLAN_PREVIEW_NO_WRITE" "$DOC"
+grep -Fq "hasVisibleSavePlanPreview true" "$DOC"
+grep -Fq "Current backup save writer plan" "$DOC"
+grep -Fq "Can write: false" "$DOC"
+grep -Fq "Writes enabled: false" "$DOC"
+grep -Fq "Same-file write enabled: false" "$DOC"
+grep -Fq "buddies-who-study-current.json" "$DOC"
+grep -Fq "buddies-who-study-current.previous.json" "$DOC"
+grep -Fq "Ready for future write enablement: true" "$DOC"
+grep -Fq "Legacy backend cache fields removed: 4" "$DOC"
+grep -Fq "backendProgress" "$DOC"
+grep -Fq "backendReviewSummary" "$DOC"
+grep -Fq "backendSessions" "$DOC"
+grep -Fq "backendSyncedAt" "$DOC"
+grep -Fq "2 decks" "$DOC"
+grep -Fq "2 cards" "$DOC"
+grep -Fq "16 sessions" "$DOC"
+grep -Fq "0 media" "$DOC"
+grep -Fq "hasSaveButton false" "$DOC"
+grep -Fq "No current-file save" "$DOC"
+grep -Fq "No same-file write path" "$DOC"
+grep -Fq "No source mutation" "$DOC"
+
+echo "PASS stage-17k-r13w record visible save plan preview proof smoke"
