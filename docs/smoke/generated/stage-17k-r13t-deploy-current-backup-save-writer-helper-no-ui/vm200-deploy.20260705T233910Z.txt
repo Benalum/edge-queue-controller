@@ -1,0 +1,6 @@
+=== backup and install R13T static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13t-current-backup-save-writer-helper-no-ui-backup-20260705T233910Z
+ac7a1b2c44eb27758884f9732cc127fcc86738bb4c1b7629311141531c5b00f6  /var/www/apc-wrapper-local/index.html
+72c4215e2a1d2b0f5203dc1d0f74faf6f243090b05f0ddb3c7126b8e2e8a33d8  /var/www/apc-wrapper-local/privatepages/local-backup-current-file-save-writer.js
+R13T_VM200_CURRENT_BACKUP_SAVE_WRITER_HELPER_NO_UI_DEPLOY_DONE
