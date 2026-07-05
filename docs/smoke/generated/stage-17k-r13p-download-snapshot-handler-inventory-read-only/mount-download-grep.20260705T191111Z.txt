@@ -1,0 +1,66 @@
+=== download/backup terms in mount ===
+14:  const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
+15:  const BOUND_ATTR = "data-apc-local-backups-bound";
+58:    return panel && panel.querySelector ? panel.querySelector("[data-apc-local-backup-status]") : null;
+82:    link.download = panelApi.backupFileName(payload.createdAt);
+85:    link.click();
+88:      root.URL.revokeObjectURL(href);
+91:      fileName: link.download,
+92:      downloadStarted: true,
+102:      setStatus(panel, "Local backup module is not loaded.");
+106:    const chooseButton = panel.querySelector("[data-apc-local-backup-choose-folder]");
+107:    const downloadButton = panel.querySelector("[data-apc-local-backup-download]");
+110:      chooseButton.addEventListener("click", async function () {
+112:          setStatus(panel, "Preparing local backup...");
+121:    if (downloadButton) {
+122:      downloadButton.addEventListener("click", async function () {
+124:          setStatus(panel, "Preparing backup download...");
+127:          setStatus(panel, "Backup download started.", result);
+129:          setStatus(panel, "Could not create backup download.", String(error && error.message ? error.message : error));
+205:      ? panel.querySelector("[data-apc-local-backup-restore-preview-output]")
+223:    root.document.addEventListener("click", function onRestorePreviewClickR12V(event) {
+225:        ? event.target.closest("[data-apc-local-backup-preview-restore]")
+240:      setStatus(panel, "Choose a backup JSON file to preview.");
+255:        setStatus(panel, "Could not preview backup file.", String(error && error.message ? error.message : error));
+274:    root.document.addEventListener("click", function onAsyncDownloadClickR12Y(event) {
+276:        ? event.target.closest("[data-apc-local-backup-download]")
+292:        setStatus(panel, "Local backup module is not loaded.");
+297:      setStatus(panel, "Preparing backup download...");
+303:        link.download = panelApi.backupFileName(payload && payload.createdAt);
+305:        link.click();
+308:          if (root.URL && typeof root.URL.revokeObjectURL === "function") {
+309:            root.URL.revokeObjectURL(url);
+312:        setStatus(panel, "Backup download ready. Study docs and media docs were included.");
+314:        setStatus(panel, "Could not create backup download.", String(error && error.message ? error.message : error));
+334:      ? panel.querySelector("[data-apc-local-backup-restore-preview-output]")
+352:    root.document.addEventListener("click", function onMergePreviewClickR13B(event) {
+354:        ? event.target.closest("[data-apc-local-backup-preview-restore]")
+375:      setStatus(panel, "Choose a backup JSON file to preview for merge.");
+390:        setStatus(panel, "Could not preview backup merge.", String(error && error.message ? error.message : error));
+403:    return root && root.APC_LOCAL_BACKUP_CURRENT_FILE_ACCESS
+404:      ? root.APC_LOCAL_BACKUP_CURRENT_FILE_ACCESS
+411:    let output = panel.querySelector("[data-apc-local-backup-current-file-output]");
+415:    output.setAttribute("data-apc-local-backup-current-file-output", "true");
+419:    const previewOutput = panel.querySelector("[data-apc-local-backup-restore-preview-output]");
+438:    if (panel.querySelector("[data-apc-local-backup-open-current]")) return;
+440:    const previewButton = panel.querySelector("[data-apc-local-backup-preview-restore]");
+445:    button.setAttribute("data-apc-local-backup-open-current", "true");
+446:    button.textContent = "Open current backup file";
+464:    return root && root.APC_LOCAL_BACKUP_SANITIZED_PAYLOAD_BUILDER
+465:      ? root.APC_LOCAL_BACKUP_SANITIZED_PAYLOAD_BUILDER
+492:      "\n\nSanitized payload preview only. The cleaned backup payload was not saved anywhere.";
+497:    return root && root.APC_LOCAL_BACKUP_LEGACY_BACKEND_CACHE_SANITIZER
+498:      ? root.APC_LOCAL_BACKUP_LEGACY_BACKEND_CACHE_SANITIZER
+530:    return root && root.APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_PLAN
+531:      ? root.APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_PLAN
+581:    root.document.addEventListener("click", function onOpenCurrentBackupFileClickR13GR2(event) {
+583:        ? event.target.closest("[data-apc-local-backup-open-current]")
+599:        setStatus(panel, "Current backup file preview module is not loaded.");
+616:setStatus(panel, "Current backup, sanitizer, sanitized payload, and save-plan previews complete. No data was saved, restored, merged, or overwritten.");
+618:        setStatus(panel, "Could not preview current backup file.", String(error && error.message ? error.message : error));
+630:      root.document.addEventListener("apc-private-page-rendered", function onPrivatePageRenderedR13GR2(event) {
+648:      root.document.addEventListener("DOMContentLoaded", scheduleMountIfPrivateProfileShell, { once: true });
+653:    root.addEventListener("hashchange", scheduleMountIfPrivateProfileShell);
+654:    root.addEventListener("popstate", scheduleMountIfPrivateProfileShell);
+655:    root.document.addEventListener("apc-auth-changed", scheduleMountIfPrivateProfileShell);
+656:    root.document.addEventListener("apc-private-page-rendered", mountFromPrivateProfileEvent);

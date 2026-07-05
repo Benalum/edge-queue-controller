@@ -1,0 +1,67 @@
+=== store/local-save backup export references ===
+--- frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js ---
+525:  const LOCAL_SAVE_STORE_STATE_KEY = "study/store-state/v1";
+526:  const LOCAL_SAVE_DECKS_KEY = "study/decks/v1";
+527:  const LOCAL_SAVE_CARDS_KEY = "study/cards/v1";
+528:  const LOCAL_SAVE_SESSIONS_KEY = "study/sessions/v1";
+--- frontend/wrapper-ui/apc-wrapper-local/privatepages/local-save-store.js ---
+49:    studyDecks: "study/decks/v1",
+50:    studySessions: "study/sessions/v1",
+239:  async function listDocs(prefix) {
+572:  async function exportAll() {
+574:      recordType: "buddies_who_study_local_export",
+576:      exportedAt: nowIso(),
+578:      docs: await listDocs(),
+659:    const docs = await listDocs();
+691:    listDocs,
+703:    exportAll,
+726: * Make listDocs({ namespace: "study" }) include key-prefixed docs such as:
+727: * - study/cards/v1
+728: * - study/decks/v1
+730: * - study/sessions/v1
+731: * - study/store-state/v1
+733: * This keeps exportAll() behavior unchanged and only hardens namespace filtering.
+817:    if (!api || typeof api.listDocs !== "function") return false;
+818:    if (api.__listDocsNamespacePrefixPatchR10L) return true;
+820:    const originalListDocs = api.listDocs.bind(api);
+822:    api.listDocs = async function patchedListDocs(options = {}) {
+852:      if (typeof api.exportAll === "function") {
+853:        const exportPayload = await api.exportAll();
+854:        const exportDocs = docsFromExportAllPayload(exportPayload);
+855:        const exportMatches = exportDocs.filter((doc) => docMatchesNamespace(doc, namespace));
+856:        if (exportMatches.length > 0) return exportMatches;
+863:    api.__listDocsNamespacePrefixPatchR10L = true;
+886: *   APC_LOCAL_SAVE.listDocs({ namespace: "study" }) -> []
+892: * It uses exportAll() as the authority when listDocs namespace filtering returns
+893: * no matches, and it matches key-prefixed docs such as study/decks/v1.
+995:    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+1004:    const originalListDocs = api.listDocs.bind(api);
+1006:    api.listDocs = async function patchedListDocs(options = {}) {
+1028:      if (typeof api.exportAll === "function") {
+1029:        const exportPayload = await api.exportAll();
+1030:        const exportDocs = docsFromPayload(exportPayload);
+1031:        const exportMatches = uniqueDocs(exportDocs.filter((doc) => docMatchesNamespace(doc, namespace)));
+1032:        if (exportMatches.length > 0) return exportMatches;
+1097: * Therefore R10L/R10L-R2 could not attach markers or replace listDocs in place.
+1101: * - listDocs is replaced with namespace-aware behavior
+1102: * - listDocs({ namespace: "study" }) falls back to exportAll()
+1103: * - key-prefixed docs like study/decks/v1 are returned
+1205:    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+1214:    const originalListDocs = api.listDocs.bind(api);
+1215:    const originalExportAll = typeof api.exportAll === "function" ? api.exportAll.bind(api) : null;
+1220:      if (key === "listDocs" || key === PATCH_MARKER) continue;
+1232:    Object.defineProperty(clone, "listDocs", {
+1261:          const exportPayload = await originalExportAll();
+1262:          const exportDocs = docsFromPayload(exportPayload);
+1263:          const exportMatches = uniqueDocs(exportDocs.filter((doc) => docMatchesNamespace(doc, namespace)));
+1264:          if (exportMatches.length > 0) {
+1265:            return exportMatches;
+1333: * Tighten listDocs({ namespace: "study" }) after R10L-R3.
+1430:    if (!api || typeof api !== "object" || typeof api.listDocs !== "function") {
+1438:    const originalListDocs = api.listDocs.bind(api);
+1439:    const originalExportAll = typeof api.exportAll === "function" ? api.exportAll.bind(api) : null;
+1444:      if (key === "listDocs" || key === PATCH_MARKER) continue;
+1456:    Object.defineProperty(clone, "listDocs", {
+1488:          const exportPayload = await originalExportAll();
+1489:          const exportDocs = docsFromPayload(exportPayload);
+1491:            exportDocs.filter((doc) => docMatchesStrictNamespace(doc, namespace))

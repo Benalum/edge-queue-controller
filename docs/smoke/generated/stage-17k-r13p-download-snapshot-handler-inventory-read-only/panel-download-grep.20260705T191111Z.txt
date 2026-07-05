@@ -1,0 +1,42 @@
+=== download/backup terms in panel ===
+12:  const PANEL_TITLE = "Buddies Who Study local backups";
+13:  const BACKUP_KIND = "buddies-who-study-local-backup";
+32:  function backupFileName(date) {
+33:    return "buddies-who-study-local-backup-v2-" + safeFileStamp(date) + ".json";
+106:        intendedStorage: "user-selected local backup file"
+118:    const blob = new Blob([stringifyBackup(payload)], { type: "application/json" });
+119:    return URL.createObjectURL(blob);
+127:    const name = fileName || backupFileName(payload && payload.createdAt);
+142:      throw new Error("Folder picker is not supported in this browser. Use download backup instead.");
+147:      id: "buddies-who-study-local-backups",
+160:      backupKind: BACKUP_KIND,
+161:      backupVersion: BACKUP_VERSION,
+163:        intro: "Save your data locally. Download snapshots are timestamped safety copies. Future merge backups will use buddies-who-study-current.json.",
+168:        chooseFolder: supported ? "Choose local backup folder" : "Folder picker not supported",
+169:        downloadBackup: "Download snapshot",
+170:        previewRestore: "Preview backup file"
+187:      '<section class="private-card profile-card apc-profile-local-backups-panel" data-apc-profile-local-backups-panel="true">',
+189:      '<p class="apc-local-backup-short-copy">Save your data locally.</p>',
+190:      '<div class="private-actions apc-local-backup-actions">',
+191:      '<button type="button" data-apc-local-backup-choose-folder' + (model.folderPickerSupported ? "" : " disabled") + '>' + escapeHtml(model.actions.chooseFolder) + '</button>',
+192:      '<button type="button" data-apc-local-backup-download>' + escapeHtml(model.actions.downloadBackup) + '</button>',
+193:      '<button type="button" data-apc-local-backup-preview-restore>' + escapeHtml(model.actions.previewRestore) + '</button>',
+195:      '<pre data-apc-local-backup-restore-preview-output hidden></pre>',
+196:      '<pre data-apc-local-backup-status hidden></pre>',
+205:    if (host.querySelector && host.querySelector("[data-apc-profile-local-backups-panel='true']")) {
+206:      return host.querySelector("[data-apc-profile-local-backups-panel='true']");
+209:    return host.querySelector("[data-apc-profile-local-backups-panel='true']");
+248:    base.kind = base.kind || "buddies-who-study-local-backup";
+321:    base.backupDocs = Object.keys(base.docs).sort();
+409:      console.warn("[local-backups] R12X listDocs read failed", error);
+430:          console.warn("[local-backups] R12X " + name + " read failed for " + key, error);
+447:    next.backupDocs = Array.from(new Set(Object.keys(next.docs).concat(Array.isArray(next.backupDocs) ? next.backupDocs : [])));
+517:        console.warn("[local-backups] R12Y async listDocs read failed", error);
+550:              console.warn("[local-backups] R12Y " + name + " read failed for " + key, error);
+569:    next.backupDocs = Array.from(new Set(Object.keys(next.docs).concat(Array.isArray(next.backupDocs) ? next.backupDocs : [])));
+584:      throw new Error("Folder picker is not supported in this browser. Use download backup instead.");
+588:      id: "buddies-who-study-local-backups",
+593:    const fileName = opts.fileName || backupFileName(payload && payload.createdAt);
+601:    backupKind: BACKUP_KIND,
+602:    backupVersion: BACKUP_VERSION,
+605:    backupFileName: backupFileName,

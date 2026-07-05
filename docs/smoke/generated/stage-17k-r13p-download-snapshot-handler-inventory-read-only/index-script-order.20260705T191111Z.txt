@@ -1,0 +1,16 @@
+=== script order in index ===
+209:  <script src="/privatepages/local-save-store.js?v=stage17k-z-r10m-strict-study-namespace-20260701"></script>
+210:  <script src="/privatepages/study-store.js?v=stage17k-z-r10j-study-store-local-only-20260701"></script>
+215:  <script src="/privatepages/local-backup-media-schema.js?v=stage17k-z-r12w-media-aware-backup-legacy-preview-20260702"></script>
+217:  <script src="/privatepages/local-backup-media-export.js?v=stage17k-z-r12w-media-aware-backup-legacy-preview-20260702"></script>
+218:  <script src="/privatepages/local-backup-restore-preview.js?v=stage17k-z-r12w-media-aware-backup-legacy-preview-20260702"></script>
+219:  <script src="/privatepages/profile-local-backups-restore-preview-bridge.js?v=stage17k-z-r12w-media-aware-backup-legacy-preview-20260702"></script>
+220:  <script src="/privatepages/profile-local-backups-panel.js?v=stage17k-r13e-snapshot-current-file-wording-20260702"></script>
+221:  <script src="/privatepages/local-backup-merge-planner.js?v=stage17k-r13b-preview-only-merge-ui-20260702"></script>
+222:  <script src="/privatepages/local-backup-stable-file-plan.js?v=stage17k-r13d-stable-current-backup-preview-wording-20260702"></script>
+223:  <script src="/privatepages/profile-local-backups-merge-preview-bridge.js?v=stage17k-r13h-compact-backup-preview-text-20260702"></script>
+224:  <script src="/privatepages/local-backup-current-file-access.js?v=stage17k-r13h-compact-backup-preview-text-20260702"></script>
+225:  <script src="/privatepages/local-backup-current-file-save-plan.js?v=stage17k-r13j-r2-current-backup-save-plan-preview-only-20260702"></script>
+226:  <script src="/privatepages/local-backup-legacy-backend-cache-sanitizer.js?v=stage17k-r13l-backend-cache-sanitizer-preview-only-20260702"></script>
+227:  <script src="/privatepages/local-backup-sanitized-payload-builder.js?v=stage17k-r13n-sanitized-payload-preview-only-20260702"></script>
+228:  <script src="/privatepages/profile-local-backups-mount.js?v=stage17k-r13n-sanitized-payload-preview-only-20260702"></script>

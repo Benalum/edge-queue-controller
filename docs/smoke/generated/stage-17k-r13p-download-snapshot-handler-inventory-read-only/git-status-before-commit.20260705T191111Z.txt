@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r13p-download-snapshot-handler-inventory-read-only/
+?? docs/stage-17k-r13p-download-snapshot-handler-inventory-read-only.md
+?? ops/smoke/check-stage-17k-r13p-download-snapshot-handler-inventory-read-only.sh
