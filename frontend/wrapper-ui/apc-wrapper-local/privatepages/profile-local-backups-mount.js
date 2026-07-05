@@ -11,6 +11,7 @@
   const SAVE_PLAN_PREVIEW_BIND_MARKER_R13J_R2 = "APC_PROFILE_LOCAL_BACKUPS_SAVE_PLAN_PREVIEW_BIND_R13J_R2";
   const SANITIZER_PREVIEW_BIND_MARKER_R13L = "APC_PROFILE_LOCAL_BACKUPS_SANITIZER_PREVIEW_BIND_R13L";
   const SANITIZED_PAYLOAD_PREVIEW_BIND_MARKER_R13N = "APC_PROFILE_LOCAL_BACKUPS_SANITIZED_PAYLOAD_PREVIEW_BIND_R13N";
+  const SANITIZED_DOWNLOAD_SNAPSHOT_MARKER_R13Q_R4 = "APC_PROFILE_LOCAL_BACKUPS_SANITIZED_DOWNLOAD_SNAPSHOT_R13Q_R4";
   const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
   const BOUND_ATTR = "data-apc-local-backups-bound";
 
@@ -121,7 +122,7 @@
     if (downloadButton) {
       downloadButton.addEventListener("click", async function () {
         try {
-          setStatus(panel, "Preparing backup download...");
+          setStatus(panel, "Preparing sanitized backup download...");
           const payload = await panelApi.buildBackupPayload();
           const result = triggerDownload(panelApi, payload);
           setStatus(panel, "Backup download started.", result);
@@ -294,13 +295,15 @@
       }
 
       target.disabled = true;
-      setStatus(panel, "Preparing backup download...");
+      setStatus(panel, "Preparing sanitized backup download...");
 
       Promise.resolve(panelApi.buildBackupPayload()).then(function onPayload(payload) {
-        const url = panelApi.createDownloadUrl(payload);
+        const sanitizedSnapshotOutputR13QR4 = prepareSanitizedSnapshotDownloadR13QR4(payload);
+        const blob = new Blob([sanitizedSnapshotOutputR13QR4.jsonText], { type: sanitizedSnapshotOutputR13QR4.mimeType || "application/json" });
+        const url = root.URL.createObjectURL(blob);
         const link = root.document.createElement("a");
         link.href = url;
-        link.download = panelApi.backupFileName(payload && payload.createdAt);
+        link.download = sanitizedSnapshotOutputR13QR4.fileName;
         root.document.body.appendChild(link);
         link.click();
         link.remove();
@@ -309,7 +312,7 @@
             root.URL.revokeObjectURL(url);
           }
         }, 1000);
-        setStatus(panel, "Backup download ready. Study docs and media docs were included.");
+        setStatus(panel, "Sanitized backup download ready. Study docs and media docs were included; legacy backend cache fields were excluded.");
       }).catch(function onDownloadError(error) {
         setStatus(panel, "Could not create backup download.", String(error && error.message ? error.message : error));
       }).finally(function onDownloadDone() {
@@ -458,6 +461,38 @@
 
 
 
+
+
+
+
+  function getSanitizedSnapshotOutputHelperR13QR4() {
+    return root && root.APC_LOCAL_BACKUP_SANITIZED_SNAPSHOT_OUTPUT
+      ? root.APC_LOCAL_BACKUP_SANITIZED_SNAPSHOT_OUTPUT
+      : null;
+  }
+
+  function prepareSanitizedSnapshotDownloadR13QR4(payload) {
+    const helperApi = getSanitizedSnapshotOutputHelperR13QR4();
+    if (!helperApi || typeof helperApi.prepareSanitizedSnapshotOutput !== "function") {
+      throw new Error("Sanitized snapshot output helper is not loaded.");
+    }
+
+    const now = new Date().toISOString();
+    const prepared = helperApi.prepareSanitizedSnapshotOutput(payload || {}, {
+      createdAt: now,
+      updatedAt: now
+    });
+
+    if (!prepared || prepared.downloadPrepared !== true) {
+      throw new Error("Sanitized snapshot output was not prepared.");
+    }
+
+    if (prepared.errors && prepared.errors.length) {
+      throw new Error(prepared.errors.join("; "));
+    }
+
+    return prepared;
+  }
 
 
   function getSanitizedBackupPayloadBuilderR13N() {

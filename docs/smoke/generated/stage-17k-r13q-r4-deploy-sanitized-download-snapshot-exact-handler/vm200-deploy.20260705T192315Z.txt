@@ -1,0 +1,7 @@
+=== backup and install R13Q-R4 static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r13q-r4-sanitized-download-snapshot-backup-20260705T192315Z
+420f3d1f0b2ec8a1eb211aa5bfb79ac241bc389f8b251855d8508e7c4c425707  /var/www/apc-wrapper-local/index.html
+c7f6e64f9744432e787debf1aae325c8d387d2f730aae5ae81763baf53157266  /var/www/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+ffe691f02144ef04302156d7dc03917b9884fd75b63cb41c1b99838c0bc6eeda  /var/www/apc-wrapper-local/privatepages/local-backup-sanitized-snapshot-output-helper.js
+R13Q_R4_VM200_SANITIZED_DOWNLOAD_SNAPSHOT_DEPLOY_DONE
