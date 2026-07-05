@@ -13,6 +13,7 @@
   const SANITIZED_PAYLOAD_PREVIEW_BIND_MARKER_R13N = "APC_PROFILE_LOCAL_BACKUPS_SANITIZED_PAYLOAD_PREVIEW_BIND_R13N";
   const SANITIZED_DOWNLOAD_SNAPSHOT_MARKER_R13Q_R4 = "APC_PROFILE_LOCAL_BACKUPS_SANITIZED_DOWNLOAD_SNAPSHOT_R13Q_R4";
   const GET_PANEL_API_FIX_MARKER_R13Q_R7 = "APC_PROFILE_LOCAL_BACKUPS_GET_PANEL_API_FIX_R13Q_R7";
+  const SAVE_WRITER_PLAN_PREVIEW_MARKER_R13V = "APC_PROFILE_LOCAL_BACKUPS_SAVE_WRITER_PLAN_PREVIEW_R13V";
   const PANEL_SELECTOR = "[data-apc-profile-local-backups-panel='true']";
   const BOUND_ATTR = "data-apc-local-backups-bound";
 
@@ -264,6 +265,130 @@
   bindRestorePreviewClickOnceR12V();
 
 
+
+
+
+
+  function getCurrentBackupSaveWriterR13V() {
+    return root && root.APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_WRITER
+      ? root.APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_WRITER
+      : null;
+  }
+
+  function backupPanelRootR13V() {
+    return root && root.document
+      ? root.document.querySelector("[data-apc-profile-local-backups-panel='true']")
+      : null;
+  }
+
+  function ensureSaveWriterPlanPreviewNodeR13V(panel) {
+    if (!panel || !root.document) return null;
+
+    let wrap = panel.querySelector("[data-apc-local-backup-save-writer-plan-preview-r13v='true']");
+    if (wrap) return wrap;
+
+    wrap = root.document.createElement("section");
+    wrap.setAttribute("data-apc-local-backup-save-writer-plan-preview-r13v", "true");
+    wrap.style.marginTop = "1rem";
+    wrap.style.padding = "0.875rem";
+    wrap.style.border = "1px solid rgba(148, 163, 184, 0.35)";
+    wrap.style.borderRadius = "0.75rem";
+    wrap.style.background = "rgba(15, 23, 42, 0.035)";
+
+    const heading = root.document.createElement("h3");
+    heading.textContent = "Current backup save plan";
+    heading.style.margin = "0 0 0.35rem";
+
+    const note = root.document.createElement("p");
+    note.textContent = "Preview only. No file is saved, replaced, merged, restored, or overwritten.";
+    note.style.margin = "0 0 0.65rem";
+
+    const pre = root.document.createElement("pre");
+    pre.setAttribute("data-apc-local-backup-save-writer-plan-preview-text-r13v", "true");
+    pre.style.whiteSpace = "pre-wrap";
+    pre.style.margin = "0";
+    pre.style.fontSize = "0.85rem";
+    pre.style.lineHeight = "1.35";
+    pre.textContent = "Preparing current backup save plan preview…";
+
+    wrap.appendChild(heading);
+    wrap.appendChild(note);
+    wrap.appendChild(pre);
+    panel.appendChild(wrap);
+    return wrap;
+  }
+
+  function setSaveWriterPlanPreviewTextR13V(text) {
+    const panel = backupPanelRootR13V();
+    const wrap = ensureSaveWriterPlanPreviewNodeR13V(panel);
+    const pre = wrap
+      ? wrap.querySelector("[data-apc-local-backup-save-writer-plan-preview-text-r13v='true']")
+      : null;
+
+    if (pre) pre.textContent = String(text || "");
+    return Boolean(pre);
+  }
+
+  function renderSaveWriterPlanPreviewR13V() {
+    const panel = backupPanelRootR13V();
+    if (!panel) return false;
+
+    const panelApi = getPanelApi();
+    const writerApi = getCurrentBackupSaveWriterR13V();
+
+    ensureSaveWriterPlanPreviewNodeR13V(panel);
+
+    if (!panelApi || typeof panelApi.buildBackupPayload !== "function") {
+      setSaveWriterPlanPreviewTextR13V("Current backup save plan preview unavailable: backup panel API is not ready.");
+      return false;
+    }
+
+    if (!writerApi || typeof writerApi.createCurrentBackupSaveWriterPlan !== "function") {
+      setSaveWriterPlanPreviewTextR13V("Current backup save plan preview unavailable: save writer helper is not loaded.");
+      return false;
+    }
+
+    Promise.resolve(panelApi.buildBackupPayload()).then(function onPayload(payload) {
+      const plan = writerApi.createCurrentBackupSaveWriterPlan({
+        selectedFileName: writerApi.CURRENT_FILE_NAME || "buddies-who-study-current.json",
+        payload: payload
+      }, {
+        createdAt: new Date().toISOString()
+      });
+
+      const text = typeof writerApi.formatCurrentBackupSaveWriterPlanText === "function"
+        ? writerApi.formatCurrentBackupSaveWriterPlanText(plan)
+        : JSON.stringify(plan, null, 2);
+
+      setSaveWriterPlanPreviewTextR13V(text);
+    }).catch(function onError(error) {
+      setSaveWriterPlanPreviewTextR13V("Current backup save plan preview failed: " + String(error && error.message ? error.message : error));
+    });
+
+    return true;
+  }
+
+  function scheduleSaveWriterPlanPreviewR13V() {
+    let attempts = 0;
+
+    function tick() {
+      attempts += 1;
+      const rendered = renderSaveWriterPlanPreviewR13V();
+      if (!rendered && attempts < 30) {
+        root.setTimeout(tick, 250);
+      }
+    }
+
+    if (!root || !root.document) return;
+
+    if (root.document.readyState === "loading") {
+      root.document.addEventListener("DOMContentLoaded", function onReady() {
+        root.setTimeout(tick, 0);
+      }, { once: true });
+    } else {
+      root.setTimeout(tick, 0);
+    }
+  }
 
 
   function bindAsyncDownloadClickOnceR12Y() {
@@ -685,6 +810,8 @@ setStatus(panel, "Current backup, sanitizer, sanitized payload, and save-plan pr
 
   installOpenCurrentBackupFilePreviewR13GR2();
 
+
+  scheduleSaveWriterPlanPreviewR13V();
 
   root.APC_PROFILE_LOCAL_BACKUPS_MOUNT = mountApi;
 
