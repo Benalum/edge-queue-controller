@@ -1,0 +1,2 @@
+=== verify source stays not loaded/reachable ===
+PASS executor source remains asset-only/not-loaded

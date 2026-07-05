@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r13y-deploy-write-executor-asset-not-loaded/
+?? docs/stage-17k-r13y-deploy-write-executor-asset-not-loaded.md
+?? ops/smoke/check-stage-17k-r13y-deploy-write-executor-asset-not-loaded.sh
