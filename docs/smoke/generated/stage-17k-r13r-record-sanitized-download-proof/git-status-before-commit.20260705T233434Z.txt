@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r13r-record-sanitized-download-proof/
+?? docs/stage-17k-r13r-record-sanitized-download-proof.md
+?? ops/smoke/check-stage-17k-r13r-record-sanitized-download-proof.sh

@@ -1,0 +1,9 @@
+stage=stage-17k-r13r-record-sanitized-download-proof
+timestamp=20260705T233434Z
+head=3546172ae88718c53b8cf2124b82cc2ab03765ee
+short_head=3546172
+proof_file=buddies-who-study-local-backup-v2-2026-07-05T23-33-14-803Z.json
+proof_created_at=2026-07-05T23:33:14.795Z
+legacy_fields_absent=backendProgress,backendReviewSummary,backendSessions,backendSyncedAt
+counts=docs:11,decks:2,cards:2,sessions:16,media:0
+privacy=local-only,no-server-upload,no-anki-source-mutation
