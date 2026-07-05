@@ -595,6 +595,48 @@
   };
 
 
+
+
+  const CREATE_DOWNLOAD_URL_SANITIZED_MARKER_R13Q_R6 = "APC_PROFILE_LOCAL_BACKUPS_PANEL_SANITIZED_CREATE_DOWNLOAD_URL_R13Q_R6";
+  const createDownloadUrlBaseR13QR6 = createDownloadUrl;
+
+  function getSanitizedSnapshotOutputHelperR13QR6() {
+    return root && root.APC_LOCAL_BACKUP_SANITIZED_SNAPSHOT_OUTPUT
+      ? root.APC_LOCAL_BACKUP_SANITIZED_SNAPSHOT_OUTPUT
+      : null;
+  }
+
+  function createDownloadUrlSanitizedR13QR6(payload) {
+    const helperApi = getSanitizedSnapshotOutputHelperR13QR6();
+
+    if (!helperApi || typeof helperApi.prepareSanitizedSnapshotOutput !== "function") {
+      throw new Error("Sanitized snapshot output helper is not loaded.");
+    }
+
+    const now = new Date().toISOString();
+    const prepared = helperApi.prepareSanitizedSnapshotOutput(payload || {}, {
+      createdAt: now,
+      updatedAt: now
+    });
+
+    if (!prepared || prepared.downloadPrepared !== true) {
+      throw new Error("Sanitized snapshot output was not prepared.");
+    }
+
+    if (prepared.errors && prepared.errors.length) {
+      throw new Error(prepared.errors.join("; "));
+    }
+
+    const blob = new Blob([prepared.jsonText], {
+      type: prepared.mimeType || "application/json"
+    });
+
+    return root.URL.createObjectURL(blob);
+  }
+
+  createDownloadUrl = createDownloadUrlSanitizedR13QR6;
+
+
   const api = Object.freeze({
     marker: MARKER,
     title: PANEL_TITLE,

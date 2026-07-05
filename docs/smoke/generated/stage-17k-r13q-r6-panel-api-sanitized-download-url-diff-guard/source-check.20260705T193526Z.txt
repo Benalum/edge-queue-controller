@@ -1,0 +1,4 @@
+=== verify source behavior ===
+=== verify no newly added file-system write APIs ===
+PASS no newly added file-system write APIs
+PASS R13Q-R6 source behavior
