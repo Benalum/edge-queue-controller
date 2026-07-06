@@ -1,0 +1,7 @@
+=== verify exact script delta and restored tail ===
+old_script_count 45
+new_script_count 46
+removed_scripts []
+added_scripts ['/privatepages/local-backup-current-file-disabled-save-button-html-preview-renderer.js?v=stage17k-r14x-load-disabled-save-button-html-preview-renderer-no-ui-no-binding-20260706']
+PASS exact script delta old+1 with no removals
+PASS R14X source behavior

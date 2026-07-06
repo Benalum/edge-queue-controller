@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-17k-r14x-load-disabled-save-button-html-preview-renderer-no-ui-no-binding.md"
+OUT_DIR="docs/smoke/generated/stage-17k-r14x-load-disabled-save-button-html-preview-renderer-no-ui-no-binding"
+INDEX="frontend/wrapper-ui/apc-wrapper-local/index.html"
+HTML_RENDERER="frontend/wrapper-ui/apc-wrapper-local/privatepages/local-backup-current-file-disabled-save-button-html-preview-renderer.js"
+MOUNT="frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js"
+PANEL="frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-panel.js"
+
+test -f "$DOC"
+test -d "$OUT_DIR"
+test -f "$HTML_RENDERER"
+
+grep -Fq "Load Disabled Save Button HTML Preview Renderer, No UI/Binding" "$DOC"
+grep -Fq "No button" "$DOC"
+grep -Fq "No DOM insertion" "$DOC"
+grep -Fq "No click handler" "$DOC"
+grep -Fq "No executor call" "$DOC"
+grep -Fq "No current-file save in live UI" "$DOC"
+grep -Fq "No same-file write path in live UI" "$DOC"
+
+grep -Fq "stage17k-r14x-load-disabled-save-button-html-preview-renderer-no-ui-no-binding-20260706" "$INDEX"
+grep -Fq "APC_LOCAL_BACKUP_CURRENT_FILE_DISABLED_SAVE_BUTTON_HTML_PREVIEW_RENDERER_R14U_SOURCE_ONLY" "$HTML_RENDERER"
+
+if grep -Fq "APC_LOCAL_BACKUP_CURRENT_FILE_DISABLED_SAVE_BUTTON_HTML_PREVIEW_RENDERER" "$MOUNT" "$PANEL"; then
+  echo "FAIL: mount/panel must not reference HTML renderer"
+  exit 1
+fi
+
+grep -Fq "PASS exact script delta old+1 with no removals" "$OUT_DIR/source-check."*.txt
+grep -Fq "R14X_VM200_LOAD_DISABLED_SAVE_BUTTON_HTML_PREVIEW_RENDERER_NO_UI_NO_BINDING_DEPLOY_DONE" "$OUT_DIR/vm200-deploy."*.txt
+grep -Fq "PASS public static R14X smoke" "$OUT_DIR/public-static-smoke."*.txt
+grep -Fq "api_system_status=200" "$OUT_DIR/public-api-guard-smoke."*.txt
+grep -Fq "api_me_status=401" "$OUT_DIR/public-api-guard-smoke."*.txt
+grep -Fq "signup_status=403" "$OUT_DIR/public-api-guard-smoke."*.txt
+
+echo "PASS stage-17k-r14x load disabled save button html preview renderer no ui no binding smoke"
