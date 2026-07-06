@@ -1,0 +1,5 @@
+=== backup and install R14S index on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r14s-load-disabled-save-button-render-spec-no-ui-no-binding-backup-20260706T011950Z
+865aa4b59a08db1339b0697b1f5a3b9c894894ebbfcd7f66f066c9e43fb5b7a3  /var/www/apc-wrapper-local/index.html
+R14S_VM200_LOAD_DISABLED_SAVE_BUTTON_RENDER_SPEC_NO_UI_NO_BINDING_DEPLOY_DONE
