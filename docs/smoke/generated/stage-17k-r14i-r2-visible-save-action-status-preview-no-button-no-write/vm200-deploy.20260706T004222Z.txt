@@ -1,0 +1,6 @@
+=== backup and install R14I-R2 static files on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r14i-r2-visible-save-action-status-preview-no-button-no-write-backup-20260706T004222Z
+831ace2523c6ebf3eb4a7ae171e7f2b11dfd2eacbef1ec7b0a5db8f4e5b4d836  /var/www/apc-wrapper-local/index.html
+46ca4937ff359b825fe58acb94839ed29e7f189af607af8d4a756fa19e9335d5  /var/www/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+R14I_R2_VM200_VISIBLE_SAVE_ACTION_STATUS_PREVIEW_NO_BUTTON_NO_WRITE_DEPLOY_DONE

@@ -1,0 +1,8 @@
+=== recovery guard for failed R14I partial state ===
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backups-mount.js
+?? docs/smoke/generated/stage-17k-r14i-r2-visible-save-action-status-preview-no-button-no-write/
+?? docs/smoke/generated/stage-17k-r14i-visible-save-action-status-preview-no-button-no-write/
+restored_partial_index_and_mount=true
+=== status after recovery cleanup ===
+?? docs/smoke/generated/stage-17k-r14i-r2-visible-save-action-status-preview-no-button-no-write/

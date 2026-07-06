@@ -833,3 +833,171 @@ setStatus(panel, "Current backup, sanitizer, sanitized payload, and save-plan pr
   }
 })();
 /* APC_PROFILE_LOCAL_BACKUPS_MOUNT_R12E_SOURCE_ONLY_END */
+
+(function profileLocalBackupsSaveActionStatusPreviewR14IR2(root) {
+  "use strict";
+
+  var MARKER = "APC_PROFILE_LOCAL_BACKUPS_SAVE_ACTION_STATUS_PREVIEW_R14I_R2";
+  var CURRENT_FILE_NAME = "buddies-who-study-current.json";
+  var PREVIOUS_FILE_NAME = "buddies-who-study-current.previous.json";
+
+  function onReady(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+      return;
+    }
+    fn();
+  }
+
+  function findAnchor() {
+    return document.querySelector("[data-apc-local-backup-save-writer-plan-preview-r13v='true']");
+  }
+
+  function textLine(label, value) {
+    return label + ": " + String(value);
+  }
+
+  function buildPreviewText() {
+    var controller = root.APC_LOCAL_BACKUP_CURRENT_FILE_SAVE_ACTION_CONTROLLER;
+    var panel = root.APC_PROFILE_LOCAL_BACKUPS_PANEL;
+    var lines = [
+      "Current backup save action status",
+      "Mode: preview-only",
+      "Button added: false",
+      "Click handler added: false",
+      "Current-file save enabled: false",
+      "Same-file write enabled: false",
+      "Executor call from UI allowed: false",
+      ""
+    ];
+
+    if (!controller || typeof controller.createSaveCurrentBackupActionState !== "function") {
+      lines.push("Controller loaded: false");
+      lines.push("Future eligible: false");
+      lines.push("Reason: save action controller is not available.");
+      return lines.join("\n");
+    }
+
+    if (!panel || typeof panel.buildBackupPayload !== "function") {
+      lines.push("Controller loaded: true");
+      lines.push("Future eligible: false");
+      lines.push("Reason: backup payload builder is not available.");
+      return lines.join("\n");
+    }
+
+    try {
+      var payload = panel.buildBackupPayload();
+      var state = controller.createSaveCurrentBackupActionState({
+        selectedFileName: CURRENT_FILE_NAME,
+        currentFileHandle: { name: CURRENT_FILE_NAME },
+        directoryHandle: {
+          getFileHandle: function getFileHandle() {
+            return Promise.resolve({ name: PREVIOUS_FILE_NAME });
+          }
+        },
+        payload: payload
+      }, {
+        createdAt: new Date().toISOString()
+      });
+
+      lines.push(textLine("Controller loaded", true));
+      lines.push(textLine("Controller marker", controller.MARKER || ""));
+      lines.push(textLine("Future eligible", state.eligibleForFutureEnablement));
+      lines.push(textLine("Future save button may be shown later", state.canShowFutureSaveButton));
+      lines.push(textLine("Can write now", state.canWriteNow));
+      lines.push(textLine("Writes enabled now", state.writesEnabledNow));
+      lines.push(textLine("Executor call allowed now", state.executorCallAllowedNow));
+      lines.push(textLine("Executor called", state.executorCalled));
+      lines.push(textLine("Selected file", state.selectedFileName));
+      lines.push(textLine("Expected current file", state.currentFileName));
+      lines.push(textLine("Last-good file", state.previousFileName));
+      lines.push(textLine("Legacy backend cache fields removed", state.removedFieldCount));
+      lines.push(textLine("After legacy backend cache fields", state.afterLegacyFieldPaths && state.afterLegacyFieldPaths.length ? state.afterLegacyFieldPaths.join(", ") : "none"));
+      lines.push("");
+      lines.push("Safety");
+      lines.push("Preview only. No file is saved, replaced, merged, restored, or overwritten.");
+      lines.push("No Save button was added in this stage.");
+      lines.push("No Profile click handler calls the write executor.");
+
+      if (state.blockers && state.blockers.length) {
+        lines.push("");
+        lines.push("Blockers: " + state.blockers.length);
+        state.blockers.forEach(function eachBlocker(blocker) {
+          lines.push("- " + blocker);
+        });
+      }
+
+      if (state.warnings && state.warnings.length) {
+        lines.push("");
+        lines.push("Warnings: " + state.warnings.length);
+        state.warnings.forEach(function eachWarning(warning) {
+          lines.push("- " + warning);
+        });
+      }
+    } catch (error) {
+      lines.push(textLine("Controller loaded", true));
+      lines.push("Future eligible: false");
+      lines.push("Reason: " + String(error && error.message ? error.message : error));
+    }
+
+    return lines.join("\n");
+  }
+
+  function render() {
+    var anchor = findAnchor();
+    if (!anchor) {
+      return false;
+    }
+
+    var existing = document.querySelector("[data-apc-local-backup-save-action-status-preview-r14i-r2='true']");
+    if (!existing) {
+      existing = document.createElement("section");
+      existing.setAttribute("data-apc-local-backup-save-action-status-preview-r14i-r2", "true");
+      existing.style.marginTop = "12px";
+      existing.style.padding = "12px";
+      existing.style.border = "1px solid rgba(148, 163, 184, 0.45)";
+      existing.style.borderRadius = "12px";
+      existing.style.background = "rgba(15, 23, 42, 0.04)";
+
+      var heading = document.createElement("h3");
+      heading.textContent = "Current backup save action status";
+      heading.style.margin = "0 0 8px";
+      existing.appendChild(heading);
+
+      var pre = document.createElement("pre");
+      pre.setAttribute("data-apc-local-backup-save-action-status-preview-text-r14i-r2", "true");
+      pre.style.whiteSpace = "pre-wrap";
+      pre.style.margin = "0";
+      pre.style.fontSize = "12px";
+      pre.style.lineHeight = "1.45";
+      existing.appendChild(pre);
+
+      anchor.insertAdjacentElement("afterend", existing);
+    }
+
+    var textNode = existing.querySelector("[data-apc-local-backup-save-action-status-preview-text-r14i-r2='true']");
+    if (textNode) {
+      textNode.textContent = buildPreviewText();
+    }
+
+    root.APC_PROFILE_LOCAL_BACKUPS_SAVE_ACTION_STATUS_PREVIEW_R14I_R2 = {
+      marker: MARKER,
+      rendered: true,
+      updatedAt: new Date().toISOString()
+    };
+
+    return true;
+  }
+
+  function schedule() {
+    var attempts = 0;
+    var timer = setInterval(function retry() {
+      attempts += 1;
+      if (render() || attempts >= 40) {
+        clearInterval(timer);
+      }
+    }, 250);
+  }
+
+  onReady(schedule);
+})(typeof window !== "undefined" ? window : globalThis);

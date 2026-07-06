@@ -1,0 +1,4 @@
+=== public static smoke ===
+profile_root_code=200 profile_root_bytes=15180
+mount_code=200 mount_bytes=35428
+PASS public static R14I-R2 smoke

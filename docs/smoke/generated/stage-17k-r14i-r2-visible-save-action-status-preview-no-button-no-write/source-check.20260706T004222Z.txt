@@ -1,0 +1,3 @@
+=== verify source behavior ===
+=== diff-only no button/write binding guard ===
+PASS R14I-R2 source behavior
