@@ -1,0 +1,14 @@
+stage=stage-17k-r13z-record-write-executor-asset-not-loaded-proof
+timestamp=20260706T000625Z
+head=0b9ee2539212dcdfa81462f54a84cd22faa5cd3f
+short_head=0b9ee25
+browser_proof=PASS_R13Y_WRITE_EXECUTOR_ASSET_NOT_LOADED
+executor_asset_status=200
+executor_asset_has_marker=true
+executor_loaded_by_script=false
+executor_window_present=false
+save_plan_preview_still_visible=true
+has_unsafe_button=false
+asset_marker=APC_LOCAL_BACKUP_CURRENT_FILE_WRITE_EXECUTOR_R13X_SOURCE_ONLY
+enable_token_marker=R13X_EXPLICIT_CURRENT_BACKUP_WRITE_ENABLE
+safety=docs-only,no-write,no-deploy
