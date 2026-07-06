@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOC="docs/stage-17k-r14m-record-disabled-save-button-view-model-asset-not-loaded-proof.md"
+OUT_DIR="docs/smoke/generated/stage-17k-r14m-record-disabled-save-button-view-model-asset-not-loaded-proof"
+
+test -f "$DOC"
+test -d "$OUT_DIR"
+
+grep -Fq "Record Disabled Save Button View Model Asset Not Loaded Proof" "$DOC"
+grep -Fq "Browser proof passed" "$DOC"
+grep -Fq "PASS_R14L_DISABLED_SAVE_BUTTON_VIEW_MODEL_ASSET_NOT_LOADED_NO_UI_NO_WRITE" "$DOC"
+grep -Fq "assetStatus 200" "$DOC"
+grep -Fq "assetHasMarker true" "$DOC"
+grep -Fq "assetHasViewModelFunction true" "$DOC"
+grep -Fq "assetHasStatusTextFunction true" "$DOC"
+grep -Fq "assetHasDisabledFlags true" "$DOC"
+grep -Fq "assetHasForbiddenWriteCode false" "$DOC"
+grep -Fq "viewModelLoadedByScript false" "$DOC"
+grep -Fq "viewModelWindowPresent false" "$DOC"
+grep -Fq "mountStatus 200" "$DOC"
+grep -Fq "panelStatus 200" "$DOC"
+grep -Fq "mountReferencesViewModel false" "$DOC"
+grep -Fq "panelReferencesViewModel false" "$DOC"
+grep -Fq "hasVisibleStatusPreview true" "$DOC"
+grep -Fq "statusStillNoWrite true" "$DOC"
+grep -Fq "hasUnsafeButton false" "$DOC"
+grep -Fq "Choose local backup folder" "$DOC"
+grep -Fq "Download snapshot" "$DOC"
+grep -Fq "Preview backup file" "$DOC"
+grep -Fq "Open current backup file" "$DOC"
+grep -Fq "No source mutation" "$DOC"
+grep -Fq "No frontend deploy" "$DOC"
+grep -Fq "No current-file save in live UI" "$DOC"
+grep -Fq "No same-file write path in live UI" "$DOC"
+
+echo "PASS stage-17k-r14m record disabled save button view model asset-not-loaded proof smoke"
