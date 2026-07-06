@@ -1,0 +1,4 @@
+=== public static asset smoke ===
+profile_root_code=200 profile_root_bytes=15001
+controller_code=200 controller_bytes=8236
+PASS public static R14E asset smoke

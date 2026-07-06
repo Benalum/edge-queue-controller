@@ -1,0 +1,2 @@
+=== upload R14E static asset ===
+bundle=/tmp/apc-r14e-20260706T002945Z

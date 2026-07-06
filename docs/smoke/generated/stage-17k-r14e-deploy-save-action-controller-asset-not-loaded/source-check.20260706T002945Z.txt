@@ -1,0 +1,2 @@
+=== verify source stays asset-only/not-loaded ===
+PASS action controller source remains asset-only/not-loaded
