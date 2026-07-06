@@ -1,0 +1,16 @@
+stage=stage-17k-r14c-record-executor-loaded-no-ui-no-write-proof
+timestamp=20260706T002440Z
+head=c900f8a91988157e753d351b077ced38c11f1859
+short_head=c900f8a
+browser_proof=PASS_R14B_EXECUTOR_LOADED_NO_UI_NO_WRITE_BINDING
+executor_loaded_by_script=true
+executor_window_present=true
+executor_marker=APC_LOCAL_BACKUP_CURRENT_FILE_WRITE_EXECUTOR_R13X_SOURCE_ONLY
+has_execute_function=true
+save_plan_preview_still_visible=true
+has_unsafe_button=false
+mount_status=200
+panel_status=200
+mount_references_executor=false
+panel_references_executor=false
+safety=docs-only,no-write,no-deploy
