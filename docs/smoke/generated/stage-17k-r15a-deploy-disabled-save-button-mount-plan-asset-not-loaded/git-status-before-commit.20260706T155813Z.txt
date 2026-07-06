@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r15a-deploy-disabled-save-button-mount-plan-asset-not-loaded/
+?? docs/stage-17k-r15a-deploy-disabled-save-button-mount-plan-asset-not-loaded.md
+?? ops/smoke/check-stage-17k-r15a-deploy-disabled-save-button-mount-plan-asset-not-loaded.sh
