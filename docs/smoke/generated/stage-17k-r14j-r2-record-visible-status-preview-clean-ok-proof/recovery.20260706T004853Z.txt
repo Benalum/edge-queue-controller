@@ -1,0 +1,8 @@
+=== recovery guard ===
+?? docs/smoke/generated/stage-17k-r14j-r2-record-visible-status-preview-clean-ok-proof/
+?? docs/smoke/generated/stage-17k-r14j-record-visible-status-preview-clean-ok-proof/
+?? docs/stage-17k-r14j-record-visible-status-preview-clean-ok-proof.md
+?? ops/smoke/check-stage-17k-r14j-record-visible-status-preview-clean-ok-proof.sh
+copied_failed_r14j_partial_evidence=true
+=== status after failed partial cleanup ===
+?? docs/smoke/generated/stage-17k-r14j-r2-record-visible-status-preview-clean-ok-proof/
