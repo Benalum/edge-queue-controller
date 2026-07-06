@@ -1,0 +1,7 @@
+=== verify restored index tail and exact script delta ===
+old_script_count 43
+new_script_count 44
+removed_scripts []
+added_scripts ['/privatepages/local-backup-current-file-disabled-save-button-view-model.js?v=stage17k-r14n-r2-restore-index-tail-load-disabled-save-view-model-20260705']
+PASS exact script delta old+1 with no removals
+PASS R14N-R2 source behavior

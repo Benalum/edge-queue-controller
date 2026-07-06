@@ -1,0 +1,53 @@
+diff --git a/frontend/wrapper-ui/apc-wrapper-local/index.html b/frontend/wrapper-ui/apc-wrapper-local/index.html
+index d1b21f1..3646334 100644
+--- a/frontend/wrapper-ui/apc-wrapper-local/index.html
++++ b/frontend/wrapper-ui/apc-wrapper-local/index.html
+@@ -226,47 +226,7 @@
+   <script src="/privatepages/local-backup-legacy-backend-cache-sanitizer.js?v=stage17k-r13l-backend-cache-sanitizer-preview-only-20260702"></script>
+   <script src="/privatepages/local-backup-sanitized-payload-builder.js?v=stage17k-r13n-sanitized-payload-preview-only-20260702"></script>
+   <script src="/privatepages/local-backup-sanitized-snapshot-output-helper.js?v=stage17k-r13q-r6-panel-api-sanitized-download-url-20260705"></script>
+ <script defer src="/privatepages/local-backup-current-file-save-writer.js?v=stage17k-r13t-current-backup-save-writer-helper-no-ui-20260705"></script>
+ <script defer src="/privatepages/local-backup-current-file-write-executor.js?v=stage17k-r14b-load-write-executor-no-ui-no-write-20260705"></script>
+ <script defer src="/privatepages/local-backup-current-file-save-action-controller.js?v=stage17k-r14g-load-save-action-controller-no-ui-no-write-20260705"></script>
+-  <script src="/privatepages/profile-local-backups-mount.js?v=stage17k-r14i-r2-visible-save-action-status-preview-no-button-no-write-20260705"></script>
+-  <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_END -->
+-  <script src="/privatepages/anki-manifest-panel.js?v=stage17k-z-r12k-profile-copy-cleanup-20260701"></script>
+-  <script src="/privatepages/study-source-selector.js?v=stage17kwr4-study-source-panel-removed-20260629"></script>
+-  <script src="/privatepages/anki-readonly-session.js?v=stage17kxr2-local-card-session-ui-removed-20260629"></script>
+-  <script src="/privatepages/companion-local-anki-bridge.js?v=stage17kxr2-companion-local-card-ui-removed-20260629"></script>
+-  <script src="/privatepages/companion.js?v=auth-gate-r3r-20260628"></script>
+-  <script src="/privatepages/admin/admin-users.js?v=20260629-admin-users-r3u12"></script>
+-
+-<script>
+-(function loadQueuedChatStatusAfterInitialPageLoad() {
+-  const scriptId = "stage10hDeferredQueuedChatStatusScript";
+-  const scriptSrc = "/queued_chat_status.js";
+-
+-  function injectQueuedChatStatusScript() {
+-    if (document.getElementById(scriptId)) return;
+-    const script = document.createElement("script");
+-    script.id = scriptId;
+-    script.src = scriptSrc;
+-    script.dataset.stage10hDeferredQueuedStatus = "true";
+-    document.head.appendChild(script);
+-  }
+-
+-  if (document.readyState === "complete") {
+-    window.setTimeout(injectQueuedChatStatusScript, 0);
+-  } else {
+-    window.addEventListener("load", function onStage10hWindowLoad() {
+-      window.setTimeout(injectQueuedChatStatusScript, 0);
+-    }, { once: true });
+-  }
+-})();
+-</script>
+-  <script src="/privatepages/closed-beta-signup-guard.js?v=20260629-stage17k-z-r8b-closed-beta"></script>
+-
+-  <!-- Stage 17K-Z-R11G: Profile-local Anki APKG preview source mount; browser-local only. -->
+-  <script src="/privatepages/anki-import-local.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+-  <script src="/privatepages/profile-anki-import-bridge.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+-  <script src="/privatepages/profile-anki-preview-panel.js?v=stage17k-z-r11j-r2-profile-anki-preview-source-20260701"></script>
+-  <script src="/privatepages/profile-anki-preview-mount.js?v=stage17k-z-r11w-apkg-preview-local-data-copy-20260701"></script>
+-</body>
+-</html>
++  <script defer src="/privatepages/local-backup-current-file-disabled-save-button-view-model.js?v=stage17k-r14n-load-disabled-save-button-view-model-no-ui-no-binding-20260705"></script>

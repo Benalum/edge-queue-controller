@@ -1,0 +1,2 @@
+=== upload R14N-R2 index ===
+bundle=/tmp/apc-r14n-r2-20260706T010317Z

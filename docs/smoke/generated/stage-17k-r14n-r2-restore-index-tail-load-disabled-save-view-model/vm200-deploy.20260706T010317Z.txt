@@ -1,0 +1,5 @@
+=== backup and install R14N-R2 index on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r14n-r2-restore-index-tail-load-disabled-save-view-model-backup-20260706T010317Z
+d6af02f3300ccaae4a99049f9b77a328f0ab3849f4691abd9e25f55369029bfa  /var/www/apc-wrapper-local/index.html
+R14N_R2_VM200_RESTORE_INDEX_TAIL_LOAD_DISABLED_SAVE_VIEW_MODEL_DEPLOY_DONE
