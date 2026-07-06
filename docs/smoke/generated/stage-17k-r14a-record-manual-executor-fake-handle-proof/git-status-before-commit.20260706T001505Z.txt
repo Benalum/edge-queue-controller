@@ -1,0 +1,11 @@
+ D docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/git-diff-stat.20260706T001447Z.txt
+ D docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/git-status-before-commit.20260706T001447Z.txt
+ D docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/head-short.20260706T001447Z.txt
+ D docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/head.20260706T001447Z.txt
+ D docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/proof-summary.20260706T001447Z.txt
+ D docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/smoke.20260706T001447Z.txt
+?? docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/git-status-before-commit.20260706T001505Z.txt
+?? docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/head-short.20260706T001505Z.txt
+?? docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/head.20260706T001505Z.txt
+?? docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/proof-summary.20260706T001505Z.txt
+?? docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/smoke.20260706T001505Z.txt

@@ -1,3 +1,0 @@
-?? docs/smoke/generated/stage-17k-r14a-record-manual-executor-fake-handle-proof/
-?? docs/stage-17k-r14a-record-manual-executor-fake-handle-proof.md
-?? ops/smoke/check-stage-17k-r14a-record-manual-executor-fake-handle-proof.sh

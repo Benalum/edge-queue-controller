@@ -1,7 +1,7 @@
 stage=stage-17k-r14a-record-manual-executor-fake-handle-proof
-timestamp=20260706T001447Z
-head=4a610a526ec50918b834266646ac261f52448613
-short_head=4a610a5
+timestamp=20260706T001505Z
+head=88f6c5562692bbf696589b4e4caa9881c480f4b2
+short_head=88f6c55
 browser_proof=PASS_R14A_MANUAL_EXECUTOR_FAKE_HANDLE_PROOF
 before_loaded=false
 manual_load=true

@@ -1,0 +1,7 @@
+ .../git-diff-stat.20260706T001447Z.txt             |  0
+ .../git-status-before-commit.20260706T001447Z.txt  |  3 ---
+ .../head-short.20260706T001447Z.txt                |  1 -
+ .../head.20260706T001447Z.txt                      |  1 -
+ .../proof-summary.20260706T001447Z.txt             | 23 ----------------------
+ .../smoke.20260706T001447Z.txt                     |  1 -
+ 6 files changed, 29 deletions(-)
