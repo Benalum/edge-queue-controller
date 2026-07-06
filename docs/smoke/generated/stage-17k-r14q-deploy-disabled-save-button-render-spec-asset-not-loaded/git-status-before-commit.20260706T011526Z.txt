@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r14q-deploy-disabled-save-button-render-spec-asset-not-loaded/
+?? docs/stage-17k-r14q-deploy-disabled-save-button-render-spec-asset-not-loaded.md
+?? ops/smoke/check-stage-17k-r14q-deploy-disabled-save-button-render-spec-asset-not-loaded.sh
