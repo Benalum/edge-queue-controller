@@ -1,0 +1,4 @@
+=== verify source behavior ===
+=== diff-only no UI/write binding guard ===
+PASS diff-only no new UI/write binding
+PASS R14G source behavior
