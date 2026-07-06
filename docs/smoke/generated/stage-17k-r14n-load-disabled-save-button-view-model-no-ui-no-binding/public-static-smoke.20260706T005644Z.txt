@@ -1,0 +1,4 @@
+=== public static smoke ===
+profile_root_code=200 profile_root_bytes=13029
+asset_code=200 asset_bytes=6685
+PASS public static R14N smoke
