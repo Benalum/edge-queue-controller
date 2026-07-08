@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r16ad-study-card-images-disabled-panel-mount-target-source-only/
+?? docs/stage-17k-r16ad-study-card-images-disabled-panel-mount-target-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-panel-mount-target.js
+?? ops/smoke/check-stage-17k-r16ad-study-card-images-disabled-panel-mount-target-source-only.sh

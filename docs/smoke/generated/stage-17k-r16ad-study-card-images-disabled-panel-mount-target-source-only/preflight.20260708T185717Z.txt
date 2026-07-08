@@ -1,0 +1,18 @@
+stage=stage-17k-r16ad-study-card-images-disabled-panel-mount-target-source-only
+timestamp=20260708T185717Z
+head=7b784c237b3a1f7b376331831c7d4a2be9f58b7a
+short_head=7b784c2
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+r16ac_doc_present=true
+r16ac_asset_present=true
+r16ac_marker_present=true
+index_loads_mount_plan=true
+index_loads_mount_target=false
+new_asset_already_exists=false
+PASS preflight
