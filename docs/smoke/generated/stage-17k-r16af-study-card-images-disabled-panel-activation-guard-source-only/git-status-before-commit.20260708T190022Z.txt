@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r16af-study-card-images-disabled-panel-activation-guard-source-only/
+?? docs/stage-17k-r16af-study-card-images-disabled-panel-activation-guard-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-panel-activation-guard.js
+?? ops/smoke/check-stage-17k-r16af-study-card-images-disabled-panel-activation-guard-source-only.sh

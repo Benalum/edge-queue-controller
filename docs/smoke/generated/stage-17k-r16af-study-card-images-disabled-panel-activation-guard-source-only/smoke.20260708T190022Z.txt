@@ -1,0 +1,3 @@
+=== stage-17k-r16af-study-card-images-disabled-panel-activation-guard-source-only smoke ===
+PASS node R16AF disabled panel activation guard source-only behavior smoke
+PASS stage-17k-r16af-study-card-images-disabled-panel-activation-guard-source-only smoke
