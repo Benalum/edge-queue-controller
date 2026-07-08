@@ -1,0 +1,17 @@
+stage=stage-17k-r16f-record-image-helper-assets-not-loaded-browser-proof
+timestamp=20260708T023625Z
+head=006d17d8a03cd53de04ccb09264b1f727292235e
+short_head=006d17d
+browser_proof=PASS_R16E_IMAGE_HELPER_ASSETS_NOT_LOADED_NO_UI_NO_BINDING
+page=https://buddieswhostudy.com/profile
+profile_controls_present=true
+has_unsafe_image_ui_button=false
+has_unsafe_backup_button=false
+asset_count=4
+all_asset_status_200=true
+all_asset_markers_present=true
+all_loaded_by_script=false
+all_window_present=false
+all_returned_html_fallback=false
+all_has_forbidden_write_or_dom=false
+safety=docs-only,no-write,no-deploy
