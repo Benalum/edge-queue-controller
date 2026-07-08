@@ -1,0 +1,16 @@
+stage=stage-17k-r16ae-study-card-images-disabled-panel-controller-source-only
+timestamp=20260708T185839Z
+head=377cba0d61d13adb953fd248b6a2217be756272c
+short_head=377cba0
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+prev_mount_target_present=true
+prev_renderer_present=true
+r16ad_doc_present=true
+index_loads_mount_plan=true
+index_loads_panel_controller=false

@@ -1,0 +1,3 @@
+=== stage-17k-r16ae-study-card-images-disabled-panel-controller-source-only smoke ===
+PASS node R16AE disabled panel controller source-only behavior smoke
+PASS stage-17k-r16ae-study-card-images-disabled-panel-controller-source-only smoke
