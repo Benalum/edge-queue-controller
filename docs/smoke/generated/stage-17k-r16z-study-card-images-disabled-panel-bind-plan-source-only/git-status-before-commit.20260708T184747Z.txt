@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r16z-study-card-images-disabled-panel-bind-plan-source-only/
+?? docs/stage-17k-r16z-study-card-images-disabled-panel-bind-plan-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-panel-bind-plan.js
+?? ops/smoke/check-stage-17k-r16z-study-card-images-disabled-panel-bind-plan-source-only.sh

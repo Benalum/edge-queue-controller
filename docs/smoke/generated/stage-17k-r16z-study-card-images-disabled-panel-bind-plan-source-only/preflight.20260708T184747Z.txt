@@ -1,0 +1,16 @@
+stage=stage-17k-r16z-study-card-images-disabled-panel-bind-plan-source-only
+timestamp=20260708T184747Z
+head=32248e58219ba44ef80da4bca9e84028ed133b62
+short_head=32248e5
+repo_clean_before=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+r16y_doc_present=true
+r16w_doc_present=true
+index_loads_mount_plan=true
+index_loads_panel_bridge=false
+index_loads_integration_gate=false
+index_loads_bind_plan=false

@@ -1,0 +1,3 @@
+=== stage-17k-r16z-study-card-images-disabled-panel-bind-plan-source-only smoke ===
+PASS node R16Z disabled panel bind plan source-only behavior smoke
+PASS stage-17k-r16z-study-card-images-disabled-panel-bind-plan-source-only smoke
