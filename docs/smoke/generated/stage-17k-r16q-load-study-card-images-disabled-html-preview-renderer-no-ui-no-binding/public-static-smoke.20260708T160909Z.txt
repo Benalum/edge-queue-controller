@@ -1,0 +1,3 @@
+profile_root_code=200 profile_root_bytes=16951
+asset_code=200 asset_bytes=5115
+PASS public static R16Q smoke
