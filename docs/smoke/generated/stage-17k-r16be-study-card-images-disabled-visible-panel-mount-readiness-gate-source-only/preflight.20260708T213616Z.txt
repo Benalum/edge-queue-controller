@@ -1,0 +1,15 @@
+stage=stage-17k-r16be-study-card-images-disabled-visible-panel-mount-readiness-gate-source-only
+timestamp=20260708T213616Z
+head=420460cc8d9ff45651a9f06418fe1fd7c9ca02bf
+short_head=420460cc
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+source_only=true
+index_present=true
+previous_browser_proof_smoke_passed=true
+previous_deploy_smoke_passed=true
+index_loads_mount_readiness_gate=false

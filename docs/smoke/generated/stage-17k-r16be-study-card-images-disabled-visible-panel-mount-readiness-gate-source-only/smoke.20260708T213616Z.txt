@@ -1,0 +1,3 @@
+=== stage-17k-r16be-study-card-images-disabled-visible-panel-mount-readiness-gate-source-only smoke ===
+PASS node R16BE mount readiness gate source-only behavior smoke
+PASS stage-17k-r16be-study-card-images-disabled-visible-panel-mount-readiness-gate-source-only smoke
