@@ -1,0 +1,2 @@
+PASS R16AL source index load order smoke
+PASS stage-17k-r16al-load-disabled-visible-panel-source-index-source-only smoke
