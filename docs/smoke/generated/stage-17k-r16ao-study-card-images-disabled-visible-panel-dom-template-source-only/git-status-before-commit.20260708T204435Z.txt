@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r16ao-study-card-images-disabled-visible-panel-dom-template-source-only/
+?? docs/stage-17k-r16ao-study-card-images-disabled-visible-panel-dom-template-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-dom-template.js
+?? ops/smoke/check-stage-17k-r16ao-study-card-images-disabled-visible-panel-dom-template-source-only.sh

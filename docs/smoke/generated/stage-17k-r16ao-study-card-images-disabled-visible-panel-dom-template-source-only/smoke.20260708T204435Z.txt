@@ -1,0 +1,3 @@
+=== stage-17k-r16ao-study-card-images-disabled-visible-panel-dom-template-source-only smoke ===
+PASS node R16AO disabled visible panel DOM template source-only behavior smoke
+PASS stage-17k-r16ao-study-card-images-disabled-visible-panel-dom-template-source-only smoke
