@@ -1,0 +1,11 @@
+stage=stage-17k-r16n-study-card-images-disabled-html-preview-renderer-source-only
+timestamp=20260708T155204Z
+head=5e7d5048bb369d9e84da943f1dc4b0eccff8cc55
+short_head=5e7d504
+repo_clean_before=true
+index_present=true
+disabled_spec_present=true
+disabled_spec_marker_present=true
+index_loads_disabled_spec=true
+r16m_doc_present=true
+r16m_pass_present=true

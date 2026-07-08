@@ -1,0 +1,3 @@
+=== stage-17k-r16n-study-card-images-disabled-html-preview-renderer-source-only smoke ===
+PASS node R16N disabled html preview renderer source-only behavior smoke
+PASS stage-17k-r16n-study-card-images-disabled-html-preview-renderer-source-only smoke
