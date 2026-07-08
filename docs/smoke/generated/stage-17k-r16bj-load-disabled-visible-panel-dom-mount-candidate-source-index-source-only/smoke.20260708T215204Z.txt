@@ -1,0 +1,3 @@
+=== stage-17k-r16bj-load-disabled-visible-panel-dom-mount-candidate-source-index-source-only smoke ===
+PASS R16BJ source index order visible < adapter < DOM template < slot resolver < mount controller < safe mount executor < readiness gate < DOM mount candidate visible_line=282 adapter_line=283 dom_template_line=285 slot_resolver_line=287 mount_controller_line=289 safe_mount_line=291 readiness_gate_line=293 dom_mount_candidate_line=295
+PASS stage-17k-r16bj-load-disabled-visible-panel-dom-mount-candidate-source-index-source-only smoke
