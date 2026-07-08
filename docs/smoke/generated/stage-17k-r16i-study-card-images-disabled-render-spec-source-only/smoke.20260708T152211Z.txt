@@ -1,0 +1,2 @@
+PASS node R16I disabled render spec source-only behavior smoke
+PASS stage-17k-r16i-study-card-images-disabled-render-spec-source-only smoke

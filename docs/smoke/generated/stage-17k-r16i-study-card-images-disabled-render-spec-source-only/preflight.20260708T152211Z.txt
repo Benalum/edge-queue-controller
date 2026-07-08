@@ -1,0 +1,4 @@
+PASS preflight
+required_files=6
+r16h_proof=PASS_R16G_R3_IMAGE_HELPER_CONTRACTS_LOADED_NO_UI_NO_BINDING
+index_loads_r16i=false
