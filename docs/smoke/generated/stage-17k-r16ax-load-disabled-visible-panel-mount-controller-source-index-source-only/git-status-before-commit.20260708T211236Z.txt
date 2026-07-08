@@ -1,0 +1,12 @@
+A  docs/smoke/generated/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only/git-status-start.20260708T211236Z.txt
+A  docs/smoke/generated/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only/head-short.20260708T211236Z.txt
+A  docs/smoke/generated/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only/head.20260708T211236Z.txt
+A  docs/smoke/generated/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only/local-sha.20260708T211236Z.txt
+A  docs/smoke/generated/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only/preflight.20260708T211236Z.txt
+A  docs/smoke/generated/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only/smoke.20260708T211236Z.txt
+A  docs/smoke/generated/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only/source-check.20260708T211236Z.txt
+A  docs/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only.md
+M  frontend/wrapper-ui/apc-wrapper-local/index.html
+A  ops/smoke/check-stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only.sh
+?? docs/smoke/generated/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only/git-diff-stat.20260708T211236Z.txt
+?? docs/smoke/generated/stage-17k-r16ax-load-disabled-visible-panel-mount-controller-source-index-source-only/git-status-before-commit.20260708T211236Z.txt
