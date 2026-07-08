@@ -1,0 +1,2 @@
+=== stage-17k-r16bd-record-disabled-visible-panel-safe-mount-executor-browser-proof smoke ===
+PASS stage-17k-r16bd-record-disabled-visible-panel-safe-mount-executor-browser-proof smoke
