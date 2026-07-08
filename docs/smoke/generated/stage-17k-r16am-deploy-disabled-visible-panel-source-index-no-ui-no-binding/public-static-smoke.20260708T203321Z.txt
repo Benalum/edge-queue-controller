@@ -1,0 +1,6 @@
+profile_code=200
+visible_code=200
+adapter_code=200
+public_visible_line=282
+public_adapter_line=283
+PASS public static R16AM smoke
