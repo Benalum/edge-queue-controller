@@ -1,0 +1,2 @@
+=== verify source-only/no-load ===
+PASS backup manifest contract is source-only and not loaded

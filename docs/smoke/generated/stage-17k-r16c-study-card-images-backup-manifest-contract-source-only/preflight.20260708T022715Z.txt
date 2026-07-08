@@ -1,0 +1,5 @@
+stage=stage-17k-r16c-study-card-images-backup-manifest-contract-source-only
+timestamp=20260708T022715Z
+head=6b1096898dfc004c81bf850858e8d718b4827fa1
+short_head=6b10968
+PASS preflight

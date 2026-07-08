@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r16c-study-card-images-backup-manifest-contract-source-only/
+?? docs/stage-17k-r16c-study-card-images-backup-manifest-contract-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-backup-manifest-contract.js
+?? ops/smoke/check-stage-17k-r16c-study-card-images-backup-manifest-contract-source-only.sh
