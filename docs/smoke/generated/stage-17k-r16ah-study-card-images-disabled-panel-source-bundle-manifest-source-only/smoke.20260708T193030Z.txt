@@ -1,0 +1,3 @@
+=== stage-17k-r16ah-study-card-images-disabled-panel-source-bundle-manifest-source-only smoke ===
+PASS node R16AH disabled panel source-bundle manifest source-only behavior smoke
+PASS stage-17k-r16ah-study-card-images-disabled-panel-source-bundle-manifest-source-only smoke

@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r16ah-study-card-images-disabled-panel-source-bundle-manifest-source-only/
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-panel-source-bundle-manifest.js
+?? ops/smoke/check-stage-17k-r16ah-study-card-images-disabled-panel-source-bundle-manifest-source-only.sh

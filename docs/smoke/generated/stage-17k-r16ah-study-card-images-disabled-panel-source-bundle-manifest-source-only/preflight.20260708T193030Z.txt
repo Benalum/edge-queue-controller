@@ -1,0 +1,17 @@
+stage=stage-17k-r16ah-study-card-images-disabled-panel-source-bundle-manifest-source-only
+timestamp=20260708T193030Z
+head=5a35ae7a1eaa23d1cfa26d6aa5b99f95b4093782
+short_head=5a35ae7
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+r16ag_asset_present=true
+r16ag_marker_present=true
+r16ag_smoke_passed=true
+panel_asset_count=10
+index_loads_mount_plan=true
+index_loads_panel_source_bundle=false
