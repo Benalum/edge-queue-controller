@@ -1,0 +1,2 @@
+?? docs/smoke/generated/stage-17k-r16bg-deploy-disabled-visible-panel-mount-readiness-gate-source-index-no-ui-no-binding/
+?? ops/smoke/check-stage-17k-r16bg-deploy-disabled-visible-panel-mount-readiness-gate-source-index-no-ui-no-binding.sh
