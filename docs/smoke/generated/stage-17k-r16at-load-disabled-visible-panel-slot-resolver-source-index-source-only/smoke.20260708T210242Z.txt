@@ -1,0 +1,3 @@
+=== stage-17k-r16at-load-disabled-visible-panel-slot-resolver-source-index-source-only smoke ===
+PASS R16AT source index order visible < adapter < DOM template < slot resolver visible_line=282 adapter_line=283 dom_template_line=285 slot_resolver_line=287
+PASS stage-17k-r16at-load-disabled-visible-panel-slot-resolver-source-index-source-only smoke

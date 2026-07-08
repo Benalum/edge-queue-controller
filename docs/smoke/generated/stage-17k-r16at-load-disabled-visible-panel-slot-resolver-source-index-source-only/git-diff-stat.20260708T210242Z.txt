@@ -1,0 +1,11 @@
+ .../git-status-start.20260708T210242Z.txt          |  1 +
+ .../head-short.20260708T210242Z.txt                |  1 +
+ .../head.20260708T210242Z.txt                      |  1 +
+ .../local-sha.20260708T210242Z.txt                 |  5 ++
+ .../preflight.20260708T210242Z.txt                 | 23 +++++++++
+ .../smoke.20260708T210242Z.txt                     |  3 ++
+ .../source-check.20260708T210242Z.txt              | 30 ++++++++++++
+ ...panel-slot-resolver-source-index-source-only.md | 48 +++++++++++++++++++
+ frontend/wrapper-ui/apc-wrapper-local/index.html   |  2 +
+ ...panel-slot-resolver-source-index-source-only.sh | 54 ++++++++++++++++++++++
+ 10 files changed, 168 insertions(+)
