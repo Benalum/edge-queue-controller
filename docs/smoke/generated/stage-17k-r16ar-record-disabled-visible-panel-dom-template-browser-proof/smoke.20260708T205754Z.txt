@@ -1,0 +1,2 @@
+=== stage-17k-r16ar-record-disabled-visible-panel-dom-template-browser-proof smoke ===
+PASS stage-17k-r16ar-record-disabled-visible-panel-dom-template-browser-proof smoke
