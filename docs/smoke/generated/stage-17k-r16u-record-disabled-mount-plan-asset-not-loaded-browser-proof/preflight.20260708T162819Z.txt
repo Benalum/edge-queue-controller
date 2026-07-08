@@ -1,0 +1,15 @@
+stage=stage-17k-r16u-record-disabled-mount-plan-asset-not-loaded-browser-proof
+timestamp=20260708T162819Z
+head=73bf0a6f6ef73181897ab9a8c6c366c402c57c5e
+short_head=73bf0a6
+repo_clean_before=true
+index_present=true
+mount_asset_present=true
+mount_marker_present=true
+index_loads_mount_plan=false
+index_loads_html_preview_renderer=true
+r16t_doc_present=true
+r16r_doc_present=true
+r16t_doc_records_asset_deploy=true
+forbidden_source_api=false
+browser_proof=PASS_R16T_DISABLED_MOUNT_PLAN_ASSET_NOT_LOADED_NO_UI_NO_BINDING
