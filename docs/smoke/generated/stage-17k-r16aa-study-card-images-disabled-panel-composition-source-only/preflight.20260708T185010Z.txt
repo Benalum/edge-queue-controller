@@ -1,0 +1,15 @@
+stage=stage-17k-r16aa-study-card-images-disabled-panel-composition-source-only
+timestamp=20260708T185010Z
+head=1a7789c1192dbd240f037a956ff410f867818423
+short_head=1a7789c
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+prev_bind_present=true
+r16z_doc_present=true
+index_loads_mount_plan=true
+index_loads_composition_plan=false

@@ -1,0 +1,3 @@
+=== stage-17k-r16aa-study-card-images-disabled-panel-composition-source-only smoke ===
+PASS node R16AA disabled panel composition source-only behavior smoke
+PASS stage-17k-r16aa-study-card-images-disabled-panel-composition-source-only smoke
