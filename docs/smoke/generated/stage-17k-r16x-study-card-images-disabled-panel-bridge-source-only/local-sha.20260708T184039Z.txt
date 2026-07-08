@@ -1,0 +1,2 @@
+612cf1c0a1e81b7909eb4f7bd176bbddc118883c4d9bb4b6594d65c4856545f5  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-panel-bridge.js
+d0618f5473b1c062dfcececaf1182feb534c1aef3278e5b8d926a76caaac04ef  frontend/wrapper-ui/apc-wrapper-local/index.html
