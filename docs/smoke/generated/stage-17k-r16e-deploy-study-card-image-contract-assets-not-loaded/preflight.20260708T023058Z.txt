@@ -1,0 +1,5 @@
+stage=stage-17k-r16e-deploy-study-card-image-contract-assets-not-loaded
+timestamp=20260708T023058Z
+head=a0ccb670ac76216f5fa2b20ab805a1ba911685fb
+short_head=a0ccb67
+PASS preflight

@@ -1,0 +1,2 @@
+=== upload R16E static assets ===
+bundle=/tmp/apc-r16e-20260708T023058Z

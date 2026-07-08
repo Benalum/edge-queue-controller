@@ -1,0 +1,8 @@
+=== backup and install R16E assets on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r16e-study-card-image-contract-assets-not-loaded-backup-20260708T023058Z
+d30ec3c58f9cea1fb1294df29d66c2d055d1a67b5d4da7009fe92c67b1ed0921  /var/www/apc-wrapper-local/privatepages/study-card-images-local-only-contract.js
+0a29c7e1821683dd2a803dbd8658e4341d235a6bcf88dab80f0b13d64e80e887  /var/www/apc-wrapper-local/privatepages/study-card-images-local-storage-adapter-contract.js
+f9d7f2c9a2de553747ca6b88ef59f583e1be97c5ff5fd9b3b1c09c708986dd07  /var/www/apc-wrapper-local/privatepages/study-card-images-backup-manifest-contract.js
+223dbcc3f97b594f5b1ba119018fa749cd1c00e10a9a909878812c5ed5c17694  /var/www/apc-wrapper-local/privatepages/study-card-images-card-editor-ui-plan.js
+R16E_VM200_STUDY_CARD_IMAGE_CONTRACT_ASSETS_NOT_LOADED_DEPLOY_DONE

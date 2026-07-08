@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r16e-deploy-study-card-image-contract-assets-not-loaded/
+?? docs/stage-17k-r16e-deploy-study-card-image-contract-assets-not-loaded.md
+?? ops/smoke/check-stage-17k-r16e-deploy-study-card-image-contract-assets-not-loaded.sh
