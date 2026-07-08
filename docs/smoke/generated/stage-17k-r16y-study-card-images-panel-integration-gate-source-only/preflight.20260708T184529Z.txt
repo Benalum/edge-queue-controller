@@ -1,0 +1,16 @@
+stage=stage-17k-r16y-study-card-images-panel-integration-gate-source-only
+timestamp=20260708T184529Z
+head=7bee18fd2408c15a3acd1a1c0b2cf361f944c93b
+short_head=7bee18f
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+r16x_doc_present=true
+r16w_doc_present=true
+index_loads_mount_plan=true
+index_loads_panel_bridge=false
+index_loads_integration_gate=false

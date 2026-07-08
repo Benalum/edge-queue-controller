@@ -1,0 +1,3 @@
+=== stage-17k-r16y-study-card-images-panel-integration-gate-source-only smoke ===
+PASS node R16Y panel integration gate source-only behavior smoke
+PASS stage-17k-r16y-study-card-images-panel-integration-gate-source-only smoke
