@@ -1,0 +1,12 @@
+stage=stage-17k-r16k-record-disabled-render-spec-asset-not-loaded-browser-proof
+timestamp=20260708T153539Z
+head=0861fcf7a599c249467099bb274086c54ce039c7
+short_head=0861fcf
+repo_clean_before=true
+r16j_tag_present=true
+r16j_doc_present=true
+r16i_doc_present=true
+asset_present=true
+local_marker_present=true
+index_loads_disabled_render_spec=false
+PASS preflight
