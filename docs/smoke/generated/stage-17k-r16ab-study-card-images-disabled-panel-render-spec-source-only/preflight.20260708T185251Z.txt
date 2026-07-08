@@ -1,0 +1,16 @@
+stage=stage-17k-r16ab-study-card-images-disabled-panel-render-spec-source-only
+timestamp=20260708T185251Z
+head=0623e5d79723e8b4064f8e008f85a8d9285c38e9
+short_head=0623e5d
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+prev_composition_present=true
+prev_composition_marker_present=true
+r16aa_doc_present=true
+index_loads_mount_plan=true
+index_loads_panel_render_spec=false
