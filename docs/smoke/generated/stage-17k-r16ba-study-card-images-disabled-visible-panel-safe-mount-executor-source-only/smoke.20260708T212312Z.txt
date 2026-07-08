@@ -1,0 +1,3 @@
+=== stage-17k-r16ba-study-card-images-disabled-visible-panel-safe-mount-executor-source-only smoke ===
+PASS node R16BA disabled visible panel safe mount executor source-only behavior smoke
+PASS stage-17k-r16ba-study-card-images-disabled-visible-panel-safe-mount-executor-source-only smoke
