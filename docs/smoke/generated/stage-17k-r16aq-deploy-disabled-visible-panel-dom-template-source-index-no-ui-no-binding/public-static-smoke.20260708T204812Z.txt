@@ -1,0 +1,8 @@
+profile_code=200
+visible_code=200
+adapter_code=200
+dom_template_code=200
+public_visible_line=282
+public_adapter_line=283
+public_dom_template_line=285
+PASS public static R16AQ smoke

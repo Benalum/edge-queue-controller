@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r16aq-deploy-disabled-visible-panel-dom-template-source-index-no-ui-no-binding/
+?? docs/stage-17k-r16aq-deploy-disabled-visible-panel-dom-template-source-index-no-ui-no-binding.md
+?? ops/smoke/check-stage-17k-r16aq-deploy-disabled-visible-panel-dom-template-source-index-no-ui-no-binding.sh
