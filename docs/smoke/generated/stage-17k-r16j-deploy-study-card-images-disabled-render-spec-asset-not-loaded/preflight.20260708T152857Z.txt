@@ -1,0 +1,14 @@
+stage=stage-17k-r16j-deploy-study-card-images-disabled-render-spec-asset-not-loaded
+timestamp=20260708T152857Z
+head=389fe710e45ba32a15bb2928a4e93268592ed1e4
+short_head=389fe71
+asset_present=true
+index_present=true
+local_marker_present=true
+index_loads_disabled_render_spec=false
+r16h_record_present=true
+r16a_asset_present=true
+r16b_asset_present=true
+r16c_asset_present=true
+r16d_asset_present=true
+PASS preflight

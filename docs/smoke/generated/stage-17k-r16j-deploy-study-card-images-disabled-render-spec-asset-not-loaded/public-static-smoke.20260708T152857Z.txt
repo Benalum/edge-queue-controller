@@ -1,0 +1,4 @@
+=== stage-17k-r16j deploy disabled image render spec asset not loaded smoke ===
+profile_root_code=200 profile_root_bytes=16618
+asset_code=200 asset_bytes=6825
+PASS public static disabled render spec asset-not-loaded smoke

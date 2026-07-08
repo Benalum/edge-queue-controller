@@ -1,0 +1,7 @@
+stage=stage-17k-r16j-deploy-study-card-images-disabled-render-spec-asset-not-loaded
+timestamp=20260708T152857Z
+local_asset_present=true
+local_marker_present=true
+index_loads_disabled_render_spec=false
+forbidden_source_api=false
+PASS local-only predeploy checks
