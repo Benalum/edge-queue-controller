@@ -1,0 +1,3 @@
+dc7132622913e091fa7ad0865c5fcf727a9a014f0ef7e87623f6e4903d33d7e9  frontend/wrapper-ui/apc-wrapper-local/index.html
+2d46d0db66651832fc3bafda6499e5d67237ee53c54925d5594093cef8090d05  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-mount-readiness-gate.js
+cd3c87c5edaa1b6c81c4f458baabec0970d7c309fe46fba6c49156d4154dd0db  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-safe-mount-executor.js
