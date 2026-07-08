@@ -1,0 +1,16 @@
+stage=stage-17k-r16ag-study-card-images-disabled-panel-load-order-source-only
+timestamp=20260708T190648Z
+head=ede0c5d834192dafb1fbcf18388ce88ff8e2b50e
+short_head=ede0c5d
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+prev_guard_present=true
+prev_guard_marker_present=true
+r16af_doc_present=true
+index_loads_mount_plan=true
+index_loads_load_order_contract=false

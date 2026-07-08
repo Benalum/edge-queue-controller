@@ -1,0 +1,3 @@
+=== stage-17k-r16ag-study-card-images-disabled-panel-load-order-source-only smoke ===
+PASS node R16AG disabled panel load-order source-only behavior smoke
+PASS stage-17k-r16ag-study-card-images-disabled-panel-load-order-source-only smoke
