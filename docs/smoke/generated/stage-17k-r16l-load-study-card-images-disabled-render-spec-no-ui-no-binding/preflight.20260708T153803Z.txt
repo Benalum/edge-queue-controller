@@ -1,0 +1,10 @@
+stage=stage-17k-r16l-load-study-card-images-disabled-render-spec-no-ui-no-binding
+timestamp=20260708T153803Z
+head=6a32f6d58514a739bc74c869d0541df16dd6af52
+short_head=6a32f6d
+index_present=true
+disabled_asset_present=true
+disabled_marker_present=true
+r16k_doc_present=true
+r16k_proof_present=true
+index_loads_disabled_render_spec_before=false

@@ -1,0 +1,5 @@
+old_script_count 50
+new_script_count 51
+removed_scripts []
+added_scripts ['/privatepages/study-card-images-disabled-render-spec.js?v=stage17k-r16l-load-disabled-image-render-spec-no-ui-no-binding-20260708']
+PASS exact script delta old+1 with no removals
