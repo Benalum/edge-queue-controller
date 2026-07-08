@@ -1,0 +1,16 @@
+stage=stage-17k-r16ac-study-card-images-disabled-panel-html-preview-renderer-source-only
+timestamp=20260708T185521Z
+head=b0fbb43d6e9850e693bffec21b005c47b8c32660
+short_head=b0fbb43
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+prev_render_spec_present=true
+prev_render_marker_present=true
+r16ab_doc_present=true
+index_loads_mount_plan=true
+index_loads_panel_html_preview_renderer=false
