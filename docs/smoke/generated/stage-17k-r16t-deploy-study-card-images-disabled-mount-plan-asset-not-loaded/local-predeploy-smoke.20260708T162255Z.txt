@@ -1,0 +1,7 @@
+stage=stage-17k-r16t-deploy-study-card-images-disabled-mount-plan-asset-not-loaded
+timestamp=20260708T162255Z
+local_asset_present=true
+local_marker_present=true
+index_loads_mount_plan=false
+forbidden_source_api=false
+PASS local-only predeploy checks

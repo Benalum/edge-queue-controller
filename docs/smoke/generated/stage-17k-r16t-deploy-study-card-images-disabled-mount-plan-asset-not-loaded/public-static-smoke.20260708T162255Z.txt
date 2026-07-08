@@ -1,0 +1,4 @@
+=== stage-17k-r16t deploy disabled image mount plan asset not loaded smoke ===
+profile_root_code=200 profile_root_bytes=16952
+asset_code=200 asset_bytes=6881
+PASS public static disabled image mount plan asset-not-loaded smoke
