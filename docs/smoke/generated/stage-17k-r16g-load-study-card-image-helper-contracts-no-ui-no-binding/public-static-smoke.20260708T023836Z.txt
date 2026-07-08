@@ -1,0 +1,7 @@
+=== public static smoke ===
+profile_root_code=200 profile_root_bytes=16618
+asset=study-card-images-local-only-contract.js code=200 bytes=6866
+asset=study-card-images-local-storage-adapter-contract.js code=200 bytes=9550
+asset=study-card-images-backup-manifest-contract.js code=200 bytes=8581
+asset=study-card-images-card-editor-ui-plan.js code=200 bytes=8271
+PASS public static R16G smoke

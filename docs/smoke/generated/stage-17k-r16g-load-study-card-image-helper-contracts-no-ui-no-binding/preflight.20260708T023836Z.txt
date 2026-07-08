@@ -1,0 +1,5 @@
+stage=stage-17k-r16g-load-study-card-image-helper-contracts-no-ui-no-binding
+timestamp=20260708T023836Z
+head=bba5090743f674e3ddd4e3f88e8c333f78e9d690
+short_head=bba5090
+PASS preflight

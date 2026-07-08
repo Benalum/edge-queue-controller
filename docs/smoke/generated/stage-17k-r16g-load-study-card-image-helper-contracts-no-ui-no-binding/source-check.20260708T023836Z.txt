@@ -1,0 +1,19 @@
+=== verify exact script delta and restored tail ===
+<script defer src="/privatepages/study-card-images-local-only-contract.js?v=stage17k-r16g-load-study-card-image-helper-contracts-no-ui-no-binding-20260708"></script>
+<script defer src="/privatepages/study-card-images-local-storage-adapter-contract.js?v=stage17k-r16g-load-study-card-image-helper-contracts-no-ui-no-binding-20260708"></script>
+<script defer src="/privatepages/study-card-images-backup-manifest-contract.js?v=stage17k-r16g-load-study-card-image-helper-contracts-no-ui-no-binding-20260708"></script>
+<script defer src="/privatepages/study-card-images-card-editor-ui-plan.js?v=stage17k-r16g-load-study-card-image-helper-contracts-no-ui-no-binding-20260708"></script>
+<script defer src="/privatepages/local-backup-current-file-disabled-save-button-mount-plan.js?v=stage17k-r15c-load-disabled-save-button-mount-plan-no-ui-no-binding-20260708"></script>
+  <script src="/privatepages/profile-local-backups-mount.js?v=stage17k-r14i-r2-visible-save-action-status-preview-no-button-no-write-20260705"></script>
+  <script src="/privatepages/anki-manifest-panel.js?v=stage17k-z-r12k-profile-copy-cleanup-20260701"></script>
+  <script src="/privatepages/companion.js?v=auth-gate-r3r-20260628"></script>
+  <script src="/privatepages/closed-beta-signup-guard.js?v=20260629-stage17k-z-r8b-closed-beta"></script>
+  <script src="/privatepages/profile-anki-preview-mount.js?v=stage17k-z-r11w-apkg-preview-local-data-copy-20260701"></script>
+</body>
+</html>
+old_script_count 47
+new_script_count 51
+removed_scripts []
+added_scripts ['/privatepages/study-card-images-local-only-contract.js?v=stage17k-r16g-load-study-card-image-helper-contracts-no-ui-no-binding-20260708', '/privatepages/study-card-images-local-storage-adapter-contract.js?v=stage17k-r16g-load-study-card-image-helper-contracts-no-ui-no-binding-20260708', '/privatepages/study-card-images-backup-manifest-contract.js?v=stage17k-r16g-load-study-card-image-helper-contracts-no-ui-no-binding-20260708', '/privatepages/study-card-images-card-editor-ui-plan.js?v=stage17k-r16g-load-study-card-image-helper-contracts-no-ui-no-binding-20260708']
+PASS exact script delta old+4 with no removals
+PASS source behavior

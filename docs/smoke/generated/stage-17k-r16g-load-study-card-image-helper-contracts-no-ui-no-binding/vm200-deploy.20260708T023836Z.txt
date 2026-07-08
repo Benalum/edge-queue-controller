@@ -1,0 +1,5 @@
+=== backup and install R16G index on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r16g-load-study-card-image-helper-contracts-no-ui-no-binding-backup-20260708T023836Z
+42f2b16947c9e4f6a0aff673ac41313a67311029cab2d33e353e7233a57cf4f6  /var/www/apc-wrapper-local/index.html
+R16G_VM200_LOAD_STUDY_CARD_IMAGE_HELPER_CONTRACTS_NO_UI_NO_BINDING_DEPLOY_DONE
