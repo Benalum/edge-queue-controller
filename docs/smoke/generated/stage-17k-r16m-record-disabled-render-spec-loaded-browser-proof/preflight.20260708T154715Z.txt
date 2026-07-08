@@ -1,0 +1,11 @@
+stage=stage-17k-r16m-record-disabled-render-spec-loaded-browser-proof
+timestamp=20260708T154715Z
+head=89a8887d724b758432b2964c8b256db4aaaaf35b
+short_head=89a8887
+repo_clean_before=true
+index_present=true
+disabled_asset_present=true
+index_loads_disabled_render_spec=true
+asset_marker_present=true
+r16l_doc_present=true
+browser_proof=PASS_R16L_DISABLED_RENDER_SPEC_LOADED_NO_UI_NO_BINDING

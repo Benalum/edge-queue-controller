@@ -4,8 +4,8 @@ Stage R16M records the browser proof for R16L.
 
 Current checkpoint before this docs-only record:
 
-- HEAD before record: 077f4bcba990ff18268f398619364a0d96e1d64b
-- Short HEAD before record: 077f4bc
+- HEAD before record: 89a8887d724b758432b2964c8b256db4aaaaf35b
+- Short HEAD before record: 89a8887
 - Recorded browser proof: PASS_R16L_DISABLED_RENDER_SPEC_LOADED_NO_UI_NO_BINDING
 - Page: https://buddieswhostudy.com/profile
 

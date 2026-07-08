@@ -1,0 +1,8 @@
+ M docs/stage-17k-r16m-record-disabled-render-spec-loaded-browser-proof.md
+?? docs/smoke/generated/stage-17k-r16m-record-disabled-render-spec-loaded-browser-proof/git-status-before-commit.20260708T154715Z.txt
+?? docs/smoke/generated/stage-17k-r16m-record-disabled-render-spec-loaded-browser-proof/git-status-start.20260708T154715Z.txt
+?? docs/smoke/generated/stage-17k-r16m-record-disabled-render-spec-loaded-browser-proof/head-short.20260708T154715Z.txt
+?? docs/smoke/generated/stage-17k-r16m-record-disabled-render-spec-loaded-browser-proof/head.20260708T154715Z.txt
+?? docs/smoke/generated/stage-17k-r16m-record-disabled-render-spec-loaded-browser-proof/preflight.20260708T154715Z.txt
+?? docs/smoke/generated/stage-17k-r16m-record-disabled-render-spec-loaded-browser-proof/proof-summary.20260708T154715Z.txt
+?? docs/smoke/generated/stage-17k-r16m-record-disabled-render-spec-loaded-browser-proof/smoke.20260708T154715Z.txt
