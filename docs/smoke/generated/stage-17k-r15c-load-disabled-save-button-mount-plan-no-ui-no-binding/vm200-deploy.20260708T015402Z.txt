@@ -1,0 +1,5 @@
+=== backup and install R15C index on VM200 ===
+host=website-edge
+backup=/var/www/apc-wrapper-local/apc-r15c-load-disabled-save-button-mount-plan-no-ui-no-binding-backup-20260708T015402Z
+1a3ed7ae60cf540603dcc792bbacc7acde2594a2d4e1d526610a08cb339f18b7  /var/www/apc-wrapper-local/index.html
+R15C_VM200_LOAD_DISABLED_SAVE_BUTTON_MOUNT_PLAN_NO_UI_NO_BINDING_DEPLOY_DONE
