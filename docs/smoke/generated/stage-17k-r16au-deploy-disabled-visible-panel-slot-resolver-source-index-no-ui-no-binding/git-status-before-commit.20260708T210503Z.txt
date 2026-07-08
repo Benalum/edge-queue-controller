@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r16au-deploy-disabled-visible-panel-slot-resolver-source-index-no-ui-no-binding/
+?? docs/stage-17k-r16au-deploy-disabled-visible-panel-slot-resolver-source-index-no-ui-no-binding.md
+?? ops/smoke/check-stage-17k-r16au-deploy-disabled-visible-panel-slot-resolver-source-index-no-ui-no-binding.sh
