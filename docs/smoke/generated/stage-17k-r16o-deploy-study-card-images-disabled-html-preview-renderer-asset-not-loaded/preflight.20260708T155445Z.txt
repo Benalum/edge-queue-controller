@@ -1,0 +1,13 @@
+stage=stage-17k-r16o-deploy-study-card-images-disabled-html-preview-renderer-asset-not-loaded
+timestamp=20260708T155445Z
+head=ea2cd6a7c2bee4ccd8acd7115b07f03ca2af75ba
+short_head=ea2cd6a
+repo_clean_before=true
+index_present=true
+source_asset_present=true
+source_marker_present=true
+index_loads_html_preview_renderer=false
+r16n_doc_present=true
+r16m_doc_present=true
+forbidden_source_api=false
+PASS preflight

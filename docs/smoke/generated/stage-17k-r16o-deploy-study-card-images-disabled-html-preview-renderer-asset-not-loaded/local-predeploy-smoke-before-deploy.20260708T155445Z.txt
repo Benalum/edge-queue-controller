@@ -1,0 +1,4 @@
+=== stage-17k-r16o deploy disabled image html preview renderer asset not loaded smoke ===
+profile_root_code=200 profile_root_bytes=16778
+asset_code=200 asset_bytes=15576
+FAIL: marker missing from public asset

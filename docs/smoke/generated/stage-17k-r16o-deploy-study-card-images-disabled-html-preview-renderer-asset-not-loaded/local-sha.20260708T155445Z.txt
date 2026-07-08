@@ -1,0 +1,2 @@
+50676f388c16940d543229e1d354397ef723c0b45a59359cb5e0972792735608  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-html-preview-renderer.js
+7feaa462fe968d05fe1d65fd5afaf1171d4873c66e2a9ae8d85d548a7fcd494a  frontend/wrapper-ui/apc-wrapper-local/index.html
