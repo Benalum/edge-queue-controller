@@ -1,0 +1,4 @@
+stage=stage-17k-r16h-record-image-helper-contracts-loaded-browser-proof
+timestamp=20260708T151825Z
+head=4c55a1aec8aef63294067b99e77ea127e3ae1e53
+short_head=4c55a1a
