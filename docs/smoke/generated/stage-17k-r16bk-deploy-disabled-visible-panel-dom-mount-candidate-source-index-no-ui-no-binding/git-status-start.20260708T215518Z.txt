@@ -1,0 +1,2 @@
+?? docs/smoke/generated/stage-17k-r16bk-deploy-disabled-visible-panel-dom-mount-candidate-source-index-no-ui-no-binding/
+?? ops/smoke/check-stage-17k-r16bk-deploy-disabled-visible-panel-dom-mount-candidate-source-index-no-ui-no-binding.sh
