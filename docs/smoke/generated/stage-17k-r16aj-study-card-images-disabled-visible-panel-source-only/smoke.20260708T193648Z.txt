@@ -1,0 +1,3 @@
+=== stage-17k-r16aj-study-card-images-disabled-visible-panel-source-only smoke ===
+PASS node R16AJ disabled visible panel source-only behavior smoke
+PASS stage-17k-r16aj-study-card-images-disabled-visible-panel-source-only smoke
