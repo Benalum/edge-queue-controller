@@ -1,0 +1,2 @@
+1622a140c7db1ffbd1c4b9faf06f21120b3f5518938fdcf499555323518ea55e  docs/stage-17k-r16an-record-disabled-visible-panel-browser-proof.md
+f6de951cd640570ecc51ae863eeed3bdaa2c920a04c80508d2a5e546d4a4189f  ops/smoke/check-stage-17k-r16an-record-disabled-visible-panel-browser-proof.sh
