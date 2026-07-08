@@ -1,0 +1,4 @@
+=== stage-17k-r16ap-load-disabled-visible-panel-dom-template-source-index-source-only smoke ===
+PASS R16AP source index order visible < adapter < DOM template
+visible_line=282 adapter_line=283 dom_template_line=285
+PASS stage-17k-r16ap-load-disabled-visible-panel-dom-template-source-index-source-only smoke

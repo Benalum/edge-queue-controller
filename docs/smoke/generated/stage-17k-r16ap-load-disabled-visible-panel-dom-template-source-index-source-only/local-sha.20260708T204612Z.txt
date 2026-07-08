@@ -1,0 +1,2 @@
+6c22d4edf0c161956f68599e37a1c654abe57ed3b54b8febb5dbea210efae4dd  frontend/wrapper-ui/apc-wrapper-local/index.html
+0269408c7483c5e100b88f09385b3c044d4c206b3c6c4809d2eb03e3e21b2d7c  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-dom-template.js
