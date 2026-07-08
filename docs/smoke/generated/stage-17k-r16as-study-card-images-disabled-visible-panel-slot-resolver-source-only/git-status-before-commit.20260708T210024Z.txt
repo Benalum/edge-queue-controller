@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r16as-study-card-images-disabled-visible-panel-slot-resolver-source-only/
+?? docs/stage-17k-r16as-study-card-images-disabled-visible-panel-slot-resolver-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-slot-resolver.js
+?? ops/smoke/check-stage-17k-r16as-study-card-images-disabled-visible-panel-slot-resolver-source-only.sh
