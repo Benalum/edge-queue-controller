@@ -1,0 +1,2 @@
+=== stage-17k-r16w-record-disabled-mount-plan-loaded-browser-proof smoke ===
+PASS stage-17k-r16w-record-disabled-mount-plan-loaded-browser-proof smoke

@@ -1,0 +1,13 @@
+stage=stage-17k-r16w-record-disabled-mount-plan-loaded-browser-proof
+timestamp=20260708T183515Z
+head=8a86f554ba698a8555dbd52b84ad02627974cd15
+short_head=8a86f55
+repo_clean_before=true
+index_present=true
+mount_asset_present=true
+mount_marker_present=true
+index_loads_mount_plan=true
+index_loads_r16v_cache_bust=true
+r16v_doc_present=true
+forbidden_source_api=false
+PASS preflight
