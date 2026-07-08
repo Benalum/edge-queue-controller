@@ -1,0 +1,13 @@
+stage=stage-17k-r16s-study-card-images-disabled-mount-plan-source-only
+timestamp=20260708T161901Z
+head=b9c6392f8a9abf58b07f0dcce6c37e6d170ca9f8
+short_head=b9c6392
+repo_clean_before=true
+index_present=true
+helper_contracts_present=true
+disabled_render_spec_present=true
+disabled_html_preview_renderer_present=true
+index_loads_html_preview_renderer=true
+index_loads_mount_plan=false
+r16r_doc_present=true
+r16r_proof_present=true

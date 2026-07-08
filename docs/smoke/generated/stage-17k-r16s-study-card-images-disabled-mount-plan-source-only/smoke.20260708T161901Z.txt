@@ -1,0 +1,3 @@
+=== stage-17k-r16s-study-card-images-disabled-mount-plan-source-only smoke ===
+PASS node R16S disabled mount plan source-only behavior smoke
+PASS stage-17k-r16s-study-card-images-disabled-mount-plan-source-only smoke
