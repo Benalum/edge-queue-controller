@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+STAGE="stage-17k-r16r-record-disabled-html-preview-renderer-loaded-browser-proof"
+PASS_LINE="PASS_R16Q_DISABLED_HTML_PREVIEW_RENDERER_LOADED_NO_UI_NO_BINDING"
+DOC="docs/$STAGE.md"
+INDEX="frontend/wrapper-ui/apc-wrapper-local/index.html"
+ASSET="frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-html-preview-renderer.js"
+LOAD="study-card-images-disabled-html-preview-renderer.js?v=stage17k-r16q-load-disabled-html-preview-renderer-no-ui-no-binding-20260708"
+MARKER="APC_STUDY_CARD_IMAGES_DISABLED_HTML_PREVIEW_RENDERER_R16N_SOURCE_ONLY"
+
+echo "=== $STAGE smoke ==="
+test -f "$DOC"
+test -f "$INDEX"
+test -f "$ASSET"
+grep -Fq "$PASS_LINE" "$DOC"
+grep -Fq "$LOAD" "$INDEX"
+grep -Fq "$MARKER" "$ASSET"
+grep -Fq "Image-related file input count: 0" "$DOC"
+grep -Fq "All assets OK: true" "$DOC"
+grep -Fq "All safety flags OK: true" "$DOC"
+grep -Fq "docs-only record stage" "$DOC"
+echo "PASS $STAGE smoke"

@@ -1,0 +1,8 @@
+stage=stage-17k-r16r-record-disabled-html-preview-renderer-loaded-browser-proof
+timestamp=20260708T161504Z
+head=4098a85047c0668c92c0e786b5c1c9ea5d93d5d5
+short_head=4098a85
+index_present=true
+preview_asset_present=true
+index_loads_html_preview_renderer=true
+browser_proof=PASS_R16Q_DISABLED_HTML_PREVIEW_RENDERER_LOADED_NO_UI_NO_BINDING
