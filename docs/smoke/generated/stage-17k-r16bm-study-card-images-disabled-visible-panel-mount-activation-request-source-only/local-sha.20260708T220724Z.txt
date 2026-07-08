@@ -1,0 +1,2 @@
+493c60c37effe67258f417ea5e0dc9b8afd92c17344501f04c2e2293654704b3  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-mount-activation-request.js
+a935fad681960a3150bcba72d77e5928020bda304be47306b7ef0b779e8fd2ad  frontend/wrapper-ui/apc-wrapper-local/index.html

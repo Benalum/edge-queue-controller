@@ -1,0 +1,16 @@
+stage=stage-17k-r16bm-study-card-images-disabled-visible-panel-mount-activation-request-source-only
+timestamp=20260708T220724Z
+head=59b2b15f82840f832c0fdb109adde54e9c605b62
+short_head=59b2b15f
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+source_only=true
+previous_browser_proof_smoke_passed=true
+previous_deploy_smoke_passed=true
+index_present=true
+index_loads_activation_request=false
+cache_bust_reserved=stage17k-r16bm-disabled-visible-panel-mount-activation-request-source-only-20260708
