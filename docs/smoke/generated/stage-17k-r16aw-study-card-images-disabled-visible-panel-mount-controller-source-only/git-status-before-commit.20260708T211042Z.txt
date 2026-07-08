@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r16aw-study-card-images-disabled-visible-panel-mount-controller-source-only/
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-mount-controller.js
+?? ops/smoke/check-stage-17k-r16aw-study-card-images-disabled-visible-panel-mount-controller-source-only.sh
