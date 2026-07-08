@@ -1,0 +1,15 @@
+stage=stage-17k-r16ak-study-card-images-disabled-visible-panel-mount-adapter-source-only
+timestamp=20260708T200901Z
+head=9077c6f63920c0c68685165f22790e162393d088
+short_head=9077c6f
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_present=true
+r16aj_asset_present=true
+r16aj_marker_present=true
+index_loads_visible_panel_mount_adapter=false
+cache_bust_reserved=stage17k-r16ak-disabled-visible-panel-mount-adapter-source-only-20260708

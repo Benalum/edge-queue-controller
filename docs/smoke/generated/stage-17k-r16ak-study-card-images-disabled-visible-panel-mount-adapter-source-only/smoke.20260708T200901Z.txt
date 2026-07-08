@@ -1,0 +1,3 @@
+=== stage-17k-r16ak-study-card-images-disabled-visible-panel-mount-adapter-source-only smoke ===
+PASS node R16AK disabled visible panel mount adapter source-only behavior smoke
+PASS stage-17k-r16ak-study-card-images-disabled-visible-panel-mount-adapter-source-only smoke

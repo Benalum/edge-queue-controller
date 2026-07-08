@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r16ak-study-card-images-disabled-visible-panel-mount-adapter-source-only/
+?? docs/stage-17k-r16ak-study-card-images-disabled-visible-panel-mount-adapter-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-mount-adapter.js
+?? ops/smoke/check-stage-17k-r16ak-study-card-images-disabled-visible-panel-mount-adapter-source-only.sh
