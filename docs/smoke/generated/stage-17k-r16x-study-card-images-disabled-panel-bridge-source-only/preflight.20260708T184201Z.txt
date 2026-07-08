@@ -1,0 +1,14 @@
+stage=stage-17k-r16x-study-card-images-disabled-panel-bridge-source-only
+timestamp=20260708T184201Z
+head=465cb292b3f7ba39bff2e46651d32269da8d9beb
+short_head=465cb29
+repo_clean_before=true
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+index_loads_mount_plan=true
+index_loads_panel_bridge=false
+r16w_proof_present=true
+PASS preflight

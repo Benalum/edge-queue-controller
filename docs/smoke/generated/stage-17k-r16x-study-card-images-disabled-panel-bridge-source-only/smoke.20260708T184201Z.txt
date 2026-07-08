@@ -1,0 +1,3 @@
+=== stage-17k-r16x-study-card-images-disabled-panel-bridge-source-only smoke ===
+PASS node R16X disabled panel bridge source-only behavior smoke
+PASS stage-17k-r16x-study-card-images-disabled-panel-bridge-source-only smoke
