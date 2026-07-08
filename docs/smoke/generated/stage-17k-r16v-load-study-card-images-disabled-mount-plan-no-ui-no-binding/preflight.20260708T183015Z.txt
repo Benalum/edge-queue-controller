@@ -1,0 +1,13 @@
+stage=stage-17k-r16v-load-study-card-images-disabled-mount-plan-no-ui-no-binding
+timestamp=20260708T183015Z
+head=95d43c8b7d1d4c9eeed678cf654eaf50d556d000
+short_head=95d43c8
+repo_clean_before=true
+index_present=true
+source_asset_present=true
+source_marker_present=true
+index_loads_html_preview_renderer=true
+index_loads_mount_plan_before=false
+r16u_doc_present=true
+r16u_proof_present=true
+forbidden_source_api=false

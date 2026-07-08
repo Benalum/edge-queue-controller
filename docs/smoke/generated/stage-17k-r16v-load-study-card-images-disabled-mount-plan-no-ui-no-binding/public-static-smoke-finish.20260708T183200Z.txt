@@ -1,0 +1,3 @@
+profile_root_code=200 profile_root_bytes=17104
+asset_code=200 asset_bytes=6881
+PASS public static R16V finish smoke
