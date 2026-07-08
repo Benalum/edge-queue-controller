@@ -1,0 +1,6 @@
+=== preflight ===
+stage=stage-17k-r16b-study-card-images-local-storage-adapter-contract-source-only
+timestamp=20260708T022520Z
+head=b46fcfd6e6ad6a207bcebf091e154bf634f31a7c
+short_head=b46fcfd
+PASS preflight

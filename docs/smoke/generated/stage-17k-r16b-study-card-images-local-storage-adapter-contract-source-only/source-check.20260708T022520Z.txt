@@ -1,0 +1,2 @@
+=== verify source-only/no-load ===
+PASS storage adapter contract is source-only and not loaded

@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r16b-study-card-images-local-storage-adapter-contract-source-only/
+?? docs/stage-17k-r16b-study-card-images-local-storage-adapter-contract-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-local-storage-adapter-contract.js
+?? ops/smoke/check-stage-17k-r16b-study-card-images-local-storage-adapter-contract-source-only.sh
