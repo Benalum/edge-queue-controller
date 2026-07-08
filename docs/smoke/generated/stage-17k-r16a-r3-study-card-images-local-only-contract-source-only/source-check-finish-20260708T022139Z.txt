@@ -1,0 +1,1 @@
+PASS image contract is source-only and not loaded

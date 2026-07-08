@@ -1,0 +1,4 @@
+stage=stage-17k-r16a-r3-study-card-images-local-only-contract-source-only
+timestamp=20260708T022010Z
+head=200381b30bf26b7c99e00442188ab2d552e35b67
+short_head=200381b
