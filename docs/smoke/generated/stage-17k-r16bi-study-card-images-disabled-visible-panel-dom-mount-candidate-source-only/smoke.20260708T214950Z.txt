@@ -1,0 +1,5 @@
+=== stage-17k-r16bi-study-card-images-disabled-visible-panel-dom-mount-candidate-source-only smoke ===
+PASS node R16BI disabled visible panel DOM mount candidate source-only behavior smoke
+6c9267ea42ad4fd0a42ecd186aadcd4b2a36951fef278e9f363d31ee789616fb  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-dom-mount-candidate.js
+dc7132622913e091fa7ad0865c5fcf727a9a014f0ef7e87623f6e4903d33d7e9  frontend/wrapper-ui/apc-wrapper-local/index.html
+PASS stage-17k-r16bi-study-card-images-disabled-visible-panel-dom-mount-candidate-source-only smoke

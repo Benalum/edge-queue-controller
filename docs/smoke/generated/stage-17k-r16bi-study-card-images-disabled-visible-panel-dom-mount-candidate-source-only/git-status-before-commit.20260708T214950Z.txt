@@ -1,0 +1,3 @@
+?? docs/smoke/generated/stage-17k-r16bi-study-card-images-disabled-visible-panel-dom-mount-candidate-source-only/
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-dom-mount-candidate.js
+?? ops/smoke/check-stage-17k-r16bi-study-card-images-disabled-visible-panel-dom-mount-candidate-source-only.sh
