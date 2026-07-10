@@ -1,0 +1,7 @@
+=== stage-17k-r16ca-profile-remove-backup-drive-local-profile-source-only smoke ===
+965a9965dc709de9e50665bba0e9e1e0a3eaaf25e3d02b6c8f2b11f6dabfdd01  frontend/wrapper-ui/apc-wrapper-local/index.html
+674136730ba9088f2ddeea2363793a99421d32f88eb31b8898c2d4d517b63e9a  frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+ab156103aa80196f5d37a2ffa74939b654168d0a2919e7565d1033314d951375  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-first-ui-cleanup.js
+2745bf6b3274b2f38ca1b2d688d1f8ba1ccdffe946f5fc9715995737822ee928  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-first-settings.js
+e88053dbd00e1399e95156586ad65e41cbe783f98643de9e51bdab069f1fcdd1  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-companion-custom-media.js
+PASS stage-17k-r16ca-profile-remove-backup-drive-local-profile-source-only smoke

@@ -1,0 +1,7 @@
+=== stage-17k-r16cb-restore-profile-backup-folder-only-source-only smoke ===
+c6e6c764f4c3dde55985413cc9b630ce5c7701b2e285cc4f594acc11f616543f  frontend/wrapper-ui/apc-wrapper-local/index.html
+1fd3e43d035a78181b42a830c4dcbdf129cc89c01866db882c6ef7223042b66f  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.js
+ab156103aa80196f5d37a2ffa74939b654168d0a2919e7565d1033314d951375  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-first-ui-cleanup.js
+2745bf6b3274b2f38ca1b2d688d1f8ba1ccdffe946f5fc9715995737822ee928  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-first-settings.js
+e88053dbd00e1399e95156586ad65e41cbe783f98643de9e51bdab069f1fcdd1  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-companion-custom-media.js
+PASS stage-17k-r16cb-restore-profile-backup-folder-only-source-only smoke
