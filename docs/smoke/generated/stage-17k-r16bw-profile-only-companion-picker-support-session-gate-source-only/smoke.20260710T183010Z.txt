@@ -1,0 +1,12 @@
+=== stage-17k-r16bw-profile-only-companion-picker-support-session-gate-source-only smoke ===
+PASS R16BW profile-only companion picker and support-only session gate static checks
+74a840d9f9acf1d988dc6c0c1d151908e31573640f6df0ba77b8b84e0b916bfa  frontend/wrapper-ui/apc-wrapper-local/index.html
+c6615bfb57a95ad0366b711c5d4d92d86c4bc9986e5817079ac0853a47a2bf63  frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js
+d1674993ad4d17fe26440961fd6868eaeb6452e898fdb2148182315e37804be0  frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-presets.js
+2745bf6b3274b2f38ca1b2d688d1f8ba1ccdffe946f5fc9715995737822ee928  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-first-settings.js
+6b5b2e44ffe176eb37af35ed41d8fbab5a5f654a9fc23fbe4b1da4f560d73249  frontend/wrapper-ui/apc-wrapper-local/privatepages/support.js
+623eab35c953ba38a77e3cf48b749bf7915f41d6223cf267ea110890a47fc665  frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/study.html
+3f76c71352ea311d8f55b72b950cb932c1c04a6602e9fd13201c6f77b88005a8  frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/companion.html
+21ad36106bf1e5cbdb0e70a57ee7006fab51df11bde31e248d05f055e85f7cdf  frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+ce5ce024d609acaeb750c1cc1ba883833ef0f089273f61fbfca9d4475930eb0c  frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/support.html
+PASS stage-17k-r16bw-profile-only-companion-picker-support-session-gate-source-only smoke

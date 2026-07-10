@@ -1,0 +1,10 @@
+=== stage-17k-r16bv-companion-preset-list-sol-source-only smoke ===
+PASS R16BV companion preset list and study fragment static checks
+1b6876f11406c321fcc4471354d186f279b0e506ef1a48c0f0bd87f22532b741  frontend/wrapper-ui/apc-wrapper-local/index.html
+2d624f0b6c17a7c854c2d08c75d5b4cbb08112b89745a31875fe4b4945703244  frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-presets.js
+623eab35c953ba38a77e3cf48b749bf7915f41d6223cf267ea110890a47fc665  frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/study.html
+88e855665e6593c5da2f138c93a2196020dc385be2639af4f49c86e90a1dfd3c  frontend/wrapper-ui/apc-wrapper-local/privatepages/assets/sol-clips/README.md
+38dcc42086c484d50ee1ff24708d17c03cd6f784ba404245a7570cf545d9b24d  frontend/wrapper-ui/apc-wrapper-local/privatepages/assets/sol-clips/dog_listening_236b385d.mp4
+b310f48a2ac244e8bc76198b0b90efbf9dfb45e6565dd7b006cd7b39529674ed  frontend/wrapper-ui/apc-wrapper-local/privatepages/assets/sol-clips/dog_talking_f28d314b.mp4
+000e46328bf21c69f31ad5d6c3e9b8cdc89b945caf4a65aa450136f9d836fff5  frontend/wrapper-ui/apc-wrapper-local/privatepages/assets/sol-clips/dog_thinking_8dcd159e.mp4
+PASS stage-17k-r16bv-companion-preset-list-sol-source-only smoke

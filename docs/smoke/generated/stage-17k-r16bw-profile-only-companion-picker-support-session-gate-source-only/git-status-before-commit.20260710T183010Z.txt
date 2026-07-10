@@ -1,0 +1,6 @@
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-presets.js
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js
+?? docs/smoke/generated/stage-17k-r16bw-profile-only-companion-picker-support-session-gate-source-only/
+?? docs/stage-17k-r16bw-profile-only-companion-picker-support-session-gate-source-only.md
+?? ops/smoke/check-stage-17k-r16bw-profile-only-companion-picker-support-session-gate-source-only.sh

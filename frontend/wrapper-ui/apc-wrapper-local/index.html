@@ -4,9 +4,14 @@
   <!-- Stage 16 R3R signed-in auth gate -->
   <script>
     (function stage16R3RSignedInAuthGate() {
-      try { document.documentElement.classList.add('apc-auth-checking'); } catch (_) {}
-      window.APC_AUTH_GATE_STATUS = 'checking';
-      window.APC_AUTH_GATE_R3R = { installed: true, status: 'checking' };
+      var currentPath = (window.location && window.location.pathname ? window.location.pathname : '/').replace(/\/+$/, '') || '/';
+      var APC_SESSION_CHECK_ROUTES = { '/support': true, '/admin': true };
+      var shouldCheckSession = Boolean(APC_SESSION_CHECK_ROUTES[currentPath]);
+      if (shouldCheckSession) {
+        try { document.documentElement.classList.add('apc-auth-checking'); } catch (_) {}
+      }
+      window.APC_AUTH_GATE_STATUS = shouldCheckSession ? 'checking' : 'local_first';
+      window.APC_AUTH_GATE_R3R = { installed: true, status: window.APC_AUTH_GATE_STATUS, supportOnly: true };
       function setGateStatus(status) {
         window.APC_AUTH_GATE_STATUS = status;
         window.APC_AUTH_GATE_R3R.status = status;
@@ -36,7 +41,9 @@
       document.addEventListener('apc-private-page-rendered', function () {
         releaseGate('signed_in');
       }, false);
-      if (typeof fetch === 'function') {
+      if (!shouldCheckSession) {
+        releaseGate('local_first');
+      } else if (typeof fetch === 'function') {
         fetch('/api/me', { credentials: 'include', cache: 'no-store', headers: { 'Accept': 'application/json' } })
           .then(function (response) {
             if (!response || !response.ok) return null;
@@ -65,7 +72,7 @@
         var target = event.target && event.target.closest ? event.target.closest('a,button,[role="tab"],[data-tab],[data-page],[data-route]') : null;
         if (!target) return;
         var marker = String(target.textContent || '') + ' ' + String(target.getAttribute('href') || '') + ' ' + String(target.getAttribute('data-tab') || '') + ' ' + String(target.getAttribute('data-page') || '') + ' ' + String(target.getAttribute('data-route') || '');
-        if (!/(study|companion|profile|calendar|account|dashboard|private)/i.test(marker)) return;
+        if (!/(support|admin)/i.test(marker)) return;
         document.documentElement.classList.add('apc-auth-checking');
         setGateStatus('checking');
         setTimeout(function () { releaseGate('signed_in'); }, 1200);
@@ -212,8 +219,8 @@
   <!-- APC_GOOGLE_SYNC_CONFIG_SCRIPT_STAGE_17K_Z_R7D_VM200_START -->
   <script src="/privatepages/google-sync-config.js?v=20260629-stage17k-z-r7d-appdata-vm200"></script>
   <script src="/privatepages/profile-google-sync-panel.js?v=stage17k-z-r12n-r4-profile-google-sync-grid-placement-20260701"></script>
-  <script src="/privatepages/profile-local-first-settings.js?v=stage17k-r16bu-local-first-app-routes-20260710"></script>
-  <script src="/privatepages/support.js?v=stage17k-r16bu-local-first-app-routes-20260710"></script>
+  <script src="/privatepages/profile-local-first-settings.js?v=stage17k-r16bw-profile-only-companion-picker-support-session-gate-source-only-20260710"></script>
+  <script src="/privatepages/support.js?v=stage17k-r16bw-profile-only-companion-picker-support-session-gate-source-only-20260710"></script>
   <script src="/privatepages/local-backup-media-schema.js?v=stage17k-z-r12w-media-aware-backup-legacy-preview-20260702"></script>
   <script src="/privatepages/local-media-vault.js?v=stage17k-z-r12w-media-aware-backup-legacy-preview-20260702"></script>
   <script src="/privatepages/local-backup-media-export.js?v=stage17k-z-r12w-media-aware-backup-legacy-preview-20260702"></script>
@@ -249,7 +256,7 @@
   <script src="/privatepages/anki-readonly-session.js?v=stage17kxr2-local-card-session-ui-removed-20260629"></script>
   <script src="/privatepages/companion-local-anki-bridge.js?v=stage17kxr2-companion-local-card-ui-removed-20260629"></script>
   <script src="/privatepages/companion.js?v=auth-gate-r3r-20260628"></script>
-  <script src="/privatepages/companion-presets.js?v=stage17k-r16bv-companion-preset-list-sol-source-only-20260710"></script>
+  <script src="/privatepages/companion-presets.js?v=stage17k-r16bw-profile-only-companion-picker-support-session-gate-source-only-20260710"></script>
   <script src="/privatepages/admin/admin-users.js?v=20260629-admin-users-r3u12"></script>
 
 <script>

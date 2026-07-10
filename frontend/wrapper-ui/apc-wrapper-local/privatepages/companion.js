@@ -912,27 +912,9 @@
 
 
   function renderPersonalizationBox(settings) {
-    const normalized = normalizeVoiceSettings(settings || loadSettings());
-    return `
-      <section class="sol-voice-box">
-        <h2>Companion</h2>
-        <div class="sol-browser-voice-row" style="display: grid; gap: 10px; margin: 8px 0 0;">
-          <label for="companionNameInput" style="font-weight: 600;">Companion name</label>
-          <input id="companionNameInput" type="text" maxlength="80" value="${escapeHtml(companionDisplayName(normalized))}" placeholder="Sol" />
-
-          <label for="companionListeningVideoUrl" style="font-weight: 600;">Listening video URL</label>
-          <input id="companionListeningVideoUrl" type="url" value="${escapeHtml(normalized.listeningVideoUrl || "")}" placeholder="Leave blank for default listening video" />
-
-          <label for="companionTalkingVideoUrl" style="font-weight: 600;">Talking video URL</label>
-          <input id="companionTalkingVideoUrl" type="url" value="${escapeHtml(normalized.talkingVideoUrl || "")}" placeholder="Leave blank for default talking video" />
-
-          <div class="sol-voice-actions">
-            <button class="sol-button secondary" type="button" data-companion-action="reset-companion-media">Reset companion media</button>
-          </div>
-        </div>
-        <p class="study-muted">Saved locally in this browser. Use a local/static video path or HTTPS video URL.</p>
-      </section>
-    `;
+    // R16BW: users choose companion presets and media in Profile only.
+    // Keep this no-op for compatibility with older render code paths.
+    return "";
   }
 
 
@@ -1042,8 +1024,6 @@
         </form>
       </section>
 
-      ${renderPersonalizationBox(settings)}
-
       ${renderVoiceBox(settings)}
 
         ${renderListenBox()}
@@ -1057,7 +1037,7 @@
   }
 
   function bindRenderedControls() {
-    ["companionKokoroEnabled", "companionAutoListen", "companionVoiceSelect", "companionVolume", "companionSpeed", "companionNameInput", "companionListeningVideoUrl", "companionTalkingVideoUrl"].forEach((id) => {
+    ["companionKokoroEnabled", "companionAutoListen", "companionVoiceSelect", "companionVolume", "companionSpeed"].forEach((id) => {
       const el = byId(id);
       if (!el) return;
       el.addEventListener("input", updateSettingsFromControls);

@@ -4,7 +4,7 @@
   if (window.__APC_COMPANION_PRESETS_R16BV__) return;
   window.__APC_COMPANION_PRESETS_R16BV__ = true;
 
-  const MARKER = "APC_COMPANION_PRESETS_R16BV_SOL_SOURCE_ONLY";
+  const MARKER = "APC_COMPANION_PRESETS_R16BW_PROFILE_ONLY_SOL_SOURCE_ONLY";
 
   const PRESETS = [
     {
@@ -135,17 +135,9 @@
   }
 
   function renderIntoCompanion() {
-    const app = byId("companionPrivateApp");
-    if (!app) return;
-
-    const nameInput = byId("companionNameInput");
-    const personalBox = nameInput ? nameInput.closest(".sol-voice-box") : null;
-    if (!personalBox) return;
-
-    const old = personalBox.querySelector("[data-apc-companion-preset-card]");
-    if (old) old.remove();
-
-    personalBox.insertAdjacentHTML("afterbegin", selectHtml("companion"));
+    // R16BW: Companion selection lives only in Profile.
+    // Companion still reads and reflects the saved local settings.
+    return;
   }
 
   function wireVideoFallback() {
@@ -173,7 +165,6 @@
 
   function renderPresetControls() {
     renderIntoProfile();
-    renderIntoCompanion();
     wireVideoFallback();
   }
 
@@ -197,7 +188,7 @@
   document.addEventListener("input", function (event) {
     const target = event.target;
     if (!target || !target.id) return;
-    if (!["profileCompanionName", "profileCompanionListeningVideo", "profileCompanionTalkingVideo", "companionNameInput", "companionListeningVideoUrl", "companionTalkingVideoUrl"].includes(target.id)) return;
+    if (!["profileCompanionName", "profileCompanionListeningVideo", "profileCompanionTalkingVideo"].includes(target.id)) return;
 
     const settings = loadJson(companionKey());
     if (settings.companionPresetId && settings.companionPresetId !== "custom") {

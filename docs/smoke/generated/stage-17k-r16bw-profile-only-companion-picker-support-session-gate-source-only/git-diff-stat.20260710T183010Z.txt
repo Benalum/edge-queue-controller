@@ -1,0 +1,4 @@
+ frontend/wrapper-ui/apc-wrapper-local/index.html   | 23 +++++++++++-------
+ .../privatepages/companion-presets.js              | 19 ++++-----------
+ .../apc-wrapper-local/privatepages/companion.js    | 28 ++++------------------
+ 3 files changed, 24 insertions(+), 46 deletions(-)
