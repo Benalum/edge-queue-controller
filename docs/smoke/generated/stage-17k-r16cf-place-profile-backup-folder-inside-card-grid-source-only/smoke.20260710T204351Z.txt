@@ -1,0 +1,6 @@
+=== stage-17k-r16cf-place-profile-backup-folder-inside-card-grid-source-only smoke ===
+cf7d393190d3243c907c382d67615290c1158c96d2a2fa9a39742942ab21ebd7  frontend/wrapper-ui/apc-wrapper-local/index.html
+d5f98ad4add533b975c143db9acce6d7fe13d2459549dbe3f82d444bf835b9b4  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-backup-folder-card-placement-fix.js
+1fd3e43d035a78181b42a830c4dcbdf129cc89c01866db882c6ef7223042b66f  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.js
+464185b86b348d1088f0eb84faee6e39475e74e217bbb2760e84be4b860a1d39  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.css
+PASS stage-17k-r16cf-place-profile-backup-folder-inside-card-grid-source-only smoke

@@ -1,0 +1,9 @@
+stage=stage-17k-r16cf-place-profile-backup-folder-inside-card-grid-source-only
+timestamp=20260710T204351Z
+head_before=a88a78bca03df383d5d530e086e1d873d23e4931
+short_head_before=a88a78bc
+repo_clean_before=true
+intent=move Profile local backup folder panel into the same card grid as Local settings and Anki
+deploy=false
+remote_ssh=false
+remote_sudo=false

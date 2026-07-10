@@ -198,3 +198,41 @@ article[data-apc-local-backup-folder-panel-r16cb="true"],
   margin: 0.25rem 0.35rem 0.25rem 0;
 }
 
+/* APC_PROFILE_BACKUP_FOLDER_CARD_PLACEMENT_FIX_R16CF_CSS
+   Keep the local backup folder constrained like Local settings / Anki after it is moved into the Profile card grid. */
+.apc-profile-backup-folder-card-placed,
+.apc-profile-backup-folder-card.apc-profile-backup-folder-card-placed,
+.apc-profile-local-backup-folder-card.apc-profile-backup-folder-card-placed {
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  align-self: start !important;
+  margin: 0 !important;
+}
+
+.apc-profile-backup-folder-card-placed .apc-profile-backup-actions {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 0.55rem !important;
+  margin: 0.9rem 0 !important;
+}
+
+.apc-profile-backup-folder-card-placed button,
+.apc-profile-backup-folder-card-placed .apc-profile-backup-file-label {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.apc-profile-backup-folder-card-placed .apc-profile-backup-folder-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.65rem !important;
+}
+
+@media (max-width: 780px) {
+  .apc-profile-backup-folder-card-placed .apc-profile-backup-folder-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
