@@ -1,0 +1,8 @@
+stage=stage-17k-r16bz-profile-backup-folder-workspace-source-only
+timestamp=20260710T200035Z
+head_before=655d104edf3ce6f6a7e5584938aad6600cedc957
+short_head_before=655d104e
+repo_clean_before=true
+source_only=true
+deploy=false
+purpose=add Profile backup folder workspace with picked folder scan and guarded save-current merge

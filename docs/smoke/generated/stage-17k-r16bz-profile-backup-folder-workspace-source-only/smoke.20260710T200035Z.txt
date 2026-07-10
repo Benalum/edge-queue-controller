@@ -1,0 +1,6 @@
+=== stage-17k-r16bz-profile-backup-folder-workspace-source-only smoke ===
+df403d15a9aa68d2bd41ed7b87674ab6b56e3492e71e988881b206f285d5972f  /home/alex/Desktop/edge-queue-controller/frontend/wrapper-ui/apc-wrapper-local/index.html
+f42ee346abf2831c0652471b658f54fa0c525fa667fcc276dce75a1ee1acc073  /home/alex/Desktop/edge-queue-controller/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-backup-folder-workspace.js
+50c49a4717057c0aaac21e74839d9f76c24d9ec9e94d1e599310e11d2247bb70  /home/alex/Desktop/edge-queue-controller/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-complete-local-backup-manager.js
+9bbbb2352f31610a262afa4d665bb359d92e83e59b7a311d8478f005a1c5a703  /home/alex/Desktop/edge-queue-controller/frontend/wrapper-ui/apc-wrapper-local/privatepages/local-data-coverage.js
+PASS stage-17k-r16bz-profile-backup-folder-workspace-source-only smoke
