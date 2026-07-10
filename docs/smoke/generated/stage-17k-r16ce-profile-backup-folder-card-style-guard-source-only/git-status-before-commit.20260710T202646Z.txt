@@ -1,0 +1,6 @@
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.css
+?? docs/smoke/generated/stage-17k-r16ce-profile-backup-folder-card-style-guard-source-only/
+?? docs/stage-17k-r16ce-profile-backup-folder-card-style-guard-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-card-style-guard.js
+?? ops/smoke/check-stage-17k-r16ce-profile-backup-folder-card-style-guard-source-only.sh

@@ -1,4 +1,11 @@
-/* R16CE: strong card-style guard for the one visible local-backup-folder box. */
+(function apcProfileBackupFolderCardStyleGuardR16CE(root) {
+  "use strict";
+
+  const MARKER = "APC_PROFILE_BACKUP_FOLDER_CARD_STYLE_GUARD_R16CE";
+  const STYLE_ID = "apc-profile-backup-folder-card-style-guard-r16ce";
+  const PANEL_SELECTOR = "[data-apc-local-backup-folder-panel-r16cb='true']";
+
+  const CSS = String.raw`/* R16CE: strong card-style guard for the one visible local-backup-folder box. */
 :root {
   --apc-backup-card-bg: #ffffff;
   --apc-backup-card-ink: #22352b;
@@ -163,3 +170,53 @@ article[data-apc-local-backup-folder-panel-r16cb="true"],
     grid-template-columns: 1fr !important;
   }
 }
+`;
+
+  function ensureStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.setAttribute("data-apc-stage", MARKER);
+    style.textContent = CSS;
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function normalizePanel() {
+    ensureStyles();
+    const panel = document.querySelector(PANEL_SELECTOR);
+    if (!panel) return false;
+    panel.classList.add("private-card", "apc-profile-backup-folder-panel", "apc-profile-backup-folder-card-r16ce");
+    const fileInput = panel.querySelector("input[type='file'][data-apc-preview-backup-file]");
+    if (fileInput) {
+      fileInput.setAttribute("tabindex", "-1");
+      fileInput.setAttribute("aria-hidden", "true");
+    }
+    const fileLabel = panel.querySelector(".apc-profile-backup-file-label");
+    if (fileLabel) fileLabel.setAttribute("role", "button");
+    return true;
+  }
+
+  function boot() {
+    ensureStyles();
+    normalizePanel();
+    try {
+      const observer = new MutationObserver(() => normalizePanel());
+      observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
+      root.setTimeout(() => { try { observer.disconnect(); } catch (_) {} }, 15000);
+    } catch (_) {}
+  }
+
+  root.APC_PROFILE_BACKUP_FOLDER_CARD_STYLE_GUARD_R16CE = {
+    marker: MARKER,
+    styleId: STYLE_ID,
+    panelSelector: PANEL_SELECTOR,
+    ensureStyles,
+    normalizePanel
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+})(window);

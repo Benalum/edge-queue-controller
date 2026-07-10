@@ -1,0 +1,5 @@
+1ab7f398dafb4c5c71b2f53d496e10b488ef8c4b8db7971d5e6d2ae26fc9e9ad  frontend/wrapper-ui/apc-wrapper-local/index.html
+e3d2784e1b12d97e20ec78b0566d0368f3372c307ce7aba53d67d91a51df7ce0  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.css
+060a6729a94870e8b8f2d5826cd2d58cfc96d1dffa1f4c909546c377ad56d888  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-card-style-guard.js
+1fd3e43d035a78181b42a830c4dcbdf129cc89c01866db882c6ef7223042b66f  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.js
+PASS stage-17k-r16ce-profile-backup-folder-card-style-guard-source-only smoke

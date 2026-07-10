@@ -1,0 +1,5 @@
+=== stage-17k-r16cd-match-profile-backup-folder-card-style-source-only smoke ===
+5a416e3022fab6bf7f3de016cf25a2d217e4f7847eb16922c4605aed67410c13  frontend/wrapper-ui/apc-wrapper-local/index.html
+1fd3e43d035a78181b42a830c4dcbdf129cc89c01866db882c6ef7223042b66f  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.js
+8dedcf20a480aada5d21d408ef222fd085cf060468c95ea9bb424749d0fa22ca  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.css
+PASS stage-17k-r16cd-match-profile-backup-folder-card-style-source-only smoke
