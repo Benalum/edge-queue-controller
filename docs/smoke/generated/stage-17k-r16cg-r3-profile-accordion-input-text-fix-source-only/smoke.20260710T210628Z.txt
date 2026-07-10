@@ -1,4 +1,0 @@
-f8ca0879c2b04a825f52a916c53591a9edf6f2f46987fce03f260311d7f094a2  frontend/wrapper-ui/apc-wrapper-local/index.html
-15d6dc999c1eee3714a58d33b0e5e31aa107d7477e679a783e2835a8077c5a2c  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-accordion-input-polish.css
-42c7c8ac16edddec7fa0cff9c0d8337ac60e6198a7bb248a523744f203e40103  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-accordion-input-polish.js
-PASS stage-17k-r16cg-r3-profile-accordion-input-text-fix-source-only smoke

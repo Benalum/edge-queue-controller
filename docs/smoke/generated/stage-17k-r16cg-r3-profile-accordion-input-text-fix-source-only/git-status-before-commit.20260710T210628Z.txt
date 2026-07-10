@@ -1,6 +1,0 @@
- M frontend/wrapper-ui/apc-wrapper-local/index.html
-?? docs/smoke/generated/stage-17k-r16cg-r3-profile-accordion-input-text-fix-source-only/
-?? docs/stage-17k-r16cg-r3-profile-accordion-input-text-fix-source-only.md
-?? frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-accordion-input-polish.css
-?? frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-accordion-input-polish.js
-?? ops/smoke/check-stage-17k-r16cg-r3-profile-accordion-input-text-fix-source-only.sh
