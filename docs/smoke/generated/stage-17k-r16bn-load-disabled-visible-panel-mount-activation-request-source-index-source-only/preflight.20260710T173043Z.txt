@@ -1,0 +1,25 @@
+stage=stage-17k-r16bn-load-disabled-visible-panel-mount-activation-request-source-index-source-only
+timestamp=20260710T173043Z
+head=519aa434261a92acf323a2052c762960aef9920a
+short_head=519aa434
+repo_status_start<<STATUS
+?? docs/smoke/generated/stage-17k-r16bn-load-disabled-visible-panel-mount-activation-request-source-index-source-only/
+STATUS
+ppb_runnable=true
+interactive_required=false
+remote_ssh=false
+remote_sudo=false
+deploy=false
+source_only=true
+index_present=true
+visible_asset_present=true
+adapter_asset_present=true
+dom_template_asset_present=true
+slot_resolver_asset_present=true
+mount_controller_asset_present=true
+safe_mount_asset_present=true
+readiness_asset_present=true
+dom_mount_candidate_asset_present=true
+activation_request_asset_present=true
+activation_request_marker_present=true
+cache_bust=stage17k-r16bn-load-disabled-visible-panel-mount-activation-request-source-index-source-only-20260708
