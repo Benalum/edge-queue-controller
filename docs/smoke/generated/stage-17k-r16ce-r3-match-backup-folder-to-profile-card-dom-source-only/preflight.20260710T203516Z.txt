@@ -1,0 +1,9 @@
+stage=stage-17k-r16ce-r3-match-backup-folder-to-profile-card-dom-source-only
+timestamp=20260710T203516Z
+head_before=b2d05e4a4c6fcbe48c21a08bde2c1c8edf0ee589
+short_head_before=b2d05e4a
+repo_clean_before=true
+deploy=false
+remote_ssh=false
+remote_sudo=false
+intent=make the local backup folder panel mimic Local settings/Anki Profile cards

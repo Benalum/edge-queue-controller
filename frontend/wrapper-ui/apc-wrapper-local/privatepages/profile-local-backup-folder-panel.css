@@ -163,3 +163,38 @@ article[data-apc-local-backup-folder-panel-r16cb="true"],
     grid-template-columns: 1fr !important;
   }
 }
+
+/* APC_PROFILE_BACKUP_FOLDER_CARD_DOM_MATCH_R16CE_R3_CSS
+   Backup folder card now receives the same card classes as Local settings/Anki at runtime.
+   These selectors are a fallback to keep it visually card-like if the copied classes are absent. */
+.apc-profile-backup-folder-card,
+.apc-profile-local-backup-folder-card {
+  background: #fff;
+  border: 1px solid rgba(36, 52, 45, 0.14);
+  border-radius: 22px;
+  box-shadow: 0 14px 38px rgba(31, 45, 38, 0.08);
+  padding: 1.25rem;
+  margin: 1rem 0;
+}
+
+.apc-profile-backup-folder-card h2,
+.apc-profile-backup-folder-card h3,
+.apc-profile-local-backup-folder-card h2,
+.apc-profile-local-backup-folder-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.45rem;
+  color: #173c30;
+}
+
+.apc-profile-backup-folder-card button,
+.apc-profile-local-backup-folder-card button {
+  border: 1px solid rgba(32, 93, 74, 0.28);
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  background: #f5fbf8;
+  color: #173c30;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 0.25rem 0.35rem 0.25rem 0;
+}
+
