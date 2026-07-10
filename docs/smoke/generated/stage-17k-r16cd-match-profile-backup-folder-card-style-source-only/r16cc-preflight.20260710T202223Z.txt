@@ -1,0 +1,5 @@
+=== stage-17k-r16cc-style-profile-backup-folder-panel-source-only smoke ===
+0585e79e7fe95846c452d9d509d87f79d791614153fba11b9174f89d4f14c74f  frontend/wrapper-ui/apc-wrapper-local/index.html
+1fd3e43d035a78181b42a830c4dcbdf129cc89c01866db882c6ef7223042b66f  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.js
+4f4919dfc3c2399b071d7ab1132de74dba8eec04c87639f507c2c9d317ebbf83  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-backup-folder-panel.css
+PASS stage-17k-r16cc-style-profile-backup-folder-panel-source-only smoke
