@@ -1,0 +1,40 @@
+stage=stage-17k-r16bo-deploy-disabled-visible-panel-mount-activation-request-source-index-no-ui-no-binding
+timestamp=20260710T173324Z
+head=6fc0c6cea2c8114a8d74d1eca3e8c598ba4e3305
+short_head=6fc0c6ce
+repo_clean_before=true
+interactive_required=true
+remote_ssh=true
+remote_sudo=true
+deploy=true
+index_present=true
+visible_asset_present=true
+adapter_asset_present=true
+dom_template_asset_present=true
+slot_resolver_asset_present=true
+mount_controller_asset_present=true
+safe_mount_asset_present=true
+readiness_gate_asset_present=true
+dom_mount_candidate_asset_present=true
+activation_request_asset_present=true
+visible_script_line=282
+adapter_script_line=283
+dom_template_script_line=285
+slot_resolver_script_line=287
+mount_controller_script_line=289
+safe_mount_script_line=291
+readiness_gate_script_line=293
+dom_mount_candidate_script_line=295
+activation_request_script_line=297
+visible_before_adapter_before_dom_template_before_slot_resolver_before_mount_controller_before_safe_mount_before_readiness_before_dom_mount_candidate_before_activation=true
+activation_request_cache_bust=stage17k-r16bn-load-disabled-visible-panel-mount-activation-request-source-index-source-only-20260708
+752012c75aa40ea94a4761ac525f50a403825b559937b2a5bdf727165cc0e360  frontend/wrapper-ui/apc-wrapper-local/index.html
+9372f71c164e5f7a4e11dd5e3572a8158c0be1b68dc2287282b8779496680c90  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel.js
+f689a436aa15543918e5b7405da3049bc13b9a644bc669430b66892276e69e89  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-mount-adapter.js
+0269408c7483c5e100b88f09385b3c044d4c206b3c6c4809d2eb03e3e21b2d7c  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-dom-template.js
+97ef6d46782699a8fd5255d91bb7c187efc7d52bcd5e9b6f50c77af51fd9c4fb  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-slot-resolver.js
+1bfef130bb9f4e6e4ff138eb09dffd7a529d81ff5f3b59dec2a6da5c356cc1a3  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-mount-controller.js
+cd3c87c5edaa1b6c81c4f458baabec0970d7c309fe46fba6c49156d4154dd0db  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-safe-mount-executor.js
+2d46d0db66651832fc3bafda6499e5d67237ee53c54925d5594093cef8090d05  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-mount-readiness-gate.js
+6c9267ea42ad4fd0a42ecd186aadcd4b2a36951fef278e9f363d31ee789616fb  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-dom-mount-candidate.js
+493c60c37effe67258f417ea5e0dc9b8afd92c17344501f04c2e2293654704b3  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-mount-activation-request.js

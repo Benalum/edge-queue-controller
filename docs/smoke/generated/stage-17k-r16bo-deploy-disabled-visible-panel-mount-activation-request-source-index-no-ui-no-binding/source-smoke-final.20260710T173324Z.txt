@@ -1,0 +1,4 @@
+=== stage-17k-r16bo-deploy-disabled-visible-panel-mount-activation-request-source-index-no-ui-no-binding smoke ===
+PASS source index order visible < adapter < DOM template < slot resolver < mount controller < safe mount executor < readiness gate < DOM mount candidate < activation request visible_line=282 adapter_line=283 dom_template_line=285 slot_resolver_line=287 mount_controller_line=289 safe_mount_line=291 readiness_gate_line=293 dom_mount_candidate_line=295 activation_request_line=297
+PASS public static/API R16BO smoke profile=200 visible=200 adapter=200 dom_template=200 slot_resolver=200 mount_controller=200 safe_mount=200 readiness_gate=200 dom_mount_candidate=200 activation_request=200 api_system_status=200 api_me=401 signup=403 study_decks=404
+PASS stage-17k-r16bo-deploy-disabled-visible-panel-mount-activation-request-source-index-no-ui-no-binding smoke
