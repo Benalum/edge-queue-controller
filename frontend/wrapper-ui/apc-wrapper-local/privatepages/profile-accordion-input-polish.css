@@ -1,0 +1,129 @@
+/* APC R16CG-R3: Profile accordions, unified buttons, and visible input text. */
+html body #privateApp input,
+html body #privateApp textarea,
+html body #privateApp select,
+html body .private-page input,
+html body .private-page textarea,
+html body .private-page select,
+html body [data-apc-profile-root] input,
+html body [data-apc-profile-root] textarea,
+html body [data-apc-profile-root] select {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  caret-color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+html body #privateApp input::placeholder,
+html body #privateApp textarea::placeholder,
+html body .private-page input::placeholder,
+html body .private-page textarea::placeholder {
+  color: #6b7280 !important;
+  -webkit-text-fill-color: #6b7280 !important;
+}
+
+html body #privateApp input[type="file"],
+html body .private-page input[type="file"] {
+  color: #111827 !important;
+  background: #f8fafc !important;
+}
+
+html body #privateApp button,
+html body .private-page button,
+html body .apc-profile-local-backup-folder-card button,
+html body .apc-profile-local-backup-folder-card .button,
+html body .apc-profile-local-backup-folder-card input[type="button"],
+html body .apc-profile-local-backup-folder-card input[type="submit"] {
+  border-radius: 999px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, #0f766e, #16a34a) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.16);
+}
+
+html body #privateApp button:hover,
+html body .private-page button:hover,
+html body .apc-profile-local-backup-folder-card button:hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
+
+html body #privateApp button:disabled,
+html body .private-page button:disabled,
+html body .apc-profile-local-backup-folder-card button:disabled {
+  background: #e5e7eb !important;
+  border-color: #d1d5db !important;
+  color: #6b7280 !important;
+  -webkit-text-fill-color: #6b7280 !important;
+  box-shadow: none;
+  transform: none;
+}
+
+html body #privateApp .apc-profile-accordion-toggle,
+html body .private-page .apc-profile-accordion-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  text-align: left;
+  margin: 0 0 0.9rem 0;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0f766e, #16a34a) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html body #privateApp .apc-profile-accordion-toggle .apc-profile-accordion-title,
+html body .private-page .apc-profile-accordion-toggle .apc-profile-accordion-title {
+  font-size: 1.02rem;
+  font-weight: 850;
+}
+
+html body #privateApp .apc-profile-accordion-toggle .apc-profile-accordion-chevron,
+html body .private-page .apc-profile-accordion-toggle .apc-profile-accordion-chevron {
+  font-size: 1rem;
+  transition: transform 160ms ease;
+}
+
+html body #privateApp .apc-profile-accordion-toggle[aria-expanded="true"] .apc-profile-accordion-chevron,
+html body .private-page .apc-profile-accordion-toggle[aria-expanded="true"] .apc-profile-accordion-chevron {
+  transform: rotate(180deg);
+}
+
+html body #privateApp .apc-profile-accordion-body[hidden],
+html body .private-page .apc-profile-accordion-body[hidden] {
+  display: none !important;
+}
+
+html body #privateApp .apc-profile-accordion-card,
+html body .private-page .apc-profile-accordion-card,
+html body .apc-profile-local-backup-folder-card {
+  overflow: hidden;
+}
+
+html body .apc-profile-local-backup-folder-card .apc-profile-backup-folder-actions,
+html body .apc-profile-local-backup-folder-card .apc-profile-backup-folder-button-row,
+html body .apc-profile-local-backup-folder-card .apc-local-backup-folder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin: 0.85rem 0;
+}
+
+html body .apc-profile-local-backup-folder-card p,
+html body .apc-profile-local-backup-folder-card li {
+  color: #374151;
+}
+
+html body .apc-profile-local-backup-folder-card code {
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.08);
+  border-radius: 8px;
+  padding: 0.1rem 0.3rem;
+}
