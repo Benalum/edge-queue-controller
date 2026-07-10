@@ -8,41 +8,34 @@
   const USER_KEY = "edgeStudyUser";
 
   const PRIVATE_ROUTES = new Set([
-    "/",
-    "/home",
-    "/dashboard",
     "/study",
     "/companion",
     "/profile",
-    "/system",
     "/admin",
     "/support"
   ]);
 
   const PAGE_BY_ROUTE = {
-    "/": "dashboard",
-    "/home": "dashboard",
-    "/dashboard": "dashboard",
     "/study": "study",
     "/companion": "companion",
     "/profile": "profile",
-    "/system": "system",
     "/admin": "admin",
     "/support": "support"
   };
 
   const TITLE_BY_PAGE = {
-    dashboard: "Dashboard",
     study: "Study",
     companion: "Companion",
     profile: "Profile",
-    system: "System",
     admin: "Admin",
     support: "Support"
   };
 
   let currentUser = null;
   let privateRenderInFlight = 0;
+
+  const LOCAL_FIRST_ROUTES = new Set(["/study", "/companion", "/profile"]);
+
 
   function byId(id) {
     return document.getElementById(id);
@@ -97,26 +90,30 @@
   function syncGlobalHeaderAdminSupport(user) {
     const admin = isAdmin(user);
 
-    document.querySelectorAll('header a, nav a').forEach((link) => {
-      const href = link.getAttribute("href") || "";
-      const label = (link.textContent || "").trim().toLowerCase();
-
-      const isSupportLink = href === "/support" || href.endsWith("/support") || label === "support";
-      const isAdminLink = href === "/admin" || href.endsWith("/admin") || label === "admin";
-
-      if (!admin && isAdminLink) {
-        link.href = "/support";
-        link.textContent = "Support";
-        link.dataset.privateRoleLink = "support";
-        return;
-      }
-
-      if (admin && isSupportLink) {
-        link.href = "/admin";
-        link.textContent = "Admin";
-        link.dataset.privateRoleLink = "admin";
-      }
+    document.querySelectorAll("#adminNavLink").forEach((link) => {
+      link.classList.toggle("hidden", !admin);
+      link.hidden = !admin;
+      link.setAttribute("aria-hidden", admin ? "false" : "true");
     });
+  }
+
+  function localFirstUser() {
+    return {
+      id: "browser-local-user",
+      email: "browser-local@buddies.local",
+      role: "local",
+      plan: "browser-local",
+      status: "local-only",
+      localFirst: true,
+      raw: {
+        id: "browser-local-user",
+        email: "browser-local@buddies.local",
+        role: "local",
+        plan: "browser-local",
+        status: "local-only",
+        localFirst: true
+      }
+    };
   }
 
 
@@ -148,14 +145,29 @@
     return PRIVATE_ROUTES.has(path);
   }
 
+  function routeAllowsLocalFirst(path) {
+    return LOCAL_FIRST_ROUTES.has(path);
+  }
+
   function routeNeedsLogin(path) {
-    return path === "/dashboard" || path === "/home" || path === "/admin";
+    return path === "/support" || path === "/admin";
   }
 
   async function fetchMe() {
     const token = getToken();
 
     if (!token) {
+      const path = cleanPath();
+
+      if (routeAllowsLocalFirst(path)) {
+        currentUser = localFirstUser();
+        syncGlobalHeaderAdminSupport(currentUser);
+        try {
+          localStorage.setItem(USER_KEY, JSON.stringify(currentUser.raw || currentUser));
+        } catch (_) {}
+        return currentUser;
+      }
+
       currentUser = null;
       syncGlobalHeaderAdminSupport(null);
       return null;
@@ -212,8 +224,8 @@
       <section class="private-shell">
         <section class="private-hero">
           <p class="private-eyebrow">Sign in required</p>
-          <h1>This page is private</h1>
-          <p>Log in to open your dashboard and private workspace.</p>
+          <h1>Sign in to use Support</h1>
+          <p>Study, Companion, and Profile save locally in your browser. Support requires an account so messages and replies can be tracked safely.</p>
           <div class="private-actions">
             <button class="private-button" type="button" data-private-open-login>Open login</button>
             <a class="private-button" href="/">Back to public home</a>
@@ -227,19 +239,23 @@
     const admin = isAdmin(user);
 
     const links = [
-      ["/dashboard", "Dashboard", "dashboard"],
       ["/study", "Study", "study"],
       ["/companion", "Companion", "companion"],
       ["/profile", "Profile", "profile"],
-      ["/system", "System", "system"],
-      [admin ? "/admin" : "/support", admin ? "Admin" : "Support", admin ? "admin" : "support"]
+      ["/support", "Support", "support"]
     ];
+
+    if (admin) links.push(["/admin", "Admin", "admin"]);
+
+    const userLabel = user.localFirst
+      ? "Browser-local mode"
+      : `${escapeHtml(user.email || "Signed in")} · ${escapeHtml(user.role || "user")}`;
 
     return `
       <header class="private-topbar">
         <div class="private-brand">
-          <strong>Study Companion</strong>
-          <span>${escapeHtml(user.email || "Signed in")} · ${escapeHtml(user.role || "user")}</span>
+          <strong>Buddies Who Study</strong>
+          <span>${userLabel}</span>
         </div>
 
         <nav class="private-nav" aria-label="Private navigation">
@@ -312,8 +328,11 @@
         return true;
       }
 
-      // Let publicpages render signed-out public pages like /study, /companion, /profile, /system, /support.
-      return false;
+      if (routeAllowsLocalFirst(path)) {
+        // Local-first routes render through the existing private page components without requiring login.
+      } else {
+        return false;
+      }
     }
 
     setLoading("Loading private page...");
@@ -334,9 +353,6 @@
       page = "support";
     }
 
-    if (page === "support" && admin) {
-      page = "admin";
-    }
 
     try {
       const fragment = await loadPageFragment(page);

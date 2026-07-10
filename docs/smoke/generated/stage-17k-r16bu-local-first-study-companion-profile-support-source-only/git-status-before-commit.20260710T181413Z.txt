@@ -1,0 +1,14 @@
+ M frontend/wrapper-ui/apc-wrapper-local/header/header.html
+ M frontend/wrapper-ui/apc-wrapper-local/header/header.nav
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+ M frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+ M frontend/wrapper-ui/apc-wrapper-local/publicpages/pages/home.html
+ M frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js
+?? docs/smoke/generated/stage-17k-r16bu-local-first-study-companion-profile-support-source-only/
+?? docs/stage-17k-r16bu-local-first-study-companion-profile-support-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/support.html
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-first-settings.js
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/support.js
+?? ops/smoke/check-stage-17k-r16bu-local-first-study-companion-profile-support-source-only.sh

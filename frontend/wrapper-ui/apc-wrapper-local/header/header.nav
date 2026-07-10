@@ -24,12 +24,6 @@
       "label": "Support",
       "href": "/support",
       "route": "/support"
-    },
-    {
-      "label": "System",
-      "href": "/system",
-      "route": "/system",
-      "id": "systemNavLink"
     }
   ],
   "admin": {

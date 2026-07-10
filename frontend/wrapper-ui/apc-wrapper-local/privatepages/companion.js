@@ -17,7 +17,7 @@
 
   const VERSION = "sol-study-session-v2";
 
-  const CLIPS = {
+  const DEFAULT_CLIPS = {
     listening: "/privatepages/assets/sol-clips/dog_listening_236b385d.mp4",
     thinking: "/privatepages/assets/sol-clips/dog_thinking_8dcd159e.mp4",
     talking: "/privatepages/assets/sol-clips/dog_talking_f28d314b.mp4"
@@ -107,8 +107,28 @@
       voiceName: "",
       volume: 1.0,
       speed: 1.0,
+      companionName: "Sol",
+      listeningVideoUrl: "",
+      talkingVideoUrl: "",
+      thinkingVideoUrl: "",
       autoListen: false
     };
+  }
+
+  function companionDisplayName(settings) {
+    const name = settings && settings.companionName ? String(settings.companionName).trim() : "";
+    return name || "Sol";
+  }
+
+  function clipForState(state, settings) {
+    const normalizedState = DEFAULT_CLIPS[state] ? state : "listening";
+    const cfg = settings || {};
+
+    if (normalizedState === "listening" && cfg.listeningVideoUrl) return String(cfg.listeningVideoUrl);
+    if (normalizedState === "talking" && cfg.talkingVideoUrl) return String(cfg.talkingVideoUrl);
+    if (normalizedState === "thinking" && cfg.thinkingVideoUrl) return String(cfg.thinkingVideoUrl);
+
+    return DEFAULT_CLIPS[normalizedState] || DEFAULT_CLIPS.listening;
   }
 
   function loadSettings() {
@@ -891,6 +911,31 @@
 
 
 
+  function renderPersonalizationBox(settings) {
+    const normalized = normalizeVoiceSettings(settings || loadSettings());
+    return `
+      <section class="sol-voice-box">
+        <h2>Companion</h2>
+        <div class="sol-browser-voice-row" style="display: grid; gap: 10px; margin: 8px 0 0;">
+          <label for="companionNameInput" style="font-weight: 600;">Companion name</label>
+          <input id="companionNameInput" type="text" maxlength="80" value="${escapeHtml(companionDisplayName(normalized))}" placeholder="Sol" />
+
+          <label for="companionListeningVideoUrl" style="font-weight: 600;">Listening video URL</label>
+          <input id="companionListeningVideoUrl" type="url" value="${escapeHtml(normalized.listeningVideoUrl || "")}" placeholder="Leave blank for default listening video" />
+
+          <label for="companionTalkingVideoUrl" style="font-weight: 600;">Talking video URL</label>
+          <input id="companionTalkingVideoUrl" type="url" value="${escapeHtml(normalized.talkingVideoUrl || "")}" placeholder="Leave blank for default talking video" />
+
+          <div class="sol-voice-actions">
+            <button class="sol-button secondary" type="button" data-companion-action="reset-companion-media">Reset companion media</button>
+          </div>
+        </div>
+        <p class="study-muted">Saved locally in this browser. Use a local/static video path or HTTPS video URL.</p>
+      </section>
+    `;
+  }
+
+
   function renderVoiceBox(settings) {
     const normalized = normalizeVoiceSettings(settings || loadSettings());
     const voiceOn = Boolean(normalized.voiceEnabled);
@@ -974,25 +1019,30 @@
     const settings = loadSettings();
     loadMessages();
 
+    const companionName = companionDisplayName(settings);
+    const activeClip = clipForState(solState, settings);
+
     el.innerHTML = `
       <section class="sol-card">
         <div class="sol-header with-video">
           <div class="sol-video-frame" style="width:180px;height:135px;max-width:180px;max-height:135px;overflow:hidden;">
-            <video id="solStateVideo" width="180" height="135" style="width:180px;height:135px;max-width:180px;max-height:135px;object-fit:cover;display:block;" src="${CLIPS[solState]}" autoplay muted loop playsinline preload="auto" aria-label="Sol animation"></video>
+            <video id="solStateVideo" width="180" height="135" style="width:180px;height:135px;max-width:180px;max-height:135px;object-fit:cover;display:block;" src="${escapeHtml(activeClip)}" autoplay muted loop playsinline preload="auto" aria-label="${escapeHtml(companionName)} animation"></video>
           </div>
           <div class="sol-title-wrap">
-            <h1 class="sol-title">Sol</h1>
+            <h1 class="sol-title">${escapeHtml(companionName)}</h1>
           </div>
         </div>
 
         <div class="sol-message-window">${renderLastMessage()}</div>
 
         <form class="sol-input-form" data-companion-form="chat">
-          <textarea id="companionPrompt" placeholder="Message Sol..."></textarea>
+          <textarea id="companionPrompt" placeholder="Message ${escapeHtml(companionName)}..."></textarea>
           <button class="sol-button sol-send" type="submit">Send</button>
           <button class="sol-button secondary" type="button" data-companion-action="listen-draft">Listen to draft</button>
         </form>
       </section>
+
+      ${renderPersonalizationBox(settings)}
 
       ${renderVoiceBox(settings)}
 
@@ -1007,7 +1057,7 @@
   }
 
   function bindRenderedControls() {
-    ["companionKokoroEnabled", "companionAutoListen", "companionVoiceSelect", "companionVolume", "companionSpeed"].forEach((id) => {
+    ["companionKokoroEnabled", "companionAutoListen", "companionVoiceSelect", "companionVolume", "companionSpeed", "companionNameInput", "companionListeningVideoUrl", "companionTalkingVideoUrl"].forEach((id) => {
       const el = byId(id);
       if (!el) return;
       el.addEventListener("input", updateSettingsFromControls);
@@ -1028,19 +1078,25 @@
   }
 
   function updateSettingsFromControls() {
-    const settings = {
-      kokoroEnabled: Boolean(byId("companionKokoroEnabled")?.checked),
-      autoListen: Boolean(byId("companionAutoListen")?.checked),
-      voiceName: byId("companionVoiceSelect")?.value || "kokoro:af_sarah",
-      volume: Number(byId("companionVolume")?.value || 0.85),
-      speed: Number(byId("companionSpeed")?.value || 1.0)
-    };
+    const settings = normalizeVoiceSettings(loadSettings());
+
+    if (byId("companionKokoroEnabled")) settings.kokoroEnabled = Boolean(byId("companionKokoroEnabled")?.checked);
+    if (byId("companionAutoListen")) settings.autoListen = Boolean(byId("companionAutoListen")?.checked);
+    if (byId("companionVoiceSelect")) settings.voiceName = byId("companionVoiceSelect")?.value || "kokoro:af_sarah";
+    if (byId("companionVolume")) settings.volume = Number(byId("companionVolume")?.value || 0.85);
+    if (byId("companionSpeed")) settings.speed = Number(byId("companionSpeed")?.value || 1.0);
+    if (byId("companionNameInput")) settings.companionName = byId("companionNameInput")?.value.trim() || "Sol";
+    if (byId("companionListeningVideoUrl")) settings.listeningVideoUrl = byId("companionListeningVideoUrl")?.value.trim() || "";
+    if (byId("companionTalkingVideoUrl")) settings.talkingVideoUrl = byId("companionTalkingVideoUrl")?.value.trim() || "";
+
     saveSettings(settings);
 
     const volumeLabel = byId("companionVolumeValue");
     if (volumeLabel) volumeLabel.textContent = Math.round(settings.volume * 100) + "%";
     const speedLabel = byId("companionSpeedValue");
     if (speedLabel) speedLabel.textContent = settings.speed.toFixed(2) + "x";
+
+    setSolState(solState);
     return settings;
   }
 
@@ -1670,6 +1726,14 @@
     if (action === "listen") return startBrowserListening("draft");
     if (action === "stop-speaking") return stopSpeaking();
     if (action === "clear-chat") return clearChat();
+    if (action === "reset-companion-media") {
+      const settings = normalizeVoiceSettings(loadSettings());
+      settings.listeningVideoUrl = "";
+      settings.talkingVideoUrl = "";
+      settings.thinkingVideoUrl = "";
+      saveSettings(settings);
+      return render();
+    }
 
     if (action === "select-deck") store().setActiveDeck(button.dataset.deckId);
 
@@ -1799,6 +1863,10 @@
 
   document.addEventListener("apc-private-page-rendered", function (event) {
     if (event.detail && event.detail.page === "companion") syncThenRender();
+  });
+
+  document.addEventListener("apc-companion-settings-changed", function () {
+    if (document.getElementById("companionPrivateApp")) render();
   });
 
   /* Companion Browser Voice R3D change handler */

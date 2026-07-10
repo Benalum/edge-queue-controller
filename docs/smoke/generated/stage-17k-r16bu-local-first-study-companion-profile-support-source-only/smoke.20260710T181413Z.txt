@@ -1,0 +1,13 @@
+=== stage-17k-r16bu-local-first-study-companion-profile-support-source-only smoke ===
+PASS R16BU local-first route/support/profile/companion static checks
+11893923d4db48fd6bfe9e90eda05908aeb7353862ba1eaad27f661f4c07502a  frontend/wrapper-ui/apc-wrapper-local/index.html
+c16cc7cff81ae2643946198cf80d096bc441c2b679a3090a2c8ecd66d324872a  frontend/wrapper-ui/apc-wrapper-local/header/header.html
+b928b5c146ae03e935038348167485af7d1a4d3ff347a13a7892d0d4a2038517  frontend/wrapper-ui/apc-wrapper-local/header/header.nav
+ada5d3c1308060b6e55e9948ee25f21dc01fe9104298560a998c06c990028477  frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.js
+ee04c16a24461d06999cd902168eabc3b3bdeab679585b5fd91e79fc2b097f2f  frontend/wrapper-ui/apc-wrapper-local/privatepages/privatepages.js
+53e8838cc65ce3307ea0574ef6a647efe1c208c84b89f7700e5003ec37bbc5f2  frontend/wrapper-ui/apc-wrapper-local/privatepages/companion.js
+21ad36106bf1e5cbdb0e70a57ee7006fab51df11bde31e248d05f055e85f7cdf  frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/profile.html
+ce5ce024d609acaeb750c1cc1ba883833ef0f089273f61fbfca9d4475930eb0c  frontend/wrapper-ui/apc-wrapper-local/privatepages/pages/support.html
+2745bf6b3274b2f38ca1b2d688d1f8ba1ccdffe946f5fc9715995737822ee928  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-local-first-settings.js
+6b5b2e44ffe176eb37af35ed41d8fbab5a5f654a9fc23fbe4b1da4f560d73249  frontend/wrapper-ui/apc-wrapper-local/privatepages/support.js
+PASS stage-17k-r16bu-local-first-study-companion-profile-support-source-only smoke

@@ -1,0 +1,9 @@
+ .../apc-wrapper-local/header/header.html           |  5 --
+ .../wrapper-ui/apc-wrapper-local/header/header.nav |  6 --
+ frontend/wrapper-ui/apc-wrapper-local/index.html   |  2 +
+ .../apc-wrapper-local/privatepages/companion.js    | 92 +++++++++++++++++---
+ .../privatepages/pages/profile.html                | 10 ++-
+ .../apc-wrapper-local/privatepages/privatepages.js | 98 +++++++++++++---------
+ .../apc-wrapper-local/publicpages/pages/home.html  | 14 ++--
+ .../apc-wrapper-local/publicpages/publicpages.js   | 23 +----
+ 8 files changed, 157 insertions(+), 93 deletions(-)

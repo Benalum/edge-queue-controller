@@ -1,0 +1,53 @@
+<section class="private-hero">
+  <p class="private-eyebrow">Support</p>
+  <h1>Support messages</h1>
+  <p>Sign in to send a support message and track replies.</p>
+</section>
+
+<section class="private-grid">
+  <article class="private-card">
+    <h2>New support request</h2>
+    <form id="supportCreateForm" class="auth-form" data-support-form="create-ticket">
+      <label>
+        Subject
+        <input id="supportSubject" type="text" maxlength="180" required placeholder="What do you need help with?" />
+      </label>
+      <label>
+        Category
+        <select id="supportCategory">
+          <option value="general">General</option>
+          <option value="study">Study</option>
+          <option value="companion">Companion</option>
+          <option value="profile">Profile</option>
+          <option value="billing">Billing / account</option>
+          <option value="bug">Bug report</option>
+        </select>
+      </label>
+      <label>
+        Message
+        <textarea id="supportBody" rows="5" required placeholder="Describe the issue or question."></textarea>
+      </label>
+      <button class="private-button" type="submit">Send support message</button>
+    </form>
+    <p id="supportStatus" class="study-muted" role="status"></p>
+  </article>
+
+  <article class="private-card">
+    <h2>Your tickets</h2>
+    <div id="supportTicketList" class="study-list compact">
+      <p class="study-muted">Loading support tickets...</p>
+    </div>
+  </article>
+</section>
+
+<section class="private-card" id="supportConversationCard" hidden>
+  <h2 id="supportConversationTitle">Conversation</h2>
+  <div id="supportMessageList" class="study-list compact"></div>
+  <form id="supportReplyForm" class="auth-form" data-support-form="reply-ticket">
+    <label>
+      Reply
+      <textarea id="supportReplyBody" rows="4" required placeholder="Type a reply..."></textarea>
+    </label>
+    <button class="private-button" type="submit">Send reply</button>
+  </form>
+</section>

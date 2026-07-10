@@ -6,28 +6,11 @@
       title: "Buddies Who Study",
       file: "/publicpages/pages/home.html",
       publicEvenWhenLoggedIn: true
-    },
-    "/study": {
-      title: "Study | Buddies Who Study",
-      file: "/publicpages/pages/study.html"
-    },
-    "/companion": {
-      title: "Companion | Buddies Who Study",
-      file: "/publicpages/pages/companion.html"
-    },
-    "/profile": {
-      title: "Profile | Buddies Who Study",
-      file: "/publicpages/pages/profile.html"
-    },
-    "/support": {
-      title: "Support | Buddies Who Study",
-      file: "/publicpages/pages/support.html"
-    },
-    "/system": {
-      title: "System | Buddies Who Study",
-      file: "/publicpages/pages/system.html"
     }
   };
+
+  const LOCAL_FIRST_APP_ROUTES = new Set(["/study", "/companion", "/profile"]);
+  const AUTH_REQUIRED_ROUTES = new Set(["/support", "/admin"]);
 
   let renderTimer = null;
   let renderInFlight = false;
