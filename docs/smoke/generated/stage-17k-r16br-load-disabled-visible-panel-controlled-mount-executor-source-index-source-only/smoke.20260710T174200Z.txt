@@ -1,0 +1,6 @@
+=== stage-17k-r16br-load-disabled-visible-panel-controlled-mount-executor-source-index-source-only smoke ===
+PASS R16BR source index order visible < adapter < DOM template < slot resolver < mount controller < safe mount executor < readiness gate < DOM mount candidate < activation request < controlled mount executor visible_line=282 adapter_line=283 dom_template_line=285 slot_resolver_line=287 mount_controller_line=289 safe_mount_line=291 readiness_gate_line=293 dom_mount_candidate_line=295 activation_request_line=297 controlled_mount_line=299
+a302c1254addaa540c8ee7cdaf0c238cad5aa05b0dee144828ea4d4e94e7e0f9  frontend/wrapper-ui/apc-wrapper-local/index.html
+65b613dcd370124db40ef6e024568eec7955ad1412e46d8b62e0987e4659e2e8  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-controlled-mount-executor.js
+493c60c37effe67258f417ea5e0dc9b8afd92c17344501f04c2e2293654704b3  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-mount-activation-request.js
+PASS stage-17k-r16br-load-disabled-visible-panel-controlled-mount-executor-source-index-source-only smoke

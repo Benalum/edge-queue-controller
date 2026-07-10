@@ -1,0 +1,3 @@
+ M frontend/wrapper-ui/apc-wrapper-local/index.html
+?? docs/smoke/generated/stage-17k-r16br-load-disabled-visible-panel-controlled-mount-executor-source-index-source-only/
+?? ops/smoke/check-stage-17k-r16br-load-disabled-visible-panel-controlled-mount-executor-source-index-source-only.sh
