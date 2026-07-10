@@ -1,0 +1,15 @@
+PASS stage-17k-r16bt-reconcile-live-public-static-assets-for-local-dev smoke
+stage=stage-17k-r16bt-reconcile-live-public-static-assets-for-local-dev
+timestamp=20260710T175854Z
+head_before=6a134ad78adb75287c763cc3a2546040c8ce2e95
+short_head_before=6a134ad7
+public_static_assets_reconciled=true
+asset_count=12
+source_changed=true
+deploy=false
+live_site_changed=false
+private_data_copied=false
+backend_upload=false
+google_drive_sync=false
+anki_mutation=false
+local_dev_should_load_css=true

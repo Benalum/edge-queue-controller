@@ -1,0 +1,12 @@
+header/header.css                             target=frontend/wrapper-ui/apc-wrapper-local/header/header.css bytes=2758
+auth/auth.css                                 target=frontend/wrapper-ui/apc-wrapper-local/auth/auth.css bytes=1079
+publicpages/publicpages.css                   target=frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.css bytes=2877
+auth/recover.js                               target=frontend/wrapper-ui/apc-wrapper-local/auth/recover.js bytes=7002
+privatepages/google-sync-config.js            target=frontend/wrapper-ui/apc-wrapper-local/privatepages/google-sync-config.js bytes=212
+header/header.nav                             target=frontend/wrapper-ui/apc-wrapper-local/header/header.nav bytes=731
+publicpages/pages/home.html                   target=frontend/wrapper-ui/apc-wrapper-local/publicpages/pages/home.html bytes=1796
+publicpages/pages/study.html                  target=frontend/wrapper-ui/apc-wrapper-local/publicpages/pages/study.html bytes=278
+publicpages/pages/companion.html              target=frontend/wrapper-ui/apc-wrapper-local/publicpages/pages/companion.html bytes=279
+publicpages/pages/profile.html                target=frontend/wrapper-ui/apc-wrapper-local/publicpages/pages/profile.html bytes=254
+publicpages/pages/support.html                target=frontend/wrapper-ui/apc-wrapper-local/publicpages/pages/support.html bytes=289
+publicpages/pages/system.html                 target=frontend/wrapper-ui/apc-wrapper-local/publicpages/pages/system.html bytes=242

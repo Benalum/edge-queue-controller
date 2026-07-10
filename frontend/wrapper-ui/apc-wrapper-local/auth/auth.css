@@ -1,0 +1,69 @@
+.auth-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.75rem;
+}
+
+.auth-controls .hidden,
+.auth-modal.hidden {
+  display: none !important;
+}
+
+.auth-controls button {
+  white-space: nowrap;
+}
+
+.auth-message-ok {
+  border-color: rgba(134, 239, 172, 0.45) !important;
+}
+
+.auth-message-bad {
+  border-color: rgba(248, 113, 113, 0.55) !important;
+}
+
+.auth-modal input {
+  width: 100%;
+}
+
+.auth-tabs button.active {
+  border-color: rgba(134, 239, 172, 0.65);
+  color: #86efac;
+}
+
+.auth-recover-link {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.auth-recover-panel {
+  margin-top: 1rem;
+}
+
+.auth-recover-panel label {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
+.auth-recover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.auth-reset-page {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.auth-reset-card {
+  margin-top: 1.5rem;
+  max-width: 520px;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.45);
+}

@@ -1,0 +1,10 @@
+?? docs/smoke/generated/stage-17k-r16bt-reconcile-live-public-static-assets-for-local-dev/
+?? docs/stage-17k-r16bt-reconcile-live-public-static-assets-for-local-dev.md
+?? frontend/wrapper-ui/apc-wrapper-local/auth/auth.css
+?? frontend/wrapper-ui/apc-wrapper-local/auth/recover.js
+?? frontend/wrapper-ui/apc-wrapper-local/header/header.css
+?? frontend/wrapper-ui/apc-wrapper-local/header/header.nav
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/google-sync-config.js
+?? frontend/wrapper-ui/apc-wrapper-local/publicpages/pages/
+?? frontend/wrapper-ui/apc-wrapper-local/publicpages/publicpages.css
+?? ops/smoke/check-stage-17k-r16bt-reconcile-live-public-static-assets-for-local-dev.sh

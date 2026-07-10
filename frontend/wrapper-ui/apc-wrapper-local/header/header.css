@@ -1,0 +1,103 @@
+
+[data-apc-header-component="true"] {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+[data-apc-header-component="true"] .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+[data-apc-header-component="true"] .brand-text {
+  font-weight: 700;
+}
+
+[data-apc-header-component="true"] .helper-logo svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+[data-apc-header-component="true"] .nav a {
+  color: inherit;
+  opacity: 0.78;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+[data-apc-header-component="true"] .nav a:hover {
+  opacity: 1;
+}
+
+[data-apc-header-component="true"] .nav a.active,
+[data-apc-header-component="true"] .nav a[aria-current="page"] {
+  opacity: 1;
+  color: #93c5fd;
+  border-bottom-color: #93c5fd;
+}
+
+[data-apc-header-component="true"] .brand.active,
+[data-apc-header-component="true"] .brand[aria-current="page"] {
+  color: #93c5fd;
+}
+
+[data-apc-header-component="true"] .hidden {
+  display: none !important;
+}
+/* Keep brand/logo neutral. Active colors are only for nav tabs. */
+[data-apc-header-component="true"] .brand,
+[data-apc-header-component="true"] .brand:visited,
+[data-apc-header-component="true"] .brand:hover,
+[data-apc-header-component="true"] .brand.active,
+[data-apc-header-component="true"] .brand[aria-current="page"] {
+  color: inherit;
+  border-bottom: none;
+  text-decoration: none;
+}
+
+[data-apc-header-component="true"] .brand-mark svg,
+[data-apc-header-component="true"] .brand-mark svg path,
+[data-apc-header-component="true"] .brand-mark svg circle {
+  color: inherit;
+  stroke: currentColor;
+}
+
+[data-apc-header-component="true"] .nav a.active,
+[data-apc-header-component="true"] .nav a[aria-current="page"] {
+  color: #93c5fd;
+  border-bottom-color: #93c5fd;
+}
+/* Active nav tab color: make every selected tab green */
+[data-apc-header-component="true"] .nav a.active,
+[data-apc-header-component="true"] .nav a[aria-current="page"] {
+  color: #86efac !important;
+  border-bottom: 2px solid #86efac !important;
+  opacity: 1 !important;
+  text-decoration: none !important;
+}
+
+/* Make hover look consistent */
+[data-apc-header-component="true"] .nav a:hover {
+  color: #bbf7d0 !important;
+  opacity: 1 !important;
+}
+
+/* Keep logo/brand from being treated like a selected tab */
+[data-apc-header-component="true"] .brand,
+[data-apc-header-component="true"] .brand:hover,
+[data-apc-header-component="true"] .brand.active,
+[data-apc-header-component="true"] .brand[aria-current="page"] {
+  color: inherit !important;
+  border-bottom: none !important;
+  text-decoration: none !important;
+}
+
+/* Keep the System health dot separate from selected-tab color */
+[data-apc-header-component="true"] #systemNavDot {
+  border-bottom: none !important;
+}
+

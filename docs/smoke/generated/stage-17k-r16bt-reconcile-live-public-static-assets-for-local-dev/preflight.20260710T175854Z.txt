@@ -1,0 +1,13 @@
+stage=stage-17k-r16bt-reconcile-live-public-static-assets-for-local-dev
+timestamp=20260710T175854Z
+head_before=6a134ad78adb75287c763cc3a2546040c8ce2e95
+short_head_before=6a134ad7
+repo_clean_before=true
+public_base=https://buddieswhostudy.com
+app_root=frontend/wrapper-ui/apc-wrapper-local
+shared_root=frontend/wrapper-ui
+asset_count=12
+deploy=false
+remote_ssh=false
+remote_sudo=false
+public_static_fetch=true

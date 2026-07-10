@@ -1,0 +1,42 @@
+{
+  "brand": {
+    "label": "Study Companion",
+    "href": "/",
+    "ariaLabel": "home"
+  },
+  "items": [
+    {
+      "label": "Study",
+      "href": "/study",
+      "route": "/study"
+    },
+    {
+      "label": "Companion",
+      "href": "/companion",
+      "route": "/companion"
+    },
+    {
+      "label": "Profile",
+      "href": "/profile",
+      "route": "/profile"
+    },
+    {
+      "label": "Support",
+      "href": "/support",
+      "route": "/support"
+    },
+    {
+      "label": "System",
+      "href": "/system",
+      "route": "/system",
+      "id": "systemNavLink"
+    }
+  ],
+  "admin": {
+    "label": "Admin",
+    "href": "/admin",
+    "route": "/admin",
+    "id": "adminNavLink",
+    "hiddenByDefault": true
+  }
+}
