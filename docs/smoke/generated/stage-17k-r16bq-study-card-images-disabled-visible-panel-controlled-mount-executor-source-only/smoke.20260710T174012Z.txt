@@ -1,0 +1,4 @@
+=== stage-17k-r16bq-study-card-images-disabled-visible-panel-controlled-mount-executor-source-only smoke ===
+65b613dcd370124db40ef6e024568eec7955ad1412e46d8b62e0987e4659e2e8  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-controlled-mount-executor.js
+752012c75aa40ea94a4761ac525f50a403825b559937b2a5bdf727165cc0e360  frontend/wrapper-ui/apc-wrapper-local/index.html
+PASS stage-17k-r16bq-study-card-images-disabled-visible-panel-controlled-mount-executor-source-only smoke

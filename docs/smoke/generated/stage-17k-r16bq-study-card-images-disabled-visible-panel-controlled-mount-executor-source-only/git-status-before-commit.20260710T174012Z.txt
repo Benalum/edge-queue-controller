@@ -1,0 +1,4 @@
+?? docs/smoke/generated/stage-17k-r16bq-study-card-images-disabled-visible-panel-controlled-mount-executor-source-only/
+?? docs/stage-17k-r16bq-study-card-images-disabled-visible-panel-controlled-mount-executor-source-only.md
+?? frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-controlled-mount-executor.js
+?? ops/smoke/check-stage-17k-r16bq-study-card-images-disabled-visible-panel-controlled-mount-executor-source-only.sh

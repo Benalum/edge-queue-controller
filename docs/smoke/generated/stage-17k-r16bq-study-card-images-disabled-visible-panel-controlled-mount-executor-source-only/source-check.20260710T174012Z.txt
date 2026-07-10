@@ -1,0 +1,17 @@
+stage=stage-17k-r16bq-study-card-images-disabled-visible-panel-controlled-mount-executor-source-only
+timestamp=20260710T174012Z
+source_asset=frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-images-disabled-visible-panel-controlled-mount-executor.js
+marker=APC_STUDY_CARD_IMAGES_DISABLED_VISIBLE_PANEL_CONTROLLED_MOUNT_EXECUTOR_R16BQ_SOURCE_ONLY
+source_only=true
+loaded_by_index=false
+executed=false
+mounted=false
+controls_enabled=false
+file_picker_opened=false
+image_preview_rendered=false
+client_write=false
+indexeddb_write=false
+backup_payload_write=false
+backend_upload=false
+google_drive_sync=false
+anki_mutation=false
