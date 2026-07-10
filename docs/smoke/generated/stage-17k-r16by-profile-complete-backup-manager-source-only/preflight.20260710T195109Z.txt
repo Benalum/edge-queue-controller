@@ -1,0 +1,8 @@
+stage=stage-17k-r16by-profile-complete-backup-manager-source-only
+timestamp=20260710T195109Z
+head_before=8aaaa110aa88f65a628eab2656c5cc9b1090d09f
+short_head_before=8aaaa110
+repo_clean_before=true
+source_only=true
+deploy=false
+purpose=add simple complete local backup manager that previews and downloads current full browser backup

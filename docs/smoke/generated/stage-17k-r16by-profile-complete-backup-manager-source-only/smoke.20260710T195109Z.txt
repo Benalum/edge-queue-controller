@@ -1,0 +1,7 @@
+=== stage-17k-r16by-profile-complete-backup-manager-source-only smoke ===
+770ad713315c8bf866b084e77d79e4f19fe2d2667a9acf3e35804e4dd2d38e01  /home/alex/Desktop/edge-queue-controller/frontend/wrapper-ui/apc-wrapper-local/index.html
+50c49a4717057c0aaac21e74839d9f76c24d9ec9e94d1e599310e11d2247bb70  /home/alex/Desktop/edge-queue-controller/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-complete-local-backup-manager.js
+9bbbb2352f31610a262afa4d665bb359d92e83e59b7a311d8478f005a1c5a703  /home/alex/Desktop/edge-queue-controller/frontend/wrapper-ui/apc-wrapper-local/privatepages/local-data-coverage.js
+6a3141d2f4c62f0e0dce05225b9dd1bb555ffaafaacb78fea5bafd38c6c3ad5b  /home/alex/Desktop/edge-queue-controller/frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-local-media.js
+e88053dbd00e1399e95156586ad65e41cbe783f98643de9e51bdab069f1fcdd1  /home/alex/Desktop/edge-queue-controller/frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-companion-custom-media.js
+PASS stage-17k-r16by-profile-complete-backup-manager-source-only smoke
