@@ -1,0 +1,10 @@
+=== stage-17k-r16bx-local-data-coverage-companion-card-media-source-only smoke ===
+PASS R16BX local data coverage, custom companion media, and study card image static checks
+74000f0654c883c0e51bb4b78df891593f9a14fd07670b40c898bf5ebc510838  frontend/wrapper-ui/apc-wrapper-local/index.html
+43f52dfc41006e7ebf9e6a2000e14ac8310cf1251cc3816509f5d9a00d92afaa  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-store.js
+9bbbb2352f31610a262afa4d665bb359d92e83e59b7a311d8478f005a1c5a703  frontend/wrapper-ui/apc-wrapper-local/privatepages/local-data-coverage.js
+e88053dbd00e1399e95156586ad65e41cbe783f98643de9e51bdab069f1fcdd1  frontend/wrapper-ui/apc-wrapper-local/privatepages/profile-companion-custom-media.js
+6a3141d2f4c62f0e0dce05225b9dd1bb555ffaafaacb78fea5bafd38c6c3ad5b  frontend/wrapper-ui/apc-wrapper-local/privatepages/study-card-local-media.js
+a59f1e1c43ed87b93313151a5abf1585a7db865a5ebbddb9a02f610e5d55907d  frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-media-resolver.js
+a9405172646c8a08bae7d7c567067b1aaa156426d2050999c654d3288a67a68a  frontend/wrapper-ui/apc-wrapper-local/privatepages/companion-card-media-display.js
+PASS stage-17k-r16bx-local-data-coverage-companion-card-media-source-only smoke

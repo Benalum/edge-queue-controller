@@ -50,6 +50,28 @@
     };
   }
 
+  const APC_STUDY_STORE_CARD_MEDIA_REFS_R16BX = true;
+
+  function normalizeMediaRefR16BX(value) {
+    if (!value || typeof value !== "object") return null;
+    const sha256 = value.sha256 ? String(value.sha256) : "";
+    const url = value.url ? String(value.url) : "";
+    const dataUrl = value.dataUrl ? String(value.dataUrl) : "";
+    if (!sha256 && !url && !dataUrl) return null;
+    return {
+      sha256,
+      url,
+      dataUrl,
+      mimeType: value.mimeType ? String(value.mimeType) : "",
+      sizeBytes: Number(value.sizeBytes || 0),
+      originalName: value.originalName ? String(value.originalName) : "",
+      altText: value.altText ? String(value.altText) : "",
+      kind: value.kind ? String(value.kind) : "local-media",
+      createdAt: value.createdAt || nowIso(),
+      updatedAt: value.updatedAt || nowIso()
+    };
+  }
+
   function normalize(state) {
     const base = defaults();
     const out = { ...base, ...(state || {}) };
@@ -84,7 +106,9 @@
         lastResult: card.lastResult || card.last_result || "",
         lastSeenAt: card.lastSeenAt || card.last_seen_at || "",
         createdAt: card.createdAt || card.created_at || nowIso(),
-        updatedAt: card.updatedAt || card.updated_at || nowIso()
+        updatedAt: card.updatedAt || card.updated_at || nowIso(),
+        frontImage: normalizeMediaRefR16BX(card.frontImage || card.front_image || card.questionImage || card.question_image || null),
+        backImage: normalizeMediaRefR16BX(card.backImage || card.back_image || card.answerImage || card.answer_image || null)
       };
     }).filter((card) => card.deckId && String(card.front).trim() && String(card.back).trim());
 
@@ -159,10 +183,12 @@
     });
   }
 
-  function createCard(deckId, front, back, difficulty) {
+  function createCard(deckId, front, back, difficulty, media) {
     return update((state) => {
       const targetDeckId = deckId || state.activeDeckId || (state.decks[0] && state.decks[0].id);
       if (!targetDeckId) return;
+
+      const mediaRefs = media && typeof media === "object" ? media : {};
 
       state.cards.unshift({
         id: uid("card"),
@@ -178,7 +204,9 @@
         lastResult: "",
         lastSeenAt: "",
         createdAt: nowIso(),
-        updatedAt: nowIso()
+        updatedAt: nowIso(),
+        frontImage: normalizeMediaRefR16BX(mediaRefs.frontImage || mediaRefs.questionImage || null),
+        backImage: normalizeMediaRefR16BX(mediaRefs.backImage || mediaRefs.answerImage || null)
       });
       state.activeDeckId = targetDeckId;
     });
@@ -191,6 +219,10 @@
       if ("front" in patch) card.front = String(patch.front || "").trim() || card.front;
       if ("back" in patch) card.back = String(patch.back || "").trim() || card.back;
       if ("difficulty" in patch) card.difficulty = patch.difficulty || card.difficulty;
+      if ("frontImage" in patch) card.frontImage = normalizeMediaRefR16BX(patch.frontImage);
+      if ("backImage" in patch) card.backImage = normalizeMediaRefR16BX(patch.backImage);
+      if ("questionImage" in patch) card.frontImage = normalizeMediaRefR16BX(patch.questionImage);
+      if ("answerImage" in patch) card.backImage = normalizeMediaRefR16BX(patch.answerImage);
       if ("deckId" in patch && state.decks.some((deck) => deck.id === patch.deckId)) card.deckId = patch.deckId;
       card.updatedAt = nowIso();
     });
